@@ -1,0 +1,9 @@
+<h1>Consultar Variável</h1>
+
+<%= form_with url: consulta_path, method: :get, local: true do %>
+  <div>
+    <label>Matrícula:</label>
+    <%= text_field_tag :matricula, params[:matricula] %>
+  </div>
+  <%= submit_tag "Consultar" %>
+<% end %>

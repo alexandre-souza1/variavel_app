@@ -1,0 +1,40 @@
+<h1>Todos os Mapas</h1>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Mapa</th>
+      <th>Data</th>
+      <th>Matricula Motorista</th>
+      <th>Fator</th>
+      <th>Cx Total</th>
+      <th>Cx Real</th>
+      <th>PDV Total</th>
+      <th>PDV Real</th>
+      <th>Recarga</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @mapas.each do |mapa| %>
+      <tr>
+        <td><%= mapa.mapa %></td>
+        <td>
+          <% if mapa.data.present? && mapa.data.match?(/^\d{8}$/) %>
+            <%= Date.strptime(mapa.data, "%d%m%Y").strftime("%d/%m/%Y") %>
+            <% else %>
+              <%= mapa.data %>
+          <% end %>
+        </td>
+        <td><%= mapa.matric_motorista %></td>
+        <td><%= mapa.fator %></td>
+        <td><%= mapa.cx_total %></td>
+        <td><%= mapa.cx_real %></td>
+        <td><%= mapa.pdv_total %></td>
+        <td><%= mapa.pdv_real %></td>
+        <td><%= mapa.recarga %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to "Voltar", root_path %>

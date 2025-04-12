@@ -1,0 +1,125 @@
+<h2>Motorista: <%= @driver.nome %></h2>
+<h3>Matrícula: <%= @driver.matricula %></h3>
+
+<h3>Segue prévia da variável no novo modelo de RV. Os valores podem variar, especialmente nos casos motorista que tenha sido alocado como ajudante ou extra. Em caso de inconsistência, contatar a supervisão. Variável para viagens ROTA</h3>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Mapa</th>
+      <th>Data</th>
+      <th>Fator</th>
+      <th>Cx Total</th>
+      <th>Cx Real</th>
+      <th>PDV Total</th>
+      <th>PDV Real</th>
+      <th>REC</th>
+      <th>Valor CX</th>
+      <th>Valor PDV</th>
+      <th>Valor REC</th>
+      <th>Valor MP</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% total_cx_real = 0 %>
+    <% total_valor_cx = 0 %>
+    <% total_pdv_real = 0 %>
+    <% total_valor_pdv = 0 %>
+    <% total_recarga = 0 %>
+    <% total_valor_rec = 0 %>
+    <% total_valor_mp = 0 %>
+    <% total_mapas = 0 %>
+
+    <% @mapas.each do |mapa| %>
+      <% valor_cx = (mapa.fator == 0 && mapa.pdv_total.to_i >= 2) ? mapa.cx_real.to_i * 0.12 * 2 : mapa.cx_real.to_i * 0.12 %>
+      <% valor_pdv = (mapa.fator == 0 && mapa.pdv_total.to_i >= 2) ? mapa.pdv_real.to_i * 0.76 * 2 : mapa.pdv_real.to_i * 0.76 %>
+      <% valor_rec = mapa.recarga == "SIM" ? 150 : 0 %>
+      <% valor_mp = mapa.recarga == "SIM" ? valor_rec : (valor_cx + valor_pdv) %>
+
+      <% total_cx_real += mapa.cx_real.to_i %>
+      <% total_valor_cx += valor_cx %>
+      <% total_pdv_real += mapa.pdv_real.to_i %>
+      <% total_valor_pdv += valor_pdv %>
+      <% total_recarga += 1 if mapa.recarga == "SIM" %>
+      <% total_valor_rec += valor_rec %>
+      <% total_valor_mp += valor_mp %>
+      <% total_mapas += 1 %>
+
+      <tr>
+        <td><%= mapa.mapa %></td>
+        <td>
+          <% if mapa.data.present? && mapa.data.match?(/^\d{8}$/) %>
+            <%= Date.strptime(mapa.data, "%d%m%Y").strftime("%d/%m/%Y") %>
+          <% else %>
+            <%= mapa.data %>
+          <% end %>
+        </td>
+        <td><%= mapa.fator %></td>
+        <td><%= mapa.cx_total %></td>
+        <td><%= mapa.cx_real %></td>
+        <td><%= mapa.pdv_total %></td>
+        <td><%= mapa.pdv_real %></td>
+        <td><%= mapa.recarga %></td>
+        <td><%= number_to_currency(valor_cx, unit: "R$ ") %></td>
+        <td><%= number_to_currency(valor_pdv, unit: "R$ ") %></td>
+        <td><%= number_to_currency(valor_rec, unit: "R$ ") %></td>
+        <td><%= number_to_currency(valor_mp, unit: "R$ ") %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<h3>Painel de Totais</h3>
+<table border="1">
+  <tr>
+    <th></th>
+    <th>Quantidade</th>
+    <th>Valor Total</th>
+  </tr>
+  <tr>
+    <td>Cx Real</td>
+    <td><%= total_cx_real %></td>
+    <td><%= number_to_currency(total_valor_cx, unit: "R$ ") %></td>
+  </tr>
+  <tr>
+    <td>PDV Real</td>
+    <td><%= total_pdv_real %></td>
+    <td><%= number_to_currency(total_valor_pdv, unit: "R$ ") %></td>
+  </tr>
+  <tr>
+    <td>Recargas</td>
+    <td><%= total_recarga %></td>
+    <td><%= number_to_currency(total_valor_rec, unit: "R$ ") %></td>
+  </tr>
+  <tr>
+    <td>Mapas</td>
+    <td><%= total_mapas %></td>
+    <td><%= number_to_currency(total_valor_mp, unit: "R$ ") %></td>
+  </tr>
+</table>
+
+<br>
+
+<h3>Periodo dos Mapas</h3>
+<% if @data_inicio && @data_fim && @dias_periodo %>
+  <table border="1" style="margin-bottom: 20px;">
+    <thead>
+      <tr>
+        <th colspan="5">Periodo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>Início</th>
+        <td><%= @data_inicio.strftime("%d/%m/%Y") %></td>
+        <th>Final</th>
+        <td><%= @data_fim.strftime("%d/%m/%Y") %></td>
+        <td><%= "#{@dias_periodo} dias" %></td>
+      </tr>
+    </tbody>
+  </table>
+<% end %>
+
+<%= link_to "Voltar", root_path %>

@@ -1,0 +1,30 @@
+<%= form_with(model: driver, local: true) do |form| %>
+  <div>
+    <%= form.label :nome %><br>
+    <%= form.text_field :nome %>
+  </div>
+
+  <div>
+    <%= form.label :matricula %><br>
+    <%= form.text_field :matricula %>
+  </div>
+
+  <div>
+    <%= form.label :promax %><br>
+    <%= form.text_field :promax %>
+  </div>
+
+  <div>
+    <%= form.label :cpf %><br>
+    <%= form.text_field :cpf %>
+  </div>
+
+  <div>
+    <%= form.label :data_nascimento %><br>
+    <%= form.date_field :data_nascimento %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>

@@ -1,0 +1,12 @@
+<h1>Importar Dados dos Mapas (2ART)</h1>
+
+<%= form_with url: import_mapas_path, local: true, multipart: true do %>
+  <div>
+    <label>Arquivo CSV:</label>
+    <%= file_field_tag :file %>
+  </div>
+  <%= submit_tag "Importar" %>
+<% end %>
+
+<%= link_to "Voltar", root_path %>
+<%= link_to "Ver todos os mapas cadastrados", mapas_todos_path %>

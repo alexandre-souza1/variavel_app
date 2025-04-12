@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  mapa: MyString
+  data: 2025-04-12
+  matric_motorista: MyString
+  fator: 1.5
+  cx_total: 1
+  cx_real: 1
+  pdv_total: 1
+  pdv_real: 1
+  recarga: MyString
+
+two:
+  mapa: MyString
+  data: 2025-04-12
+  matric_motorista: MyString
+  fator: 1.5
+  cx_total: 1
+  cx_real: 1
+  pdv_total: 1
+  pdv_real: 1
+  recarga: MyString

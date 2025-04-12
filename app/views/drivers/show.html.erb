@@ -1,0 +1,9 @@
+<h1>Motorista: <%= @driver.nome %></h1>
+
+<p><strong>Matrícula:</strong> <%= @driver.matricula %></p>
+<p><strong>Promax:</strong> <%= @driver.promax %></p>
+<p><strong>CPF:</strong> <%= @driver.cpf %></p>
+<p><strong>Data de Nascimento:</strong> <%= @driver.data_nascimento.strftime("%d/%m/%Y") if @driver.data_nascimento %></p>
+
+<%= link_to "Editar", edit_driver_path(@driver) %> |
+<%= link_to "Voltar", drivers_path %>

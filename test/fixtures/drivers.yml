@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  matricula: MyString
+  promax: MyString
+  nome: MyString
+  cpf: MyString
+  data_nascimento: 2025-04-12
+
+two:
+  matricula: MyString
+  promax: MyString
+  nome: MyString
+  cpf: MyString
+  data_nascimento: 2025-04-12
