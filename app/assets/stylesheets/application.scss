@@ -1,0 +1,154 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS (and SCSS, if configured) file within this directory, lib/assets/stylesheets, or any plugin's
+ * vendor/assets/stylesheets directory can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any other CSS
+ * files in this directory. Styles in this file should be added after the last require_* statement.
+ * It is generally better to create a new file per style scope.
+ *
+ *= require_tree .
+ *= require_self
+ */
+// Exemplo simples de estilo
+// Variáveis de cores
+$primary-color: #0d6efd;
+$secondary-color: #6c757d;
+$light-bg: #f8f9fa;
+$warning-bg: #fff8e1;
+$info-bg: #e9f7fe;
+
+// Estilos gerais
+.driver-report-container {
+  background-color: $light-bg;
+  min-height: 100vh;
+  padding-bottom: 2rem;
+
+  .header {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    h1 {
+      font-weight: 600;
+    }
+  }
+
+  // Cartão de informações do motorista
+  .driver-info-card {
+    border-left: 4px solid $primary-color;
+
+    .driver-name {
+      color: $primary-color;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .driver-id {
+      color: $secondary-color;
+      margin-bottom: 0;
+    }
+
+    .period-info {
+      background-color: rgba($primary-color, 0.1);
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      display: inline-block;
+
+      p {
+        margin-bottom: 0.25rem;
+      }
+    }
+  }
+
+  // Tabelas
+  .table-responsive {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .table {
+      margin-bottom: 0;
+
+      thead th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+      }
+
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+    }
+  }
+
+  // Cartões especiais
+  .total-card, .parameters-card {
+    height: 100%;
+
+    .card-header {
+      font-weight: 600;
+    }
+  }
+
+  .total-card {
+    background-color: $info-bg;
+    border-left: 4px solid $primary-color;
+
+    .table {
+      background-color: transparent;
+    }
+
+    strong {
+      color: $primary-color;
+    }
+  }
+
+  .parameters-card {
+    .list-group-item {
+      padding: 0.75rem 1.25rem;
+
+      .badge {
+        font-size: 0.85rem;
+        padding: 0.35em 0.65em;
+      }
+    }
+  }
+
+  // Alertas
+  .alert-warning {
+    border-left: 4px solid #ffc107;
+
+    i {
+      font-size: 1.2rem;
+    }
+  }
+
+  .alert-danger {
+    border-left: 4px solid #dc3545;
+
+    i {
+      font-size: 1.2rem;
+    }
+  }
+
+  // Responsividade
+  @media (max-width: 768px) {
+    .header {
+      text-align: center;
+
+      .btn {
+        margin-top: 1rem;
+      }
+    }
+
+    .driver-info-card {
+      .text-md-end {
+        text-align: left !important;
+        margin-top: 1rem;
+      }
+    }
+  }
+}

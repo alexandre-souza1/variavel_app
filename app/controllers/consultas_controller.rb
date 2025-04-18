@@ -9,6 +9,11 @@ class ConsultasController < ApplicationController
     if @driver
       @mapas = Mapa.where(matric_motorista: @driver.promax)
 
+      @valor_caixa   = ParametroCalculo.find_by(nome: ParametroCalculo::NOME_VALOR_CAIXA)&.valor
+      @valor_entrega = ParametroCalculo.find_by(nome: ParametroCalculo::NOME_VALOR_ENTREGA)&.valor
+      @valor_recarga = ParametroCalculo.find_by(nome: ParametroCalculo::NOME_VALOR_RECARGA)&.valor
+
+
           # Extrair datas válidas e converter
     datas_validas = @mapas.map do |mapa|
       if mapa.data.present? && mapa.data.match?(/^\d{8}$/)
