@@ -1,32 +1,31 @@
 <div class="driver-report-container">
-  <div class="header bg-primary text-white py-4 mb-4 rounded-bottom">
-    <div class="container">
+
+  <!-- Header -->
+    <div class="container p-3">
       <div class="row align-items-center">
         <div class="col-md-8">
-          <h1 class="mb-0">Relatório de Variável</h1>
+          <h1 class="mb-0"><i class="bi bi-truck me-2"></i>Relatório de Variável</h1>
         </div>
-        <div class="col-md-4 text-md-end">
-          <%= link_to "Voltar", root_path, class: "btn btn-light" %>
+        <div class="col-md-4 text-md-end d-flex flex-row-reverse">
+          <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
         </div>
       </div>
     </div>
-  </div>
 
   <div class="container">
+
     <!-- Informações do Motorista -->
-    <div class="card driver-info-card mb-4">
+    <div class="card shadow-sm rounded mb-4">
       <div class="card-body">
-        <div class="row">
+        <div class="row align-items-center">
           <div class="col-md-6">
-            <h2 class="driver-name"><%= @driver.nome %></h2>
-            <p class="driver-id">Matrícula: <%= @driver.matricula %></p>
+            <h2 class="mb-1"><i class="bi bi-person-fill me-2"></i><%= @driver.nome %></h2>
+            <p class="text-muted mb-0">Matrícula: <%= @driver.matricula %></p>
           </div>
           <div class="col-md-6 text-md-end">
             <% if @data_inicio && @data_fim && @dias_periodo %>
-              <div class="period-info">
-                <p class="mb-1"><strong>Período:</strong> <%= @data_inicio.strftime("%d/%m/%Y") %> a <%= @data_fim.strftime("%d/%m/%Y") %></p>
-                <p class="mb-0"><strong>Dias:</strong> <%= @dias_periodo %></p>
-              </div>
+              <p class="mb-1"><strong>Período:</strong> <%= @data_inicio.strftime("%d/%m/%Y") %> a <%= @data_fim.strftime("%d/%m/%Y") %></p>
+              <p class="mb-0"><strong>Dias:</strong> <%= @dias_periodo %></p>
             <% end %>
           </div>
         </div>
@@ -34,20 +33,20 @@
     </div>
 
     <!-- Aviso Importante -->
-    <div class="alert alert-warning mb-4">
+    <div class="alert alert-warning shadow-sm rounded mb-4">
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      Segue prévia da variável no novo modelo de RV. Os valores podem variar, especialmente nos casos motorista que tenha sido alocado como ajudante ou extra. Em caso de inconsistência, contatar a supervisão. Variável para viagens ROTA.
+      Segue prévia da variável no novo modelo de RV. Os valores podem variar, especialmente nos casos de motoristas alocados como ajudante ou extra. Em caso de inconsistência, contatar a supervisão.
     </div>
 
     <!-- Tabela de Mapas -->
-    <div class="card mb-4">
-      <div class="card-header">
-        <h3 class="mb-0">Detalhes dos Mapas</h3>
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-header bg-light border-bottom">
+        <h5 class="mb-0"><i class="bi bi-map-fill me-2"></i>Detalhes dos Mapas</h5>
       </div>
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-striped table-hover">
-            <thead class="table-primary">
+          <table class="table table-bordered table-hover align-middle">
+            <thead class="table-primary text-center">
               <tr>
                 <th>Mapa</th>
                 <th>Data</th>
@@ -64,14 +63,8 @@
               </tr>
             </thead>
             <tbody>
-              <% total_cx_real = 0 %>
-              <% total_valor_cx = 0 %>
-              <% total_pdv_real = 0 %>
-              <% total_valor_pdv = 0 %>
-              <% total_recarga = 0 %>
-              <% total_valor_rec = 0 %>
-              <% total_valor_mp = 0 %>
-              <% total_mapas = 0 %>
+              <% # Totais %>
+              <% total_cx_real = total_valor_cx = total_pdv_real = total_valor_pdv = total_recarga = total_valor_rec = total_valor_mp = total_mapas = 0 %>
 
               <% @mapas.each do |mapa| %>
                 <% valor_cx = (mapa.fator == 0 && mapa.pdv_total.to_i >= 2) ? mapa.cx_real.to_i * 0.12 * 2 : mapa.cx_real.to_i * 0.12 %>
@@ -88,7 +81,7 @@
                 <% total_valor_mp += valor_mp %>
                 <% total_mapas += 1 %>
 
-                <tr>
+                <tr class="text-center">
                   <td><%= mapa.mapa %></td>
                   <td>
                     <% if mapa.data.present? && mapa.data.match?(/^\d{8}$/) %>
@@ -115,81 +108,81 @@
       </div>
     </div>
 
-    <!-- Painel de Totais -->
+    <!-- Painel de Totais + Parâmetros -->
     <div class="row">
+      <!-- Painel Totais -->
       <div class="col-md-8">
-        <div class="card total-card mb-4">
+        <div class="card shadow-sm rounded mb-4">
           <div class="card-header bg-primary text-white">
-            <h3 class="mb-0">Painel de Totais</h3>
+            <h5 class="mb-0"><i class="bi bi-bar-chart-fill me-2"></i>Painel de Totais</h5>
           </div>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>Quantidade</th>
-                    <th>Valor Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Cx Real</td>
-                    <td><%= total_cx_real %></td>
-                    <td><%= number_to_currency(total_valor_cx, unit: "R$ ", separator: ",", delimiter: ".") %></td>
-                  </tr>
-                  <tr>
-                    <td>PDV Real</td>
-                    <td><%= total_pdv_real %></td>
-                    <td><%= number_to_currency(total_valor_pdv, unit: "R$ ", separator: ",", delimiter: ".") %></td>
-                  </tr>
-                  <tr>
-                    <td>Recargas</td>
-                    <td><%= total_recarga %></td>
-                    <td><%= number_to_currency(total_valor_rec, unit: "R$ ", separator: ",", delimiter: ".") %></td>
-                  </tr>
-                  <tr>
-                    <td>Mapas</td>
-                    <td><%= total_mapas %></td>
-                    <td><strong><%= number_to_currency(total_valor_mp, unit: "R$ ", separator: ",", delimiter: ".") %></strong></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <div class="card-body p-3">
+            <table class="table table-borderless align-middle">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Quantidade</th>
+                  <th>Valor Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Cx Real</td>
+                  <td><%= total_cx_real %></td>
+                  <td><%= number_to_currency(total_valor_cx, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                </tr>
+                <tr>
+                  <td>PDV Real</td>
+                  <td><%= total_pdv_real %></td>
+                  <td><%= number_to_currency(total_valor_pdv, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                </tr>
+                <tr>
+                  <td>Recargas</td>
+                  <td><%= total_recarga %></td>
+                  <td><%= number_to_currency(total_valor_rec, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                </tr>
+                <tr class="fw-bold">
+                  <td>Total Mapas</td>
+                  <td><%= total_mapas %></td>
+                  <td><%= number_to_currency(total_valor_mp, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
       <!-- Parâmetros de Cálculo -->
       <div class="col-md-4">
-        <div class="card parameters-card">
+        <div class="card shadow-sm rounded mb-4">
           <div class="card-header bg-primary text-white">
-            <h3 class="mb-0">Parâmetros de Cálculo</h3>
+            <h5 class="mb-0"><i class="bi bi-gear-fill me-2"></i>Parâmetros de Cálculo</h5>
           </div>
           <div class="card-body">
             <% if @valor_caixa && @valor_entrega && @valor_recarga %>
               <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex justify-content-between align-items-center">
+                <li class="list-group-item d-flex justify-content-between">
                   Caixa Real
                   <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_caixa, unit: "R$ ", separator: ",", delimiter: ".") %></span>
                 </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  PDV Real (Entrega)
+                <li class="list-group-item d-flex justify-content-between">
+                  PDV Real
                   <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_entrega, unit: "R$ ", separator: ",", delimiter: ".") %></span>
                 </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
+                <li class="list-group-item d-flex justify-content-between">
                   Recarga
                   <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_recarga, unit: "R$ ", separator: ",", delimiter: ".") %></span>
                 </li>
               </ul>
             <% else %>
-              <div class="alert alert-danger">
+              <div class="alert alert-danger mt-2">
                 <i class="bi bi-exclamation-octagon-fill me-2"></i>
-                Os valores de cálculo não estão disponíveis no momento. Por favor, tente novamente mais tarde.
+                Parâmetros de cálculo indisponíveis no momento.
               </div>
             <% end %>
           </div>
         </div>
+        <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
       </div>
     </div>
   </div>

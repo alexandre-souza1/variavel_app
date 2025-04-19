@@ -1,9 +1,45 @@
-<h1>Consultar Variável</h1>
+<div class="bg-light">
+  <div class="container p-3">
+    <h2 class="text-center mb-4 fw-bold text-primary">Painel de consulta variável LOG20 Foz do Iguaçu</h2>
+    <div class="cards">
+      <div class="card-category" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://raw.githubusercontent.com/lewagon/fullstack-images/master/uikit/breakfast.jpg)">
+        Motorista
+      </div>
 
-<%= form_with url: consulta_path, method: :get, local: true do %>
-  <div>
-    <label>Matrícula:</label>
-    <%= text_field_tag :matricula, params[:matricula] %>
+      <div class="card-category" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://raw.githubusercontent.com/lewagon/fullstack-images/master/uikit/lunch.jpg)">
+        Ajudante
+      </div>
+
+      <div class="card-category" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://raw.githubusercontent.com/lewagon/fullstack-images/master/uikit/dinner.jpg)">
+        Van
+      </div>
+    </div>
   </div>
-  <%= submit_tag "Consultar" %>
-<% end %>
+</div>
+
+<div class="bg-light min-vh-100 d-flex justify-content-center">
+  <div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6">
+
+        <div class="card shadow-lg border-0 rounded-4">
+          <div class="card-body p-4">
+            <h2 class="text-center mb-4 fw-bold text-primary">Consultar #categoria escolhida</h2>
+
+            <%= form_with url: consulta_path, method: :get, local: true do %>
+              <div class="mb-4">
+                <label for="matricula" class="form-label fw-semibold">Matrícula</label>
+                <%= text_field_tag :matricula, params[:matricula], class: "form-control form-control-lg", placeholder: "Digite sua matrícula" %>
+              </div>
+
+              <div class="d-grid">
+                <%= submit_tag "Consultar", class: "btn btn-primary btn-lg rounded-1" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
