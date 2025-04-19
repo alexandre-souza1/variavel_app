@@ -1,0 +1,9 @@
+<h1>Ajudante: <%= @ajudante.nome %></h1>
+
+<p><strong>Matrícula:</strong> <%= @ajudante.matricula %></p>
+<p><strong>Promax:</strong> <%= @ajudante.promax %></p>
+<p><strong>CPF:</strong> <%= @ajudante.cpf %></p>
+<p><strong>Data de Nascimento:</strong> <%= @ajudante.data_nascimento.strftime("%d/%m/%Y") if @ajudante.data_nascimento %></p>
+
+<%= link_to "Editar", edit_ajudante_path(@ajudante) %> |
+<%= link_to "Voltar", ajudantes_path %>

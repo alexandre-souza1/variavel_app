@@ -10,9 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_04_18_220951) do
+ActiveRecord::Schema[7.1].define(version: 2025_04_19_145415) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "ajudantes", force: :cascade do |t|
+    t.string "matricula"
+    t.string "promax"
+    t.string "nome"
+    t.string "cpf"
+    t.date "data_nascimento"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "drivers", force: :cascade do |t|
     t.string "matricula"
@@ -36,6 +46,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_18_220951) do
     t.string "recarga"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "matric_ajudante"
   end
 
   create_table "parametro_calculos", force: :cascade do |t|

@@ -19,4 +19,16 @@
 @import "navbar.scss";
 @import "consultas_show.scss";
 @import "consultas.scss";
-@import "consultas-cards.scss"
+@import "consultas-cards.scss";
+
+
+@media (max-width: 767.98px) {
+  .responsive-mobile-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* melhora o scroll em iOS */
+  }
+
+  .responsive-mobile-scroll table {
+    min-width: 900px; /* ou o que for necessário pra não quebrar o layout da tabela */
+  }
+}

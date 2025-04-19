@@ -1,0 +1,34 @@
+<h1>Lista de Ajudantes</h1>
+
+<%= link_to "Novo Ajudante", new_ajudante_path, class: "button" %>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Matrícula</th>
+      <th>Promax</th>
+      <th>CPF</th>
+      <th>Data de Nascimento</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @ajudantes.each do |ajudante| %>
+      <tr>
+        <td><%= ajudante.nome %></td>
+        <td><%= ajudante.matricula %></td>
+        <td><%= ajudante.promax %></td>
+        <td><%= ajudante.cpf %></td>
+        <td><%= ajudante.data_nascimento.strftime("%d/%m/%Y") if ajudante.data_nascimento %></td>
+        <td>
+          <%= link_to "Ver", ajudante_path(ajudante) %> |
+          <%= link_to "Editar", edit_ajudante_path(ajudante) %> |
+          <%= link_to "Excluir", ajudante_path(ajudante), method: :delete, data: { confirm: "Tem certeza?" } %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to "Importar Ajudantes", import_ajudantes_path %>

@@ -20,7 +20,8 @@ class MapasController < ApplicationController
           pdv_total: row["Entregas"],
           pdv_real: row["EntregasCompletas"],
           recarga: row["Recarga"],
-          matric_motorista: row["MatricMotorista"]
+          matric_motorista: row["MatricMotorista"],
+          matric_ajudante: row["MatricAjud1"]
         )
       end
 

@@ -19,8 +19,13 @@
       <div class="card-body">
         <div class="row align-items-center">
           <div class="col-md-6">
-            <h2 class="mb-1"><i class="bi bi-person-fill me-2"></i><%= @driver.nome %></h2>
-            <p class="text-muted mb-0">Matrícula: <%= @driver.matricula %></p>
+            <% if @driver %>
+              <h2 class="mb-1"><i class="bi bi-person-fill me-2"></i><%= @driver.nome %></h2>
+              <p class="text-muted mb-0">Matrícula: <%= @driver.matricula %></p>
+            <% elsif @ajudante %>
+              <h2 class="mb-1"><i class="bi bi-person-fill me-2"></i><%= @ajudante.nome %></h2>
+              <p class="text-muted mb-0">Matrícula: <%= @ajudante.matricula %></p>
+            <% end %>
           </div>
           <div class="col-md-6 text-md-end">
             <% if @data_inicio && @data_fim && @dias_periodo %>
@@ -44,7 +49,7 @@
         <h5 class="mb-0"><i class="bi bi-map-fill me-2"></i>Detalhes dos Mapas</h5>
       </div>
       <div class="card-body">
-        <div class="table-responsive">
+        <div class="table-responsive responsive-mobile-scroll">
           <table class="table table-bordered table-hover align-middle">
             <thead class="table-primary text-center">
               <tr>
@@ -66,11 +71,42 @@
               <% # Totais %>
               <% total_cx_real = total_valor_cx = total_pdv_real = total_valor_pdv = total_recarga = total_valor_rec = total_valor_mp = total_mapas = 0 %>
 
+              <% quantidade_mapas = @mapas.size %>  <!-- 'mapas' deve ser o nome da variável que contém os mapas -->
+
+              <% # Calculando o percentual de devolução %>
+              <% total_pdv_real = @mapas.sum { |mapa| mapa.pdv_real.to_i } %>  <!-- Soma dos valores de pdv_real -->
+              <% total_pdv_total = @mapas.sum { |mapa| mapa.pdv_total.to_i } %>  <!-- Soma dos valores de pdv_total -->
+              <% percentual_devolucao = total_pdv_real.to_f / total_pdv_total.to_f %>  <!-- Percentual de devolução -->
+              <% quantidade_devolucoes =  total_pdv_total.to_f - total_pdv_real.to_f %>
+
               <% @mapas.each do |mapa| %>
-                <% valor_cx = (mapa.fator == 0 && mapa.pdv_total.to_i >= 2) ? mapa.cx_real.to_i * 0.12 * 2 : mapa.cx_real.to_i * 0.12 %>
-                <% valor_pdv = (mapa.fator == 0 && mapa.pdv_total.to_i >= 2) ? mapa.pdv_real.to_i * 0.76 * 2 : mapa.pdv_real.to_i * 0.76 %>
-                <% valor_rec = mapa.recarga == "SIM" ? 150 : 0 %>
-                <% valor_mp = mapa.recarga == "SIM" ? valor_rec : (valor_cx + valor_pdv) %>
+                <% if @categoria == "motorista" %>
+
+                  <% # Cálculo do valor de cx, pdv, rec e mp %>
+                  <% valor_cx = (mapa.fator == 0 && mapa.pdv_total.to_i >= 2) ? mapa.cx_real.to_i * 0.12 * 2 : mapa.cx_real.to_i * 0.12 %>
+                  <% valor_pdv = (mapa.fator == 0 && mapa.pdv_total.to_i >= 2) ? mapa.pdv_real.to_i * 0.76 * 2 : mapa.pdv_real.to_i * 0.76 %>
+                  <% valor_rec = mapa.recarga == "SIM" ? 150 : 0 %>
+                  <% valor_mp = mapa.recarga == "SIM" ? valor_rec : (valor_cx + valor_pdv) %>
+
+                  <% # Lógica para bônus de devolução %>
+                  <% bonus_devolucao = (quantidade_mapas >= 15 && percentual_devolucao <= 0.03) ? 200 : 0 %>
+
+                  <% valor_mp += bonus_devolucao %>  <!-- Adicionando o bônus de devolução ao valor final de mp -->
+                <% elsif @categoria == "ajudante" %>
+
+                  <% valor_cx = mapa.cx_real.to_i * 0.08 %>
+                  <% valor_pdv = mapa.pdv_real.to_i * 0.52 %>
+                  <% valor_rec = mapa.recarga == "SIM" ? 100 : 0 %>
+                  <% valor_mp = mapa.recarga == "SIM" ? valor_rec : (valor_cx + valor_pdv) %>
+
+                  <% bonus_devolucao = (quantidade_mapas >= 15 && percentual_devolucao <= 0.03) ? 200 : 0 %>
+
+                  <% valor_mp += bonus_devolucao %>  <!-- Adicionando o bônus de devolução ao valor final de mp -->
+                <% else %>
+                  <%# Lógica padrão caso existam outras categorias %>
+                  <% valor_cx = mapa.cx_real.to_i * 0.12 %>
+                  <% valor_pdv = mapa.pdv_real.to_i * 0.76 %>
+                <% end %>
 
                 <% total_cx_real += mapa.cx_real.to_i %>
                 <% total_valor_cx += valor_cx %>
@@ -141,6 +177,15 @@
                   <td><%= total_recarga %></td>
                   <td><%= number_to_currency(total_valor_rec, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 </tr>
+                <tr>
+                  <td>Quantidade de Mapas</td>
+                  <td><%= quantidade_mapas %></td>
+                </tr>
+                <tr>
+                  <td>Devolução</td>
+                  <td><%= percentual_devolucao %>%</td>
+                  <td><%= quantidade_devolucoes %></td>
+                </tr>
                 <tr class="fw-bold">
                   <td>Total Mapas</td>
                   <td><%= total_mapas %></td>
@@ -159,7 +204,7 @@
             <h5 class="mb-0"><i class="bi bi-gear-fill me-2"></i>Parâmetros de Cálculo</h5>
           </div>
           <div class="card-body">
-            <% if @valor_caixa && @valor_entrega && @valor_recarga %>
+            <% if @categoria == "motorista" %>
               <ul class="list-group list-group-flush">
                 <li class="list-group-item d-flex justify-content-between">
                   Caixa Real
@@ -172,6 +217,29 @@
                 <li class="list-group-item d-flex justify-content-between">
                   Recarga
                   <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_recarga, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  Bonus Devolução
+                  <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_bonus_devolucao, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+                </li>
+              </ul>
+            <% elsif @categoria == "ajudante" %>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                  Caixa Real
+                  <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_caixa_ajudante, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  PDV Real
+                  <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_entrega_ajudante, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  Recarga
+                  <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_recarga_ajudante, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  Bonus Devolução
+                  <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_bonus_devolucao, unit: "R$ ", separator: ",", delimiter: ".") %></span>
                 </li>
               </ul>
             <% else %>
