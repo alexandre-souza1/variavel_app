@@ -1,9 +1,4 @@
-$primary: #0d6efd;
-$secondary-color: #6c757d;
-$light-bg: #f8f9fa;
-$warning-bg: #fff8e1;
-$info-bg: #e9f7fe;
-
+@import "../config/bootstrap_variables";
 
 // Página de Consulta
 .consultation-container {
@@ -37,7 +32,7 @@ $info-bg: #e9f7fe;
   padding: 2rem 0;
 
   .page-title {
-    color: $primary;
+    color: $primary-color;
     font-weight: 600;
   }
 
@@ -61,12 +56,12 @@ $info-bg: #e9f7fe;
       margin: 0 0.25rem;
 
       &.active .page-link {
-        background-color: $primary;
-        border-color: $primary;
+        background-color: $primary-color;
+        border-color: $primary-color;
       }
 
       .page-link {
-        color: $primary;
+        color: $primary-color;
         border-radius: 0.25rem;
       }
     }

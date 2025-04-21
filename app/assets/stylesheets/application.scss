@@ -14,21 +14,13 @@
  *= require_self
  */
 // Exemplo simples de estilo
-// Variáveis de cores
 
-@import "navbar.scss";
-@import "consultas_show.scss";
-@import "consultas.scss";
-@import "consultas-cards.scss";
+// Graphical variables
+@import "config/colors"; // Encaminha as variáveis de cores para o resto do projeto
 
+// External libraries
+@import "bootstrap"; // Importa o Bootstrap
 
-@media (max-width: 767.98px) {
-  .responsive-mobile-scroll {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch; /* melhora o scroll em iOS */
-  }
-
-  .responsive-mobile-scroll table {
-    min-width: 900px; /* ou o que for necessário pra não quebrar o layout da tabela */
-  }
-}
+// Your CSS partials (componentes e páginas)
+@import "components/index"; // Encaminha os componentes
+@import "pages/index"; // Encaminha as páginas
