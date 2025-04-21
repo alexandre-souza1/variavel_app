@@ -1,0 +1,17 @@
+<h1>Parâmetros de Cálculo</h1>
+
+  <tbody>
+    <% @parametro_calculos_por_categoria.each do |categoria, parametros| %>
+      <h2><%= categoria.titleize %></h2>
+      <ul>
+        <% parametros.each do |param| %>
+          <li><%= param.nome %>: <%= param.valor %></li>
+          <li><%= link_to 'Mostrar', parametro_calculo_path(param) %></li>
+          <li><%= link_to 'Editar', edit_parametro_calculo_path(param) %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  </tbody>
+<br>
+
+<%= link_to "Voltar", root_path %>

@@ -1,4 +1,6 @@
 class ParametroCalculo < ApplicationRecord
+  validates :categoria, presence: true
+
   NOME_VALOR_CAIXA   = "valor_caixa"
   NOME_VALOR_ENTREGA = "valor_entrega"
   NOME_VALOR_RECARGA = "valor_recarga"

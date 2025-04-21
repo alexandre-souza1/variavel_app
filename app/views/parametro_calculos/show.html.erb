@@ -1,0 +1,6 @@
+<h1><%= @parametro_calculo.nome.humanize %></h1>
+
+<p><strong>Valor:</strong> <%= number_with_precision(@parametro_calculo.valor, precision: 2) %></p>
+
+<%= link_to 'Editar', edit_parametro_calculo_path(@parametro_calculo) %> |
+<%= link_to 'Voltar', parametro_calculos_path %>

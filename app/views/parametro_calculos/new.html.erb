@@ -1,0 +1,55 @@
+<h1>Nova Parametrização de Cálculo</h1>
+
+<%= form_with(model: @parametro_calculo, local: true) do |form| %>
+  <% if @parametro_calculo.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@parametro_calculo.errors.count, "erro") %> proibiu este parâmetro de ser salvo:</h2>
+      <ul>
+        <% @parametro_calculo.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :NOME_VALOR_CAIXA %>
+    <%= form.text_field :NOME_VALOR_CAIXA %>
+  </div>
+
+  <div>
+    <%= form.label :NOME_VALOR_ENTREGA %>
+    <%= form.text_field :NOME_VALOR_ENTREGA %>
+  </div>
+
+  <div>
+    <%= form.label :NOME_VALOR_RECARGA %>
+    <%= form.text_field :NOME_VALOR_RECARGA %>
+  </div>
+
+  <div>
+    <%= form.label :NOME_VALOR_CAIXA_AJUDANTE %>
+    <%= form.text_field :NOME_VALOR_CAIXA_AJUDANTE %>
+  </div>
+
+  <div>
+    <%= form.label :NOME_VALOR_ENTREGA_AJUDANTE %>
+    <%= form.text_field :NOME_VALOR_ENTREGA_AJUDANTE %>
+  </div>
+
+  <div>
+    <%= form.label :NOME_VALOR_RECARGA_AJUDANTE %>
+    <%= form.text_field :NOME_VALOR_RECARGA_AJUDANTE %>
+  </div>
+
+  <div>
+    <%= form.label :NOME_VALOR_BONUS_DEVOLUCAO %>
+    <%= form.text_field :NOME_VALOR_BONUS_DEVOLUCAO %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>
+
+<%= link_to 'Voltar', parametro_calculos_path %>

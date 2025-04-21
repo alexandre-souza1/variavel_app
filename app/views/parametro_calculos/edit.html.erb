@@ -1,0 +1,35 @@
+<h1>Editar Parâmetro de Cálculo</h1>
+
+<%= form_with(model: @parametro_calculo, local: true) do |form| %>
+  <% if @parametro_calculo.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@parametro_calculo.errors.count, "erro") %> proibiu este parâmetro de ser salvo:</h2>
+      <ul>
+        <% @parametro_calculo.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :nome %>
+    <h5><%= @parametro_calculo.nome.humanize %></h5>
+  </div>
+
+  <div>
+    <%= form.label :categoria %>
+    <%= form.text_field :categoria %>
+  </div>
+
+  <div>
+    <%= form.label :valor %>
+    <%= form.number_field :valor, step: 0.01 %>
+  </div>
+
+  <div>
+    <%= form.submit "Salvar" %>
+  </div>
+<% end %>
+
+<%= link_to 'Voltar', parametro_calculos_path %>
