@@ -12,10 +12,10 @@ class ConsultasController < ApplicationController
       if @driver
         @mapas = Mapa.where(matric_motorista: @driver.promax)
 
-        @valor_caixa   = ParametroCalculo.find_by(nome: ParametroCalculo::NOME_VALOR_CAIXA)&.valor
-        @valor_entrega = ParametroCalculo.find_by(nome: ParametroCalculo::NOME_VALOR_ENTREGA)&.valor
-        @valor_recarga = ParametroCalculo.find_by(nome: ParametroCalculo::NOME_VALOR_RECARGA)&.valor
-        @valor_bonus_devolucao = ParametroCalculo.find_by(nome: ParametroCalculo::NOME_VALOR_BONUS_DEVOLUCAO)&.valor
+        @valor_caixa_motorista      = ParametroCalculo.valor_para(categoria: "motorista", nome: "valor_caixa")
+        @valor_entrega_motorista    = ParametroCalculo.valor_para(categoria: "motorista", nome: "valor_entrega")
+        @valor_recarga_motorista    = ParametroCalculo.valor_para(categoria: "motorista", nome: "valor_recarga")
+        @valor_bonus_devolucao  = ParametroCalculo.valor_para(categoria: "geral", nome: "bonus_devolucao")
 
         # Extrair datas válidas e converter
         datas_validas = @mapas.map do |mapa|
@@ -42,10 +42,10 @@ class ConsultasController < ApplicationController
       if @ajudante
         @mapas = Mapa.where(matric_ajudante: @ajudante.promax)
 
-        @valor_caixa_ajudante   = ParametroCalculo.find_by(nome: ParametroCalculo::NOME_VALOR_CAIXA_AJUDANTE)&.valor
-        @valor_entrega_ajudante = ParametroCalculo.find_by(nome: ParametroCalculo::NOME_VALOR_ENTREGA_AJUDANTE)&.valor
-        @valor_recarga_ajudante = ParametroCalculo.find_by(nome: ParametroCalculo::NOME_VALOR_RECARGA_AJUDANTE)&.valor
-        @valor_bonus_devolucao = ParametroCalculo.find_by(nome: ParametroCalculo::NOME_VALOR_BONUS_DEVOLUCAO)&.valor
+        @valor_caixa_ajudante      = ParametroCalculo.valor_para(categoria: "ajudante", nome: "valor_caixa")
+        @valor_entrega_ajudante    = ParametroCalculo.valor_para(categoria: "ajudante", nome: "valor_entrega")
+        @valor_recarga_ajudante    = ParametroCalculo.valor_para(categoria: "ajudante", nome: "valor_recarga")
+        @valor_bonus_devolucao  = ParametroCalculo.valor_para(categoria: "geral", nome: "bonus_devolucao")
 
         # Extrair datas válidas e converter
         datas_validas = @mapas.map do |mapa|
