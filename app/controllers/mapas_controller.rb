@@ -25,6 +25,8 @@ class MapasController < ApplicationController
 
     if file.present?
       CSV.foreach(file.path, headers: true, col_sep: ";", encoding: "ISO-8859-1:utf-8") do |row|
+        next unless row["Entrega"]&.strip == "Rota" # só continua se for "Rota"
+
         Mapa.create!(
           mapa: row["Mapa"],
           data: row["Data"],
