@@ -20,6 +20,16 @@ class MapasController < ApplicationController
     @dias_periodo = (@data_fim - @data_inicio).to_i if @data_inicio && @data_fim
   end
 
+  def destroy
+    @mapa.destroy
+    redirect_to mapas_path, notice: "Mapa apagado com sucesso."
+  end
+
+  def destroy_all
+    Mapa.delete_all
+    redirect_to mapas_path, notice: "Todos os mapas foram apagados com sucesso."
+  end
+
   def import
     file = params[:file]
 

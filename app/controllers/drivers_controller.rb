@@ -67,6 +67,11 @@ class DriversController < ApplicationController
     redirect_to drivers_path, notice: "Motorista apagado com sucesso."
   end
 
+  def destroy_all
+    Driver.delete_all
+    redirect_to drivers_path, notice: "Todos os Motoristas foram apagados com sucesso."
+  end
+
   private
 
   def set_driver

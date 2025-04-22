@@ -14,13 +14,16 @@ Rails.application.routes.draw do
   resources :mapas do
     collection do
       post :import
+      delete :destroy_all
     end
   end
+
 
   resources :drivers do
     collection do
       get :import
       post :import_csv
+      delete :destroy_all
     end
   end
 
@@ -28,6 +31,7 @@ Rails.application.routes.draw do
     collection do
       get :import
       post :import_csv
+      delete :destroy_all
     end
   end
 

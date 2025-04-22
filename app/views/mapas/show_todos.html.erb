@@ -16,10 +16,17 @@
       <div class="card-body">
         <div class="row align-items-center">
           <div class="col-md-6">
-              <h2 class="mb-1"><i class="bi bi-calendar-date"></i> <%= I18n.l(@data_inicio, format: "%B")%> a <%= I18n.l(@data_fim, format: "%B") %></h2>
-              <p class="text-muted mb-0">Total de Mapas: <%= @mapas.size %></p>
+            <h2 class="mb-1">
+              <i class="bi bi-calendar-date"></i>
+              <%= @data_inicio.present? ? I18n.l(@data_inicio, format: "%B") : "-" %> a
+              <%= @data_fim.present? ? I18n.l(@data_fim, format: "%B") : "-" %>
+            </h2>
+            <p class="text-muted mb-0">
+              Total de Mapas: <%= @mapas.size %>
+            </p>
           </div>
           <div class="col-md-6 text-md-end">
+            <%= button_to "Apagar todos os mapas", destroy_all_mapas_path, method: :delete, data: { turbo_confirm: "Tem certeza que deseja apagar TODOS os mapas?" }, class: "btn btn-danger" %>
             <% if @data_inicio && @data_fim && @dias_periodo %>
               <p class="mb-1"><strong>Período:</strong> <%= @data_inicio.strftime("%d/%m/%Y") %> a <%= @data_fim.strftime("%d/%m/%Y") %></p>
               <p class="mb-0"><strong>Dias:</strong> <%= @dias_periodo %></p>

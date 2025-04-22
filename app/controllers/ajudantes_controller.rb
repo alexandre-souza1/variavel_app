@@ -67,6 +67,11 @@ class AjudantesController < ApplicationController
     redirect_to ajudantes_path, notice: "Motorista apagado com sucesso."
   end
 
+  def destroy_all
+    @ajudante.delete_all
+    redirect_to ajudantes_path, notice: "Todos os Ajudantes foram apagados com sucesso."
+  end
+
   private
 
   def set_ajudante
