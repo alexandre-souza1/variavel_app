@@ -74,8 +74,8 @@
               <% quantidade_mapas = @mapas.size %>  <!-- 'mapas' deve ser o nome da variável que contém os mapas -->
 
               <% # Calculando o percentual de devolução %>
-              <% total_pdv_real = @mapas.sum { |mapa| mapa.pdv_real.to_i } %>  <!-- Soma dos valores de pdv_real -->
-              <% total_pdv_total = @mapas.sum { |mapa| mapa.pdv_total.to_i } %>  <!-- Soma dos valores de pdv_total -->
+              <% total_pdv_real = @mapas.sum { |mapa| mapa.pdv_real.to_f } %>  <!-- Soma dos valores de pdv_real -->
+              <% total_pdv_total = @mapas.sum { |mapa| mapa.pdv_total.to_f } %>  <!-- Soma dos valores de pdv_total -->
               <% percentual_devolucao = total_pdv_total.to_f.zero? ? 0 : (total_pdv_total.to_f - total_pdv_real.to_f) / total_pdv_total.to_f %><!-- Percentual de devolução -->
               <% quantidade_devolucoes =  total_pdv_total.to_f - total_pdv_real.to_f %>
               <% bonus_devolucao = (quantidade_mapas >= 15 && percentual_devolucao <= 0.03) ? @valor_bonus_devolucao : 0 %>
@@ -84,27 +84,27 @@
                 <% if @categoria == "motorista" %>
 
                   <% # Cálculo do valor de cx, pdv, rec e mp %>
-                  <% valor_cx = (mapa.fator == 0 && mapa.pdv_total.to_i >= 2) ? mapa.cx_real.to_i * @valor_caixa_motorista * 2 : mapa.cx_real.to_i * @valor_caixa_motorista %>
-                  <% valor_pdv = (mapa.fator == 0 && mapa.pdv_total.to_i >= 2) ? mapa.pdv_real.to_i * @valor_entrega_motorista * 2 : mapa.pdv_real.to_i * @valor_entrega_motorista %>
+                  <% valor_cx = (mapa.fator == 0 && mapa.pdv_total.to_f >= 2) ? mapa.cx_real.to_f * @valor_caixa_motorista * 2 : mapa.cx_real.to_f * @valor_caixa_motorista %>
+                  <% valor_pdv = (mapa.fator == 0 && mapa.pdv_total.to_f >= 2) ? mapa.pdv_real.to_f * @valor_entrega_motorista * 2 : mapa.pdv_real.to_f * @valor_entrega_motorista %>
                   <% valor_rec = mapa.recarga == "SIM" ? @valor_recarga_motorista : 0 %>
                   <% valor_mp = mapa.recarga == "SIM" ? valor_rec : (valor_cx + valor_pdv) %>
 
                   <% valor_mp %>  <!-- Adicionando o bônus de devolução ao valor final de mp -->
                 <% elsif @categoria == "ajudante" %>
 
-                  <% valor_cx = mapa.cx_real.to_i * @valor_caixa_ajudante %>
-                  <% valor_pdv = mapa.pdv_real.to_i * @valor_entrega_ajudante %>
+                  <% valor_cx = mapa.cx_real.to_f * @valor_caixa_ajudante %>
+                  <% valor_pdv = mapa.pdv_real.to_f * @valor_entrega_ajudante %>
                   <% valor_rec = mapa.recarga == "SIM" ? @valor_recarga_ajudante : 0 %>
                   <% valor_mp = mapa.recarga == "SIM" ? valor_rec : (valor_cx + valor_pdv) %>
 
                   <% valor_mp %>  <!-- Adicionando o bônus de devolução ao valor final de mp -->
                 <% else %>
                   <%# Lógica padrão caso existam outras categorias %>
-                  <% valor_cx = mapa.cx_real.to_i * 0.12 %>
-                  <% valor_pdv = mapa.pdv_real.to_i * 0.76 %>
+                  <% valor_cx = mapa.cx_real.to_f * 0.12 %>
+                  <% valor_pdv = mapa.pdv_real.to_f * 0.76 %>
                 <% end %>
 
-                <% total_cx_real += mapa.cx_real.to_i %>
+                <% total_cx_real += mapa.cx_real %>
                 <% total_valor_cx += valor_cx %>
                 <% total_valor_pdv += valor_pdv %>
                 <% total_recarga += 1 if mapa.recarga == "SIM" %>
@@ -159,12 +159,12 @@
               <tbody>
                 <tr>
                   <td>Cx Real</td>
-                  <td><%= total_cx_real %></td>
+                  <td><%= total_cx_real.to_i %></td>
                   <td><%= number_to_currency(total_valor_cx, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 </tr>
                 <tr>
                   <td>PDV Real</td>
-                  <td><%= total_pdv_real %></td>
+                  <td><%= total_pdv_real.to_i %></td>
                   <td><%= number_to_currency(total_valor_pdv, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 </tr>
                 <tr>
@@ -178,13 +178,13 @@
                 </tr>
                 <tr>
                   <td>Devolução</td>
-                  <td><%= percentual_devolucao %>%</td>
+                  <td><%= '%.2f' % percentual_devolucao %>%</td>
                   <td><%= number_to_currency(bonus_devolucao, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 </tr>
                 <tr class="fw-bold">
                   <td>Total Mapas</td>
-                  <td><%= total_mapas %></td>
-                  <td><%= number_to_currency(total_valor_mp, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                  <td><%= total_mapas%></td>
+                  <td><%= number_to_currency(total_valor_mp  += bonus_devolucao, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 </tr>
               </tbody>
             </table>

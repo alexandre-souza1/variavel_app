@@ -29,13 +29,13 @@ class MapasController < ApplicationController
           mapa: row["Mapa"],
           data: row["Data"],
           fator: row["Fator"].to_i,
-          cx_total: row["CxCarreg"],
-          cx_real: row["CxEntreg"],
-          pdv_total: row["Entregas"],
-          pdv_real: row["EntregasCompletas"],
+          cx_total: row["CxCarreg"].to_s.gsub(",", ".").to_f,
+          cx_real: row["CxEntreg"].to_s.gsub(",", ".").to_f,
+          pdv_total: row["Entregas"].to_s.gsub(",", ".").to_f,
+          pdv_real: row["EntregasCompletas"].to_s.gsub(",", ".").to_f,
           recarga: row["Recarga"],
-          matric_motorista: row["MatricMotorista"],
-          matric_ajudante: row["MatricAjud1"]
+          matric_motorista: row["MatricMotorista"].to_s.strip.to_i.to_s,
+          matric_ajudante: row["MatricAjud1"].to_s.strip.to_i.to_s
         )
       end
 

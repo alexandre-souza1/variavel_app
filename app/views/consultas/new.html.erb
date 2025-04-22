@@ -66,23 +66,25 @@
   <div class="row">
 
     <% ["motorista", "ajudante", "van"].each do |categoria| %>
-      <% if @parametros[categoria] %>
-        <div class="col-md-4 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-primary text-white text-center">
-              <h5 class="mb-0 text-uppercase"><%= categoria %></h5>
-            </div>
-            <div class="card-body">
+      <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-primary text-white text-center">
+            <h5 class="mb-0 text-uppercase"><%= categoria %></h5>
+          </div>
+          <div class="card-body">
+            <% if @parametros && @parametros[categoria].present? %>
               <% @parametros[categoria].each do |param| %>
                 <p class="mb-2">
-                  <strong><%= param.nome.titleize %>:</strong>
-                  R$ <%= number_with_precision(param.valor, precision: 2, separator: ",") %>
+                  <strong><%= param.nome.to_s.titleize %>:</strong>
+                  R$ <%= number_with_precision(param.valor.to_f, precision: 2, separator: ",") %>
                 </p>
               <% end %>
-            </div>
+            <% else %>
+              <p class="text-muted text-center">Nenhum dado encontrado.</p>
+            <% end %>
           </div>
         </div>
-      <% end %>
+      </div>
     <% end %>
 
   </div>

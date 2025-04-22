@@ -22,7 +22,7 @@ class AjudantesController < ApplicationController
       CSV.foreach(file.path, headers: true, col_sep: ";", encoding: "ISO-8859-1:utf-8") do |row|
         Ajudante.create!(
           matricula: row["matricula"],
-          promax: row["promax"].to_s.rjust(5, "0"),
+          promax: row["promax"].to_s.strip.to_i.to_s,
           nome: row["nome"],
           cpf: row["cpf"],
           data_nascimento: row["data_nascimento"]

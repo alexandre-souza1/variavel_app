@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_04_21_224957) do
+ActiveRecord::Schema[7.1].define(version: 2025_04_22_181850) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -39,10 +39,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_21_224957) do
     t.string "data"
     t.string "matric_motorista"
     t.float "fator"
-    t.integer "cx_total"
-    t.integer "cx_real"
-    t.integer "pdv_total"
-    t.integer "pdv_real"
+    t.float "cx_total"
+    t.float "cx_real"
+    t.float "pdv_total"
+    t.float "pdv_real"
     t.string "recarga"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
