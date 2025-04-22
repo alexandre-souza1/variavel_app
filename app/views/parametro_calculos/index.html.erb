@@ -1,17 +1,52 @@
-<h1>Parâmetros de Cálculo</h1>
+<div class="driver-report-container">
+  <div class="container p-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="mb-0"><i class="bi bi-card-list"> </i>Parâmetros de Cálculo</h1>
+      </div>
+      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
+        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+      </div>
+    </div>
+  </div>
 
-  <tbody>
+<div class="container">
+  <div class="row">
     <% @parametro_calculos_por_categoria.each do |categoria, parametros| %>
-      <h2><%= categoria.titleize %></h2>
-      <ul>
-        <% parametros.each do |param| %>
-          <li><%= param.nome %>: <%= param.valor %></li>
-          <li><%= link_to 'Mostrar', parametro_calculo_path(param) %></li>
-          <li><%= link_to 'Editar', edit_parametro_calculo_path(param) %></li>
-        <% end %>
-      </ul>
+      <div class="col-md-6 mb-4 d-flex">
+        <div class="card shadow-sm w-100 h-100">
+          <div class="card-header bg-light border-bottom">
+            <h5 class="mb-0"><i class="bi bi-people-fill"></i> <%= categoria.titleize %></h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-bordered table-sm mb-0">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Valor</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% parametros.each do |param| %>
+                  <tr>
+                    <td><%= param.nome.humanize %></td>
+                    <td><%= number_to_currency(param.valor, unit: "R$ ") %></td>
+                    <td>
+                      <%= link_to 'Mostrar', parametro_calculo_path(param), class: "btn btn-outline-info btn-sm" %>
+                      <%= link_to 'Editar', edit_parametro_calculo_path(param), class: "btn btn-outline-warning btn-sm" %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     <% end %>
-  </tbody>
-<br>
+  </div>
 
-<%= link_to "Voltar", root_path %>
+  <div class="mt-4">
+    <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
+  </div>
+</div>

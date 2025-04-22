@@ -1,42 +1,82 @@
-<h1>Todos os Mapas</h1>
+<div class="driver-report-container">
+  <div class="container p-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="mb-0"><i class="bi bi-card-list"> </i>Mapas Cadastrados</h1>
+      </div>
+      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
+        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+      </div>
+    </div>
+  </div>
 
-<table border="1">
-  <thead>
-    <tr>
-      <th>Mapa</th>
-      <th>Data</th>
-      <th>Matricula Motorista</th>
-      <th>Matricula Ajudante</th>
-      <th>Fator</th>
-      <th>Cx Total</th>
-      <th>Cx Real</th>
-      <th>PDV Total</th>
-      <th>PDV Real</th>
-      <th>Recarga</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @mapas.each do |mapa| %>
-      <tr>
-        <td><%= mapa.mapa %></td>
-        <td>
-          <% if mapa.data.present? && mapa.data.match?(/^\d{8}$/) %>
-            <%= Date.strptime(mapa.data, "%d%m%Y").strftime("%d/%m/%Y") %>
-            <% else %>
-              <%= mapa.data %>
+    <div class="container">
+
+      <div class="card shadow-sm rounded mb-4">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+              <h2 class="mb-1"><i class="bi bi-calendar-date"></i> <%= I18n.l(@data_inicio, format: "%B")%> a <%= I18n.l(@data_fim, format: "%B") %></h2>
+              <p class="text-muted mb-0">Total de Mapas: <%= @mapas.size %></p>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <% if @data_inicio && @data_fim && @dias_periodo %>
+              <p class="mb-1"><strong>Período:</strong> <%= @data_inicio.strftime("%d/%m/%Y") %> a <%= @data_fim.strftime("%d/%m/%Y") %></p>
+              <p class="mb-0"><strong>Dias:</strong> <%= @dias_periodo %></p>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de Mapas -->
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-header bg-light border-bottom">
+        <h5 class="mb-0"><i class="bi bi-map-fill me-2"></i>Detalhes dos Mapas</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead class="table-primary text-center">
+          <tr>
+            <th>Mapa</th>
+            <th>Data</th>
+            <th>Matricula Motorista</th>
+            <th>Matricula Ajudante</th>
+            <th>Fator</th>
+            <th>Cx Total</th>
+            <th>Cx Real</th>
+            <th>PDV Total</th>
+            <th>PDV Real</th>
+            <th>Recarga</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @mapas.each do |mapa| %>
+            <tr>
+              <td><%= mapa.mapa %></td>
+              <td>
+                <% if mapa.data.present? && mapa.data.match?(/^\d{8}$/) %>
+                  <%= Date.strptime(mapa.data, "%d%m%Y").strftime("%d/%m/%Y") %>
+                  <% else %>
+                    <%= mapa.data %>
+                <% end %>
+              </td>
+              <td><%= mapa.matric_motorista %></td>
+              <td><%= mapa.matric_ajudante %></td>
+              <td><%= mapa.fator %></td>
+              <td><%= mapa.cx_total %></td>
+              <td><%= mapa.cx_real %></td>
+              <td><%= mapa.pdv_total %></td>
+              <td><%= mapa.pdv_real %></td>
+              <td><%= mapa.recarga %></td>
+            </tr>
           <% end %>
-        </td>
-        <td><%= mapa.matric_motorista %></td>
-        <td><%= mapa.matric_ajudante %></td>
-        <td><%= mapa.fator %></td>
-        <td><%= mapa.cx_total %></td>
-        <td><%= mapa.cx_real %></td>
-        <td><%= mapa.pdv_total %></td>
-        <td><%= mapa.pdv_real %></td>
-        <td><%= mapa.recarga %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
-
-<%= link_to "Voltar", root_path %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
+  </div>
+</div>

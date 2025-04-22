@@ -61,3 +61,29 @@
     <a href="https://forms.office.com/pages/responsepage.aspx?id=GUvwznZ3lEq4mzdcd6j5NnAxiOBHYkVHr8jNY5TcugNUMU9PVTBFN1VPUzlGM0NXM0VRRUVZS0VSWS4u&route=shorturl" class="btn btn-primary btn-lg rounded-1" target="_blank" rel="noopener noreferrer">Relatos</a>
   </div>
 </div>
+
+<div class="container my-4">
+  <div class="row">
+
+    <% ["motorista", "ajudante", "van"].each do |categoria| %>
+      <% if @parametros[categoria] %>
+        <div class="col-md-4 mb-4">
+          <div class="card shadow-sm h-100">
+            <div class="card-header bg-primary text-white text-center">
+              <h5 class="mb-0 text-uppercase"><%= categoria %></h5>
+            </div>
+            <div class="card-body">
+              <% @parametros[categoria].each do |param| %>
+                <p class="mb-2">
+                  <strong><%= param.nome.titleize %>:</strong>
+                  R$ <%= number_with_precision(param.valor, precision: 2, separator: ",") %>
+                </p>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
+  </div>
+</div>

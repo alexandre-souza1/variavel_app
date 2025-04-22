@@ -4,6 +4,20 @@ class MapasController < ApplicationController
 
   def show_todos
     @mapas = Mapa.order(data: :desc)
+
+    datas_validas = @mapas.map do |mapa|
+      if mapa.data.present? && mapa.data.match?(/^\d{8}$/)
+        begin
+          Date.strptime(mapa.data, "%d%m%Y")
+        rescue
+          nil
+        end
+      end
+    end.compact
+
+    @data_inicio = datas_validas.min
+    @data_fim = datas_validas.max
+    @dias_periodo = (@data_fim - @data_inicio).to_i if @data_inicio && @data_fim
   end
 
   def import

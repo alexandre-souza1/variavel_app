@@ -1,34 +1,69 @@
-<h1>Lista de Ajudantes</h1>
+<div class="driver-report-container">
+  <div class="container p-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="mb-0"><i class="bi bi-card-list"> </i>Ajudantes Cadastrados</h1>
+      </div>
+      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
+        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+      </div>
+    </div>
+  </div>
 
-<%= link_to "Novo Ajudante", new_ajudante_path, class: "button" %>
+  <div class="container">
 
-<table border="1">
-  <thead>
-    <tr>
-      <th>Nome</th>
-      <th>Matrícula</th>
-      <th>Promax</th>
-      <th>CPF</th>
-      <th>Data de Nascimento</th>
-      <th>Ações</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @ajudantes.each do |ajudante| %>
-      <tr>
-        <td><%= ajudante.nome %></td>
-        <td><%= ajudante.matricula %></td>
-        <td><%= ajudante.promax %></td>
-        <td><%= ajudante.cpf %></td>
-        <td><%= ajudante.data_nascimento.strftime("%d/%m/%Y") if ajudante.data_nascimento %></td>
-        <td>
-          <%= link_to "Ver", ajudante_path(ajudante) %> |
-          <%= link_to "Editar", edit_ajudante_path(ajudante) %> |
-          <%= link_to "Excluir", ajudante_path(ajudante), method: :delete, data: { confirm: "Tem certeza?" } %>
-        </td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+              <h2 class="mb-1"><i class="bi bi-truck"></i> Total de Ajudantes: <%= @ajudantes.size %></h2>
+              <p class="text-muted mb-0"> <%= %></p>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <%= link_to "Novo Ajudante", new_ajudante_path, class: "btn btn-light" %>
+            <%= link_to "Importar Ajudantes", import_ajudantes_path, class: "btn btn-light" %>
+            <%= link_to "Voltar", root_path, class: "btn btn-light" %>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<%= link_to "Importar Ajudantes", import_ajudantes_path %>
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-header bg-light border-bottom">
+        <h5 class="mb-0"><i class="bi bi-person-fill"></i> Detalhes dos Motoristas</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead class="table-primary text-center">
+              <tr>
+                <th>Nome</th>
+                <th>Matrícula</th>
+                <th>Promax</th>
+                <th>CPF</th>
+                <th>Data de Nascimento</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @ajudantes.each do |ajudante| %>
+                <tr>
+                  <td><%= ajudante.nome %></td>
+                  <td><%= ajudante.matricula %></td>
+                  <td><%= ajudante.promax %></td>
+                  <td><%= ajudante.cpf %></td>
+                  <td><%= ajudante.data_nascimento.strftime("%d/%m/%Y") if ajudante.data_nascimento %></td>
+                  <td>
+                    <%= link_to "Ver", ajudante_path(ajudante), class: "btn btn-primary btn-sm me-1" %>
+                    <%= link_to "Editar", edit_ajudante_path(ajudante), class: "btn btn-primary btn-sm me-1" %>
+                    <%= link_to "Excluir", ajudante_path(ajudante), method: :delete, data: { confirm: "Tem certeza?" }, class: "btn btn-danger btn-sm" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
