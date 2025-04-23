@@ -68,7 +68,7 @@ class AjudantesController < ApplicationController
   end
 
   def destroy_all
-    @ajudante.delete_all
+    Ajudante.delete_all
     redirect_to ajudantes_path, notice: "Todos os Ajudantes foram apagados com sucesso."
   end
 
