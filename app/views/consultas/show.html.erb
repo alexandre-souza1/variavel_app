@@ -55,15 +55,21 @@
               <tr>
                 <th>Mapa</th>
                 <th>Data</th>
-                <th>Fator</th>
+                <% unless ["van", "ajudante"].include?(@categoria) %>
+                  <th>Fator</th>
+                <% end %>
                 <th>Cx Total</th>
                 <th>Cx Real</th>
                 <th>PDV Total</th>
                 <th>PDV Real</th>
-                <th>REC</th>
-                <th>Valor CX</th>
+                <% unless @categoria == "van" %>
+                  <th>Recarga</th>
+                <% end %>
+                <th>Valor Cx</th>
                 <th>Valor PDV</th>
-                <th>Valor REC</th>
+                <% unless @categoria == "van" %>
+                  <th>Valor Rec</th>
+                <% end %>
                 <th>Valor MP</th>
               </tr>
             </thead>
@@ -98,17 +104,20 @@
                   <% valor_mp = mapa.recarga == "SIM" ? valor_rec : (valor_cx + valor_pdv) %>
 
                   <% valor_mp %>  <!-- Adicionando o bônus de devolução ao valor final de mp -->
-                <% else %>
+                <% elsif @categoria == "van" %>
                   <%# Lógica padrão caso existam outras categorias %>
-                  <% valor_cx = mapa.cx_real.to_f * 0.12 %>
-                  <% valor_pdv = mapa.pdv_real.to_f * 0.76 %>
+                  <% valor_cx = mapa.cx_real.to_f * @valor_caixa_van %>
+                  <% valor_pdv = mapa.pdv_real.to_f * @valor_entrega_van %>
+                  <% valor_mp = valor_cx + valor_pdv %>
                 <% end %>
 
                 <% total_cx_real += mapa.cx_real %>
                 <% total_valor_cx += valor_cx %>
                 <% total_valor_pdv += valor_pdv %>
-                <% total_recarga += 1 if mapa.recarga == "SIM" %>
-                <% total_valor_rec += valor_rec %>
+                <% unless @categoria == "van" %>
+                  <% total_recarga += 1 if mapa.recarga == "SIM" %>
+                  <% total_valor_rec += valor_rec %>
+                <% end %>
                 <% total_valor_mp += valor_mp %>
                 <% total_mapas += 1 %>
 
@@ -121,15 +130,25 @@
                       <%= mapa.data %>
                     <% end %>
                   </td>
-                  <td><%= mapa.fator %></td>
+                  <% unless ["van", "ajudante"].include?(@categoria) %>
+                    <td><%= mapa.fator %></td>
+                  <% end %>
                   <td><%= mapa.cx_total %></td>
                   <td><%= mapa.cx_real %></td>
                   <td><%= mapa.pdv_total %></td>
                   <td><%= mapa.pdv_real %></td>
-                  <td><%= mapa.recarga %></td>
+
+                  <% unless @categoria == "van" %>
+                    <td><%= mapa.recarga %></td>
+                  <% end %>
+
                   <td><%= number_to_currency(valor_cx, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                   <td><%= number_to_currency(valor_pdv, unit: "R$ ", separator: ",", delimiter: ".") %></td>
-                  <td><%= number_to_currency(valor_rec, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+
+                  <% unless @categoria == "van" %>
+                    <td><%= number_to_currency(valor_rec, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                  <% end %>
+
                   <td><%= number_to_currency(valor_mp, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 </tr>
               <% end %>
@@ -167,11 +186,13 @@
                   <td><%= total_pdv_real.to_i %></td>
                   <td><%= number_to_currency(total_valor_pdv, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 </tr>
-                <tr>
-                  <td>Recargas</td>
-                  <td><%= total_recarga %></td>
-                  <td><%= number_to_currency(total_valor_rec, unit: "R$ ", separator: ",", delimiter: ".") %></td>
-                </tr>
+                <% unless @categoria == "van" %>
+                  <tr>
+                    <td>Recargas</td>
+                    <td><%= total_recarga %></td>
+                    <td><%= number_to_currency(total_valor_rec, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                  </tr>
+                <% end %>
                 <tr>
                   <td>Quantidade de Mapas</td>
                   <td><%= quantidade_mapas %></td>
@@ -231,6 +252,21 @@
                 <li class="list-group-item d-flex justify-content-between">
                   Recarga
                   <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_recarga_ajudante, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  Bonus Devolução
+                  <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_bonus_devolucao, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+                </li>
+              </ul>
+            <% elsif @categoria == "van" %>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                  Caixa Real
+                  <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_caixa_van, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  PDV Real
+                  <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_entrega_van, unit: "R$ ", separator: ",", delimiter: ".") %></span>
                 </li>
                 <li class="list-group-item d-flex justify-content-between">
                   Bonus Devolução

@@ -67,6 +67,35 @@ class ConsultasController < ApplicationController
         flash.now[:alert] = "Matrícula não encontrada"
         render :new
       end
+    elsif @categoria == "van"
+      # TODO: substituir promax: 86 por van: true quando coluna estiver disponível
+      @driver = Driver.find_by(matricula: @matricula, promax: 86)
+
+      if @driver
+        @mapas = Mapa.where(matric_motorista: @driver.promax)
+
+        @valor_caixa_van      = ParametroCalculo.valor_para(categoria: "van", nome: "valor_caixa")
+        @valor_entrega_van    = ParametroCalculo.valor_para(categoria: "van", nome: "valor_entrega")
+        @valor_bonus_devolucao  = ParametroCalculo.valor_para(categoria: "geral", nome: "bonus_devolucao")
+
+        # Extrair datas válidas e converter
+        datas_validas = @mapas.map do |mapa|
+          if mapa.data.present? && mapa.data.match?(/^\d{8}$/)
+            begin
+              Date.strptime(mapa.data, "%d%m%Y")
+            rescue
+              nil
+            end
+          end
+        end.compact
+
+        @data_inicio = datas_validas.min
+        @data_fim = datas_validas.max
+        @dias_periodo = (@data_fim - @data_inicio).to_i if @data_inicio && @data_fim
+      else
+        flash.now[:alert] = "Matrícula não encontrada"
+        render :new
+      end
     else
       flash.now[:alert] = "Categoria não reconhecida"
       render :new
