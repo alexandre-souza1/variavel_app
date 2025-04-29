@@ -21,13 +21,14 @@ class MapasController < ApplicationController
   end
 
   def destroy
-    @mapa.destroy
-    redirect_to mapas_path, notice: "Mapa apagado com sucesso."
+    @mapa = Mapa.find(params[:id])
+    @mapa.destroy  # Destrói a instância específica
+    redirect_to mapas_todos_path, notice: "Mapa apagado com sucesso."
   end
 
   def destroy_all
     Mapa.delete_all
-    redirect_to mapas_path, notice: "Todos os mapas foram apagados com sucesso."
+    redirect_to mapas_todos_path, notice: "Todos os mapas foram apagados com sucesso."
   end
 
   def import
@@ -51,7 +52,7 @@ class MapasController < ApplicationController
         )
       end
 
-      redirect_to root_path, notice: "Mapas importados com sucesso!"
+      redirect_to root_todos_path, notice: "Mapas importados com sucesso!"
     else
       redirect_to mapas_path, alert: "Selecione um arquivo CSV."
     end
