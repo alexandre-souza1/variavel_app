@@ -52,7 +52,7 @@ class MapasController < ApplicationController
         )
       end
 
-      redirect_to root_todos_path, notice: "Mapas importados com sucesso!"
+      redirect_to mapas_todos_path, notice: "Mapas importados com sucesso!"
     else
       redirect_to mapas_path, alert: "Selecione um arquivo CSV."
     end
