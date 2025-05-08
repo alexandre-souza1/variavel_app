@@ -81,3 +81,17 @@
   opacity: 1;
   transform: translateY(0);
 }
+
+[data-mapas-manager-target="selectAll"] {
+  cursor: pointer;
+}
+
+[data-mapas-manager-target="mapaCheckbox"] {
+  cursor: pointer;
+}
+
+[data-mapas-manager-target="deleteSelectedBtn"]:disabled,
+[data-mapas-manager-target="deleteByMonthBtn"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

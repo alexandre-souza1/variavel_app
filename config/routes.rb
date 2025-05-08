@@ -13,6 +13,8 @@ Rails.application.routes.draw do
 
   resources :mapas do
     collection do
+      delete :bulk_delete
+      delete :delete_by_month
       post :import
       delete :destroy_all
     end
