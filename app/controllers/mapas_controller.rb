@@ -35,11 +35,24 @@ class MapasController < ApplicationController
     file = params[:file]
 
     if file.present?
+      mapas_no_arquivo = Set.new
+      mapas_ignorados = []
+
       CSV.foreach(file.path, headers: true, col_sep: ";", encoding: "ISO-8859-1:utf-8") do |row|
-        next unless row["Entrega"]&.strip == "Rota" # só continua se for "Rota"
+        next unless row["Entrega"]&.strip == "Rota"
+
+        numero_mapa = row["Mapa"].to_s.strip
+
+        # Verifica duplicidade
+        if Mapa.exists?(mapa: numero_mapa) || mapas_no_arquivo.include?(numero_mapa)
+          mapas_ignorados << numero_mapa
+          next
+        end
+
+        mapas_no_arquivo.add(numero_mapa)
 
         Mapa.create!(
-          mapa: row["Mapa"],
+          mapa: numero_mapa,
           data: row["Data"],
           fator: row["Fator"].to_i,
           cx_total: row["CxCarreg"].to_s.gsub(",", ".").to_f,
@@ -52,9 +65,15 @@ class MapasController < ApplicationController
         )
       end
 
-      redirect_to mapas_todos_path, notice: "Mapas importados com sucesso!"
+      notice_msg = "Mapas importados com sucesso!"
+      if mapas_ignorados.any?
+        notice_msg += " Os seguintes mapas foram ignorados por duplicidade: #{mapas_ignorados.uniq.sort.join(', ')}."
+      end
+
+      redirect_to mapas_todos_path, notice: notice_msg
     else
       redirect_to mapas_path, alert: "Selecione um arquivo CSV."
     end
   end
+
 end
