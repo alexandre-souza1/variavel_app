@@ -14,13 +14,13 @@ export default class extends Controller {
 
     this.rowTargets.forEach(row => {
       const cells = row.children
-      const rowMapa = cells[0].textContent.toLowerCase()
-      const rowData = cells[1].textContent.toLowerCase()
-      const rowMotorista = cells[2].textContent.toLowerCase()
-      const rowAjudante = cells[3].textContent.toLowerCase()
+      const rowMapa = cells[1].textContent.toLowerCase()
+      const rowData = cells[2].textContent.toLowerCase()
+      const rowMotorista = cells[3].textContent.toLowerCase()
+      const rowAjudante = cells[4].textContent.toLowerCase()
 
       // Obter o mês da data da linha (formato dd/mm/yyyy)
-      const rowDataFormatted = cells[1].textContent.trim()
+      const rowDataFormatted = cells[2].textContent.trim()
       const rowMonth = rowDataFormatted.split('/')[1] // Pega o mês (index 1)
       const rowYear = rowDataFormatted.split('/')[2] // Pega o mês (index 1)
 

@@ -52,11 +52,11 @@ class MapasController < ApplicationController
 
           # Determina as posições do mês baseado no tamanho
           month_positions = case digits.length
-                           when 8 then 2..3  # Formato ddMMyyyy
-                           when 7 then 1..2  # Formato dMMyyyy
-                           when 6 then 1..1  # Formato dMyyyy
-                           else next
-                           end
+                              when 8 then 2..3  # Formato ddMMyyyy
+                              when 7 then 1..2  # Formato dMMyyyy
+                              when 6 then 1..1  # Formato dMyyyy
+                              else next
+                            end
 
           # Extrai o mês e formata com 2 dígitos
           extracted_month = digits[month_positions].rjust(2, '0')
