@@ -16,6 +16,8 @@ gem "puma", ">= 5.0"
 
 gem "csv"
 
+gem "nokogiri", "~> 1.18", platforms: [:ruby]
+
 gem "devise"
 
 gem "bootstrap"
