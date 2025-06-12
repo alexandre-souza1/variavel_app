@@ -104,7 +104,8 @@ class MapasController < ApplicationController
           pdv_real: row["EntregasCompletas"].to_s.gsub(",", ".").to_f,
           recarga: row["Recarga"],
           matric_motorista: row["MatricMotorista"].to_s.strip.to_i.to_s,
-          matric_ajudante: row["MatricAjud1"].to_s.strip.to_i.to_s
+          matric_ajudante: row["MatricAjud1"].to_s.strip.to_i.to_s,
+          matric_ajudante_2: row["MatricAjud2"].to_s.strip.to_i.to_s
         )
       end
 

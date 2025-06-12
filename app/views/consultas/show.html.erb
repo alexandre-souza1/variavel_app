@@ -94,7 +94,7 @@
               <tr>
                 <th>Mapa</th>
                 <th>Data</th>
-                <% unless ["van", "ajudante"].include?(@categoria) %>
+                <% unless ["van"].include?(@categoria) %>
                   <th>Fator</th>
                 <% end %>
                 <th>Cx Total</th>
@@ -139,8 +139,8 @@
                     <% valor_mp %>  <!-- Adicionando o bônus de devolução ao valor final de mp -->
                   <% elsif @categoria == "ajudante" %>
 
-                    <% valor_cx = mapa.cx_real.to_f * @valor_caixa_ajudante %>
-                    <% valor_pdv = mapa.pdv_real.to_f * @valor_entrega_ajudante %>
+                    <% valor_cx = (mapa.fator == 2) ? mapa.cx_real.to_f * @valor_caixa_ajudante / 2 : mapa.cx_real.to_f * @valor_caixa_ajudante %>
+                    <% valor_pdv = (mapa.fator == 2) ? mapa.pdv_real.to_f * @valor_entrega_ajudante / 2 : mapa.pdv_real.to_f * @valor_entrega_ajudante %>
                     <% valor_rec = mapa.recarga == "SIM" ? @valor_recarga_ajudante : 0 %>
                     <% valor_mp = mapa.recarga == "SIM" ? valor_rec : (valor_cx + valor_pdv) %>
 
@@ -167,7 +167,7 @@
                     <td>
                       <%= mapa.data_formatada&.strftime("%d/%m/%Y") || "Data inválida" %>
                     </td>
-                    <% unless ["van", "ajudante"].include?(@categoria) %>
+                    <% unless ["van"].include?(@categoria) %>
                       <td><%= mapa.fator %></td>
                     <% end %>
                     <td><%= mapa.cx_total %></td>

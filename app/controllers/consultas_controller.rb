@@ -32,7 +32,7 @@ class ConsultasController < ApplicationController
       @ajudante = Ajudante.find_by(matricula: @matricula)
 
       if @ajudante
-        @mapas = Mapa.where(matric_ajudante: @ajudante.promax)
+        @mapas = Mapa.where(matric_ajudante: @ajudante.promax).or(Mapa.where(matric_ajudante_2: @ajudante.promax))
         filtrar_por_periodo!
 
         @valor_caixa_ajudante      = ParametroCalculo.valor_para(categoria: "ajudante", nome: "valor_caixa")

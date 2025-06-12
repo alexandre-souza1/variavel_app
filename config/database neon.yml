@@ -15,19 +15,17 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  username: postgres
-  password: batata123
-  host: localhost
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  url: <%= ENV["DATABASE_URL"] %>
 
 development:
   <<: *default
   database: variavel_app_development
 
   # The specified database role being used to connect to PostgreSQL.
-  # To create additional roles in PostgreSQL see $ createuser --help.
+  # To create additional roles in PostgreSQL see `$ createuser --help`.
   # When left blank, PostgreSQL will use the default role. This is
   # the same name as the operating system user running Rails.
   #username: variavel_app
@@ -81,4 +79,5 @@ test:
 # for a full overview on how database connection configuration can be specified.
 #
 production:
+  <<: *default
   url: <%= ENV["DATABASE_URL"] %>
