@@ -16,7 +16,7 @@ gem "puma", ">= 5.0"
 
 gem "csv"
 
-gem "nokogiri", "1.18.6"
+gem "nokogiri", "1.18.6", platforms: [:ruby]
 
 gem "devise"
 
