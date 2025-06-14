@@ -1,5 +1,34 @@
 class ParametroCalculosController < ApplicationController
   before_action :set_parametro_calculo, only: %i[show edit update destroy]
+  before_action :authenticate_user!
+  before_action :check_permissions, only: %i[edit create update import destroy index show]
+
+  def check_permissions
+    case action_name
+    when "destroy"
+      redirect_back fallback_location: root_path, alert: "Acesso negado" unless current_user.admin?
+
+    when "edit", "create", "update"
+      unless current_user.admin? || current_user.supervisor?
+        redirect_back fallback_location: root_path, alert: "Acesso negado"
+      end
+
+    when "import"
+      unless current_user.admin? || current_user.supervisor? || current_user.user?
+        redirect_back fallback_location: root_path, alert: "Acesso negado"
+      end
+
+    when "index", "show"
+      unless current_user.admin? || current_user.supervisor? || current_user.user?
+        redirect_back fallback_location: root_path, alert: "Acesso negado"
+      end
+
+    else
+      # padrão: negar se não for admin
+      redirect_back fallback_location: root_path, alert: "Acesso negado" unless current_user.admin?
+    end
+  end
+
 
   # GET /parametro_calculos
   def index

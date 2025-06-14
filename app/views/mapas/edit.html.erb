@@ -1,0 +1,35 @@
+<h1>Editar Ajudantes do Mapa</h1>
+
+<div class="card p-4">
+  <p><strong>Mapa:</strong> <%= @mapa.mapa %></p>
+  <p><strong>Data:</strong> <%= @mapa.data %></p>
+  <p><strong>Motorista:</strong> <%= @mapa.matric_motorista %></p>
+
+  <%= form_with(model: @mapa, local: true) do |f| %>
+    <div data-controller="ajudantes">
+      <div class="mb-3">
+        <%= f.label :matric_ajudante, "Ajudante 1" %>
+        <%= f.select :matric_ajudante,
+                      [["Nenhum", 0]] + Ajudante.all.map { |a| ["#{a.nome} (#{a.matricula})", a.promax] },
+                      { selected: @mapa.matric_ajudante },
+                      class: "form-select",
+                      data: { ajudantes_target: "ajudante1", action: "change->ajudantes#selectChanged" } %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :matric_ajudante_2, "Ajudante 2" %>
+        <%= f.select :matric_ajudante_2,
+                      [["Nenhum", 0]] + Ajudante.all.map { |a| ["#{a.nome} (#{a.matricula})", a.promax] },
+                      { selected: @mapa.matric_ajudante_2 },
+                      class: "form-select",
+                      data: { ajudantes_target: "ajudante2", action: "change->ajudantes#selectChanged" } %>
+      </div>
+
+      <div class="alert alert-info mb-3" data-ajudantes-target="fatorInfo">
+        <!-- Aqui entra a mensagem do fator dinamicamente -->
+      </div>
+
+      <%= f.submit "Salvar", class: "btn btn-primary" %>
+    </div>
+  <% end %>
+</div>

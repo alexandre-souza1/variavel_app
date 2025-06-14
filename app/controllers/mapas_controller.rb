@@ -1,5 +1,46 @@
 class MapasController < ApplicationController
+  before_action :authenticate_user!
+  before_action :only_admin, only: [:destroy_all, :delete_by_month, :bulk_delete]
+  before_action :admin_or_supervisor, only: [:destroy, :edit, :update]
+  before_action :everyone_can_access, only: [:index, :import, :show_todos]
+
+  def only_admin
+    redirect_back fallback_location: root_path, alert: "Acesso negado" unless current_user.admin?
+  end
+
+  def admin_or_supervisor
+    unless current_user.admin? || current_user.supervisor?
+      redirect_back fallback_location: root_path, alert: "Acesso negado"
+    end
+  end
+
+  def everyone_can_access
+    unless current_user.admin? || current_user.supervisor? || current_user.user?
+      redirect_back fallback_location: root_path, alert: "Acesso negado"
+    end
+  end
   def index
+  end
+
+  def edit
+    @mapa = Mapa.find(params[:id])
+  end
+
+  def update
+    @mapa = Mapa.find(params[:id])
+    if @mapa.update(mapa_params)
+      # Atualiza o fator baseado nos ajudantes
+      ajudante1 = @mapa.matric_ajudante
+      ajudante2 = @mapa.matric_ajudante_2
+
+      count = [ajudante1, ajudante2].count { |a| a.present? && a != 0 && a != '0' }
+
+      @mapa.update(fator: count.to_f) # 0.0, 1.0 ou 2.0
+
+      redirect_to mapas_path, notice: "Ajudantes atualizados e fator ajustado para #{count.to_f}."
+    else
+      render :edit, alert: "Houve um erro ao atualizar."
+    end
   end
 
   def show_todos
@@ -120,4 +161,9 @@ class MapasController < ApplicationController
     end
   end
 
+  private
+
+  def mapa_params
+    params.require(:mapa).permit(:matric_ajudante, :matric_ajudante_2)
+  end
 end

@@ -2,6 +2,25 @@ class Mapa < ApplicationRecord
   belongs_to :driver, foreign_key: :matric_motorista, primary_key: :promax, optional: true
   belongs_to :ajudante, foreign_key: :matric_ajudante, primary_key: :promax, optional: true
 
+  validate :ajudantes_diferentes
+
+  def ajudantes_diferentes
+    # ✔️ Permitir que ambos sejam "0" (Nenhum), então só faz a validação se forem diferentes de "0"
+
+    # Se ajudante 2 está preenchido (diferente de "0" ou vazio), mas ajudante 1 é vazio ou "0"
+    if (matric_ajudante.blank? || matric_ajudante == "0") && matric_ajudante_2.present? && matric_ajudante_2 != "0"
+      errors.add(:matric_ajudante_2, "não pode ser preenchido sem o Ajudante 1")
+    end
+
+    # Se ambos estão preenchidos (e não são "0") e são iguais
+    if matric_ajudante.present? && matric_ajudante_2.present? &&
+      matric_ajudante != "0" && matric_ajudante_2 != "0" &&
+      matric_ajudante == matric_ajudante_2
+      errors.add(:matric_ajudante_2, "não pode ser igual ao Ajudante 1")
+    end
+  end
+
+
   def data_formatada
     return nil if data.blank?
 

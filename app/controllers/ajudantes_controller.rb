@@ -1,5 +1,25 @@
 class AjudantesController < ApplicationController
   before_action :set_ajudante, only: %i[show edit update destroy]
+  before_action :authenticate_user!
+  before_action :only_admin, only: [:destroy_all]
+  before_action :admin_or_supervisor, only: [:edit, :create, :update, :destroy]
+  before_action :everyone_can_access, only: [:index, :show, :import]
+
+  def only_admin
+    redirect_back fallback_location: root_path, alert: "Acesso negado" unless current_user.admin?
+  end
+
+  def admin_or_supervisor
+    unless current_user.admin? || current_user.supervisor?
+      redirect_back fallback_location: root_path, alert: "Acesso negado"
+    end
+  end
+
+  def everyone_can_access
+    unless current_user.admin? || current_user.supervisor? || current_user.user?
+      redirect_back fallback_location: root_path, alert: "Acesso negado"
+    end
+  end
 
   def index
     @ajudantes = Ajudante.all
