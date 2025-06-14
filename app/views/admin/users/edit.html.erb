@@ -1,0 +1,43 @@
+<h1>Editar Usuário</h1>
+
+<%= form_with(model: [:admin, @user], local: true) do |f| %>
+  <div class="mb-3">
+    <%= f.label :name %>
+    <%= f.text_field :name, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :email %>
+    <%= f.email_field :email, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :photo, "Foto de perfil" %>
+    <%= f.file_field :photo, class: "form-control" %>
+    <% if @user.photo.attached? %>
+      <p>Foto atual:</p>
+      <%= image_tag @user.photo.variant(resize_to_limit: [150, 150]) %>
+    <% end %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :role, "Perfil" %>
+    <%= f.select :role, [["Admin", "admin"], ["Supervisor", "supervisor"], ["Usuário", "user"]], {}, class: "form-select" %>
+  </div>
+
+  <hr>
+
+  <h5>Alterar Senha (opcional)</h5>
+
+  <div class="mb-3">
+    <%= f.label :password %>
+    <%= f.password_field :password, class: "form-control", autocomplete: "new-password" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :password_confirmation %>
+    <%= f.password_field :password_confirmation, class: "form-control", autocomplete: "new-password" %>
+  </div>
+
+  <%= f.submit "Salvar", class: "btn btn-primary" %>
+<% end %>

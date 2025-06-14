@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+  namespace :admin do
+    get 'users/index'
+    get 'users/edit'
+    get 'users/update'
+  end
   devise_for :users
   get 'drivers/index'
   get 'drivers/new'
@@ -20,6 +25,9 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :admin do
+    resources :users, only: [:index, :edit, :update, :destroy]
+  end
 
   resources :drivers do
     collection do
