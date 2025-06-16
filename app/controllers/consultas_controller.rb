@@ -1,5 +1,8 @@
 class ConsultasController < ApplicationController
 
+  def index
+  end
+
   def new
     @parametros = ParametroCalculo.all.group_by(&:categoria)
   end

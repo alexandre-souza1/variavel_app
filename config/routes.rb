@@ -13,7 +13,7 @@ Rails.application.routes.draw do
   get 'consultas/show'
   get "mapas/show_todos", to: "mapas#show_todos", as: :mapas_todos
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-  root "consultas#new"
+  root "consultas#index"
   get "consulta", to: "consultas#show"
 
   resources :mapas do

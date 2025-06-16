@@ -1,4 +1,5 @@
-.card-category {
+/* SCSS - Media Queries encapsuladas nos seletores corretos */
+.card-category-index {
   background-size: cover;
   background-position: center;
   height: 180px;
@@ -12,41 +13,36 @@
   border-radius: 5px;
   box-shadow: 0 0 15px rgba(0,0,0,0.2);
 
-  // Media Queries específicas para .card-category
+  // Media Queries específicas para .card-category-index
   @media (min-width: 768px) {
     height: 200px;
     font-size: 28px;
   }
 }
 
-.cards {
+.cards-index {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   grid-gap: 16px;
 
-  // Media Queries específicas para .cards
-  // Smallest device (100px - 575px)
+  // Media Queries específicas para .cards-index
   @media (min-width: 100px) and (max-width: 575px) {
     grid-template-columns: 1fr;
   }
 
-  // Small devices (576px and up)
   @media (min-width: 576px) {
     grid-template-columns: 1fr;
   }
 
-  // Medium devices (768px and up)
   @media (min-width: 768px) {
     grid-template-columns: 1fr 1fr;
   }
 
-  // Large devices (992px and up)
   @media (min-width: 992px) {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
-  // Extra large devices (1200px and up)
   @media (min-width: 1200px) {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 }
