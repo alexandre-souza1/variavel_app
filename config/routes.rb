@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  resources :az_mapas
+  resources :operators
   namespace :admin do
     get 'users/index'
     get 'users/edit'

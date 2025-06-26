@@ -1,0 +1,42 @@
+<%= form_with(model: az_mapa) do |form| %>
+  <% if az_mapa.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(az_mapa.errors.count, "error") %> prohibited this az_mapa from being saved:</h2>
+
+      <ul>
+        <% az_mapa.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :data, style: "display: block" %>
+    <%= form.date_field :data %>
+  </div>
+
+  <div>
+    <%= form.label :turno, style: "display: block" %>
+    <%= form.number_field :turno %>
+  </div>
+
+  <div>
+    <%= form.label :tipo, style: "display: block" %>
+    <%= form.number_field :tipo %>
+  </div>
+
+  <div>
+    <%= form.label :resultado, style: "display: block" %>
+    <%= form.text_field :resultado %>
+  </div>
+
+  <div>
+    <%= form.label :atingiu_meta, style: "display: block" %>
+    <%= form.check_box :atingiu_meta %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>

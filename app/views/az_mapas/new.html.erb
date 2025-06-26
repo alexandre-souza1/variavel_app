@@ -1,0 +1,36 @@
+<h1>Novo Lançamento AZ</h1>
+
+<%= form_with model: @az_mapa, url: az_mapas_path, local: true do |form| %>
+  <% if flash[:alert] %>
+    <div style="color: red;"><%= flash[:alert] %></div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :data, "Data" %><br>
+    <%= form.date_field :data, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :tipo, "Tipo de Meta" %><br>
+    <%= form.select :tipo, AzMapa.tipos.keys.map { |k| [k.humanize.titleize, k] }, {}, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :resultado, "Resultado" %><br>
+    <%= form.number_field :resultado, step: 0.01, required: true %>
+  </div>
+
+  <!-- atingiu_meta pode ser opcional ou controlado em outro lugar -->
+  <div class="field">
+    <%= form.label :atingiu_meta, "Atingiu Meta?" %><br>
+    <%= form.check_box :atingiu_meta %>
+  </div>
+
+  <p><strong>Observação:</strong> O sistema irá criar automaticamente os registros para os turnos relacionados ao tipo escolhido.</p>
+
+  <div class="actions">
+    <%= form.submit "Criar" %>
+  </div>
+<% end %>
+
+<%= link_to 'Voltar', az_mapas_path %>

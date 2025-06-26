@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @az_mapa %>
+
+<div>
+  <%= link_to "Edit this az mapa", edit_az_mapa_path(@az_mapa) %> |
+  <%= link_to "Back to az mapas", az_mapas_path %>
+
+  <%= button_to "Destroy this az mapa", @az_mapa, method: :delete %>
+</div>

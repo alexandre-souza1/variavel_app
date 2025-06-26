@@ -1,0 +1,14 @@
+<p style="color: green"><%= notice %></p>
+
+<h1>Operators</h1>
+
+<div id="operators">
+  <% @operators.each do |operator| %>
+    <%= render operator %>
+    <p>
+      <%= link_to "Show this operator", operator %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New operator", new_operator_path %>

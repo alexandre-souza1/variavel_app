@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_06_14_165141) do
+ActiveRecord::Schema[7.1].define(version: 2025_06_26_200956) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -52,6 +52,50 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_14_165141) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "az_coletivas", force: :cascade do |t|
+    t.date "data"
+    t.integer "tipo"
+    t.string "turno"
+    t.float "resultado"
+    t.boolean "atingiu_meta", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "az_mapas", force: :cascade do |t|
+    t.date "data"
+    t.integer "turno", default: [], array: true
+    t.integer "tipo"
+    t.float "resultado"
+    t.boolean "atingiu_meta", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "az_operadors", force: :cascade do |t|
+    t.string "matricula"
+    t.string "nome"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "az_periodos", force: :cascade do |t|
+    t.date "inicio"
+    t.date "fim"
+    t.string "descricao"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "az_tarefa_wms", force: :cascade do |t|
+    t.bigint "az_operador_id", null: false
+    t.date "data"
+    t.integer "quantidade"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["az_operador_id"], name: "index_az_tarefa_wms_on_az_operador_id"
+  end
+
   create_table "drivers", force: :cascade do |t|
     t.string "matricula"
     t.string "promax"
@@ -78,6 +122,25 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_14_165141) do
     t.string "matric_ajudante_2"
   end
 
+  create_table "meta", force: :cascade do |t|
+    t.integer "tipo", null: false
+    t.decimal "valor", null: false
+    t.date "data", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tipo", "data"], name: "index_meta_on_tipo_and_data", unique: true
+  end
+
+  create_table "operators", force: :cascade do |t|
+    t.integer "matricula"
+    t.string "nome"
+    t.string "cpf"
+    t.date "data_nascimento"
+    t.integer "turno"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "parametro_calculos", force: :cascade do |t|
     t.string "nome"
     t.float "valor"
@@ -102,4 +165,5 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_14_165141) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "az_tarefa_wms", "az_operadors"
 end

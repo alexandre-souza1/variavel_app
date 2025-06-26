@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  data: 2025-06-26
+  turno: 1
+  tipo: 1
+  resultado: 1.5
+  atingiu_meta: false
+
+two:
+  data: 2025-06-26
+  turno: 1
+  tipo: 1
+  resultado: 1.5
+  atingiu_meta: false
