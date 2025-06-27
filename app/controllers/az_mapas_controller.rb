@@ -4,6 +4,10 @@ class AzMapasController < ApplicationController
   # GET /az_mapas or /az_mapas.json
   def index
     @az_mapas = AzMapa.all
+
+    @data_inicio = AzMapa.minimum(:data)
+    @data_fim = AzMapa.maximum(:data)
+    @dias_periodo = (@data_fim - @data_inicio).to_i if @data_inicio && @data_fim
   end
 
   # GET /az_mapas/1 or /az_mapas/1.json
@@ -59,6 +63,11 @@ class AzMapasController < ApplicationController
       format.html { redirect_to az_mapas_path, status: :see_other, notice: "Az mapa was successfully destroyed." }
       format.json { head :no_content }
     end
+  end
+
+  def destroy_all
+    AzMapa.delete_all
+    redirect_to az_mapas_path, notice: "Todos os lançamentos foram apagados com sucesso."
   end
 
   private

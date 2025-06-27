@@ -1,14 +1,80 @@
-<p style="color: green"><%= notice %></p>
+<div class="driver-report-container">
+  <div class="container p-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="mb-0"><i class="bi bi-card-list"> </i>Operadores Cadastrados</h1>
+      </div>
+      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
+        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+      </div>
+    </div>
+  </div>
 
-<h1>Operators</h1>
+  <div class="container">
 
-<div id="operators">
-  <% @operators.each do |operator| %>
-    <%= render operator %>
-    <p>
-      <%= link_to "Show this operator", operator %>
-    </p>
-  <% end %>
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+              <h2 class="mb-1"><i class="bi bi-truck"></i> Total de Operadores: <%= @operators.size %></h2>
+              <p class="text-muted mb-0"> <%= %></p>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <% if current_user.admin? or current_user.supervisor? %>
+              <%= button_to "Apagar todos os operadores", destroy_all_operators_path,
+                  method: :delete,
+                  data: { turbo_confirm: "Tem certeza que deseja apagar TODOS os operadores?" },
+                  class: "btn btn-danger d-inline-block",
+                  form: { class: "d-inline" } %>
+            <% end %>
+            <%= link_to "Novo Operador", new_operator_path, class: "btn btn-light" %>
+            <%= link_to "Importar Operadores", import_operators_path, class: "btn btn-light" %>
+            <%= link_to "Voltar", root_path, class: "btn btn-light" %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-header bg-light border-bottom">
+        <h5 class="mb-0"><i class="bi bi-person-fill"></i> Detalhes dos Operadores</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead class="table-primary text-center">
+          <tr>
+            <th>Nome</th>
+            <th>Matrícula</th>
+            <th>Turno</th>
+            <th>CPF</th>
+            <th>Data de Nascimento</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @operators.each do |operator| %>
+            <tr>
+              <td><%= operator.nome %></td>
+              <td><%= operator.matricula %></td>
+              <td><%= turno_label(operator.turno) %></td>
+              <td><%= operator.cpf %></td>
+              <td><%= operator.data_nascimento.strftime("%d/%m/%Y") if operator.data_nascimento %></td>
+              <td>
+                <%= link_to "Ver", operator_path(operator), class: "btn btn-primary btn-sm me-1" %>
+                <%= link_to "Editar", edit_operator_path(operator), class: "btn btn-primary btn-sm me-1" %>
+                <% if current_user.admin? or current_user.supervisor? %>
+                <%= link_to "Excluir", operator_path(operator),
+                  data: { turbo_method: :delete, turbo_confirm: "Tem certeza?" },
+                class: "btn btn-danger btn-sm" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
-
-<%= link_to "New operator", new_operator_path %>
+</div>
+</div>

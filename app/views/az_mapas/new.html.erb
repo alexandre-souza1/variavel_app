@@ -1,36 +1,64 @@
-<h1>Novo Lançamento AZ</h1>
+<div class="container py-4" data-controller="resultado">
+  <h1>Lançamento de Resultado Diário AZ</h1>
 
-<%= form_with model: @az_mapa, url: az_mapas_path, local: true do |form| %>
-  <% if flash[:alert] %>
-    <div style="color: red;"><%= flash[:alert] %></div>
+  <%= form_with model: @az_mapa, url: az_mapas_path, class: "card p-4 shadow-sm", local: true do |form| %>
+
+    <!-- DATA -->
+    <div class="mb-3">
+      <%= form.label :data, "Data", class: "form-label" %>
+      <%= form.date_field :data, required: true, class: "form-control" %>
+    </div>
+
+    <!-- TIPO -->
+    <div class="mb-3">
+      <%= form.label :tipo, "Tipo de Meta", class: "form-label" %>
+      <%= form.select :tipo,
+            AzMapa.tipos.keys.map { |k| [k.humanize.titleize, k] },
+            {},
+            {
+              required: true,
+              id: "tipo_meta",
+              class: "form-select",
+              data: {
+                resultado_target: "tipo",
+                action: "change->resultado#atualizar"
+              }
+            } %>
+    </div>
+
+    <!-- RESULTADO (com sufixo) -->
+    <div class="mb-3" data-resultado-target="grupo" style="display: none;">
+      <%= form.label :resultado, "Resultado", class: "form-label" %>
+      <div class="input-group">
+        <%= form.number_field :resultado,
+              step: 0.01,
+              required: true,
+              data: { resultado_target: "campo" },
+              class: "form-control" %>
+        <span class="input-group-text" data-resultado-target="sufixo"></span>
+      </div>
+      <small data-resultado-target="unidade" class="text-muted d-block mt-1"></small>
+    </div>
+
+    <!-- ATINGIU META -->
+    <div class="form-check mb-3">
+      <%= form.check_box :atingiu_meta, class: "form-check-input", id: "atingiu_meta" %>
+      <%= form.label :atingiu_meta, "Atingiu Meta?", class: "form-check-label", for: "atingiu_meta" %>
+    </div>
+
+    <!-- OBSERVAÇÃO -->
+    <div class="mb-3">
+      <p class="text-muted">
+        <strong>Observação:</strong> O sistema irá criar automaticamente os registros para os turnos relacionados ao tipo escolhido.
+      </p>
+    </div>
+
+    <!-- BOTÃO -->
+    <div class="d-grid">
+      <%= form.submit "Criar", class: "btn btn-primary" %>
+    </div>
+
   <% end %>
 
-  <div class="field">
-    <%= form.label :data, "Data" %><br>
-    <%= form.date_field :data, required: true %>
-  </div>
-
-  <div class="field">
-    <%= form.label :tipo, "Tipo de Meta" %><br>
-    <%= form.select :tipo, AzMapa.tipos.keys.map { |k| [k.humanize.titleize, k] }, {}, required: true %>
-  </div>
-
-  <div class="field">
-    <%= form.label :resultado, "Resultado" %><br>
-    <%= form.number_field :resultado, step: 0.01, required: true %>
-  </div>
-
-  <!-- atingiu_meta pode ser opcional ou controlado em outro lugar -->
-  <div class="field">
-    <%= form.label :atingiu_meta, "Atingiu Meta?" %><br>
-    <%= form.check_box :atingiu_meta %>
-  </div>
-
-  <p><strong>Observação:</strong> O sistema irá criar automaticamente os registros para os turnos relacionados ao tipo escolhido.</p>
-
-  <div class="actions">
-    <%= form.submit "Criar" %>
-  </div>
-<% end %>
-
-<%= link_to 'Voltar', az_mapas_path %>
+  <%= link_to "Voltar", az_mapas_path, class: "btn btn-outline-secondary mt-3" %>
+</div>

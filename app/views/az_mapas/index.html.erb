@@ -1,42 +1,88 @@
-<div class="container mt-5">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3">Resultados Diários AZ</h1>
-    <%= link_to 'Novo Lançamento', new_az_mapa_path, class: "btn btn-primary" %>
+<div class="driver-report-container">
+  <div class="container p-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="mb-0"><i class="bi bi-card-list"> </i>Resultados Diarios AZ</h1>
+      </div>
+      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
+        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+      </div>
+    </div>
   </div>
 
-  <div class="table-responsive">
-    <table class="table table-bordered table-striped table-hover align-middle">
-      <thead class="table-dark text-center">
-        <tr>
-          <th>Data</th>
-          <th>Turno</th>
-          <th>Tipo</th>
-          <th>Resultado</th>
-          <th>Atingiu Meta</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @az_mapas.order(data: :desc, turno: :asc).each do |mapa| %>
-          <tr class="text-center">
-            <td><%= mapa.data.strftime("%d/%m/%Y") %></td>
-            <td><%= mapa.turno.map { |t| turno_label(t) }.join(", ") %></td>
-            <td><%= mapa.tipo.humanize.titleize %></td>
-            <td><%= mapa.resultado %></td>
-            <td>
-              <% if mapa.atingiu_meta? %>
-                <span class="badge bg-success">Sim</span>
-              <% else %>
-                <span class="badge bg-danger">Não</span>
-              <% end %>
-            </td>
-            <td>
-              <%= link_to 'Editar', edit_az_mapa_path(mapa), class: "btn btn-sm btn-warning me-1" %>
-              <%= link_to 'Excluir', az_mapa_path(mapa), method: :delete, data: { confirm: "Tem certeza?" }, class: "btn btn-sm btn-danger" %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+  <div class="container">
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <h2 class="mb-1">
+              <i class="bi bi-calendar-date"></i>
+              <%= @data_inicio.strftime("%d/%m/%Y") %> a
+              <%= @data_fim.strftime("%d/%m/%Y") %>
+            </h2>
+            <p class="text-muted mb-0">
+              Total de Lançamentos: <%= @az_mapas.size %>
+            </p>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <% if current_user.admin? %>
+            <div class="d-flex gap-2 flex-row-reverse">
+              <%= link_to 'Novo Lançamento', new_az_mapa_path, class: "btn btn-primary" %>
+              <%= button_to "Apagar todos os Lançamentos", destroy_all_az_mapas_path, method: :delete, data: { turbo_confirm: "Tem certeza que deseja apagar TODOS os Lançamentos?" }, class: "btn btn-danger" %>
+            </div>
+            <% end %>
+            <% if @data_inicio && @data_fim && @dias_periodo %>
+              <p class="mb-1"><strong>Período:</strong> <%= @data_inicio.strftime("%d/%m/%Y") %> a <%= @data_fim.strftime("%d/%m/%Y") %></p>
+              <p class="mb-0"><strong>Dias:</strong> <%= @dias_periodo %></p>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de Mapas -->
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-header bg-light border-bottom">
+        <h5 class="mb-0"><i class="bi bi-map-fill me-2"></i>Detalhes dos Lançamentos</h5>
+      </div>
+      <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+              <thead class="table-primary text-center">
+                <tr>
+                  <th>Data</th>
+                  <th>Turnos</th>
+                  <th>Tipo</th>
+                  <th>Resultados</th>
+                  <th>Atingiu Meta</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @az_mapas.each do |az_mapa| %>
+                  <tr>
+                    <td><%= az_mapa.data.strftime("%d/%m/%Y") %></td>
+                    <td><%= az_mapa.turno.map { |t| turno_label(t) }.join(", ") %></td>
+                    <td><%= az_mapa.tipo.humanize.titleize %></td>
+                    <td><%= az_mapa.resultado %></td>
+                    <td>
+                      <% if az_mapa.atingiu_meta? %>
+                        <span class="badge bg-success">Sim</span>
+                      <% else %>
+                        <span class="badge bg-danger">Não</span>
+                      <% end %>
+                    </td>
+                    <td class="d-flex gap-2">
+                      <%= link_to 'Editar', edit_az_mapa_path(az_mapa), class: 'btn btn-warning btn-sm' %>
+                      <%= link_to 'Excluir', az_mapa_path(az_mapa), data: { turbo_method: :delete, turbo_confirm: 'Tem certeza?' }, class: 'btn btn-danger btn-sm' %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+      </div>
+      <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
+    </div>
   </div>
 </div>

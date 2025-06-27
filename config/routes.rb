@@ -1,6 +1,5 @@
 Rails.application.routes.draw do
-  resources :az_mapas
-  resources :operators
+
   namespace :admin do
     get 'users/index'
     get 'users/edit'
@@ -27,9 +26,24 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :az_mapas do
+    collection do
+      post :import
+      delete :destroy_all
+    end
+  end
+
   namespace :admin do
     resources :users, only: [:index, :edit, :update, :destroy]
   end
+
+   resources :operators do
+    collection do
+      get :import
+      post :import_csv
+      delete :destroy_all
+    end
+   end
 
   resources :drivers do
     collection do
