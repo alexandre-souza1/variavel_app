@@ -1,0 +1,215 @@
+<div class="driver-report-container">
+  <!-- Header -->
+  <div class="container p-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="mb-0"><i class="bi bi-people-fill me-2"></i>Relatório de Variável - Turno</h1>
+      </div>
+      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
+        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Informações do Operador/Turno -->
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <% if @operatorAC || @operatorB %>
+              <h2 class="mb-1"><i class="bi bi-person-fill me-2"></i><%= @operatorAC&.nome || @operatorB&.nome %></h2>
+              <p class="text-muted mb-0">Matrícula: <%= @matricula %></p>
+              <p class="text-muted mb-0">Turno: <%= @turno == 0 ? 'A/C' : (@turno == 1 ? 'B' : 'C') %></p>
+            <% end %>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <% if @periodo_mes.present? %>
+              <strong><%= I18n.t("date.month_names")[@periodo_mes.to_i] %></strong>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aviso Importante -->
+    <div class="alert alert-warning shadow-sm rounded mb-4">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      Segue prévia da variável coletiva por turno. Todos os operadores do mesmo turno recebem o mesmo valor.
+    </div>
+
+    <!-- Tabela de Mapas -->
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-header bg-light border-bottom">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+          <h5 class="mb-0"><i class="bi bi-map-fill me-2"></i>Detalhes dos Mapas Coletivos</h5>
+
+          <%= form_with url: az_consulta_path, method: :get, local: true,
+                        class: "row gx-2 align-items-end",
+                        data: { controller: "autosubmit", autosubmit_target: "form" } do %>
+            <%= hidden_field_tag :matricula, @matricula %>
+            <%= hidden_field_tag :turno, @turno %>
+
+            <div class="col-auto">
+              <%= select_tag :periodo_mes,
+                  options_for_select((1..12).map { |m| [I18n.t("date.month_names")[m], m] }, params[:periodo_mes]),
+                  class: "form-select form-select-sm",
+                  data: {
+                    autosubmit_target: "select",
+                    action: "change->autosubmit#submitOnChange"
+                  },
+                  required: true %>
+            </div>
+
+            <div class="col-auto">
+              <%= submit_tag "Filtrar", class: "d-none" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+<div class="card-body">
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+      <thead class="table-primary text-center">
+        <tr>
+          <th>Data</th>
+          <th>Tipo</th>
+          <th>Resultado</th>
+          <th>Meta Atingida</th>
+          <th>Valor Obtido</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% total_valor_tma = total_valor_efc = total_valor_wms = total_valor = 0 %>
+
+        <% if params[:periodo_mes].present? && @azmapas.any? %>
+          <% @azmapas.each do |mapa| %>
+            <%
+              # Cálculos específicos para cada turno
+              if [0, 2].include?(@turno) # Turnos A/C e C
+                valor_tma = mapa.tipo == 1 ? @valor_tma_operator * mapa.resultado : 0
+                valor_efc = mapa.tipo == 2 ? @valor_efc_operator * mapa.resultado : 0
+                valor_wms = mapa.tipo == 3 ? @valor_wms_operator : 0
+                valor = valor_tma + valor_efc + valor_wms
+              elsif @turno == 1 # Turno B
+                valor_tma = 0
+                valor_efc = mapa.tipo == 2 ? @valor_edf_operator * mapa.resultado : 0
+                valor_wms = mapa.tipo == 3 ? @valor_wms_operator : 0
+                valor = valor_efc + valor_wms
+              end
+
+              total_valor_tma += valor_tma
+              total_valor_efc += valor_efc
+              total_valor_wms += valor_wms
+              total_valor += valor
+
+              # Formatação condicional do resultado
+              resultado_formatado = case mapa.tipo.to_s
+                when 'eficiencia_carregamento', 'eficiencia_descarga' then number_to_percentage(mapa.resultado, precision: 2)
+                when 'tempo_atendimento' then formatar_tempo(mapa.resultado)
+                else mapa.resultado
+              end
+            %>
+
+            <tr class="text-center">
+              <td><%= mapa.data.strftime("%d/%m/%Y") %></td>
+              <td><%= mapa.tipo.humanize.titleize %></td>
+              <td><%= resultado_formatado %></td>
+              <td><%= mapa.atingiu_meta ? 'Sim' : 'Não' %></td>
+              <td><%= number_to_currency(valor, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="5" class="text-center">
+              <% if params[:periodo_mes].present? %>
+                Nenhum mapa encontrado para este período
+              <% else %>
+                Selecione um mês para visualizar os mapas
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+    </div>
+
+    <!-- Painel de Totais + Parâmetros -->
+<div class="row">
+  <!-- Painel Totais -->
+  <div class="col-md-8">
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-bar-chart-fill me-2"></i>Painel de Totais</h5>
+      </div>
+      <div class="card-body p-3">
+        <table class="table table-borderless align-middle">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Valor Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if [0, 2].include?(@turno) %>
+              <tr>
+                <td>Tempo Médio de Atendimento</td>
+                <td><%= number_to_currency(total_valor_tma, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+              </tr>
+            <% end %>
+            <tr>
+              <td><%= [0, 2].include?(@turno) ? 'Eficiência de Carregamento' : 'Eficiencia de Descarga' %></td>
+              <td><%= number_to_currency(total_valor_efc, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+            </tr>
+            <tr>
+              <td>WMS Individual</td>
+              <td><%= number_to_currency(total_valor_wms, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+            </tr>
+            <tr class="fw-bold">
+              <td>Total</td>
+              <td><%= number_to_currency(total_valor, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+      <!-- Parâmetros de Cálculo -->
+      <div class="col-md-4">
+        <div class="card shadow-sm rounded mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-gear-fill me-2"></i>Parâmetros de Cálculo</h5>
+          </div>
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              <% if [0, 2].include?(@turno) %>
+                <li class="list-group-item d-flex justify-content-between">
+                  Valor TMA
+                  <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_tma_operator, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  Valor EFC
+                  <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_efc_operator, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+                </li>
+              <% elsif @turno == 1 %>
+                <li class="list-group-item d-flex justify-content-between">
+                  Valor EFD
+                  <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_edf_operator, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+                </li>
+              <% end %>
+              <li class="list-group-item d-flex justify-content-between">
+                Valor WMS
+                <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_wms_operator, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
+      </div>
+    </div>
+  </div>
+</div>

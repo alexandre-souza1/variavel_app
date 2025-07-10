@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  get 'az_consultas/index'
+  get 'az_consultas/new'
+  get 'az_consultas/show'
 
   namespace :admin do
     get 'users/index'
@@ -16,6 +19,7 @@ Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   root "consultas#index"
   get "consulta", to: "consultas#show"
+  get "az_consulta", to: "az_consultas#show"
 
   resources :mapas do
     collection do

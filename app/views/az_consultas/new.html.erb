@@ -1,0 +1,136 @@
+<div class="bg-light" data-controller="az-consultas-form">
+  <div class="container p-3">
+    <h2 class="text-center mb-4 fw-bold text-primary">Workstation LOG20 Foz do Iguaçu - AZ</h2>
+
+    <div class="cards">
+      <div
+        data-action="click->az-consultas-form#mostrarFormulario"
+        class="card-category"
+        data-turno="0"
+        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://criciumanoticias.com/wp-content/uploads/2018/11/Aprovada.jpg)">
+        Turno A
+      </div>
+
+      <div
+        data-action="click->az-consultas-form#mostrarFormulario"
+        class="card-category"
+        data-turno="1"
+        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://storage.transportemoderno.com.br/uploads/2022/03/Ambev-Caminhoes-eletricos_Joao-Pessoa-1.jpeg)">
+        Turno B
+      </div>
+
+      <div
+        data-action="click->az-consultas-form#mostrarFormulario"
+        class="card-category"
+        data-turno="2"
+        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgSW9HnZW5ySxCupcEkbEWj-krFeUNO3dFiOUSkbXNSyCdFvW_QdjnwpgLE0KLHJthu3PCb1A_j6lmdtC1lgK5-SsVr671Z9_2TaPjrgQHTHmUqi0NS04IwO8Lwq1G7oMccuDxhcmLNCP0d6gHzXg0azQh6ukJBZ-CmfyMwwekp302_m0un5F2_HYOarGU/w1600/VAGAS%20PARA%20MOTORISTA%20ENTREGADOR%20OPERA%C3%87%C3%95ES%20AMBEV.png)">
+        Turno C
+      </div>
+    </div>
+  </div>
+
+  <div id="formulario-consulta" class="bg-light min-vh-100 d-flex justify-content-center d-none" data-az-consultas-form-target="formulario">
+    <div class="container py-5 mt-5">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+          <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-4">
+              <h2 id="titulo-form" class="text-center mb-4 fw-bold text-primary" data-az-consultas-form-target="titulo">Consultar</h2>
+
+              <%= form_with url: az_consulta_path, method: :get, local: true, html: { id: "consulta-form" } do |f| %>
+                <div class="mb-4">
+                  <label for="matricula" class="form-label fw-semibold">Matrícula</label>
+                  <%= text_field_tag :matricula, params[:matricula], class: "form-control form-control-lg", placeholder: "Digite sua matrícula" %>
+                </div>
+
+                <!-- Campo oculto para o turno -->
+                <%= hidden_field_tag :turno, nil, id: "turno_oculto", data: { "az-consultas-form-target": "turnoInput" } %>
+
+                <div class="d-grid">
+                  <%= submit_tag "Consultar", class: "btn btn-primary btn-lg rounded-1" %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <a href="https://ambev.beedoo.io/login" class="btn btn-primary btn-lg rounded-1 w-100" target="_blank" rel="noopener noreferrer">
+      CENTRAL DE PADRÕES
+    </a>
+  </div>
+</div>
+
+<div class="container mt-3">
+  <div id="carouselExampleCaptions" class="carousel slide">
+    <div class="carousel-indicators">
+      <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+      <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
+      <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
+    </div>
+    <div class="carousel-inner">
+      <div class="carousel-item active">
+        <%= link_to "https://ambev.beedoo.io/login", class: "d-block w-100 h-100" do %>
+          <%= image_tag("logon.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
+          <div class="carousel-caption">
+            <h5>LOG ON</h5>
+            <p>Link de acesso direto para seus cursos do LOG ON.</p>
+          </div>
+        <% end %>
+      </div>
+      <div class="carousel-item">
+        <%= link_to "https://forms.office.com/pages/responsepage.aspx?id=GUvwznZ3lEq4mzdcd6j5NnAxiOBHYkVHr8jNY5TcugNUMU9PVTBFN1VPUzlGM0NXM0VRRUVZS0VSWS4u&route=shorturl", class: "d-block w-100 h-100" do %>
+          <%= image_tag("relato.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
+          <div class="carousel-caption">
+            <h5>Relatos</h5>
+            <p>Faça seus relatos aqui.</p>
+          </div>
+        <% end %>
+      </div>
+      <div class="carousel-item">
+        <%= link_to "https://7z4kss-my.sharepoint.com/:b:/g/personal/cadu_7z4kss_onmicrosoft_com/EXyOINwrwCFBlBhUA6bphs8B5N8bRnVn0y87bqfsWJEo-g?e=MqCtGt", class: "d-block w-100 h-100" do %>
+          <%= image_tag("layout.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
+          <div class="carousel-caption">
+            <h5>Layout do Estacionamento</h5>
+            <p>Padrão de localização dos carros do Pátio.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+  </div>
+</div>
+
+<div class="container my-4">
+  <div class="row">
+    <div class="col-md-12 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-primary text-white text-center">
+          <h5 class="mb-0">Parâmetros de Cálculo - Operadores</h5>
+        </div>
+        <div class="card-body">
+        <% Array(@parametros&.dig("operador")).each do |param| %>
+          <% nome = nome_legivel_parametro(param.nome) %>
+          <p class="mb-2">
+            <strong><%= nome %>:</strong>
+            R$ <%= number_with_precision(param.valor.to_f, precision: 2, separator: ",") %><%= sufixo_parametro(nome) %>
+          </p>
+        <% end %>
+
+        <% if Array(@parametros&.dig("operador")).empty? %>
+          <p class="text-muted text-center">Nenhum dado encontrado.</p>
+        <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
