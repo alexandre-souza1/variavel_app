@@ -17,8 +17,8 @@
       <div class="card-body">
         <div class="row align-items-center">
           <div class="col-md-6">
-            <% if @operatorAC || @operatorB %>
-              <h2 class="mb-1"><i class="bi bi-person-fill me-2"></i><%= @operatorAC&.nome || @operatorB&.nome %></h2>
+            <% if @operator %>
+              <h2 class="mb-1"><i class="bi bi-person-fill me-2"></i><%= @operator&.nome %></h2>
               <p class="text-muted mb-0">Matrícula: <%= @matricula %></p>
               <p class="text-muted mb-0">Turno: <%= @turno == 0 ? 'A/C' : (@turno == 1 ? 'B' : 'C') %></p>
             <% end %>
@@ -88,20 +88,17 @@
             <%
               # Cálculos específicos para cada turno
               if [0, 2].include?(@turno) # Turnos A/C e C
-                valor_tma = mapa.tipo == 1 ? @valor_tma_operator * mapa.resultado : 0
-                valor_efc = mapa.tipo == 2 ? @valor_efc_operator * mapa.resultado : 0
-                valor_wms = mapa.tipo == 3 ? @valor_wms_operator : 0
-                valor = valor_tma + valor_efc + valor_wms
+                valor_tma = mapa.tipo == "tempo_atendimento" && mapa.atingiu_meta ? @valor_tma_operator : 0
+                valor_efc = mapa.tipo == "eficiencia_carregamento" && mapa.atingiu_meta ? @valor_efc_operator : 0
+                valor = valor_tma + valor_efc
               elsif @turno == 1 # Turno B
                 valor_tma = 0
-                valor_efc = mapa.tipo == 2 ? @valor_edf_operator * mapa.resultado : 0
-                valor_wms = mapa.tipo == 3 ? @valor_wms_operator : 0
-                valor = valor_efc + valor_wms
+                valor_efc = mapa.tipo == "eficiencia_descarga" && mapa.atingiu_meta ? @valor_edf_operator : 0
+                valor = valor_efc
               end
 
               total_valor_tma += valor_tma
               total_valor_efc += valor_efc
-              total_valor_wms += valor_wms
               total_valor += valor
 
               # Formatação condicional do resultado

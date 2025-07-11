@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>VariavelApp</title>
+    <title>Workstation - LOG20 FOZ</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+
+    <%= favicon_link_tag 'logo.png', type: 'image/png' %>
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000000"> <!-- Cor da barra do Chrome -->
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -16,5 +21,13 @@
   <%= render "shared/navbar" %>
   <%= render "shared/flashes" %>
     <%= yield %>
+
+  <script>
+  window.addEventListener("load", () => {
+    if (window.matchMedia("(display-mode: browser)").matches && "standalone" in navigator) {
+      alert("Voce pode instlar esse APP! Clique em ⋮ e selecione 'Adicionar à tela inicial'.");
+    }
+    });
+  </script>
   </body>
 </html>

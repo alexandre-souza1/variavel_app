@@ -32,6 +32,7 @@ class AzMapasController < ApplicationController
         tipo: params[:az_mapa][:tipo],
         data: params[:az_mapa][:data],
         resultado: params[:az_mapa][:resultado],
+        atingiu_meta: params[:az_mapa][:atingiu_meta],
         turno: turnos
       )
 
