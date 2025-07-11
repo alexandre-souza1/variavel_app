@@ -17,8 +17,8 @@
           <div class="col-md-6">
             <h2 class="mb-1">
               <i class="bi bi-calendar-date"></i>
-              <%= @data_inicio.strftime("%d/%m/%Y") %> a
-              <%= @data_fim.strftime("%d/%m/%Y") %>
+              <%= @data_inicio&.strftime("%d/%m/%Y") %> a
+              <%= @data_fim&.strftime("%d/%m/%Y") %>
             </h2>
             <p class="text-muted mb-0">
               Total de Lançamentos: <%= @az_mapas.size %>
@@ -61,7 +61,7 @@
               <tbody>
                 <% @az_mapas.each do |az_mapa| %>
                   <tr>
-                    <td><%= az_mapa.data.strftime("%d/%m/%Y") %></td>
+                    <td><%= az_mapa.data&.strftime("%d/%m/%Y") %></td>
                     <td><%= az_mapa.turno.map { |t| turno_label(t) }.join(", ") %></td>
                     <td><%= az_mapa.tipo.humanize.titleize %></td>
                     <td><%= az_mapa.resultado %></td>
