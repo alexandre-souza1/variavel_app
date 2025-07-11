@@ -68,73 +68,158 @@
         </div>
       </div>
 
-<div class="card-body">
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle">
-      <thead class="table-primary text-center">
-        <tr>
-          <th>Data</th>
-          <th>Tipo</th>
-          <th>Resultado</th>
-          <th>Meta Atingida</th>
-          <th>Valor Obtido</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% total_valor_tma = total_valor_efc = total_valor_wms = total_valor = 0 %>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead class="table-primary text-center">
+              <tr>
+                <th>Data</th>
+                <th>Tipo</th>
+                <th>Resultado</th>
+                <th>Meta Atingida</th>
+                <th>Valor Obtido</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% total_valor_tma = total_valor_efc = total_valor_wms = total_valor = 0 %>
 
-        <% if params[:periodo_mes].present? && @azmapas.any? %>
-          <% @azmapas.each do |mapa| %>
-            <%
-              # Cálculos específicos para cada turno
-              if [0, 2].include?(@turno) # Turnos A/C e C
-                valor_tma = mapa.tipo == "tempo_atendimento" && mapa.atingiu_meta ? @valor_tma_operator : 0
-                valor_efc = mapa.tipo == "eficiencia_carregamento" && mapa.atingiu_meta ? @valor_efc_operator : 0
-                valor = valor_tma + valor_efc
-              elsif @turno == 1 # Turno B
-                valor_tma = 0
-                valor_efc = mapa.tipo == "eficiencia_descarga" && mapa.atingiu_meta ? @valor_edf_operator : 0
-                valor = valor_efc
-              end
+              <% if params[:periodo_mes].present? && @azmapas.any? %>
+                <% @azmapas.each do |mapa| %>
+                  <%
+                    # Cálculos específicos para cada turno
+                    if [0, 2].include?(@turno) # Turnos A/C e C
+                      valor_tma = mapa.tipo == "tempo_atendimento" && mapa.atingiu_meta ? @valor_tma_operator : 0
+                      valor_efc = mapa.tipo == "eficiencia_carregamento" && mapa.atingiu_meta ? @valor_efc_operator : 0
+                      valor = valor_tma + valor_efc
+                    elsif @turno == 1 # Turno B
+                      valor_tma = 0
+                      valor_efc = mapa.tipo == "eficiencia_descarga" && mapa.atingiu_meta ? @valor_edf_operator : 0
+                      valor = valor_efc
+                    end
 
-              total_valor_tma += valor_tma
-              total_valor_efc += valor_efc
-              total_valor += valor
+                    total_valor_tma += valor_tma
+                    total_valor_efc += valor_efc
+                    total_valor += valor
 
-              # Formatação condicional do resultado
-              resultado_formatado = case mapa.tipo.to_s
-                when 'eficiencia_carregamento', 'eficiencia_descarga' then number_to_percentage(mapa.resultado, precision: 2)
-                when 'tempo_atendimento' then formatar_tempo(mapa.resultado)
-                else mapa.resultado
-              end
-            %>
+                    # Formatação condicional do resultado
+                    resultado_formatado = case mapa.tipo.to_s
+                      when 'eficiencia_carregamento', 'eficiencia_descarga' then number_to_percentage(mapa.resultado, precision: 2)
+                      when 'tempo_atendimento' then formatar_tempo(mapa.resultado)
+                      else mapa.resultado
+                    end
+                  %>
 
-            <tr class="text-center">
-              <td><%= mapa.data.strftime("%d/%m/%Y") %></td>
-              <td><%= mapa.tipo.humanize.titleize %></td>
-              <td><%= resultado_formatado %></td>
-              <td><%= mapa.atingiu_meta ? 'Sim' : 'Não' %></td>
-              <td><%= number_to_currency(valor, unit: "R$ ", separator: ",", delimiter: ".") %></td>
-            </tr>
-          <% end %>
-        <% else %>
-          <tr>
-            <td colspan="5" class="text-center">
-              <% if params[:periodo_mes].present? %>
-                Nenhum mapa encontrado para este período
+                  <tr class="text-center">
+                    <td><%= mapa.data.strftime("%d/%m/%Y") %></td>
+                    <td><%= mapa.tipo.humanize.titleize %></td>
+                    <td><%= resultado_formatado %></td>
+                    <td><%= mapa.atingiu_meta ? 'Sim' : 'Não' %></td>
+                    <td><%= number_to_currency(valor, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                  </tr>
+                <% end %>
               <% else %>
-                Selecione um mês para visualizar os mapas
+                <tr>
+                  <td colspan="5" class="text-center">
+                    <% if params[:periodo_mes].present? %>
+                      Nenhum mapa encontrado para este período
+                    <% else %>
+                      Selecione um mês para visualizar os mapas
+                    <% end %>
+                  </td>
+                </tr>
               <% end %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
-</div>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <!-- Painel de Totais + Parâmetros -->
+
+        <!-- Tabela de Tarefas WMS -->
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-header bg-light border-bottom">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+          <h5 class="mb-0"><i class="bi bi-list-task me-2"></i>Tarefas WMS do Operador</h5>
+
+          <% if params[:periodo_mes].present? %>
+            <small class="text-muted">
+              Mostrando tarefas de: <strong><%= I18n.t("date.month_names")[params[:periodo_mes].to_i] %></strong>
+            </small>
+          <% end %>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead class="table-primary text-center">
+              <tr>
+                <th>Tipo</th>
+                <th>Código</th>
+                <th>Placa</th>
+                <th>Palete</th>
+                <th>Início</th>
+                <th>Término</th>
+                <th>Duração (seg)</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if params[:periodo_mes].present? && @wms_tasks.any? %>
+                <% @wms_tasks.each do |task| %>
+                  <%
+                    # Verifica se a duração é ≥ 10 segundos (o campo duration está em minutos)
+                    duration_seconds = task.duration
+                    valor_tarefa = duration_seconds >= 10 ? @valor_wms_operator : 0
+                  %>
+                  <tr class="text-center">
+                    <td><%= task.task_type %></td>
+                    <td><%= task.task_code %></td>
+                    <td><%= task.plate %></td>
+                    <td><%= task.pallet %></td>
+                    <td><%= task.started_at&.strftime("%d/%m/%Y %H:%M") || '-' %></td>
+                    <td><%= task.ended_at&.strftime("%d/%m/%Y %H:%M") || '-' %></td>
+                    <td><%= duration_seconds.round(2) %>s</td>
+                    <td>
+                      <%= number_to_currency(
+                        valor_tarefa,
+                        unit: "R$ ",
+                        separator: ",",
+                        delimiter: "."
+                      ) %>
+                    </td>
+                  </tr>
+                <% end %>
+              <% else %>
+                <tr>
+                  <td colspan="8" class="text-center">
+                    <% if params[:periodo_mes].present? %>
+                      Nenhuma tarefa WMS encontrada para este período
+                    <% else %>
+                      Selecione um mês para visualizar as tarefas WMS
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <% if params[:periodo_mes].present? && @wms_tasks.any? %>
+          <div class="mt-3 text-end">
+            <strong>Total:
+              <%= number_to_currency(
+                @wms_tasks.sum { |t| (t.duration * 60) >= 10 ? @valor_wms_operator : 0 },
+                unit: "R$ ",
+                separator: ",",
+                delimiter: "."
+              ) %>
+            </strong>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+<!-- Painel de Totais + Parâmetros -->
 <div class="row">
   <!-- Painel Totais -->
   <div class="col-md-8">
@@ -163,11 +248,25 @@
             </tr>
             <tr>
               <td>WMS Individual</td>
-              <td><%= number_to_currency(total_valor_wms, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+              <td>
+                <%= number_to_currency(
+                  @wms_tasks.sum { |t| (t.duration * 60) >= 10 ? @valor_wms_operator : 0 },
+                  unit: "R$ ",
+                  separator: ",",
+                  delimiter: "."
+                ) %>
+              </td>
             </tr>
             <tr class="fw-bold">
-              <td>Total</td>
-              <td><%= number_to_currency(total_valor, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+              <td>Total Geral</td>
+              <td>
+                <%= number_to_currency(
+                  total_valor_tma + total_valor_efc + @wms_tasks.sum { |t| (t.duration * 60) >= 10 ? @valor_wms_operator : 0 },
+                  unit: "R$ ",
+                  separator: ",",
+                  delimiter: "."
+                ) %>
+              </td>
             </tr>
           </tbody>
         </table>

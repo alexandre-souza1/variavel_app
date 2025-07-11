@@ -22,6 +22,14 @@ gem "devise"
 
 gem "bootstrap"
 
+gem 'roo' # Para ler Excel
+gem 'kaminari' # Para paginação
+
+gem 'kaminari-bootstrap'
+
+gem 'will_paginate', '~> 3.3'
+gem 'will_paginate-bootstrap'
+
 gem 'image_processing', '~> 1.2'
 
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_06_26_200956) do
+ActiveRecord::Schema[7.1].define(version: 2025_07_11_145402) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -48,6 +48,16 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_26_200956) do
     t.string "nome"
     t.string "cpf"
     t.date "data_nascimento"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "az_ajudantes", force: :cascade do |t|
+    t.integer "matricula"
+    t.string "nome"
+    t.string "cpf"
+    t.date "data_nascimento"
+    t.integer "turno"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -163,7 +173,24 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_26_200956) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "wms_tasks", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.string "task_type"
+    t.string "plate"
+    t.string "task_code"
+    t.string "pallet"
+    t.datetime "started_at"
+    t.datetime "ended_at"
+    t.integer "duration", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["operator_id"], name: "index_wms_tasks_on_operator_id"
+    t.index ["started_at"], name: "index_wms_tasks_on_started_at"
+    t.index ["task_code"], name: "index_wms_tasks_on_task_code"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "az_tarefa_wms", "az_operadors"
+  add_foreign_key "wms_tasks", "operators"
 end

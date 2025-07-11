@@ -17,6 +17,9 @@
           <li class="nav-item active">
             <%= link_to "Importar parametros", import_parametro_calculos_path, class: "nav-link" %>
           </li>
+          <li class="nav-item active">
+            <%= link_to "Importar WMS", new_import_wms_tasks_path, class: "nav-link" %>
+          </li>
           <li class="nav-item dropdown">
           <a href="#" class="avatar" id="navbarDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <% if current_user.photo.attached? %>
@@ -26,9 +29,16 @@
             <% end %>
           </a>
             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+              <div class="dropdown-header">DU</div>
               <%= link_to "Motoristas", drivers_path, class: "dropdown-item" %>
               <%= link_to "Ajudantes", ajudantes_path, class: "dropdown-item" %>
               <%= link_to "Mapas", mapas_todos_path, class: "dropdown-item" %>
+              <div class="dropdown-header">AZ</div>
+              <%= link_to "Operadores", operators_path, class: "dropdown-item" %>
+              <%= link_to "Ajudantes", az_ajudantes_path, class: "dropdown-item" %>
+              <%= link_to "Resultados Diários", az_mapas_path, class: "dropdown-item" %>
+              <%= link_to "Resultados WMS", wms_tasks_path, class: "dropdown-item" %>
+              <div class="dropdown-header">Geral</div>
               <%= link_to "Parametros", parametro_calculos_path, class: "dropdown-item" %>
               <% if current_user %>
                 <%= link_to "Editar cadastro", edit_user_registration_path, class: "dropdown-item" %>

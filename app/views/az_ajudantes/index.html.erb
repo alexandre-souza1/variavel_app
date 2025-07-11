@@ -1,0 +1,14 @@
+<p style="color: green"><%= notice %></p>
+
+<h1>Az ajudantes</h1>
+
+<div id="az_ajudantes">
+  <% @az_ajudantes.each do |az_ajudante| %>
+    <%= render az_ajudante %>
+    <p>
+      <%= link_to "Show this az ajudante", az_ajudante %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New az ajudante", new_az_ajudante_path %>

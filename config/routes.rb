@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :az_ajudantes
   get 'az_consultas/index'
   get 'az_consultas/new'
   get 'az_consultas/show'
@@ -8,6 +9,7 @@ Rails.application.routes.draw do
     get 'users/edit'
     get 'users/update'
   end
+
   devise_for :users
   get 'drivers/index'
   get 'drivers/new'
@@ -34,6 +36,13 @@ Rails.application.routes.draw do
     collection do
       post :import
       delete :destroy_all
+    end
+  end
+
+  resources :wms_tasks do
+    collection do
+      get 'new_import'
+      post 'import'
     end
   end
 

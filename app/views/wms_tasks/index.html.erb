@@ -1,0 +1,107 @@
+<div class="driver-report-container">
+  <div class="container p-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="mb-0"><i class="bi bi-card-list"></i> Tarefas WMS Importadas</h1>
+      </div>
+      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
+        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <h2 class="mb-1">
+              <i class="bi bi-calendar-date"></i>
+              <%= @data_inicio_WMS.present? ? I18n.l(@data_inicio_WMS, format: "%B") : "-" %> a
+              <%= @data_fim_WMS.present? ? I18n.l(@data_fim_WMS, format: "%B") : "-" %>
+            </h2>
+            <p class="text-muted mb-0">
+              Total de Tarefas: <%= @tasks.total_entries %>
+            </p>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <%= link_to 'Nova Importação', new_import_wms_tasks_path, class: 'btn btn-success' %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de Tarefas WMS -->
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-header bg-light border-bottom">
+        <h5 class="mb-0"><i class="bi bi-list-task me-2"></i>Detalhes das Tarefas</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead class="table-primary text-center">
+              <tr>
+                <th>Tarefa</th>
+                <th>Tipo</th>
+                <th>Placa</th>
+                <th>Palete</th>
+                <th>Operador</th>
+                <th>Início</th>
+                <th>Final</th>
+                <th>Duração (s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @tasks.each do |task| %>
+                <tr>
+                  <td><%= task.task_code %></td>
+                  <td><%= task.task_type %></td>
+                  <td><%= task.plate %></td>
+                  <td><%= task.pallet %></td>
+                  <td><%= task.operator.nome %></td>
+                  <td><%= task.started_at.strftime("%d/%m/%Y %H:%M:%S") if task.started_at %></td>
+                  <td><%= task.ended_at.strftime("%d/%m/%Y %H:%M:%S") if task.ended_at %></td>
+                  <td class="text-end"><%= task.duration %>s</td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginação -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-2">
+          <div class="text-muted small">
+            Mostrando <%= @tasks.offset_value + 1 %> a <%= @tasks.offset_value + @tasks.length %> de <%= @tasks.total_entries %> %> tarefas
+          </div>
+
+          <div class="d-flex flex-column flex-md-row align-items-center gap-2">
+            <div class="d-flex align-items-center">
+              <span class="text-muted small me-2">Itens por página:</span>
+              <%= select_tag :per_page,
+                            options_for_select([10, 25, 50, 100], selected: params[:per_page] || 10),
+                            class: 'form-select form-select-sm',
+                            onchange: "this.form.submit()",
+                            disabled: true,
+                            form: "per-page-form" %>
+            </div>
+
+            <div class="pagination-container">
+              <%= will_paginate @tasks,
+                              previous_label: '&laquo;',
+                              next_label: '&raquo;',
+                              inner_window: 2,
+                              outer_window: 0,
+                              renderer: BootstrapPaginationRenderer::LinkRenderer,
+                              class: 'pagination' %>
+            </div>
+          </div>
+        </div>
+
+        <%= form_with url: request.path, method: :get, id: "per-page-form", class: "d-none" do |f| %>
+          <%= hidden_field_tag :page, params[:page] %>
+          <%= hidden_field_tag :per_page, params[:per_page] %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

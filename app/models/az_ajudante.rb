@@ -1,0 +1,2 @@
+class AzAjudante < ApplicationRecord
+end

@@ -1,0 +1,42 @@
+<%= form_with(model: az_ajudante) do |form| %>
+  <% if az_ajudante.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(az_ajudante.errors.count, "error") %> prohibited this az_ajudante from being saved:</h2>
+
+      <ul>
+        <% az_ajudante.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :matricula, style: "display: block" %>
+    <%= form.number_field :matricula %>
+  </div>
+
+  <div>
+    <%= form.label :nome, style: "display: block" %>
+    <%= form.text_field :nome %>
+  </div>
+
+  <div>
+    <%= form.label :cpf, style: "display: block" %>
+    <%= form.text_field :cpf %>
+  </div>
+
+  <div>
+    <%= form.label :data_nascimento, style: "display: block" %>
+    <%= form.date_field :data_nascimento %>
+  </div>
+
+  <div>
+    <%= form.label :turno, style: "display: block" %>
+    <%= form.number_field :turno %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>
