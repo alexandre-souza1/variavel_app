@@ -19,9 +19,11 @@ Rails.application.routes.draw do
   get 'consultas/show'
   get "mapas/show_todos", to: "mapas#show_todos", as: :mapas_todos
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-  root "consultas#index"
+  root "common#home"
   get "consulta", to: "consultas#show"
   get "az_consulta", to: "az_consultas#show"
+
+  resources :common, only: [:home]
 
   resources :mapas do
     collection do
