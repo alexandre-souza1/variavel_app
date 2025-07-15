@@ -1,32 +1,81 @@
-<h1>Gerenciar Usuários</h1>
+<div class="container py-4">
+  <!-- Card Principal -->
+  <div class="card shadow-lg rounded-4 border-0">
+    <!-- Cabeçalho do Card -->
+    <div class="card-header bg-primary text-white rounded-top-4 py-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="h4 mb-0 fw-bold">
+          <i class="fas fa-users-cog me-2"></i>Gerenciamento de Usuários
+        </h1>
+      </div>
+    </div>
 
-<table class="table">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Nome</th>
-      <th>Email</th>
-      <th>Role</th>
-      <th>Ações</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @users.each do |user| %>
-      <tr>
-        <td><%= user.id %></td>
-        <td><%= user.name %></td>
-        <td><%= user.email %></td>
-        <td><%= user.role %></td>
-        <td>
-          <%= link_to "Editar", edit_admin_user_path(user), class: "btn btn-warning btn-sm" %>
-          <% unless user == current_user %>
-            <%= link_to "Excluir", admin_user_path(user),
-                        method: :delete,
-                        data: { confirm: "Tem certeza que deseja excluir este usuário?" },
-                        class: "btn btn-danger btn-sm" %>
-          <% end %>
-        </td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+    <!-- Corpo do Card -->
+    <div class="card-body p-4">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="fw-semibold">ID</th>
+              <th class="fw-semibold">Nome</th>
+              <th class="fw-semibold">Email</th>
+              <th class="fw-semibold">Perfil</th>
+              <th class="fw-semibold text-end">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @users.each do |user| %>
+              <tr>
+                <td class="text-muted"><%= user.id %></td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center">
+                      <i class="fas fa-user text-primary"></i>
+                    </div>
+                    <%= user.name %>
+                  </div>
+                </td>
+                <td><%= user.email %></td>
+                <td>
+                  <span class="badge <%= case user.role
+                                       when 'admin' then 'bg-danger'
+                                       when 'manager' then 'bg-warning text-dark'
+                                       when 'editor' then 'bg-info'
+                                       else 'bg-secondary'
+                                       end %> rounded-pill">
+                    <%= user.role.humanize %>
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <%= link_to edit_admin_user_path(user), class: "btn btn-outline-primary" do %>
+                      <i class="fas fa-edit"></i> Editar
+                    <% end %>
+                    <% unless user == current_user %>
+                      <%= link_to admin_user_path(user),
+                          method: :delete,
+                          data: { confirm: "Tem certeza que deseja excluir este usuário?" },
+                          class: "btn btn-outline-danger" do %>
+                        <i class="fas fa-trash-alt"></i> Excluir
+                      <% end %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Rodapé do Card -->
+    <div class="card-footer bg-light rounded-bottom-4 py-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <small class="text-muted">
+          Total de usuários: <span class="fw-bold"><%= @users.count %></span>
+        </small>
+        <%= paginate @users if @users.respond_to?(:total_pages) %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -84,8 +84,8 @@
 
         <%= form_with url: bulk_delete_mapas_path, method: :delete, data: { turbo_confirm: "Tem certeza que deseja apagar os mapas selecionados?" } do %>
           <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle">
-              <thead class="table-primary text-center">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
                 <tr>
                   <th width="50px">
                     <input type="checkbox"
@@ -129,9 +129,11 @@
                     <td><%= mapa.pdv_total %></td>
                     <td><%= mapa.pdv_real %></td>
                     <td><%= mapa.recarga %></td>
-                    <td class="d-flex gap-2">
-                      <%= link_to 'Editar', edit_mapa_path(mapa), class: 'btn btn-warning btn-sm' %>
-                      <%= link_to 'Excluir', mapa_path(mapa), data: { turbo_method: :delete, turbo_confirm: 'Tem certeza?' }, class: 'btn btn-danger btn-sm' %>
+                    <td class="text-end">
+                      <div class="btn-group btn-group-sm" role="group">
+                        <%= link_to 'Editar', edit_mapa_path(mapa), class: 'btn btn-outline-primary' %>
+                        <%= link_to 'Excluir', mapa_path(mapa), data: { turbo_method: :delete, turbo_confirm: 'Tem certeza?' }, class: 'btn btn-outline-danger' %>
+                      </div>
                     </td>
                   </tr>
                 <% end %>

@@ -1,0 +1,159 @@
+<div class="bg-light min-vh-100">
+  <div class="container py-4">
+    <!-- Card Principal -->
+    <div class="card shadow-lg rounded-4 border-0">
+      <!-- Cabeçalho do Card -->
+      <div class="card-header bg-primary text-white rounded-top-4 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <h1 class="h4 mb-0 fw-bold">
+            <i class="fas fa-file-download me-2"></i>Central de Padrões - Downloads
+          </h1>
+        </div>
+      </div>
+
+      <!-- Corpo do Card -->
+      <div class="card-body p-4">
+        <!-- Filtros por tipo de documento -->
+        <div class="mb-4">
+          <h2 class="h5 text-muted mb-3">Filtrar por tipo:</h2>
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary active" data-filter="all">Todos</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="padroes">Padrões</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="matrizes">Matrizes</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="lups">LUP's</button>
+          </div>
+        </div>
+
+        <!-- Lista de documentos -->
+        <div class="list-group">
+          <!-- Padrões -->
+          <div class="list-group-item bg-light border-0 p-0 mb-3" data-category="padroes">
+            <div class="d-flex align-items-center mb-2">
+              <i class="fas fa-book text-primary me-2"></i>
+              <h3 class="h5 text-primary mb-0">Padrões Operacionais</h3>
+            </div>
+
+            <div class="list-group">
+              <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Padrão de Segurança - Versão 3.1</strong>
+                  <div class="text-muted small">PDF - 2.4MB</div>
+                </div>
+                <i class="fas fa-download text-primary"></i>
+              </div>
+
+              <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Procedimento de Carga - Versão 2.0</strong>
+                  <div class="text-muted small">PDF - 1.8MB</div>
+                </div>
+                <i class="fas fa-download text-primary"></i>
+              </div>
+
+              <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Checklist Diário Completo</strong>
+                  <div class="text-muted small">PDF - 1.2MB</div>
+                </div>
+                <i class="fas fa-download text-primary"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Matrizes -->
+          <div class="list-group-item bg-light border-0 p-0 mb-3" data-category="matrizes">
+            <div class="d-flex align-items-center mb-2">
+              <i class="fas fa-table text-primary me-2"></i>
+              <h3 class="h5 text-primary mb-0">Matrizes de Controle</h3>
+            </div>
+
+            <div class="list-group">
+              <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Matriz de Competências</strong>
+                  <div class="text-muted small">Excel - 3.5MB</div>
+                </div>
+                <i class="fas fa-download text-primary"></i>
+              </div>
+
+              <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Matriz de Riscos LOG20</strong>
+                  <div class="text-muted small">PDF - 2.1MB</div>
+                </div>
+                <i class="fas fa-download text-primary"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- LUP's -->
+          <div class="list-group-item bg-light border-0 p-0" data-category="lups">
+            <div class="d-flex align-items-center mb-2">
+              <i class="fas fa-lightbulb text-primary me-2"></i>
+              <h3 class="h5 text-primary mb-0">Lições de Um Ponto (LUP's)</h3>
+            </div>
+
+            <div class="list-group">
+              <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>LUP - Manuseio de Cargas</strong>
+                  <div class="text-muted small">PDF - 0.8MB</div>
+                </div>
+                <i class="fas fa-download text-primary"></i>
+              </div>
+
+              <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>LUP - EPI's Obrigatórios</strong>
+                  <div class="text-muted small">PDF - 1.1MB</div>
+                </div>
+                <i class="fas fa-download text-primary"></i>
+              </div>
+
+              <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>LUP - Emergências</strong>
+                  <div class="text-muted small">PDF - 1.5MB</div>
+                </div>
+                <i class="fas fa-download text-primary"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rodapé do Card -->
+      <div class="card-footer bg-light rounded-bottom-4 py-3">
+        <small class="text-muted">Atualizado em: <%= Date.today.strftime("%d/%m/%Y") %></small>
+        <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript para filtros -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const filterButtons = document.querySelectorAll('[data-filter]');
+
+  filterButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      // Remove active class from all buttons
+      filterButtons.forEach(btn => btn.classList.remove('active'));
+      // Add active class to clicked button
+      this.classList.add('active');
+
+      const filterValue = this.getAttribute('data-filter');
+
+      // Show/hide documents based on filter
+      document.querySelectorAll('[data-category]').forEach(item => {
+        if (filterValue === 'all') {
+          item.style.display = 'block';
+        } else {
+          item.style.display = item.getAttribute('data-category') === filterValue ? 'block' : 'none';
+        }
+      });
+    });
+  });
+});
+</script>

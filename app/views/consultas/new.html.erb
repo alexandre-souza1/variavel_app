@@ -7,7 +7,7 @@
         data-action="click->formulario#mostrarFormulario"
         class="card-category"
         data-categoria="motorista"
-        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://criciumanoticias.com/wp-content/uploads/2018/11/Aprovada.jpg)">
+        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('<%= asset_path("caminhao1.png") %>');">
         Variavel Motorista
       </div>
 
@@ -15,7 +15,7 @@
         data-action="click->formulario#mostrarFormulario"
         class="card-category"
         data-categoria="ajudante"
-        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://storage.transportemoderno.com.br/uploads/2022/03/Ambev-Caminhoes-eletricos_Joao-Pessoa-1.jpeg)">
+        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('<%= asset_path("caminhao2.png") %>');">
         Variavel Ajudante
       </div>
 
@@ -23,7 +23,7 @@
         data-action="click->formulario#mostrarFormulario"
         class="card-category"
         data-categoria="van"
-        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgSW9HnZW5ySxCupcEkbEWj-krFeUNO3dFiOUSkbXNSyCdFvW_QdjnwpgLE0KLHJthu3PCb1A_j6lmdtC1lgK5-SsVr671Z9_2TaPjrgQHTHmUqi0NS04IwO8Lwq1G7oMccuDxhcmLNCP0d6gHzXg0azQh6ukJBZ-CmfyMwwekp302_m0un5F2_HYOarGU/w1600/VAGAS%20PARA%20MOTORISTA%20ENTREGADOR%20OPERA%C3%87%C3%95ES%20AMBEV.png)">
+        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('<%= asset_path("caminhao3.png") %>');">
         Variavel Van
       </div>
     </div>
@@ -70,14 +70,20 @@
       <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
       <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
       <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
+      <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="3" aria-label="Slide 4"></button>
     </div>
     <div class="carousel-inner">
       <div class="carousel-item active">
         <%= link_to "https://ambev.beedoo.io/login", class: "d-block w-100 h-100" do %>
           <%= image_tag("logon.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
           <div class="carousel-caption">
-            <h5>LOG ON</h5>
-            <p>Link de acesso direto para seus cursos do LOG ON.</p>
+          </div>
+        <% end %>
+      </div>
+      <div class="carousel-item">
+        <%= link_to "https://forms.office.com/pages/responsepage.aspx?id=GUvwznZ3lEq4mzdcd6j5NnAxiOBHYkVHr8jNY5TcugNUMU9PVTBFN1VPUzlGM0NXM0VRRUVZS0VSWS4u&route=shorturl", class: "d-block w-100 h-100" do %>
+          <%= image_tag("roterizador.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
+          <div class="carousel-caption">
           </div>
         <% end %>
       </div>
@@ -85,8 +91,6 @@
         <%= link_to "https://forms.office.com/pages/responsepage.aspx?id=GUvwznZ3lEq4mzdcd6j5NnAxiOBHYkVHr8jNY5TcugNUMU9PVTBFN1VPUzlGM0NXM0VRRUVZS0VSWS4u&route=shorturl", class: "d-block w-100 h-100" do %>
           <%= image_tag("relato.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
           <div class="carousel-caption">
-            <h5>Relatos</h5>
-            <p>Faça seus relatos aqui.</p>
           </div>
         <% end %>
       </div>
@@ -94,8 +98,6 @@
         <%= link_to "https://7z4kss-my.sharepoint.com/:b:/g/personal/cadu_7z4kss_onmicrosoft_com/EXyOINwrwCFBlBhUA6bphs8B5N8bRnVn0y87bqfsWJEo-g?e=MqCtGt", class: "d-block w-100 h-100" do %>
           <%= image_tag("layout.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
           <div class="carousel-caption">
-            <h5>Layout do Estacionamento</h5>
-            <p>Padrão de localização dos carros do Pátio.</p>
           </div>
         <% end %>
       </div>

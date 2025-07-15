@@ -23,7 +23,12 @@ Rails.application.routes.draw do
   get "consulta", to: "consultas#show"
   get "az_consulta", to: "az_consultas#show"
 
-  resources :common, only: [:home]
+  resources :common do
+    collection do
+      get :home
+      get :padroes
+    end
+  end
 
   resources :mapas do
     collection do

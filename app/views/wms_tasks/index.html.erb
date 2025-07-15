@@ -38,8 +38,8 @@
       </div>
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-bordered table-hover align-middle">
-            <thead class="table-primary text-center">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
               <tr>
                 <th>Tarefa</th>
                 <th>Tipo</th>
@@ -101,6 +101,7 @@
           <%= hidden_field_tag :page, params[:page] %>
           <%= hidden_field_tag :per_page, params[:per_page] %>
         <% end %>
+        <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
       </div>
     </div>
   </div>
