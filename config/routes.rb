@@ -23,6 +23,8 @@ Rails.application.routes.draw do
   get "consulta", to: "consultas#show"
   get "az_consulta", to: "az_consultas#show"
 
+  resources :downloads
+
   resources :common do
     collection do
       get :home

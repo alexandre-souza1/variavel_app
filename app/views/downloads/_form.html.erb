@@ -1,0 +1,55 @@
+<%= form_with(model: download, local: true) do |form| %>
+  <% if download.errors.any? %>
+    <div class="alert alert-danger">
+      <h4><%= pluralize(download.errors.count, "erro") %> impediram este download de ser salvo:</h4>
+      <ul>
+        <% download.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <div class="row">
+      <div class="col-md-6">
+        <%= form.label :title, "Título*", class: "form-label" %>
+        <%= form.text_field :title, class: "form-control", required: true %>
+      </div>
+
+      <div class="col-md-6">
+        <%= form.label :category, "Categoria*", class: "form-label" %>
+        <%= form.select :category, Download::CATEGORIES.map { |c| [c.humanize.upcase, c] }, {}, class: "form-select", required: true %>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <div class="row">
+      <div class="col-md-4">
+        <%= form.label :file_type, "Tipo de Arquivo", class: "form-label" %>
+        <%= form.select :file_type, Download::FILE_TYPES, {}, class: "form-select" %>
+      </div>
+
+      <div class="col-md-4">
+        <%= form.label :sector, "Setor*", class: "form-label" %>
+        <%= form.select :sector, Download::SECTOR, {}, class: "form-select", required: true %>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :url, "URL do Arquivo*", class: "form-label" %>
+    <%= form.url_field :url, class: "form-control", required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :description, "Descrição", class: "form-label" %>
+    <%= form.text_area :description, class: "form-control", rows: 3 %>
+  </div>
+
+  <div class="actions mt-4">
+    <%= form.submit "Salvar", class: "btn btn-primary me-2" %>
+    <%= link_to "Cancelar", downloads_path, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

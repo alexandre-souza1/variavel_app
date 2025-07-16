@@ -12,22 +12,22 @@
       </div>
 
       <!-- Corpo do Card -->
-      <div class="card-body p-4">
+      <div class="card-body p-4" data-controller="filter">
         <!-- Filtros por tipo de documento -->
         <div class="mb-4">
           <h2 class="h5 text-muted mb-3">Filtrar por tipo:</h2>
           <div class="btn-group" role="group">
-            <button type="button" class="btn btn-outline-primary active" data-filter="all">Todos</button>
-            <button type="button" class="btn btn-outline-primary" data-filter="padroes">Padrões</button>
-            <button type="button" class="btn btn-outline-primary" data-filter="matrizes">Matrizes</button>
-            <button type="button" class="btn btn-outline-primary" data-filter="lups">LUP's</button>
+            <button type="button" class="btn btn-outline-primary active" data-filter="all" data-action="click->filter#filter" data-filter-target="filterButton">Todos</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="padroes" data-action="click->filter#filter" data-filter-target="filterButton">Padrões</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="matrizes" data-action="click->filter#filter" data-filter-target="filterButton">Matrizes</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="lups" data-action="click->filter#filter" data-filter-target="filterButton">LUP's</button>
           </div>
         </div>
 
         <!-- Lista de documentos -->
         <div class="list-group">
           <!-- Padrões -->
-          <div class="list-group-item bg-light border-0 p-0 mb-3" data-category="padroes">
+          <div class="list-group-item bg-light border-0 p-0 mb-3" data-category="padroes" data-filter-target="category">
             <div class="d-flex align-items-center mb-2">
               <i class="fas fa-book text-primary me-2"></i>
               <h3 class="h5 text-primary mb-0">Padrões Operacionais</h3>
@@ -61,7 +61,7 @@
           </div>
 
           <!-- Matrizes -->
-          <div class="list-group-item bg-light border-0 p-0 mb-3" data-category="matrizes">
+          <div class="list-group-item bg-light border-0 p-0 mb-3" data-category="matrizes" data-filter-target="category">
             <div class="d-flex align-items-center mb-2">
               <i class="fas fa-table text-primary me-2"></i>
               <h3 class="h5 text-primary mb-0">Matrizes de Controle</h3>
@@ -87,7 +87,7 @@
           </div>
 
           <!-- LUP's -->
-          <div class="list-group-item bg-light border-0 p-0" data-category="lups">
+          <div class="list-group-item bg-light border-0 p-0" data-category="lups" data-filter-target="category">
             <div class="d-flex align-items-center mb-2">
               <i class="fas fa-lightbulb text-primary me-2"></i>
               <h3 class="h5 text-primary mb-0">Lições de Um Ponto (LUP's)</h3>
@@ -130,30 +130,3 @@
     </div>
   </div>
 </div>
-
-<!-- JavaScript para filtros -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const filterButtons = document.querySelectorAll('[data-filter]');
-
-  filterButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      // Remove active class from all buttons
-      filterButtons.forEach(btn => btn.classList.remove('active'));
-      // Add active class to clicked button
-      this.classList.add('active');
-
-      const filterValue = this.getAttribute('data-filter');
-
-      // Show/hide documents based on filter
-      document.querySelectorAll('[data-category]').forEach(item => {
-        if (filterValue === 'all') {
-          item.style.display = 'block';
-        } else {
-          item.style.display = item.getAttribute('data-category') === filterValue ? 'block' : 'none';
-        }
-      });
-    });
-  });
-});
-</script>

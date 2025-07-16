@@ -57,9 +57,7 @@
     </div>
   </div>
   <div class="container">
-    <a href="https://ambev.beedoo.io/login" class="btn btn-primary btn-lg rounded-1 w-100" target="_blank" rel="noopener noreferrer">
-      CENTRAL DE PADRÕES
-    </a>
+    <%= link_to "CENTRAL DE PADRÕES", downloads_path, class: "btn btn-primary btn-lg rounded-1 w-100" %>
   </div>
 </div>
 
@@ -72,7 +70,7 @@
     </div>
     <div class="carousel-inner">
       <div class="carousel-item active">
-        <%= link_to "https://ambev.beedoo.io/login", class: "d-block w-100 h-100" do %>
+        <%= link_to "https://ambev.beedoo.io/login", class: "d-block w-100 h-100", target: "_blank" do %>
           <%= image_tag("logon.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
           <div class="carousel-caption">
             <h5>LOG ON</h5>
@@ -81,7 +79,7 @@
         <% end %>
       </div>
       <div class="carousel-item">
-        <%= link_to "https://forms.office.com/pages/responsepage.aspx?id=GUvwznZ3lEq4mzdcd6j5NnAxiOBHYkVHr8jNY5TcugNUMU9PVTBFN1VPUzlGM0NXM0VRRUVZS0VSWS4u&route=shorturl", class: "d-block w-100 h-100" do %>
+        <%= link_to "https://forms.office.com/pages/responsepage.aspx?id=GUvwznZ3lEq4mzdcd6j5NnAxiOBHYkVHr8jNY5TcugNUMU9PVTBFN1VPUzlGM0NXM0VRRUVZS0VSWS4u&route=shorturl", class: "d-block w-100 h-100", target: "_blank" do %>
           <%= image_tag("relato.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
           <div class="carousel-caption">
             <h5>Relatos</h5>
@@ -90,7 +88,7 @@
         <% end %>
       </div>
       <div class="carousel-item">
-        <%= link_to "https://7z4kss-my.sharepoint.com/:b:/g/personal/cadu_7z4kss_onmicrosoft_com/EXyOINwrwCFBlBhUA6bphs8B5N8bRnVn0y87bqfsWJEo-g?e=MqCtGt", class: "d-block w-100 h-100" do %>
+        <%= link_to "https://7z4kss-my.sharepoint.com/:b:/g/personal/cadu_7z4kss_onmicrosoft_com/EXyOINwrwCFBlBhUA6bphs8B5N8bRnVn0y87bqfsWJEo-g?e=MqCtGt", class: "d-block w-100 h-100", target: "_blank" do %>
           <%= image_tag("layout.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
           <div class="carousel-caption">
             <h5>Layout do Estacionamento</h5>

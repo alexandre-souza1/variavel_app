@@ -1,0 +1,83 @@
+<div class="bg-light min-vh-100">
+  <div class="container py-4">
+    <!-- Card Principal -->
+    <div class="card shadow-lg rounded-4 border-0">
+      <!-- Cabeçalho do Card -->
+      <div class="card-header bg-primary text-white rounded-top-4 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <h1 class="h4 mb-0 fw-bold">
+            <i class="fas fa-file-download me-2"></i>Central de Padrões - Downloads
+          </h1>
+          <% if current_user&.admin? %>
+            <%= link_to new_download_path, class: "btn btn-sm btn-light" do %>
+              <i class="fas fa-plus me-1"></i> Novo Link
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="card-body p-4" data-controller="filter">
+        <!-- Filtros por tipo de documento -->
+        <div class="mb-4">
+          <h2 class="h5 text-muted mb-3">Filtrar por tipo:</h2>
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary active" data-filter="all" data-action="click->filter#filter" data-filter-target="filterButton">TODOS</button>
+            <% Download::CATEGORIES.each do |category| %>
+              <button type="button" class="btn btn-outline-primary" data-filter="<%= category %>" data-action="click->filter#filter" data-filter-target="filterButton">
+                <%= category.humanize.upcase %>
+              </button>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Lista de documentos dinâmica -->
+        <div class="list-group">
+          <% Download::CATEGORIES.each do |category| %>
+            <div class="list-group-item bg-light border-0 p-0 mb-3" data-category="<%= category %>" data-filter-target="category">
+              <div class="d-flex align-items-center mb-2">
+                <i class="<%= category_icon(category) %> text-primary me-2"></i>
+                <h3 class="h5 text-primary mb-0"><%= category_title(category).upcase %></h3>
+              </div>
+
+              <div class="list-group">
+                <% Download.where(category: category).each do |download| %>
+                  <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <a href="<%= download.url %>" class="flex-grow-1 text-decoration-none text-dark" target="_blank">
+                      <div>
+                        <strong><%= download.title %></strong>
+                        <div class="text-muted small">
+                          <%= download.file_type %> - <%= download.sector %> -
+                          <%= (download.updated_at || download.created_at).strftime("%d/%m/%Y %H:%M") %>
+                        </div>
+                      </div>
+                    </a>
+                    <% if current_user&.admin? %>
+                      <div class="btn-group btn-group-sm ms-2">
+                        <%= link_to edit_download_path(download), class: "btn btn-outline-primary" do %>
+                          <i class="fas fa-edit"></i>
+                        <% end %>
+                        <%= link_to download, method: :delete,
+                                    data: { confirm: 'Tem certeza que deseja excluir este link?' },
+                                    class: "btn btn-outline-danger" do %>
+                          <i class="fas fa-trash"></i>
+                        <% end %>
+                      </div>
+                    <% else %>
+                      <i class="fas fa-download text-primary ms-2"></i>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Rodapé do Card -->
+      <div class="card-footer bg-light rounded-bottom-4 py-3">
+        <small class="text-muted">Atualizado em: <%= Date.today.strftime("%d/%m/%Y") %></small>
+        <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
+      </div>
+    </div>
+  </div>
+</div>

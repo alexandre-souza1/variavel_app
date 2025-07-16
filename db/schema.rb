@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_07_11_145402) do
+ActiveRecord::Schema[7.1].define(version: 2025_07_16_155846) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -104,6 +104,18 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_11_145402) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["az_operador_id"], name: "index_az_tarefa_wms_on_az_operador_id"
+  end
+
+  create_table "downloads", force: :cascade do |t|
+    t.string "title"
+    t.string "description"
+    t.string "category"
+    t.string "file_type"
+    t.string "file_size"
+    t.string "url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "sector"
   end
 
   create_table "drivers", force: :cascade do |t|
