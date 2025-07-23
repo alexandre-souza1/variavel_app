@@ -4,7 +4,13 @@ class Admin::UsersController < ApplicationController
   before_action :only_admin, except: [:edit, :update] # Aplica only_admin apenas para ações não relacionadas a edição
   before_action :authorize_user_edit, only: [:edit, :update] # Nova verificação para edit/update
 
-  # ... (outras actions permanecem iguais)
+  def index
+    @users = User.all.order(:id)
+  end
+
+  def edit
+    @user = User.find(params[:id])
+  end
 
   def update
     if params[:user][:remove_photo] == '1'
@@ -24,6 +30,16 @@ class Admin::UsersController < ApplicationController
       end
     else
       render :edit
+    end
+  end
+
+  def destroy
+    @user = User.find(params[:id])
+    if @user == current_user
+      redirect_to admin_users_path, alert: "Você não pode deletar a si mesmo."
+    else
+      @user.destroy
+      redirect_to admin_users_path, notice: "Usuário excluído com sucesso."
     end
   end
 
