@@ -1,64 +1,59 @@
-<div class="container my-5" style="max-width: 600px;">
-  <h2 class="text-center mb-4">Editar cadastro</h2>
+<div class="container my-5">
+  <h2 class="mb-4">Editar Usuário</h2>
 
-  <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put, multipart: true, class: "needs-validation" }) do |f| %>
-    <%= render "devise/shared/error_messages", resource: resource %>
-
-    <div class="mb-3">
-      <%= f.label :name, "Nome", class: "form-label" %>
-      <%= f.text_field :name, class: "form-control" %>
-    </div>
-
-    <div class="mb-3">
-      <%= f.label :email, "E-mail", class: "form-label" %>
-      <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control" %>
-    </div>
-
-    <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-      <div class="alert alert-warning">
-        Atualmente aguardando confirmação de: <%= resource.unconfirmed_email %>
-      </div>
-    <% end %>
-
-    <div class="mb-3">
-      <%= f.label :password, "Nova senha", class: "form-label" %>
-      <small class="form-text text-muted">(Deixe em branco se não quiser alterar)</small>
-      <%= f.password_field :password, autocomplete: "new-password", class: "form-control" %>
-      <% if @minimum_password_length %>
-        <small class="form-text text-muted">No mínimo <%= @minimum_password_length %> caracteres</small>
-      <% end %>
-    </div>
-
-    <div class="mb-3">
-      <%= f.label :password_confirmation, "Confirmação da nova senha", class: "form-label" %>
-      <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control" %>
-    </div>
-
-    <div class="mb-3">
-      <%= f.label :current_password, "Senha atual", class: "form-label" %>
-      <small class="form-text text-muted">(Precisamos da sua senha atual para confirmar as mudanças)</small>
-      <%= f.password_field :current_password, autocomplete: "current-password", class: "form-control" %>
-    </div>
-
-    <div class="mb-4">
-      <%= f.label :photo, "Foto de perfil", class: "form-label" %>
-      <%= f.file_field :photo, class: "form-control" %>
-      <% if resource.photo.attached? %>
-        <div class="mt-3">
-          <p>Foto atual:</p>
-          <%= image_tag resource.photo.variant(resize_to_limit: [150, 150]), class: "rounded-circle border" %>
+  <%= form_for [:admin, @user], html: { multipart: true, class: "needs-validation" } do |f| %>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="mb-3">
+          <%= f.label :name, "Nome", class: "form-label" %>
+          <%= f.text_field :name, class: "form-control" %>
         </div>
-      <% end %>
+
+        <div class="mb-3">
+          <%= f.label :email, "Email", class: "form-label" %>
+          <%= f.email_field :email, class: "form-control" %>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :role, "Tipo de Usuário", class: "form-label" %>
+          <%= f.select :role, User.roles.keys.map { |role| [role.titleize, role] }, {}, class: "form-select" %>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="mb-3">
+          <%= f.label :photo, "Foto de Perfil", class: "form-label" %>
+
+          <% if @user.photo.attached? %>
+            <div class="mb-3">
+              <%= image_tag @user.photo.variant(resize_to_limit: [150, 150]), class: "rounded-circle border mb-2" %>
+              <div class="form-check">
+                <%= f.check_box :remove_photo, class: "form-check-input" %>
+                <%= f.label :remove_photo, "Remover foto atual", class: "form-check-label" %>
+              </div>
+            </div>
+          <% end %>
+
+          <%= f.file_field :photo, class: "form-control" %>
+          <small class="text-muted">Formatos: JPG, PNG (Máx. 5MB)</small>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :password, "Nova Senha", class: "form-label" %>
+          <small class="text-muted">(Deixe em branco para não alterar)</small>
+          <%= f.password_field :password, class: "form-control" %>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :password_confirmation, "Confirmação da Senha", class: "form-label" %>
+          <%= f.password_field :password_confirmation, class: "form-control" %>
+        </div>
+      </div>
     </div>
 
-    <div class="d-grid gap-2">
-      <%= f.submit "Atualizar", class: "btn btn-primary" %>
+    <div class="d-flex justify-content-between mt-4">
+      <%= link_to "Cancelar", admin_users_path, class: "btn btn-secondary" %>
+      <%= f.submit "Atualizar Usuário", class: "btn btn-primary" %>
     </div>
   <% end %>
-
-  <hr class="my-4">
-
-  <div class="text-center mt-3">
-    <%= link_to "Voltar", :back, class: "btn btn-secondary" %>
-  </div>
 </div>

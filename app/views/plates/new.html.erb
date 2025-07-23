@@ -1,0 +1,27 @@
+<h1>Nova Placa</h1>
+
+<%= form_with model: @plate, local: true do |f| %>
+  <div>
+    <%= f.label :placa %>
+    <%= f.text_field :placa %>
+  </div>
+
+  <div>
+    <%= f.label :setor %>
+    <%= f.select :setor, ['AZ', 'DU'], prompt: "Selecione" %>
+  </div>
+
+  <div>
+    <%= f.label :perfil %>
+    <%= f.select :perfil, ['GLP', 'Sem Balança', 'VUC', 'TOCO', 'TRUCK', 'BITRUCK', 'VAN'], include_blank: true %>
+  </div>
+
+  <div>
+    <%= f.label :tipo %>
+    <%= f.select :tipo, ['Empilhadeira', 'Paleteira', 'Máquina de Limpeza', 'Caminhão', 'Van'], prompt: "Selecione" %>
+  </div>
+
+  <div>
+    <%= f.submit "Salvar" %>
+  </div>
+<% end %>

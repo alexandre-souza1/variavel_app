@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  registration: MyString
+  equipment_type: MyString
+  service_type: MyString
+  plate: MyString
+  report: MyText
+  evidence: MyString
+  user_type: MyString
+  user_id: 1
+
+two:
+  registration: MyString
+  equipment_type: MyString
+  service_type: MyString
+  plate: MyString
+  report: MyText
+  evidence: MyString
+  user_type: MyString
+  user_id: 1

@@ -24,12 +24,17 @@ Rails.application.routes.draw do
   get "az_consulta", to: "az_consultas#show"
 
   resources :downloads
+  resources :autonomies, only: [:new, :create, :index]
 
   resources :common do
     collection do
       get :home
       get :padroes
     end
+  end
+
+  resources :plates do
+    collection { post :import }
   end
 
   resources :mapas do
