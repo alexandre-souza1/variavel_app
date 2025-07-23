@@ -8,7 +8,7 @@
           <h1 class="h4 mb-0 fw-bold">
             <i class="fas fa-file-download me-2"></i>Central de Padrões - Downloads
           </h1>
-          <% if current_user&.admin? %>
+          <% if current_user&.admin? || current_user&.supervisor? %>
             <%= link_to new_download_path, class: "btn btn-sm btn-light" do %>
               <i class="fas fa-plus me-1"></i> Novo Link
             <% end %>
@@ -51,7 +51,7 @@
                         </div>
                       </div>
                     </a>
-                    <% if current_user&.admin? %>
+                    <% if current_user&.admin? || current_user&.supervisor? %>
                       <div class="btn-group btn-group-sm ms-2">
                         <%= link_to edit_download_path(download), class: "btn btn-outline-primary" do %>
                           <i class="fas fa-edit"></i>
