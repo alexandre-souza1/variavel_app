@@ -37,10 +37,11 @@ class Admin::UsersController < ApplicationController
 
   private
 
-  def only_admin
-    redirect_to root_path, alert: "Acesso negado" unless current_user.admin?
+def only_admin
+  unless current_user.admin? || (action_name == 'edit' && @user == current_user) || (action_name == 'update' && @user == current_user)
+    redirect_to root_path, alert: "Acesso negado"
   end
-
+end
   def user_params
     permitted = [:email, :name, :role, :photo]
     permitted << :password if password_params_present?
