@@ -31,6 +31,7 @@
                   <th class="fw-bold">Relato</th>
                   <th class="fw-bold">Evidência</th>
                   <th class="fw-bold">Data</th>
+                  <th class="fw-bold text-center">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -52,6 +53,14 @@
                       <% end %>
                     </td>
                     <td><%= I18n.l(autonomy.created_at, format: :short) %></td>
+                    <td class="text-center">
+                      <%= button_to autonomy_path(autonomy),
+                          method: :delete,
+                          class: "btn btn-sm btn-danger",
+                          form: { data: { turbo_confirm: "Tem certeza que deseja apagar este registro?" } } do %>
+                        <i class="fas fa-trash-alt"></i>
+                      <% end %>
+                    </td>
                   </tr>
                 <% end %>
               </tbody>

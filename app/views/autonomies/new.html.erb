@@ -43,7 +43,12 @@
             <!-- Matrícula -->
             <div class="col-md-6">
               <%= f.label :registration, "Matrícula do Colaborador", class: "form-label fw-bold text-primary" %>
-              <%= f.text_field :registration, class: "form-control form-control-lg", required: true %>
+              <%= f.text_field :registration, class: "form-control form-control-lg",
+                required: true,
+                data: {
+                  "autonomy-form-target": "registration",
+                  "action": "change->autonomy-form#checkRegistration"
+                } %>
               <div class="invalid-feedback">
                 Por favor, informe a matrícula.
               </div>
@@ -54,7 +59,12 @@
               <%= f.label :equipment_type, "Tipo de Equipamento", class: "form-label fw-bold text-primary" %>
               <%= f.select :equipment_type, ["Empilhadeira", "Máquina de Limpeza", "Paleteira", "Caminhão"],
                           { prompt: "Selecione" },
-                          { class: "form-select form-select-lg", required: true } %>
+                          { class: "form-select form-select-lg",
+                            required: true,
+                            data: {
+                              "autonomy-form-target": "equipmentType",
+                              "action": "change->autonomy-form#updateServiceTypesAndPlates"
+                            } } %>
               <div class="invalid-feedback">
                 Por favor, selecione o tipo de equipamento.
               </div>
@@ -63,9 +73,13 @@
             <!-- Tipo de Serviço -->
             <div class="col-md-6">
               <%= f.label :service_type, "Tipo de Serviço", class: "form-label fw-bold text-primary" %>
-              <%= f.select :service_type, ["Limpeza Profunda", "Inspeção Técnica", "5s", "Inspeção de Cabo de Aço", "Inspeção de Plataforma"],
+              <%= f.select :service_type, [],
                           { prompt: "Selecione" },
-                          { class: "form-select form-select-lg", required: true } %>
+                          { class: "form-select form-select-lg",
+                            required: true,
+                            data: {
+                              "autonomy-form-target": "serviceType"
+                            } } %>
               <div class="invalid-feedback">
                 Por favor, selecione o tipo de serviço.
               </div>
@@ -74,9 +88,13 @@
             <!-- Placa -->
             <div class="col-md-6">
               <%= f.label :plate, "Placa", class: "form-label fw-bold text-primary" %>
-              <%= f.select :plate, @plates,
+              <%= f.select :plate, [],
                           { prompt: "Selecione a placa" },
-                          { class: "form-select form-select-lg", required: true } %>
+                          { class: "form-select form-select-lg",
+                            required: true,
+                            data: {
+                              "autonomy-form-target": "plate"
+                            } } %>
               <div class="invalid-feedback">
                 Por favor, selecione a placa.
               </div>

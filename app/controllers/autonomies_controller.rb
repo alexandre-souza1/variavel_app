@@ -1,5 +1,6 @@
 class AutonomiesController < ApplicationController
   before_action :set_plates, only: [:new, :create]
+  before_action :set_autonomy, only: [:destroy]
 
   def index
     @autonomies = if params[:search].present?
@@ -34,10 +35,42 @@ class AutonomiesController < ApplicationController
     end
   end
 
+  def destroy
+    @autonomy.destroy
+    redirect_to autonomies_path, notice: "Registro apagado com sucesso."
+  end
+
+  def check_registration
+  registration = params[:registration]
+  # Aqui você deve implementar a lógica para verificar o tipo de usuário
+  # Exemplo simplificado:
+  user = User.find_by(registration: registration)
+
+  if user
+    render json: { user_type: user.user_type } # Supondo que user_type seja 'Driver' ou 'Operator'
+  else
+    render json: { user_type: nil }
+  end
+  end
+
+  def plates
+    equipment_type = params[:equipment_type]
+
+    # Busca as placas na tabela plates filtrando pelo tipo de equipamento
+    plates = Plate.where(tipo: equipment_type).pluck(:placa) # assumindo que a coluna se chama 'placa'
+
+    render json: plates
+  end
+
   private
 
+  def set_autonomy
+    @autonomy = Autonomy.find(params[:id])
+  end
+
   def set_plates
-    @plates = Plate.all.pluck(:placa) # ou o nome correto do campo
+    # Inicialmente vazio, será preenchido via AJAX quando selecionar o equipment_type
+    @plates = []
   end
 
   def autonomy_params

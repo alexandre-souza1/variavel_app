@@ -24,7 +24,13 @@ Rails.application.routes.draw do
   get "az_consulta", to: "az_consultas#show"
 
   resources :downloads
-  resources :autonomies, only: [:new, :create, :index]
+  
+  resources :autonomies do
+    collection do
+      get :check_registration
+      get :plates
+    end
+  end
 
   resources :common do
     collection do
