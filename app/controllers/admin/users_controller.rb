@@ -12,6 +12,12 @@ class Admin::UsersController < ApplicationController
 
   def update
     @user = User.find(params[:id])
+
+    # Remove a foto se o parâmetro remove_photo estiver presente
+    if params[:user][:remove_photo] == '1'
+      @user.photo.purge
+    end
+
     if @user.update(user_params)
       redirect_to admin_users_path, notice: "Usuário atualizado com sucesso."
     else
@@ -37,8 +43,12 @@ class Admin::UsersController < ApplicationController
 
   def user_params
     permitted = [:email, :name, :role, :photo]
-    permitted << :password if params[:user][:password].present?
-    permitted << :password_confirmation if params[:user][:password_confirmation].present?
+    permitted << :password if password_params_present?
+    permitted << :password_confirmation if password_params_present?
     params.require(:user).permit(permitted)
+  end
+
+  def password_params_present?
+    params[:user][:password].present? || params[:user][:password_confirmation].present?
   end
 end

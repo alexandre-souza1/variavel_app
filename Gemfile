@@ -20,7 +20,12 @@ gem 'nokogiri', '~> 1.18.6', platforms: :ruby, require: false
 
 gem "devise"
 
+gem "cloudinary"
+gem "activestorage-cloudinary-service"
+
 gem "bootstrap"
+
+gem 'dotenv-rails'
 
 gem 'roo' # Para ler Excel
 gem 'kaminari' # Para paginação

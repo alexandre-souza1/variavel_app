@@ -1,0 +1,118 @@
+<div class="bg-light min-vh-100">
+  <div class="container py-4">
+    <!-- Card Principal -->
+    <div class="card shadow-lg rounded-4 border-0">
+      <!-- Cabeçalho do Card -->
+      <div class="card-header bg-primary text-white rounded-top-4 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <h1 class="h4 mb-0 fw-bold">
+            <i class="fas fa-car me-2"></i>Formulário de Autonomia
+          </h1>
+          <%= link_to autonomies_path, class: "btn btn-sm btn-light" do %>
+            <i class="fas fa-arrow-left me-1"></i> Voltar
+          <% end %>
+        </div>
+      </div>
+
+      <div class="card-body p-4">
+        <%= form_with model: @autonomy, local: true, 
+                      html: { 
+                        multipart: true, 
+                        class: "needs-validation", 
+                        novalidate: true,
+                        data: { 
+                          controller: "autonomy-form",
+                          action: "submit->autonomy-form#validate"
+                        }
+                      } do |f| %>
+          <% if @autonomy.errors.any? %>
+            <div class="alert alert-danger mb-4">
+              <h4 class="alert-heading h5">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <%= pluralize(@autonomy.errors.count, "erro") %> proibiu o salvamento:
+              </h4>
+              <ul class="mb-0">
+                <% @autonomy.errors.full_messages.each do |msg| %>
+                  <li><%= msg %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row g-3 mb-4">
+            <!-- Matrícula -->
+            <div class="col-md-6">
+              <%= f.label :registration, "Matrícula do Colaborador", class: "form-label fw-bold text-primary" %>
+              <%= f.text_field :registration, class: "form-control form-control-lg", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe a matrícula.
+              </div>
+            </div>
+
+            <!-- Tipo de Equipamento -->
+            <div class="col-md-6">
+              <%= f.label :equipment_type, "Tipo de Equipamento", class: "form-label fw-bold text-primary" %>
+              <%= f.select :equipment_type, ["Empilhadeira", "Máquina de Limpeza", "Paleteira", "Caminhão"], 
+                          { prompt: "Selecione" }, 
+                          { class: "form-select form-select-lg", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione o tipo de equipamento.
+              </div>
+            </div>
+
+            <!-- Tipo de Serviço -->
+            <div class="col-md-6">
+              <%= f.label :service_type, "Tipo de Serviço", class: "form-label fw-bold text-primary" %>
+              <%= f.select :service_type, ["Limpeza Profunda", "Inspeção Técnica", "5s", "Inspeção de Cabo de Aço", "Inspeção de Plataforma"], 
+                          { prompt: "Selecione" }, 
+                          { class: "form-select form-select-lg", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione o tipo de serviço.
+              </div>
+            </div>
+
+            <!-- Placa -->
+            <div class="col-md-6">
+              <%= f.label :plate, "Placa", class: "form-label fw-bold text-primary" %>
+              <%= f.select :plate, @plates, 
+                          { prompt: "Selecione a placa" }, 
+                          { class: "form-select form-select-lg", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione a placa.
+              </div>
+            </div>
+
+            <!-- Relato -->
+            <div class="col-12">
+              <%= f.label :report, "Relato", class: "form-label fw-bold text-primary" %>
+              <%= f.text_area :report, rows: 5, class: "form-control", required: true %>
+              <div class="invalid-feedback">
+                Por favor, descreva o relato.
+              </div>
+            </div>
+
+            <!-- Evidência -->
+            <div class="col-12 mt-3">
+              <%= f.label :evidence, "Evidência (Imagem)", class: "form-label fw-bold text-primary" %>
+              <%= f.file_field :evidence, class: "form-control", accept: "image/*", required: true %>
+              <div class="form-text">Anexe uma imagem como evidência do serviço realizado.</div>
+              <div class="invalid-feedback">
+                Por favor, anexe uma imagem de evidência.
+              </div>
+            </div>
+
+            <!-- Botão de Envio -->
+            <div class="col-12 mt-4">
+              <%= f.submit "Enviar", class: "btn btn-primary btn-lg w-100 py-3 fw-bold" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Rodapé do Card -->
+      <div class="card-footer bg-light rounded-bottom-4 py-3">
+        <small class="text-muted">Formulário de registro de autonomia - <%= Date.today.strftime("%d/%m/%Y") %></small>
+      </div>
+    </div>
+  </div>
+</div>

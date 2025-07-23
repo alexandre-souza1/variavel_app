@@ -3,7 +3,12 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
-  has_one_attached :photo
+         
+  attr_accessor :remove_photo
+
+  has_one_attached :photo do |attachable|
+    attachable.variant :thumb, resize_to_limit: [150, 150]
+  end
 
     enum role: { user: 0, supervisor: 1, admin: 2 }
 
