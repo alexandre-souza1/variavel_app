@@ -1,49 +1,53 @@
 class Admin::UsersController < ApplicationController
   before_action :authenticate_user!
-  before_action :only_admin
+  before_action :set_user, only: [:edit, :update, :destroy]
+  before_action :only_admin, except: [:edit, :update] # Aplica only_admin apenas para ações não relacionadas a edição
+  before_action :authorize_user_edit, only: [:edit, :update] # Nova verificação para edit/update
 
-  def index
-    @users = User.all.order(:id)
-  end
-
-  def edit
-    @user = User.find(params[:id])
-  end
+  # ... (outras actions permanecem iguais)
 
   def update
-    @user = User.find(params[:id])
-
-    # Remove a foto se o parâmetro remove_photo estiver presente
     if params[:user][:remove_photo] == '1'
       @user.photo.purge
     end
 
-    if @user.update(user_params)
-      redirect_to admin_users_path, notice: "Usuário atualizado com sucesso."
-    else
-      render :edit, alert: "Erro ao atualizar o usuário."
+    # Remove o role dos parâmetros se o usuário não for admin
+    unless current_user.admin?
+      params[:user].delete(:role)
     end
-  end
 
-  def destroy
-    @user = User.find(params[:id])
-    if @user == current_user
-      redirect_to admin_users_path, alert: "Você não pode deletar a si mesmo."
+    if @user.update(user_params)
+      if current_user.admin?
+        redirect_to admin_users_path, notice: "Usuário atualizado com sucesso."
+      else
+        redirect_to edit_admin_user_path(@user), notice: "Perfil atualizado com sucesso."
+      end
     else
-      @user.destroy
-      redirect_to admin_users_path, notice: "Usuário excluído com sucesso."
+      render :edit
     end
   end
 
   private
 
-def only_admin
-  unless current_user.admin? || (action_name == 'edit' && @user == current_user) || (action_name == 'update' && @user == current_user)
-    redirect_to root_path, alert: "Acesso negado"
+  def set_user
+    @user = User.find(params[:id])
   end
-end
+
+  def authorize_user_edit
+    unless current_user.admin? || @user == current_user
+      redirect_to root_path, alert: "Acesso negado"
+    end
+  end
+
+  def only_admin
+    unless current_user.admin?
+      redirect_to root_path, alert: "Acesso restrito a administradores"
+    end
+  end
+
   def user_params
-    permitted = [:email, :name, :role, :photo]
+    permitted = [:email, :name, :photo, :remove_photo]
+    permitted << :role if current_user.admin? # Só permite alterar role se for admin
     permitted << :password if password_params_present?
     permitted << :password_confirmation if password_params_present?
     params.require(:user).permit(permitted)
