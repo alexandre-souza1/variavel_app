@@ -99,6 +99,6 @@ class DriversController < ApplicationController
   end
 
   def driver_params
-    params.require(:driver).permit(:nome, :matricula, :promax, :cpf, :data_nascimento)
+    params.require(:driver).permit(:nome, :matricula, :promax, :cpf, :data_nascimento, :autonomy)
   end
 end

@@ -1,10 +1,90 @@
-<h1>Editing operator</h1>
+<div class="container">
+  <h1 class="mb-4">Editar Operador</h1>
 
-<%= render "form", operator: @operator %>
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <%= form_with(model: @operator, local: true) do |form| %>
+        <% if @operator.errors.any? %>
+          <div class="alert alert-danger">
+            <h5><%= pluralize(@operator.errors.count, "erro") %> impediram o salvamento:</h5>
+            <ul>
+              <% @operator.errors.each do |error| %>
+                <li><%= error.full_message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
 
-<br>
+        <div class="mb-3">
+          <%= form.label :matricula, "Matrícula", class: "form-label" %>
+          <%= form.number_field :matricula, class: "form-control" %>
+        </div>
 
-<div>
-  <%= link_to "Show this operator", @operator %> |
-  <%= link_to "Back to operators", operators_path %>
+        <div class="mb-3">
+          <%= form.label :nome, "Nome", class: "form-label" %>
+          <%= form.text_field :nome, class: "form-control" %>
+        </div>
+
+        <div class="mb-3">
+          <%= form.label :cpf, "CPF", class: "form-label" %>
+          <%= form.text_field :cpf, class: "form-control" %>
+        </div>
+
+        <div class="mb-3">
+          <%= form.label :data_nascimento, "Data de Nascimento", class: "form-label" %>
+          <%= form.date_field :data_nascimento, class: "form-control" %>
+        </div>
+
+        <div class="mb-3" data-controller="radio-button">
+          <%= form.label :turno, "Turno", class: "form-label d-block mb-2" %>
+
+          <div class="btn-group" role="group">
+            <% turno_map.each do |letra, valor| %>
+              <%= form.radio_button :turno, valor,
+                    id: "turno_#{letra.downcase}",
+                    class: "form-check-input d-none",
+                    data: { radio_button_target: "input" } %>
+
+              <button type="button"
+                      class="btn btn-outline-primary turno-btn <%= 'rounded-end-0' if letra == 'A' %><%= 'rounded-start-0 rounded-end-0' if letra == 'B' %><%= 'rounded-start-0' if letra == 'C' %>"
+                      data-action="click->radio-button#select"
+                      data-radio-button-value-param="<%= valor %>"
+                      data-radio-button-target="button">
+                <%= letra %>
+              </button>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="form-check mb-3">
+          <%= form.check_box :autonomy, class: "form-check-input" %>
+          <%= form.label :autonomy, "Possui autonomia?", class: "form-check-label" %>
+        </div>
+
+        <div class="actions">
+          <%= form.submit "Salvar", class: "btn btn-primary" %>
+          <%= link_to "Cancelar", operators_path, class: "btn btn-outline-secondary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
 </div>
+
+<style>
+  .turno-btn {
+    min-width: 60px;
+    transition: all 0.2s;
+    border-radius: 0;
+  }
+
+  .turno-btn.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+    border-radius: 0;
+  }
+
+  .btn-group .btn-outline-primary:not(:first-child) {
+    margin-left: -1px;
+  }
+</style>

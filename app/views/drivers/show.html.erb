@@ -1,9 +1,24 @@
-<h1>Motorista: <%= @driver.nome %></h1>
+<div class="container">
+  <h1 class="mb-4">Detalhes do Motorista</h1>
 
-<p><strong>Matrícula:</strong> <%= @driver.matricula %></p>
-<p><strong>Promax:</strong> <%= @driver.promax %></p>
-<p><strong>CPF:</strong> <%= @driver.cpf %></p>
-<p><strong>Data de Nascimento:</strong> <%= @driver.data_nascimento.strftime("%d/%m/%Y") if @driver.data_nascimento %></p>
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title"><strong><%= @driver.nome %></strong></h5>
+      <p class="card-text"><strong>Matrícula:</strong> <%= @driver.matricula %></p>
+      <p class="card-text"><strong>Promax:</strong> <%= @driver.promax %></p>
+      <p class="card-text"><strong>CPF:</strong> <%= @driver.cpf %></p>
+      <p class="card-text"><strong>Data de Nascimento:</strong> <%= @driver.data_nascimento.strftime("%d/%m/%Y") if @driver.data_nascimento %></p>
+      <p class="card-text">
+        <strong>Possui Autonomia?</strong>
+        <span class="badge <%= @driver.autonomy? ? 'bg-success' : 'bg-secondary' %>">
+          <%= @driver.autonomy? ? 'Sim' : 'Não' %>
+        </span>
+      </p>
+    </div>
+  </div>
 
-<%= link_to "Editar", edit_driver_path(@driver) %> |
-<%= link_to "Voltar", drivers_path %>
+  <div class="d-flex gap-2">
+    <%= link_to "Editar", edit_driver_path(@driver), class: "btn btn-primary" %>
+    <%= link_to "Voltar", drivers_path, class: "btn btn-outline-secondary" %>
+  </div>
+</div>

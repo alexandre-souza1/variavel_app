@@ -48,6 +48,7 @@
             <th>Promax</th>
             <th>CPF</th>
             <th>Data de Nascimento</th>
+            <th>Autonomia</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -59,6 +60,10 @@
               <td><%= driver.promax %></td>
               <td><%= driver.cpf %></td>
               <td><%= driver.data_nascimento.strftime("%d/%m/%Y") if driver.data_nascimento %></td>
+              <td>
+                <span class="badge <%= driver.autonomy? ? 'bg-success' : 'bg-secondary' %>">
+                  <%= driver.autonomy? ? 'Sim' : 'Não' %></span>
+              </td>
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
                   <%= link_to "Ver", driver_path(driver), class: "btn btn-outline-primary" %>

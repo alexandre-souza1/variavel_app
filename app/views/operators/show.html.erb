@@ -1,10 +1,24 @@
-<p style="color: green"><%= notice %></p>
+<div class="container">
+  <h1 class="mb-4">Detalhes do Operador</h1>
 
-<%= render @operator %>
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title"><strong><%= @operator.nome %></strong></h5>
+      <p class="card-text"><strong>Matrícula:</strong> <%= @operator.matricula %></p>
+      <p class="card-text"><strong>Turno:</strong> <%= turno_label(@operator.turno) %></p>
+      <p class="card-text"><strong>CPF:</strong> <%= @operator.cpf %></p>
+      <p class="card-text"><strong>Data de Nascimento:</strong> <%= @operator.data_nascimento.strftime("%d/%m/%Y") if @operator.data_nascimento %></p>
+      <p class="card-text">
+        <strong>Possui Autonomia?</strong>
+        <span class="badge <%= @operator.autonomy? ? 'bg-success' : 'bg-secondary' %>">
+          <%= @operator.autonomy? ? 'Sim' : 'Não' %>
+        </span>
+      </p>
+    </div>
+  </div>
 
-<div>
-  <%= link_to "Edit this operator", edit_operator_path(@operator) %> |
-  <%= link_to "Back to operators", operators_path %>
-
-  <%= button_to "Destroy this operator", @operator, method: :delete %>
+  <div class="d-flex gap-2">
+    <%= link_to "Editar", edit_operator_path(@operator), class: "btn btn-primary" %>
+    <%= link_to "Voltar", operators_path, class: "btn btn-outline-secondary" %>
+  </div>
 </div>

@@ -1,30 +1,33 @@
 <%= form_with(model: driver, local: true) do |form| %>
-  <div>
-    <%= form.label :nome %><br>
-    <%= form.text_field :nome %>
+  <div class="mb-3">
+    <%= form.label :nome, class: "form-label" %>
+    <%= form.text_field :nome, class: "form-control" %>
   </div>
 
-  <div>
-    <%= form.label :matricula %><br>
-    <%= form.text_field :matricula %>
+  <div class="mb-3">
+    <%= form.label :matricula,"Matrícula", class: "form-label" %>
+    <%= form.text_field :matricula, class: "form-control" %>
   </div>
 
-  <div>
-    <%= form.label :promax %><br>
-    <%= form.text_field :promax %>
+  <div class="mb-3">
+    <%= form.label :promax, class: "form-label" %>
+    <%= form.text_field :promax, class: "form-control" %>
   </div>
 
-  <div>
-    <%= form.label :cpf %><br>
-    <%= form.text_field :cpf %>
+  <div class="mb-3">
+    <%= form.label :cpf, "CPF", class: "form-label" %>
+    <%= form.text_field :cpf, class: "form-control" %>
   </div>
 
-  <div>
-    <%= form.label :data_nascimento %><br>
-    <%= form.date_field :data_nascimento %>
+  <div class="mb-3">
+    <%= form.label :data_nascimento,"Data de Nascimento", class: "form-label" %>
+    <%= form.date_field :data_nascimento, class: "form-control" %>
   </div>
 
-  <div>
-    <%= form.submit %>
+  <div class="form-check mb-3">
+    <%= form.check_box :autonomy, class: "form-check-input" %>
+    <%= form.label :autonomy, "Possui autonomia?", class: "form-check-label" %>
   </div>
+
+  <%= form.submit "Salvar", class: "btn btn-primary" %>
 <% end %>

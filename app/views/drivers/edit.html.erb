@@ -1,5 +1,11 @@
-<h1>Editar Motorista</h1>
+<div class="container">
+  <h1 class="mb-4">Editar Motorista</h1>
 
-<%= render "form", driver: @driver %>
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <%= render "form", driver: @driver %>
+    </div>
+  </div>
 
-<%= link_to "Voltar", drivers_path %>
+  <%= link_to "Voltar", drivers_path, class: "btn btn-outline-secondary" %>
+</div>

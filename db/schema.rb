@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_07_23_142824) do
+ActiveRecord::Schema[7.1].define(version: 2025_07_24_120846) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -139,6 +139,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_23_142824) do
     t.date "data_nascimento"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "autonomy", default: false, null: false
   end
 
   create_table "mapas", force: :cascade do |t|
@@ -174,6 +175,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_23_142824) do
     t.integer "turno"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "autonomy", default: false, null: false
   end
 
   create_table "parametro_calculos", force: :cascade do |t|

@@ -1,8 +1,7 @@
-<%= form_with(model: operator) do |form| %>
+<%= form_with(model: operator, local: true) do |form| %>
   <% if operator.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(operator.errors.count, "error") %> prohibited this operator from being saved:</h2>
-
+    <div class="alert alert-danger">
+      <h5><%= pluralize(operator.errors.count, "erro") %> impediram o salvamento:</h5>
       <ul>
         <% operator.errors.each do |error| %>
           <li><%= error.full_message %></li>
@@ -11,32 +10,42 @@
     </div>
   <% end %>
 
-  <div>
-    <%= form.label :matricula, style: "display: block" %>
-    <%= form.number_field :matricula %>
+  <div class="mb-3">
+    <%= form.label :matricula, "Matrícula", class: "form-label" %>
+    <%= form.number_field :matricula, class: "form-control" %>
   </div>
 
-  <div>
-    <%= form.label :nome, style: "display: block" %>
-    <%= form.text_field :nome %>
+  <div class="mb-3">
+    <%= form.label :nome, "Nome", class: "form-label" %>
+    <%= form.text_field :nome, class: "form-control" %>
   </div>
 
-  <div>
-    <%= form.label :cpf, style: "display: block" %>
-    <%= form.text_field :cpf %>
+  <div class="mb-3">
+    <%= form.label :cpf, "CPF", class: "form-label" %>
+    <%= form.text_field :cpf, class: "form-control" %>
   </div>
 
-  <div>
-    <%= form.label :data_nascimento, style: "display: block" %>
-    <%= form.date_field :data_nascimento %>
+  <div class="mb-3">
+    <%= form.label :data_nascimento, "Data de Nascimento", class: "form-label" %>
+    <%= form.date_field :data_nascimento, class: "form-control" %>
   </div>
 
-  <div>
-    <%= form.label :turno, style: "display: block" %>
-    <%= form.number_field :turno %>
+  <div class="mb-3">
+    <%= form.label :turno, "Turno", class: "form-label d-block" %>
+
+    <% turno_map.each do |letra, valor| %>
+      <div class="form-check form-check-inline">
+        <%= form.radio_button :turno, valor, id: "turno_#{letra}", class: "form-check-input" %>
+        <%= form.label "turno_#{letra}", letra, class: "form-check-label" %>
+      </div>
+    <% end %>
   </div>
 
-  <div>
-    <%= form.submit %>
+
+  <div class="form-check mb-3">
+    <%= form.check_box :autonomy, class: "form-check-input" %>
+    <%= form.label :autonomy, "Possui autonomia?", class: "form-check-label" %>
   </div>
+
+  <%= form.submit "Salvar", class: "btn btn-primary" %>
 <% end %>

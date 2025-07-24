@@ -122,6 +122,6 @@ class OperatorsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def operator_params
-      params.require(:operator).permit(:matricula, :nome, :cpf, :data_nascimento, :turno)
+      params.require(:operator).permit(:matricula, :nome, :cpf, :data_nascimento, :turno, :autonomy)
     end
 end
