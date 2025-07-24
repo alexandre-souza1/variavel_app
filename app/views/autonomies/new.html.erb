@@ -44,13 +44,17 @@
             <div class="col-md-6">
               <%= f.label :registration, "Matrícula do Colaborador", class: "form-label fw-bold text-primary" %>
               <%= f.text_field :registration, class: "form-control form-control-lg",
-                required: true,
-                data: {
-                  "autonomy-form-target": "registration",
-                  "action": "change->autonomy-form#checkRegistration"
-                } %>
-              <div class="invalid-feedback">
-                Por favor, informe a matrícula.
+                              required: true,
+                              oninvalid: "this.setCustomValidity('')",
+                              data: {
+                                "autonomy-form-target": "registration",
+                                "action": "change->autonomy-form#checkRegistration blur->autonomy-form#checkRegistration"
+                              } %>
+              <div class="invalid-feedback" data-autonomy-form-target="registrationFeedback">
+                Por favor, informe uma matrícula válida com permissão para autonomia.
+              </div>
+              <div class="valid-feedback">
+                Matrícula válida!
               </div>
             </div>
 

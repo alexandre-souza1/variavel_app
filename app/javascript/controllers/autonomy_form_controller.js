@@ -17,16 +17,31 @@ export default class extends Controller {
       const response = await fetch(`/autonomies/check_registration?registration=${registration}`)
       const data = await response.json()
 
-      if (data.user_type === 'Driver') {
-        this.updateEquipmentTypes(['Caminhão'])
-      } else if (data.user_type === 'Operator') {
-        this.updateEquipmentTypes(['Empilhadeira', 'Máquina de Limpeza', 'Paleteira'])
+      // Verifica se a matrícula tem permissão de autonomia
+      if (!data.has_autonomy) {
+        this.registrationTarget.setCustomValidity("Matrícula não possui permissão para autonomia")
+        this.registrationTarget.classList.add('is-invalid')
+        this.registrationTarget.classList.remove('is-valid')
       } else {
-        this.updateEquipmentTypes(['Empilhadeira', 'Máquina de Limpeza', 'Paleteira', 'Caminhão'])
+        this.registrationTarget.setCustomValidity("")
+        this.registrationTarget.classList.remove('is-invalid')
+        this.registrationTarget.classList.add('is-valid')
+
+        // Atualiza os tipos de equipamento conforme o tipo de usuário
+        if (data.user_type === 'Driver') {
+          this.updateEquipmentTypes(['Caminhão'])
+        } else if (data.user_type === 'Operator') {
+          this.updateEquipmentTypes(['Empilhadeira', 'Máquina de Limpeza', 'Paleteira'])
+        } else {
+          this.updateEquipmentTypes(['Empilhadeira', 'Máquina de Limpeza', 'Paleteira', 'Caminhão'])
+        }
       }
     } catch (error) {
       console.error("Error checking registration:", error)
+      this.registrationTarget.setCustomValidity("Erro ao verificar matrícula")
+      this.registrationTarget.classList.add('is-invalid')
     }
+    this.registrationTarget.reportValidity()
   }
 
   updateEquipmentTypes(types) {

@@ -4,18 +4,15 @@ class AutonomiesController < ApplicationController
 
   def index
     @autonomies = if params[:search].present?
-                    # Busca por matrícula para usuários não admin
                     Autonomy.includes(:user)
                            .where(registration: params[:search])
                            .order(created_at: :desc)
                            .page(params[:page])
                   elsif current_user&.admin?
-                    # Visão completa para administradores
                     Autonomy.includes(:user)
                            .order(created_at: :desc)
                            .page(params[:page])
                   else
-                    # Retorna vazio para usuários não logados sem busca
                     Autonomy.none.page(params[:page])
                   end
   end
@@ -41,24 +38,41 @@ class AutonomiesController < ApplicationController
   end
 
   def check_registration
-  registration = params[:registration]
-  # Aqui você deve implementar a lógica para verificar o tipo de usuário
-  # Exemplo simplificado:
-  user = User.find_by(registration: registration)
+    registration = params[:registration]
 
-  if user
-    render json: { user_type: user.user_type } # Supondo que user_type seja 'Driver' ou 'Operator'
-  else
-    render json: { user_type: nil }
-  end
+    # Verifica primeiro em Driver
+    driver = Driver.find_by(matricula: registration)
+    if driver
+      render json: {
+        valid: driver.autonomy,
+        user_type: 'Driver',
+        has_autonomy: driver.autonomy
+      }
+      return
+    end
+
+    # Se não encontrou em Driver, verifica em Operator
+    operator = Operator.find_by(matricula: registration)
+    if operator
+      render json: {
+        valid: operator.autonomy,
+        user_type: 'Operator',
+        has_autonomy: operator.autonomy
+      }
+      return
+    end
+
+    # Se não encontrou em nenhum dos dois
+    render json: {
+      valid: false,
+      user_type: nil,
+      has_autonomy: false
+    }
   end
 
   def plates
     equipment_type = params[:equipment_type]
-
-    # Busca as placas na tabela plates filtrando pelo tipo de equipamento
-    plates = Plate.where(tipo: equipment_type).pluck(:placa) # assumindo que a coluna se chama 'placa'
-
+    plates = Plate.where(tipo: equipment_type).pluck(:placa)
     render json: plates
   end
 
@@ -69,7 +83,6 @@ class AutonomiesController < ApplicationController
   end
 
   def set_plates
-    # Inicialmente vazio, será preenchido via AJAX quando selecionar o equipment_type
     @plates = []
   end
 
