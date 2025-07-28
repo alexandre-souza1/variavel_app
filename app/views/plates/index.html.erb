@@ -1,33 +1,84 @@
-<h1>Placas</h1>
-
-<%= link_to "Nova Placa", new_plate_path %>
-
-<table>
-  <thead>
-    <tr>
-      <th>Placa</th>
-      <th>Setor</th>
-      <th>Perfil</th>
-      <th>Tipo</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @plates.each do |plate| %>
-      <tr>
-        <td><%= plate.placa %></td>
-        <td><%= plate.setor %></td>
-        <td><%= plate.perfil %></td>
-        <td><%= plate.tipo %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
-
-<h2>Importar Placas via CSV</h2>
-
-<%= form_with url: import_plates_path, local: true, html: { multipart: true } do |form| %>
-  <div>
-    <%= form.file_field :file %>
-    <%= form.submit "Importar" %>
+<div class="driver-report-container">
+  <div class="container p-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="mb-0"><i class="bi bi-card-list"> </i>Placas Cadastradas</h1>
+      </div>
+      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
+        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+      </div>
+    </div>
   </div>
-<% end %>
+
+  <div class="container">
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <h2 class="mb-1">
+              <i class="bi bi-truck"></i>
+              Total de Placas: <%= @plates.size %>
+            </h2>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <%= link_to "Nova Placa", new_plate_path, class: "btn btn-primary" %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de Placas -->
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-header bg-light border-bottom">
+        <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Detalhes das Placas</h5>
+      </div>
+      <div class="card-body">
+        <!-- Formulário de Importação -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <%= form_with url: import_plates_path, local: true, html: { multipart: true, class: "row g-3" } do |form| %>
+              <div class="col-auto">
+                <%= form.file_field :file, class: "form-control" %>
+              </div>
+              <div class="col-auto">
+                <%= form.submit "Importar CSV", class: "btn btn-secondary" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Placa</th>
+                <th>Setor</th>
+                <th>Perfil</th>
+                <th>Tipo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @plates.each do |plate| %>
+                <tr>
+                  <td><%= plate.placa %></td>
+                  <td><%= plate.setor %></td>
+                  <td><%= plate.perfil %></td>
+                  <td><%= plate.tipo %></td>
+                  <td class="text-end">
+                    <div class="btn-group btn-group-sm" role="group">
+                      <%= link_to 'Editar', edit_plate_path(plate), class: 'btn btn-outline-primary' %>
+                      <%= link_to 'Excluir', plate_path(plate), data: { turbo_method: :delete, turbo_confirm: 'Tem certeza?' }, class: 'btn btn-outline-danger' %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
+      </div>
+    </div>
+  </div>
+</div>

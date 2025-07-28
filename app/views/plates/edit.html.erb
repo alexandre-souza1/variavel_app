@@ -1,0 +1,66 @@
+<div class="driver-report-container">
+  <div class="container p-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="mb-0"><i class="bi bi-pencil-square"></i> Editar Placa</h1>
+      </div>
+      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
+        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-body">
+        <%= form_with(model: @plate, local: true) do |form| %>
+          <% if @plate.errors.any? %>
+            <div class="alert alert-danger">
+              <h5><i class="bi bi-exclamation-triangle-fill"></i> <%= pluralize(@plate.errors.count, "erro") %> impediram esta placa de ser salva:</h5>
+              <ul>
+                <% @plate.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <div class="form-group">
+                <%= form.label :placa, class: "form-label" %>
+                <%= form.text_field :placa, class: "form-control", placeholder: "Ex: ABC1234" %>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <%= form.label :setor, class: "form-label" %>
+                <%= form.text_field :setor, class: "form-control", placeholder: "Ex: Centro" %>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <div class="form-group">
+                <%= form.label :perfil, class: "form-label" %>
+                <%= form.text_field :perfil, class: "form-control", placeholder: "Ex: Urbano" %>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <%= form.label :tipo, class: "form-label" %>
+                <%= form.text_field :tipo, class: "form-control", placeholder: "Ex: Caminhão" %>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <%= link_to "Cancelar", plates_path, class: "btn btn-outline-secondary" %>
+            <%= form.submit "Atualizar Placa", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

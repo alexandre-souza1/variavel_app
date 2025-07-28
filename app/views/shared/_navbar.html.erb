@@ -38,8 +38,13 @@
               <%= link_to "Ajudantes", az_ajudantes_path, class: "dropdown-item" %>
               <%= link_to "Resultados Diários", az_mapas_path, class: "dropdown-item" %>
               <%= link_to "Resultados WMS", wms_tasks_path, class: "dropdown-item" %>
+              <div class="dropdown-header">Formulários</div>
+              <%= link_to "Formulários", checklists_path, class: "dropdown-item" %>
+              <%= link_to "Tipos de Formulários", checklist_templates_path, class: "dropdown-item" %>
+              <%= link_to "Relatórios de formulários", autonomies_path, class: "dropdown-item" %>
               <div class="dropdown-header">Geral</div>
               <%= link_to "Padrões e LUP's", downloads_path, class: "dropdown-item" %>
+              <%= link_to "Placas Cadastradas", plates_path, class: "dropdown-item" %>
               <%= link_to "Autonomia de Frota", autonomies_path, class: "dropdown-item" %>
               <%= link_to "Parametros", parametro_calculos_path, class: "dropdown-item" %>
               <% if current_user %>

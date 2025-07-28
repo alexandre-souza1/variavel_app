@@ -16,6 +16,19 @@ class PlatesController < ApplicationController
     end
   end
 
+  def edit
+    @plate = Plate.find(params[:id])
+  end
+
+  def update
+    @plate = Plate.find(params[:id])
+    if @plate.update(plate_params)
+      redirect_to plates_path, notice: "Placa atualizada com sucesso"
+    else
+      render :edit
+    end
+  end
+
   def import
     if params[:file].present?
       Plate.import(params[:file])
