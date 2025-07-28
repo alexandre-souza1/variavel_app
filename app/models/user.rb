@@ -3,8 +3,10 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
-         
+
   attr_accessor :remove_photo
+
+  has_many :checklists
 
   has_one_attached :photo do |attachable|
     attachable.variant :thumb, resize_to_limit: [150, 150]

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_07_24_120846) do
+ActiveRecord::Schema[7.1].define(version: 2025_07_28_161124) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -117,6 +117,46 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_24_120846) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["az_operador_id"], name: "index_az_tarefa_wms_on_az_operador_id"
+  end
+
+  create_table "checklist_items", force: :cascade do |t|
+    t.bigint "checklist_template_id", null: false
+    t.string "description"
+    t.integer "position"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["checklist_template_id"], name: "index_checklist_items_on_checklist_template_id"
+  end
+
+  create_table "checklist_responses", force: :cascade do |t|
+    t.bigint "checklist_id", null: false
+    t.bigint "checklist_item_id", null: false
+    t.string "status"
+    t.text "comment"
+    t.string "photo"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["checklist_id"], name: "index_checklist_responses_on_checklist_id"
+    t.index ["checklist_item_id"], name: "index_checklist_responses_on_checklist_item_id"
+  end
+
+  create_table "checklist_templates", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "plate_required"
+    t.string "setor"
+  end
+
+  create_table "checklists", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "checklist_template_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "plate_id"
+    t.index ["checklist_template_id"], name: "index_checklists_on_checklist_template_id"
+    t.index ["plate_id"], name: "index_checklists_on_plate_id"
+    t.index ["user_id"], name: "index_checklists_on_user_id"
   end
 
   create_table "downloads", force: :cascade do |t|
@@ -228,5 +268,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_24_120846) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "az_tarefa_wms", "az_operadors"
+  add_foreign_key "checklist_items", "checklist_templates"
+  add_foreign_key "checklist_responses", "checklist_items"
+  add_foreign_key "checklist_responses", "checklists"
+  add_foreign_key "checklists", "checklist_templates"
+  add_foreign_key "checklists", "plates"
+  add_foreign_key "checklists", "users"
   add_foreign_key "wms_tasks", "operators"
 end

@@ -1,0 +1,23 @@
+<h1><%= @template.name %></h1>
+
+<h3>Adicionar Item ao Checklist</h3>
+<%= form_with model: [@template, @item], local: true do |f| %>
+  <div class="row g-2 mb-3">
+    <div class="col-md-10">
+      <%= f.text_field :description, class: "form-control", placeholder: "Descrição do item" %>
+    </div>
+    <div class="col-md-2">
+      <%= f.submit "Adicionar", class: "btn btn-success w-100" %>
+    </div>
+  </div>
+<% end %>
+
+<h3 class="mt-4">Itens do Template</h3>
+<ul class="list-group">
+  <% @template.checklist_items.each do |item| %>
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <%= item.description %>
+      <%= button_to "Remover", checklist_template_checklist_item_path(@template, item), method: :delete, class: "btn btn-sm btn-danger" %>
+    </li>
+  <% end %>
+</ul>

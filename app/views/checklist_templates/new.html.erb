@@ -1,0 +1,20 @@
+<h1>Novo Template de Checklist</h1>
+
+<%= form_with model: @template, local: true do |f| %>
+  <div class="mb-3">
+    <%= f.label :name, "Nome do Template" %>
+    <%= f.text_field :name, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :setor, "Setor" %>
+    <%= f.select :setor, options_for_select(["ARMAZEM", "ROTA"]), {}, class: "form-select" %>
+  </div>
+
+  <div class="form-check mb-3">
+    <%= f.check_box :plate_required, class: "form-check-input", id: "plate_required" %>
+    <%= f.label :plate_required, "Exigir placa neste checklist", class: "form-check-label" %>
+  </div>
+
+  <%= f.submit "Criar", class: "btn btn-primary" %>
+<% end %>

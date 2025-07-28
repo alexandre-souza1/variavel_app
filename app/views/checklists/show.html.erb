@@ -1,0 +1,33 @@
+<h2><%= @checklist.checklist_template.name %></h2>
+
+<p>
+  <strong>Respondido por:</strong>
+  <%= @checklist.user.name.presence || @checklist.user.email %>
+</p>
+
+<p>
+  <strong>Realizado às:</strong>
+  <%= l(@checklist.created_at, format: :long) %>
+</p>
+
+<% if @checklist.plate.present? %>
+  <p>
+    <strong>Placa selecionada:</strong>
+    <span class="badge bg-info text-dark"><%= @checklist.plate.placa %></span>
+  </p>
+<% end %>
+
+<ul class="list-group">
+  <% @checklist.checklist_responses.each do |resp| %>
+    <li class="list-group-item">
+      <strong><%= resp.checklist_item.description %></strong><br>
+      Status: <span class="badge <%= resp.status == "ok" ? "bg-success" : "bg-danger" %>"><%= resp.status.upcase %></span><br>
+      <% if resp.comment.present? %>
+        Comentário: <%= resp.comment %><br>
+      <% end %>
+      <% if resp.photo.attached? %>
+        <%= image_tag resp.photo.variant(resize_to_limit: [300, 300]) %>
+      <% end %>
+    </li>
+  <% end %>
+</ul>

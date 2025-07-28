@@ -1,6 +1,7 @@
 require "csv"
 class Plate < ApplicationRecord
   validates :placa, presence: true, uniqueness: true
+  has_many :checklists
 
   # Se quiser validar opções específicas
   SETORES = %w[ARMAZEM ROTA]

@@ -1,4 +1,11 @@
 Rails.application.routes.draw do
+  get 'checklist_items/create'
+  get 'checklist_items/destroy'
+  get 'checklist_templates/index'
+  get 'checklist_templates/new'
+  get 'checklist_templates/create'
+  get 'checklist_templates/show'
+
   resources :az_ajudantes
   get 'az_consultas/index'
   get 'az_consultas/new'
@@ -24,7 +31,12 @@ Rails.application.routes.draw do
   get "az_consulta", to: "az_consultas#show"
 
   resources :downloads
-  
+  resources :checklists, only: [:new, :create, :show, :index]
+
+  resources :checklist_templates do
+    resources :checklist_items, only: [:new, :create, :destroy]
+  end
+
   resources :autonomies do
     collection do
       get :check_registration

@@ -1,0 +1,19 @@
+<h1>Seus Checklists</h1>
+<ul class="list-group">
+  <% @checklists.each do |checklist| %>
+    <li class="list-group-item">
+      <strong><%= checklist.checklist_template.name %></strong> -
+      <%= l checklist.created_at, format: :short %>
+      <%= link_to "Ver", checklist_path(checklist), class: "btn btn-sm btn-outline-primary float-end" %>
+    </li>
+  <% end %>
+</ul>
+
+<h1>Escolha o tipo de checklist</h1>
+<ul class="list-group">
+  <% ChecklistTemplate.all.each do |template| %>
+    <li class="list-group-item">
+      <%= link_to template.name, new_checklist_path(template_id: template.id), class: "btn btn-outline-primary" %>
+    </li>
+  <% end %>
+</ul>

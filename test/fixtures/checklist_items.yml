@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  checklist_template: one
+  description: MyString
+  position: 1
+
+two:
+  checklist_template: two
+  description: MyString
+  position: 1

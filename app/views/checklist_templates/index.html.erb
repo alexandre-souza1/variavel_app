@@ -1,0 +1,12 @@
+<h1>Templates de Checklists</h1>
+
+<%= link_to "Novo Template", new_checklist_template_path, class: "btn btn-primary mb-3" %>
+
+<ul class="list-group">
+  <% @templates.each do |template| %>
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <%= template.name %>
+      <%= link_to "Ver", checklist_template_path(template), class: "btn btn-sm btn-outline-primary" %>
+    </li>
+  <% end %>
+</ul>
