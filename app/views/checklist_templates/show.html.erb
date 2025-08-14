@@ -1,23 +1,41 @@
-<h1><%= @template.name %></h1>
+<div class="container my-4">
+  <h1 class="mb-4"><%= @template.name %></h1>
 
-<h3>Adicionar Item ao Checklist</h3>
-<%= form_with model: [@template, @item], local: true do |f| %>
-  <div class="row g-2 mb-3">
-    <div class="col-md-10">
-      <%= f.text_field :description, class: "form-control", placeholder: "Descrição do item" %>
+  <!-- Formulário para adicionar item -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Adicionar Item ao Checklist</h5>
     </div>
-    <div class="col-md-2">
-      <%= f.submit "Adicionar", class: "btn btn-success w-100" %>
+    <div class="card-body">
+      <%= form_with model: [@template, @item], local: true do |f| %>
+        <div class="row g-2">
+          <div class="col-md-10">
+            <%= f.text_field :description, class: "form-control", placeholder: "Descrição do item" %>
+          </div>
+          <div class="col-md-2">
+            <%= f.submit "Adicionar", class: "btn btn-success w-100" %>
+          </div>
+        </div>
+      <% end %>
     </div>
   </div>
-<% end %>
 
-<h3 class="mt-4">Itens do Template</h3>
-<ul class="list-group">
-  <% @template.checklist_items.each do |item| %>
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-      <%= item.description %>
-      <%= button_to "Remover", checklist_template_checklist_item_path(@template, item), method: :delete, class: "btn btn-sm btn-danger" %>
-    </li>
-  <% end %>
-</ul>
+  <!-- Lista de itens -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Itens do Template</h5>
+    </div>
+    <ul class="list-group list-group-flush">
+      <% @template.checklist_items.each do |item| %>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span><%= item.description %></span>
+          <%= button_to "Remover", checklist_template_checklist_item_path(@template, item), method: :delete, class: "btn btn-sm btn-danger" %>
+        </li>
+      <% end %>
+      <% if @template.checklist_items.empty? %>
+        <li class="list-group-item text-muted text-center">Nenhum item adicionado ainda.</li>
+      <% end %>
+    </ul>
+  </div>
+  <%= link_to "Voltar", checklist_templates_path, class: "btn btn-primary shadow-sm p-3 w-100" %>
+</div>

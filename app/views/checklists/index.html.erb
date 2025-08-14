@@ -1,19 +1,62 @@
-<h1>Seus Checklists</h1>
-<ul class="list-group">
-  <% @checklists.each do |checklist| %>
-    <li class="list-group-item">
-      <strong><%= checklist.checklist_template.name %></strong> -
-      <%= l checklist.created_at, format: :short %>
-      <%= link_to "Ver", checklist_path(checklist), class: "btn btn-sm btn-outline-primary float-end" %>
-    </li>
-  <% end %>
-</ul>
+<div class="container my-4">
+  <div class="row">
+    <!-- Escolha de Template -->
+    <div class="col-12 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header">
+          <h5 class="mb-0">Novo Checklist</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+          <% ChecklistTemplate.all.each do |template| %>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span><%= template.name %></span>
+              <div class="btn-group">
+                <%= link_to "Realizar",
+                    new_checklist_path(template_id: template.id),
+                    class: "btn btn-sm btn-outline-success" %>
 
-<h1>Escolha o tipo de checklist</h1>
-<ul class="list-group">
-  <% ChecklistTemplate.all.each do |template| %>
-    <li class="list-group-item">
-      <%= link_to template.name, new_checklist_path(template_id: template.id), class: "btn btn-outline-primary" %>
-    </li>
-  <% end %>
-</ul>
+                <%= link_to "Gerar link",
+                  "#",
+                  class: "btn btn-sm btn-outline-secondary",
+                  data: {
+                    controller: "clipboard",
+                    action: "click->clipboard#copy",
+                    clipboard_text_value: new_checklist_url(template_id: template.id),
+                    clipboard_target: "button"
+                  } %>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Lista de Checklists -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Ultimos 5 Checklists</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+          <% @checklists.order(created_at: :desc).limit(5).each do |checklist| %>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong><%= checklist.checklist_template.name %></strong>
+                <small class="text-muted">• <%= l checklist.created_at, format: :short %></small>
+              </div>
+              <%= link_to "Ver", checklist_path(checklist), class: "btn btn-sm btn-outline-primary" %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+    <div class="col-md-6 d-flex flex-column mb-4">
+      <div class="mt-auto">
+        <%= link_to "Histórico de Checklists", root_path, class: "btn btn-secondary shadow-sm p-3 w-100 mb-2" %>
+        <%= link_to "Relatório de Checklists", root_path, class: "btn btn-secondary shadow-sm p-3 w-100 mb-2" %>
+        <%= link_to "Criar Template", root_path, class: "btn btn-secondary shadow-sm p-3 w-100 mb-2" %>
+        <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100" %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,20 +1,26 @@
-<h1>Novo Template de Checklist</h1>
+<div class="container my-4">
+  <h1 class="mb-4">Novo Template de Checklist</h1>
 
-<%= form_with model: @template, local: true do |f| %>
-  <div class="mb-3">
-    <%= f.label :name, "Nome do Template" %>
-    <%= f.text_field :name, class: "form-control" %>
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <%= form_with model: @template, local: true do |f| %>
+        <div class="mb-3">
+          <%= f.label :name, "Nome do Template", class: "form-label" %>
+          <%= f.text_field :name, class: "form-control", placeholder: "Digite o nome do template" %>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :setor, "Setor", class: "form-label" %>
+          <%= f.select :setor, options_for_select(["ARMAZEM", "ROTA"]), {}, class: "form-select" %>
+        </div>
+
+        <div class="form-check mb-3">
+          <%= f.check_box :plate_required, class: "form-check-input", id: "plate_required" %>
+          <%= f.label :plate_required, "Exigir placa neste checklist", class: "form-check-label" %>
+        </div>
+
+        <%= f.submit "Criar", class: "btn btn-primary w-100" %>
+      <% end %>
+    </div>
   </div>
-
-  <div class="mb-3">
-    <%= f.label :setor, "Setor" %>
-    <%= f.select :setor, options_for_select(["ARMAZEM", "ROTA"]), {}, class: "form-select" %>
-  </div>
-
-  <div class="form-check mb-3">
-    <%= f.check_box :plate_required, class: "form-check-input", id: "plate_required" %>
-    <%= f.label :plate_required, "Exigir placa neste checklist", class: "form-check-label" %>
-  </div>
-
-  <%= f.submit "Criar", class: "btn btn-primary" %>
-<% end %>
+</div>
