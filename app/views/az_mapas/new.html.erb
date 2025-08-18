@@ -17,7 +17,6 @@
             {},
             {
               required: true,
-              id: "tipo_meta",
               class: "form-select",
               data: {
                 resultado_target: "tipo",
@@ -26,17 +25,14 @@
             } %>
     </div>
 
-    <!-- RESULTADO (com sufixo) -->
+    <!-- RESULTADO (container para Stimulus popular) -->
     <div class="mb-3" data-resultado-target="grupo" style="display: none;">
       <%= form.label :resultado, "Resultado", class: "form-label" %>
-      <div class="input-group">
-        <%= form.number_field :resultado,
-              step: 0.01,
-              required: true,
-              data: { resultado_target: "campo" },
-              class: "form-control" %>
-        <span class="input-group-text" data-resultado-target="sufixo"></span>
-      </div>
+
+      <!-- container que o Stimulus vai popular -->
+      <div class="input-group" data-resultado-target="campoWrapper"></div>
+
+      <span class="input-group-text" data-resultado-target="sufixo"></span>
       <small data-resultado-target="unidade" class="text-muted d-block mt-1"></small>
     </div>
 
