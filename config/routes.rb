@@ -45,6 +45,7 @@ Rails.application.routes.draw do
     collection do
       get :check_registration
       get :plates
+      get :export_csv
     end
   end
 

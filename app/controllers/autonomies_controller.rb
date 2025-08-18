@@ -80,6 +80,19 @@ class AutonomiesController < ApplicationController
     render json: plates
   end
 
+  def export_csv
+    @autonomies = Autonomy.all
+
+    respond_to do |format|
+      format.csv do
+      csv_content = "\uFEFF" + generate_csv
+      send_data csv_content,
+                filename: "registros-autonomia-#{Date.today}.csv",
+                type: 'text/csv; charset=utf-8'
+      end
+    end
+  end
+
   private
 
   def set_autonomy
@@ -88,6 +101,27 @@ class AutonomiesController < ApplicationController
 
   def set_plates
     @plates = []
+  end
+
+  def generate_csv
+    CSV.generate(col_sep: ';', force_quotes: true, encoding: 'UTF-8') do |csv|
+      # Cabeçalho
+      csv << ["ID", "Matrícula", "Nome", "Equipamento", "Tipo de Serviço", "Placa", "Relato", "Data"]
+
+      # Dados
+      @autonomies.each do |a|
+        csv << [
+          a.id,
+          a.registration,
+          a.user&.nome || "N/A",
+          a.equipment_type,
+          a.service_type,
+          a.plate,
+          a.report,
+          I18n.l(a.created_at, format: :short)
+        ]
+      end
+    end
   end
 
   def autonomy_params
