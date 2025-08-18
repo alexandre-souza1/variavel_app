@@ -54,7 +54,7 @@
           <table class="table table-bordered">
             <tr>
               <th>Resultado (Km/L)</th>
-                            <td class="<%= @fuel_consumption.km_per_liter >= @fuel_consumption.km_per_liter_goal ? 'table-success' : 'table-danger' %>">
+              <td class="<%= @fuel_consumption.km_per_liter >= @fuel_consumption.km_per_liter_goal ? 'table-success' : 'table-danger' %>">
                 <%= @fuel_consumption.km_per_liter %>
               </td>
             </tr>
@@ -75,12 +75,25 @@
               <td><%= @fuel_consumption.period %></td>
             </tr>
           </table>
-          <% else %>
-            <p><em>Sem dados de consumo disponíveis.</em></p>
-          <% end %>
-        </div>
-      </div>
-    <% end %>
+        <% if @fuel_consumption.km_per_liter < @fuel_consumption.km_per_liter_goal %>
+          <div class="alert alert-danger mt-3 d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="alert-heading mb-1">Sua média de consumo está abaixo do esperado.</h5>
+              <p class="mb-0">Confira dicas de condução econômica para melhorar seu desempenho:</p>
+            </div>
+            <a href="https://7z4kss-my.sharepoint.com/:b:/g/personal/cadu_7z4kss_onmicrosoft_com/EU9JSkSyZL9CnccqAXwCotEBlH5gG9UthpOhnxq0rV3-fg?e=gSynwl"
+              class="btn btn-primary ms-3"
+              target="_blank">
+              <i class="fas fa-gas-pump"></i> Dicas de Condução Econômica
+            </a>
+          </div>
+        <% end %>
+      <% else %>
+        <p><em>Sem dados de consumo disponíveis.</em></p>
+      <% end %>
+    </div>
+  </div>
+<% end %>
 
     <!-- Tabela de Mapas -->
     <div class="card shadow-sm rounded mb-4">
