@@ -24,7 +24,11 @@
             <% end %>
           </div>
           <div class="col-md-6 text-md-end">
-            <% if @periodo_mes.present? %>
+            <% if @data_inicio && @data_fim && @dias_periodo %>
+              <strong><%= I18n.t("date.month_names")[@periodo_mes.to_i] %></strong>
+              <p class="mb-1"><strong>Período:</strong> <%= @data_inicio.strftime("%d/%m/%Y") %> a <%= @data_fim.strftime("%d/%m/%Y") %></p>
+              <p class="mb-0"><strong>Dias:</strong> <%= @dias_periodo %></p>
+            <% elsif @periodo_mes.present? %>
               <strong><%= I18n.t("date.month_names")[@periodo_mes.to_i] %></strong>
             <% end %>
           </div>
@@ -53,6 +57,17 @@
             <div class="col-auto">
               <%= select_tag :periodo_mes,
                   options_for_select((1..12).map { |m| [I18n.t("date.month_names")[m], m] }, params[:periodo_mes]),
+                  class: "form-select form-select-sm",
+                  data: {
+                    autosubmit_target: "select",
+                    action: "change->autosubmit#submitOnChange"
+                  },
+                  required: true %>
+            </div>
+
+            <div class="col-auto">
+              <%= select_tag :periodo_ano,
+                  options_for_select((Date.today.year-5..Date.today.year).to_a.reverse, params[:periodo_ano]),
                   class: "form-select form-select-sm",
                   data: {
                     autosubmit_target: "select",

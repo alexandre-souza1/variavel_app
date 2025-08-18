@@ -20,14 +20,17 @@ class AzConsultasController < ApplicationController
 
         # Filtra por mês se existir
         if params[:periodo_mes].present?
-          month = params[:periodo_mes].to_i
-          start_date = Date.new(Date.today.year, month, 1)
-          end_date = start_date.end_of_month
+          mes = params[:periodo_mes].to_i
+          ano = params[:periodo_ano].to_i
+          start_date = Date.new(ano, mes, 1).prev_month.change(day: 19)
+          end_date = Date.new(ano, mes, 18)
 
-          @azmapas = @azmapas.where("EXTRACT(MONTH FROM data) = ?", month)
+          @azmapas = @azmapas.where(data: start_date..end_date)
           @wms_tasks = WmsTask.where(operator_id: @operator.id)
                               .where(started_at: start_date..end_date)
                               .order(started_at: :desc)
+
+          definir_datas_periodo(@azmapas)
         else
           @wms_tasks = WmsTask.none # Retorna uma relação vazia
         end
@@ -51,5 +54,14 @@ class AzConsultasController < ApplicationController
   end
 
   private
-  # métodos privados se necessário
+
+
+  def definir_datas_periodo(azmapas)
+    # seleciona apenas a coluna data
+    datas = azmapas.pluck(:data)
+
+    @data_inicio = datas.min
+    @data_fim = datas.max
+    @dias_periodo = (@data_fim - @data_inicio).to_i if @data_inicio && @data_fim
+  end
 end
