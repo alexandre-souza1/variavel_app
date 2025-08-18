@@ -17,6 +17,9 @@ class ConsultasController < ApplicationController
       @driver = Driver.find_by(matricula: @matricula)
 
       if @driver
+        normalized_name = @driver.nome.strip.gsub(/\s+/, " ")
+        @fuel_consumption = FuelConsumption.where(driver_name: normalized_name).order(:created_at).last
+
         @mapas = Mapa.where(matric_motorista: @driver.promax)
         filtrar_por_periodo!
 

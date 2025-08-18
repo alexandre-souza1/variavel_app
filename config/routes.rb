@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  get 'fuel_consumptions/index'
+  get 'fuel_consumptions/new'
+  get 'fuel_consumptions/create'
   get 'checklist_items/create'
   get 'checklist_items/destroy'
   get 'checklist_templates/index'
@@ -32,6 +35,7 @@ Rails.application.routes.draw do
 
   resources :downloads
   resources :checklists, only: [:new, :create, :show, :index]
+  resources :fuel_consumptions, only: [:index, :new, :create]
 
   resources :checklist_templates do
     resources :checklist_items, only: [:new, :create, :destroy]

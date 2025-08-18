@@ -1,0 +1,25 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  driver_name: MyString
+  km_per_liter: 9.99
+  km_per_liter_goal: 9.99
+  impact: 9.99
+  total_value: 9.99
+  refuelings_count: 1
+  liters: 9.99
+  km_driven: 9.99
+  co2_impact: 9.99
+  period: MyString
+
+two:
+  driver_name: MyString
+  km_per_liter: 9.99
+  km_per_liter_goal: 9.99
+  impact: 9.99
+  total_value: 9.99
+  refuelings_count: 1
+  liters: 9.99
+  km_driven: 9.99
+  co2_impact: 9.99
+  period: MyString

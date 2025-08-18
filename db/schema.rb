@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_07_28_161124) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_17_225656) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -180,6 +180,21 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_28_161124) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "autonomy", default: false, null: false
+  end
+
+  create_table "fuel_consumptions", force: :cascade do |t|
+    t.string "driver_name"
+    t.decimal "km_per_liter"
+    t.decimal "km_per_liter_goal"
+    t.decimal "impact"
+    t.decimal "total_value"
+    t.integer "refuelings_count"
+    t.decimal "liters"
+    t.decimal "km_driven"
+    t.decimal "co2_impact"
+    t.string "period"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "mapas", force: :cascade do |t|

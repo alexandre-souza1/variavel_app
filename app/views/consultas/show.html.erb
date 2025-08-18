@@ -46,11 +46,41 @@
       Segue prévia da variável no novo modelo de RV. Os valores podem variar, especialmente nos casos de motoristas alocados como ajudante ou extra. Em caso de inconsistência, contatar a supervisão.
     </div>
 
-    <div class="card shadow-sm rounded mb-4">
-      <div class="card-body">
+    <% if @categoria == "motorista" %>
+      <div class="card shadow-sm rounded mb-4">
+        <div class="card-body">
+          <% if @fuel_consumption %>
+          <h3>Consumo de Combustível</h3>
+          <table class="table table-bordered">
+            <tr>
+              <th>Resultado (Km/L)</th>
+                            <td class="<%= @fuel_consumption.km_per_liter >= @fuel_consumption.km_per_liter_goal ? 'table-success' : 'table-danger' %>">
+                <%= @fuel_consumption.km_per_liter %>
+              </td>
+            </tr>
+            <tr>
+              <th>Litros abastecidos</th>
+              <td><%= @fuel_consumption.liters %></td>
+            </tr>
+            <tr>
+              <th>Km rodado</th>
+              <td><%= @fuel_consumption.km_driven %></td>
+            </tr>
+            <tr>
+              <th>Impacto CO²</th>
+              <td><%= @fuel_consumption.co2_impact %></td>
+            </tr>
+            <tr>
+              <th>Período</th>
+              <td><%= @fuel_consumption.period %></td>
+            </tr>
+          </table>
+          <% else %>
+            <p><em>Sem dados de consumo disponíveis.</em></p>
+          <% end %>
+        </div>
       </div>
-    </div>
-
+    <% end %>
 
     <!-- Tabela de Mapas -->
     <div class="card shadow-sm rounded mb-4">
