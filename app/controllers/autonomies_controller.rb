@@ -21,6 +21,10 @@ class AutonomiesController < ApplicationController
     @autonomy = Autonomy.new
   end
 
+  def show
+    @autonomy = Autonomy.find(params[:id])
+  end
+
   def create
     @autonomy = Autonomy.new(autonomy_params)
     set_user_for_autonomy

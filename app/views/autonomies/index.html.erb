@@ -24,7 +24,7 @@
               <thead class="table-light">
                 <tr>
                   <th class="fw-bold">Matrícula</th>
-                  <th class="fw-bold">Tipo de Usuário</th>
+                  <th class="fw-bold">Nome</th>
                   <th class="fw-bold">Equipamento</th>
                   <th class="fw-bold">Tipo de Serviço</th>
                   <th class="fw-bold">Placa</th>
@@ -38,7 +38,13 @@
                 <% @autonomies.each do |autonomy| %>
                   <tr class="border-top">
                     <td><%= autonomy.registration %></td>
-                    <td><%= autonomy.user_type %></td>
+                    <td>
+                      <% if autonomy.user.present? %>
+                        <%= autonomy.user.nome %>
+                      <% else %>
+                        <span class="text-muted">N/A</span>
+                      <% end %>
+                    </td>
                     <td><%= autonomy.equipment_type %></td>
                     <td><%= autonomy.service_type %></td>
                     <td><%= autonomy.plate %></td>
@@ -54,12 +60,17 @@
                     </td>
                     <td><%= I18n.l(autonomy.created_at, format: :short) %></td>
                     <td class="text-center">
-                      <%= button_to autonomy_path(autonomy),
-                          method: :delete,
-                          class: "btn btn-sm btn-danger",
-                          form: { data: { turbo_confirm: "Tem certeza que deseja apagar este registro?" } } do %>
-                        <i class="fas fa-trash-alt"></i>
-                      <% end %>
+                      <div class="btn-group" role="group">
+                        <%= link_to autonomy_path(autonomy), class: "btn btn-sm btn-primary me-1" do %>
+                          <i class="fas fa-search"></i>
+                        <% end %>
+                        <%= button_to autonomy_path(autonomy),
+                            method: :delete,
+                            class: "btn btn-sm btn-danger",
+                            form: { data: { turbo_confirm: "Tem certeza que deseja apagar este registro?" } } do %>
+                          <i class="fas fa-trash-alt"></i>
+                        <% end %>
+                      </div>
                     </td>
                   </tr>
                 <% end %>
