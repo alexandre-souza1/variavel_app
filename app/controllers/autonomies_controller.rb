@@ -93,6 +93,44 @@ class AutonomiesController < ApplicationController
     end
   end
 
+  def dashboard
+    begin
+      @from_date = params[:from_date].present? ? Date.parse(params[:from_date]) : 30.days.ago.to_date
+      @to_date   = params[:to_date].present? ? Date.parse(params[:to_date]) : Date.today
+    rescue ArgumentError
+      @from_date = 30.days.ago.to_date
+      @to_date = Date.today
+    end
+
+    @from_date = params[:from_date].present? ? Date.parse(params[:from_date]) : 30.days.ago.to_date
+    @to_date   = params[:to_date].present? ? Date.parse(params[:to_date]) : Date.today
+
+    @equipment_type = params[:equipment_type]
+    @service_type   = params[:service_type]
+    @user_type      = params[:user_type]
+
+    @autonomies = Autonomy.includes(:user)
+                          .where(created_at: @from_date.beginning_of_day..@to_date.end_of_day)
+
+    @autonomies = @autonomies.where(equipment_type: @equipment_type) if @equipment_type.present?
+    @autonomies = @autonomies.where(service_type: @service_type) if @service_type.present?
+    @autonomies = @autonomies.where(user_type: @user_type) if @user_type.present?
+
+    # Estatísticas
+    @total_registros = @autonomies.count
+    @por_equipamento = @autonomies.group(:equipment_type).count
+    @por_servico     = @autonomies.group(:service_type).count
+    @por_usuario     = @autonomies.group(:user_type).count
+    @por_dia         = @autonomies.group_by_day(:created_at).count
+
+    counts = @autonomies.group([:user_type, :user_id]).count
+
+    @por_colaborador = counts.transform_keys do |user_type, user_id|
+      user_type.constantize.find(user_id).nome
+    end
+  end
+
+
   private
 
   def set_autonomy

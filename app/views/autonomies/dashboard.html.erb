@@ -1,0 +1,105 @@
+<div class="container my-5">
+  <h1 class="mb-4 text-center">
+    <i class="bi bi-speedometer2"></i> Dashboard de Autonomias
+  </h1>
+
+  <!-- Filtros -->
+  <div class="card shadow-sm p-4 mb-5">
+    <h5 class="mb-3"><i class="bi bi-funnel"></i> Filtros</h5>
+    <%= form_with url: dashboard_autonomies_path, method: :get, local: true do %>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <%= label_tag :from_date, "Data inicial", class: "form-label" %>
+          <%= date_field_tag :from_date, @from_date, class: "form-control" %>
+        </div>
+        <div class="col-md-3">
+          <%= label_tag :to_date, "Data final", class: "form-label" %>
+          <%= date_field_tag :to_date, @to_date, class: "form-control" %>
+        </div>
+        <div class="col-md-2">
+          <%= label_tag :equipment_type, "Equipamento", class: "form-label" %>
+          <%= select_tag :equipment_type,
+                options_for_select(Autonomy.distinct.pluck(:equipment_type), @equipment_type),
+                include_blank: "Todos", class: "form-select" %>
+        </div>
+        <div class="col-md-2">
+          <%= label_tag :service_type, "Serviço", class: "form-label" %>
+          <%= select_tag :service_type,
+                options_for_select(Autonomy.distinct.pluck(:service_type), @service_type),
+                include_blank: "Todos", class: "form-select" %>
+        </div>
+        <div class="col-md-2">
+          <%= label_tag :user_type, "Tipo de Usuário", class: "form-label" %>
+          <%= select_tag :user_type,
+                options_for_select(["Driver", "Operator"], @user_type),
+                include_blank: "Todos", class: "form-select" %>
+        </div>
+      </div>
+      <div class="mt-4 text-end">
+        <%= submit_tag "Filtrar", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- KPIs -->
+  <div class="row mb-5">
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm p-4 border-0 h-100">
+        <i class="bi bi-journal-check display-5 text-primary mb-2"></i>
+        <h5>Total de Registros</h5>
+        <p class="display-6 fw-bold text-dark"><%= @total_registros %></p>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm p-4 border-0 h-100">
+        <i class="bi bi-file-earmark-excel display-5 text-success mb-2"></i>
+        <h5>Exportar Dados</h5>
+        <%= link_to export_csv_autonomies_path(format: :csv, params: request.query_parameters),
+                    class: "btn btn-success mt-2" do %>
+          <i class="fas fa-file-csv me-1"></i> CSV
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3">
+        <h5><i class="bi bi-truck"></i> Por Equipamento</h5>
+        <%= pie_chart @por_equipamento, height: "300px" %>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3">
+        <h5><i class="bi bi-wrench"></i> Por Tipo de Serviço</h5>
+        <%= pie_chart @por_servico, height: "300px" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mt-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3">
+        <h5><i class="bi bi-people"></i> Por Tipo de Usuário</h5>
+        <%= column_chart @por_usuario, height: "300px" %>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3">
+        <h5><i class="bi bi-calendar-event"></i> Registros por Dia</h5>
+        <%= line_chart @por_dia, height: "300px" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mt-4">
+    <div class="col-md-12">
+      <div class="card shadow-sm p-3">
+        <h5><i class="bi bi-person-check"></i> Colaboradores mais ativos</h5>
+        <%= column_chart @por_colaborador, height: "400px" %>
+      </div>
+    </div>
+  </div>
+</div>

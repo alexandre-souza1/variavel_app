@@ -20,6 +20,9 @@ gem 'nokogiri', '~> 1.18.6', platforms: :ruby, require: false
 
 gem "devise"
 
+gem 'chartkick'
+gem 'groupdate'
+
 gem "cloudinary"
 gem "activestorage-cloudinary-service"
 

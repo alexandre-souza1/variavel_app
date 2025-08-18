@@ -10,6 +10,9 @@
           </h1>
           <div>
           <% if current_user&.admin? %>
+            <%= link_to dashboard_autonomies_path, class: "btn btn-sm btn-info" do %>
+              <i class="fas fa-chart-bar me-1"></i> Dashboard
+            <% end %>
             <%= link_to export_csv_autonomies_path(format: :csv), class: "btn btn-sm btn-success me-2" do %>
               <i class="fas fa-file-csv me-1"></i> Exportar CSV
             <% end %>

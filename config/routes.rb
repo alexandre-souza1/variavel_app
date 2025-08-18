@@ -43,6 +43,7 @@ Rails.application.routes.draw do
 
   resources :autonomies do
     collection do
+      get :dashboard
       get :check_registration
       get :plates
       get :export_csv
