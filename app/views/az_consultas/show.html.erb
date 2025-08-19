@@ -247,7 +247,7 @@
             </tr>
           </thead>
           <tbody>
-            <% if [0, 2, 3].include?(@turno) %>
+            <% if [0, 1, 2].include?(@turno) %>
               <tr>
                 <td>Tempo Médio de Atendimento</td>
                 <td><%= number_to_currency(total_valor_tma, unit: "R$ ", separator: ",", delimiter: ".") %></td>
@@ -293,7 +293,7 @@
           </div>
           <div class="card-body">
             <ul class="list-group list-group-flush">
-              <% if [0, 2, 3].include?(@turno) %>
+              <% if [0, 2].include?(@turno) %>
                 <li class="list-group-item d-flex justify-content-between">
                   Valor TMA
                   <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_tma_operator, unit: "R$ ", separator: ",", delimiter: ".") %></span>
