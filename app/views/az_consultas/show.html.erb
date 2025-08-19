@@ -107,7 +107,7 @@
                       valor_efc = mapa.tipo == "eficiencia_carregamento" && mapa.atingiu_meta ? @valor_efc_operator : 0
                       valor = valor_tma + valor_efc
                     elsif @turno == 1 # Turno B
-                      valor_tma = 0
+                      valor_tma = mapa.tipo == "tempo_atendimento" && mapa.atingiu_meta ? @valor_tma_operator : 0
                       valor_efc = mapa.tipo == "eficiencia_descarga" && mapa.atingiu_meta ? @valor_edf_operator : 0
                       valor = valor_efc
                     end
@@ -293,7 +293,7 @@
           </div>
           <div class="card-body">
             <ul class="list-group list-group-flush">
-              <% if [0, 2].include?(@turno) %>
+              <% if [0, 2, 3].include?(@turno) %>
                 <li class="list-group-item d-flex justify-content-between">
                   Valor TMA
                   <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_tma_operator, unit: "R$ ", separator: ",", delimiter: ".") %></span>
@@ -306,6 +306,10 @@
                 <li class="list-group-item d-flex justify-content-between">
                   Valor EFD
                   <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_edf_operator, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  Valor TMA
+                  <span class="badge bg-primary rounded-pill"><%= number_to_currency(@valor_tma_operator, unit: "R$ ", separator: ",", delimiter: ".") %></span>
                 </li>
               <% end %>
               <li class="list-group-item d-flex justify-content-between">
