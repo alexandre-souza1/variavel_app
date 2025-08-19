@@ -26,20 +26,22 @@
     </div>
 
     <!-- RESULTADO (container para Stimulus popular) -->
-    <div class="mb-3" data-resultado-target="grupo" style="display: none;">
-      <%= form.label :resultado, "Resultado", class: "form-label" %>
+    <div class="d-flex justify-content-start align-items-center">
+      <div class="mb-3" data-resultado-target="grupo" style="display: none;">
+        <%= form.label :resultado, "Resultado", class: "form-label" %>
 
-      <!-- container que o Stimulus vai popular -->
-      <div class="input-group" data-resultado-target="campoWrapper"></div>
+        <!-- container que o Stimulus vai popular -->
+        <div class="input-group" data-resultado-target="campoWrapper"></div>
 
-      <span class="input-group-text" data-resultado-target="sufixo"></span>
-      <small data-resultado-target="unidade" class="text-muted d-block mt-1"></small>
-    </div>
+        <span class="input-group-text" data-resultado-target="sufixo"></span>
+        <small data-resultado-target="unidade" class="text-muted d-block mt-1"></small>
+      </div>
 
-    <!-- ATINGIU META -->
-    <div class="form-check mb-3">
-      <%= form.check_box :atingiu_meta, class: "form-check-input", id: "atingiu_meta" %>
-      <%= form.label :atingiu_meta, "Atingiu Meta?", class: "form-check-label", for: "atingiu_meta" %>
+      <!-- ATINGIU META -->
+      <div class="form-check mb-3">
+        <%= form.check_box :atingiu_meta, class: "form-check-input", id: "atingiu_meta" %>
+        <%= form.label :atingiu_meta, "Atingiu Meta?", class: "form-check-label", for: "atingiu_meta" %>
+      </div>
     </div>
 
     <!-- OBSERVAÇÃO -->

@@ -12,6 +12,7 @@ export default class extends Controller {
 
     if (!tipo) {
       this.grupoTarget.style.display = "none"
+      this.sufixoTarget.style.display = "none"
       this.unidadeTarget.textContent = ""
       this.sufixoTarget.textContent = ""
       this.campoWrapperTarget.innerHTML = ""
@@ -25,27 +26,38 @@ export default class extends Controller {
       this.sufixoTarget.textContent = "h"
       this.montarSelectHorasMinutos()
     } else {
-      // Número normal
+      // Número normal (porcentagem ou outro)
       this.unidadeTarget.textContent = tipo.includes("eficiencia") ? "Informe a porcentagem" : ""
-      this.sufixoTarget.textContent = tipo.includes("eficiencia") ? "%" : ""
-      this.campoWrapperTarget.innerHTML = `<input type="number" step="0.01" class="form-control" data-resultado-target="campo">`
+      this.sufixoTarget.style.display = "none"
+      this.campoWrapperTarget.innerHTML = `
+        <div class="input-group" style="width: 120px;">
+          <input type="number" step="0.01" class="form-control form-control-sm"
+                name="az_mapa[resultado]" data-resultado-target="campo"
+                placeholder="0">
+          <span class="input-group-text">%</span>
+        </div>
+      `
     }
   }
 
   montarSelectHorasMinutos() {
-    // Monta HTML dos selects
+    // Opções de horas
     let horasOptions = '<option value="">HH</option>'
     for (let h = 0; h <= 23; h++) horasOptions += `<option value="${h}">${h}</option>`
 
+    // Opções de minutos (0 a 59)
     let minutosOptions = '<option value="">MM</option>'
-    for (let m = 0; m < 60; m += 5) minutosOptions += `<option value="${m}">${m.toString().padStart(2, "0")}</option>`
+    for (let m = 0; m < 60; m++) minutosOptions += `<option value="${m}">${m.toString().padStart(2, "0")}</option>`
 
+    // Monta o wrapper com input group
     this.campoWrapperTarget.innerHTML = `
-      <select data-resultado-target="campoHora" class="form-select me-1">${horasOptions}</select>
-      <select data-resultado-target="campoMinuto" class="form-select">${minutosOptions}</select>
+      <div class="d-flex gap-1 align-items-center">
+        <select data-resultado-target="campoHora" class="form-select form-select-sm">${horasOptions}</select>
+        <select data-resultado-target="campoMinuto" class="form-select form-select-sm">${minutosOptions}</select>
+      </div>
     `
 
-    // adiciona listener para atualizar sufixo
+    // Listeners para atualizar decimal
     this.campoHoraTarget.addEventListener("change", () => this.atualizarTempo())
     this.campoMinutoTarget.addEventListener("change", () => this.atualizarTempo())
   }

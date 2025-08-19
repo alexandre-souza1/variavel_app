@@ -28,10 +28,13 @@ class AzMapa < ApplicationRecord
   def unicidade_por_dia_e_turnos
     return if turno.blank?
 
-    turno.each do |t|
-      if AzMapa.where(data: data, tipo: tipo).where("turno @> ARRAY[?]::integer[]", t).exists?
-        errors.add(:turno, "com tipo #{tipo} já foi lançado para esse dia e turno #{TURNOS[t]}")
-      end
+    scope = AzMapa.where(data: data, tipo: tipo)
+    scope = scope.where.not(id: id) if persisted?
+
+    Rails.logger.info "DEBUG >> data=#{data.inspect}, tipo=#{tipo.inspect}, turno=#{turno.inspect}"
+
+    if scope.where("turno && ARRAY[?]::integer[]", turno).exists?
+      errors.add(:turno, "com tipo #{tipo} já foi lançado para esse dia em algum dos turnos #{turnos_em_texto}")
     end
   end
 end
