@@ -96,7 +96,7 @@
               </tr>
             </thead>
             <tbody>
-              <% total_valor_tma = total_valor_efc = total_valor_wms = total_valor = 0 %>
+              <% total_valor_tma = total_valor_efc = total_valor_efd = total_valor_wms = total_valor = 0 %>
 
               <% if params[:periodo_mes].present? && @azmapas.any? %>
                 <% @azmapas.each do |mapa| %>
@@ -108,8 +108,8 @@
                       valor = valor_tma + valor_efc
                     elsif @turno == 1 # Turno B
                       valor_tma = mapa.tipo == "tempo_atendimento" && mapa.atingiu_meta ? @valor_tma_operator : 0
-                      valor_efc = mapa.tipo == "eficiencia_descarga" && mapa.atingiu_meta ? @valor_edf_operator : 0
-                      valor = valor_efc
+                      valor_efd = mapa.tipo == "eficiencia_descarga" && mapa.atingiu_meta ? @valor_edf_operator : 0
+                      valor = valor_efd + valor_tma
                     end
 
                     total_valor_tma += valor_tma

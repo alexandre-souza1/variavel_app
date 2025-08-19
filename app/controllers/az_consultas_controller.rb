@@ -18,7 +18,7 @@ class AzConsultasController < ApplicationController
         # Carrega os parâmetros
         @valor_tma_operator = ParametroCalculo.valor_para(categoria: "operador", nome: "valor_tma") || 0
         @valor_efc_operator = ParametroCalculo.valor_para(categoria: "operador", nome: "valor_efc") || 0
-        @valor_edf_operator = ParametroCalculo.valor_para(categoria: "operador", nome: "valor_efd") || 0
+        @valor_efd_operator = ParametroCalculo.valor_para(categoria: "operador", nome: "valor_efd") || 0
         @valor_wms_operator = ParametroCalculo.valor_para(categoria: "operador", nome: "tarefa_wms") || 0
 
         # Filtra por turno E pelo mês selecionado
