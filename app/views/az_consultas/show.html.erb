@@ -217,20 +217,16 @@
               <% end %>
             </tbody>
           </table>
-        </div>
-
-        <% if params[:periodo_mes].present? && @wms_tasks.any? %>
-          <div class="mt-3 text-end">
-            <strong>Total:
-              <%= number_to_currency(
-                @wms_tasks.sum { |t| (t.duration * 60) >= 10 ? @valor_wms_operator : 0 },
-                unit: "R$ ",
-                separator: ",",
-                delimiter: "."
-              ) %>
-            </strong>
+          <div class="d-flex justify-content-center mt-2">
+            <% if params[:periodo_mes].present? && @wms_tasks.any? %>
+              <%= render partial: 'shared/pagination', locals: {
+                    current_page: @current_page || 1,
+                    total_pages: @total_pages || 1,
+                    path: ->(p) { url_for(params.permit!.to_h.merge(page: p)) }
+                  } %>
+            <% end %>
           </div>
-        <% end %>
+        </div>
       </div>
     </div>
 
@@ -262,10 +258,10 @@
               <td><%= number_to_currency(total_valor_efc, unit: "R$ ", separator: ",", delimiter: ".") %></td>
             </tr>
             <tr>
-              <td>WMS Individual</td>
+              <td>WMS Individual (período inteiro)</td>
               <td>
                 <%= number_to_currency(
-                  @wms_tasks.sum { |t| (t.duration * 60) >= 10 ? @valor_wms_operator : 0 },
+                  @total_wms,
                   unit: "R$ ",
                   separator: ",",
                   delimiter: "."
@@ -276,7 +272,7 @@
               <td>Total Geral</td>
               <td>
                 <%= number_to_currency(
-                  total_valor_tma + total_valor_efc + @wms_tasks.sum { |t| (t.duration * 60) >= 10 ? @valor_wms_operator : 0 },
+                  total_valor_tma + total_valor_efc + @total_wms,
                   unit: "R$ ",
                   separator: ",",
                   delimiter: "."

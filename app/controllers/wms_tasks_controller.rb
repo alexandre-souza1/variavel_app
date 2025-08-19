@@ -1,14 +1,20 @@
 class WmsTasksController < ApplicationController
   def index
-    @tasks = WmsTask.includes(:operator).order(created_at: :desc).page(params[:page])
+    all_tasks = WmsTask.includes(:operator).order(created_at: :desc)
+
+    pagination = helpers.paginate_records(all_tasks, params, per_page: 15)
+
+    @tasks = pagination[:records]
+    @current_page = pagination[:current_page]
+    @total_pages = pagination[:total_pages]
+    @total_tasks = all_tasks.count   # <<-- aqui
 
     # Corrigindo o cálculo das datas
-    dates = @tasks.pluck(:started_at).compact
+    dates = all_tasks.pluck(:started_at).compact
     @data_inicio_WMS = dates.min
     @data_fim_WMS = dates.max
     @dias_periodo_WMS = (@data_fim_WMS - @data_inicio_WMS).to_i if @data_inicio_WMS && @data_fim_WMS
   end
-
   def new_import
     # Renderiza o formulário de importação
   end
@@ -42,6 +48,13 @@ class WmsTasksController < ApplicationController
       Rails.logger.error "Erro na importação: #{e.backtrace.join("\n")}"
     end
 
+    redirect_to wms_tasks_path
+  end
+
+  def delete_all
+    count = WmsTask.count
+    WmsTask.destroy_all
+    flash[:notice] = "#{count} tarefas foram deletadas com sucesso."
     redirect_to wms_tasks_path
   end
 end

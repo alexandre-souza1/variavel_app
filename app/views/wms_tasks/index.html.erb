@@ -21,10 +21,11 @@
               <%= @data_fim_WMS.present? ? I18n.l(@data_fim_WMS, format: "%B") : "-" %>
             </h2>
             <p class="text-muted mb-0">
-              Total de Tarefas: <%= @tasks.total_entries %>
+              Total de Tarefas: <%= @total_tasks %>
             </p>
           </div>
-          <div class="col-md-6 text-md-end">
+          <div class="d-flex col-md-6 text-md-end justify-content-end gap-2">
+            <%= button_to "Deletar Todas as Tarefas", delete_all_wms_tasks_path, method: :delete, class: "btn btn-danger", data: { confirm: "Tem certeza que deseja deletar todas as tarefas?" } %>
             <%= link_to 'Nova Importação', new_import_wms_tasks_path, class: 'btn btn-success' %>
           </div>
         </div>
@@ -69,32 +70,8 @@
         </div>
 
         <!-- Paginação -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-2">
-          <div class="text-muted small">
-            Mostrando <%= @tasks.offset_value + 1 %> a <%= @tasks.offset_value + @tasks.length %> de <%= @tasks.total_entries %> %> tarefas
-          </div>
-
-          <div class="d-flex flex-column flex-md-row align-items-center gap-2">
-            <div class="d-flex align-items-center">
-              <span class="text-muted small me-2">Itens por página:</span>
-              <%= select_tag :per_page,
-                            options_for_select([10, 25, 50, 100], selected: params[:per_page] || 10),
-                            class: 'form-select form-select-sm',
-                            onchange: "this.form.submit()",
-                            disabled: true,
-                            form: "per-page-form" %>
-            </div>
-
-            <div class="pagination-container">
-              <%= will_paginate @tasks,
-                              previous_label: '&laquo;',
-                              next_label: '&raquo;',
-                              inner_window: 2,
-                              outer_window: 0,
-                              renderer: BootstrapPaginationRenderer::LinkRenderer,
-                              class: 'pagination' %>
-            </div>
-          </div>
+        <div class="d-flex justify-content-center mt-2">
+          <%= render 'shared/pagination', current_page: @current_page, total_pages: @total_pages, path: ->(p){ url_for(page: p, per_page: params[:per_page]) } %>
         </div>
 
         <%= form_with url: request.path, method: :get, id: "per-page-form", class: "d-none" do |f| %>

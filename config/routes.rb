@@ -79,6 +79,7 @@ Rails.application.routes.draw do
 
   resources :wms_tasks do
     collection do
+      delete :delete_all
       get 'new_import'
       post 'import'
     end

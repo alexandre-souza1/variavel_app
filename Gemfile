@@ -31,12 +31,9 @@ gem "bootstrap"
 gem 'dotenv-rails'
 
 gem 'roo' # Para ler Excel
-gem 'kaminari' # Para paginação
+# gem 'kaminari'
+# gem 'kaminari-bootstrap'
 
-gem 'kaminari-bootstrap'
-
-gem 'will_paginate', '~> 3.3'
-gem 'will_paginate-bootstrap'
 
 gem 'image_processing', '~> 1.2'
 
