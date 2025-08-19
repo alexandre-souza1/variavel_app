@@ -119,7 +119,11 @@
                     # Formatação condicional do resultado
                     resultado_formatado = case mapa.tipo.to_s
                       when 'eficiencia_carregamento', 'eficiencia_descarga' then number_to_percentage(mapa.resultado, precision: 2)
-                      when 'tempo_atendimento' then formatar_tempo(mapa.resultado)
+                      when 'tempo_atendimento'
+                        decimal = mapa.resultado.to_f
+                        horas = decimal.floor
+                        minutos = ((decimal - horas) * 60).round
+                        "#{horas}:#{minutos.to_s.rjust(2, '0')} h"
                       else mapa.resultado
                     end
                   %>
