@@ -88,7 +88,9 @@
 
           <!-- Paginação para admin -->
           <div class="d-flex justify-content-center mt-4">
-            <%= paginate @autonomies, class: 'pagination' %>
+          <% (1..@total_pages).each do |page| %>
+            <%= link_to page, params.permit(:search).merge(page: page), class: "btn btn-sm btn-primary mx-1 #{'active' if page == @current_page}" %>
+          <% end %>
           </div>
         <% else %>
           <!-- Visão para usuários não logados ou não admin -->
@@ -128,7 +130,9 @@
 
                 <!-- Paginação para busca -->
                 <div class="d-flex justify-content-center mt-4">
-                  <%= paginate @autonomies, class: 'pagination' %>
+                <% (1..@total_pages).each do |page| %>
+                  <%= link_to page, params.permit(:search).merge(page: page), class: "btn btn-sm btn-primary mx-1 #{'active' if page == @current_page}" %>
+                <% end %>
                 </div>
               <% elsif params[:search].present? %>
                 <div class="alert alert-info text-center">

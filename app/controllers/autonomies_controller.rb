@@ -3,18 +3,23 @@ class AutonomiesController < ApplicationController
   before_action :set_autonomy, only: [:destroy]
 
   def index
-    @autonomies = if params[:search].present?
-                    Autonomy.includes(:user)
-                           .where(registration: params[:search])
-                           .order(created_at: :desc)
-                           .page(params[:page])
-                  elsif current_user&.admin?
-                    Autonomy.includes(:user)
-                           .order(created_at: :desc)
-                           .page(params[:page])
-                  else
-                    Autonomy.none.page(params[:page])
-                  end
+    all_autonomies = if params[:search].present?
+                      Autonomy.includes(:user)
+                              .where(registration: params[:search])
+                              .order(created_at: :desc)
+                    elsif current_user&.admin?
+                      Autonomy.includes(:user)
+                              .order(created_at: :desc)
+                    else
+                      Autonomy.none
+                    end
+
+    pagination = helpers.paginate_records(all_autonomies, params, per_page: 15)
+
+    @autonomies = pagination[:records]
+    @current_page = pagination[:current_page]
+    @total_pages = pagination[:total_pages]
+    @total_autonomies = all_autonomies.count
   end
 
   def new
