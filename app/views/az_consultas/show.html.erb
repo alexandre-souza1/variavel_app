@@ -247,7 +247,7 @@
             </tr>
           </thead>
           <tbody>
-            <% if [0, 2].include?(@turno) %>
+            <% if [0, 2, 3].include?(@turno) %>
               <tr>
                 <td>Tempo Médio de Atendimento</td>
                 <td><%= number_to_currency(total_valor_tma, unit: "R$ ", separator: ",", delimiter: ".") %></td>
