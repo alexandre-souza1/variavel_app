@@ -64,7 +64,19 @@
                     <td><%= az_mapa.data&.strftime("%d/%m/%Y") %></td>
                     <td><%= az_mapa.turno.map { |t| turno_label(t) }.join(", ") %></td>
                     <td><%= az_mapa.tipo.humanize.titleize %></td>
-                    <td><%= az_mapa.resultado %></td>
+                    <td>
+                      <% case az_mapa.tipo.to_s %>
+                      <% when "tempo_atendimento" %>
+                        <% decimal = az_mapa.resultado.to_f %>
+                        <% horas = decimal.floor %>
+                        <% minutos = ((decimal - horas) * 60).round %>
+                        <%= "#{horas}:#{minutos.to_s.rjust(2, '0')} h" %>
+                      <% when "eficiencia_carregamento", "eficiencia_descarga" %>
+                        <%= number_to_percentage(az_mapa.resultado, precision: 2) %>
+                      <% else %>
+                        <%= az_mapa.resultado %>
+                      <% end %>
+                    </td>
                     <td>
                       <% if az_mapa.atingiu_meta? %>
                         <span class="badge bg-success">Sim</span>
