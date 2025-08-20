@@ -27,6 +27,16 @@
         Autonomia de Frota
       </div>
     </div>
+    <% if user_signed_in? %>
+      <div class="mt-2">
+        <div
+          class="card-category-index"
+          style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('<%= image_path('checklist.png') %>');"
+          onclick="window.location='<%= checklists_path %>'">
+          Checklist de Manobra
+        </div>
+      </div>
+    <% end %>
 
   </div>
 </div>
