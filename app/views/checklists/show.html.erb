@@ -1,33 +1,59 @@
-<h2><%= @checklist.checklist_template.name %></h2>
-
-<p>
-  <strong>Respondido por:</strong>
-  <%= @checklist.user.name.presence || @checklist.user.email %>
-</p>
-
-<p>
-  <strong>Realizado às:</strong>
-  <%= l(@checklist.created_at, format: :long) %>
-</p>
-
-<% if @checklist.plate.present? %>
-  <p>
-    <strong>Placa selecionada:</strong>
-    <span class="badge bg-info text-dark"><%= @checklist.plate.placa %></span>
-  </p>
-<% end %>
-
-<ul class="list-group">
-  <% @checklist.checklist_responses.each do |resp| %>
-    <li class="list-group-item">
-      <strong><%= resp.checklist_item.description %></strong><br>
-      Status: <span class="badge <%= resp.status == "ok" ? "bg-success" : "bg-danger" %>"><%= resp.status.upcase %></span><br>
-      <% if resp.comment.present? %>
-        Comentário: <%= resp.comment %><br>
+<div class="container my-4">
+  <!-- Cabeçalho -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header">
+      <h4 class="mb-0"><%= @checklist.checklist_template.name %></h4>
+    </div>
+    <div class="card-body">
+      <p class="mb-1">
+        <strong>Respondido por:</strong>
+        <%= @checklist.user.name.presence || @checklist.user.email %>
+      </p>
+      <p class="mb-1">
+        <strong>Realizado às:</strong>
+        <%= l(@checklist.created_at, format: :long) %>
+      </p>
+      <% if @checklist.plate.present? %>
+        <p class="mb-0">
+          <strong>Placa selecionada:</strong>
+          <span class="badge bg-info text-dark"><%= @checklist.plate.placa %></span>
+        </p>
       <% end %>
-      <% if resp.photo.attached? %>
-        <%= image_tag resp.photo.variant(resize_to_limit: [300, 300]) %>
+    </div>
+  </div>
+
+  <!-- Respostas -->
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <h5 class="mb-0">Respostas</h5>
+    </div>
+    <ul class="list-group list-group-flush">
+      <% @checklist.checklist_responses.each do |resp| %>
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center">
+            <strong><%= resp.checklist_item.description %></strong>
+            <span class="badge <%= resp.status == "ok" ? "bg-success" : "bg-danger" %>">
+              <%= resp.status.upcase %>
+            </span>
+          </div>
+
+          <% if resp.comment.present? %>
+            <p class="mt-2 mb-1"><strong>Comentário:</strong> <%= resp.comment %></p>
+          <% end %>
+
+          <% if resp.photo.attached? %>
+            <div class="mt-2">
+              <%= image_tag resp.photo.variant(resize_to_limit: [600, 600]),
+                            class: "img-fluid rounded shadow-sm border" %>
+            </div>
+          <% end %>
+        </li>
       <% end %>
-    </li>
-  <% end %>
-</ul>
+    </ul>
+  </div>
+
+  <!-- Botão Voltar -->
+  <div class="mt-4">
+    <%= link_to "Voltar", checklists_path, class: "btn btn-secondary shadow-sm px-4" %>
+  </div>
+</div>

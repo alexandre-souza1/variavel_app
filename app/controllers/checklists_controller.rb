@@ -6,6 +6,10 @@ class ChecklistsController < ApplicationController
     @checklists = current_user.checklists.includes(:checklist_template)
   end
 
+  def historic
+    @checklists = Checklist.includes(:checklist_template)
+  end
+
   def new
     @template = ChecklistTemplate.find(params[:template_id])
     @checklist = Checklist.new(checklist_template: @template)

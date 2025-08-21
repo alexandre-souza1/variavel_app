@@ -34,7 +34,12 @@ Rails.application.routes.draw do
   get "az_consulta", to: "az_consultas#show"
 
   resources :downloads
-  resources :checklists, only: [:new, :create, :show, :index]
+
+  resources :checklists do
+    collection do
+      get :historic
+    end
+  end
   resources :fuel_consumptions, only: [:index, :new, :create]
 
   resources :checklist_templates do
