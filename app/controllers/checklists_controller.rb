@@ -42,7 +42,7 @@ class ChecklistsController < ApplicationController
   end
 
   def show
-    @checklist = current_user.checklists.find(params[:id])
+    @checklist = Checklist.find(params[:id])
   end
 
   private
