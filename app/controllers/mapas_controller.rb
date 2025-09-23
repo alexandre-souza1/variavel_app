@@ -138,7 +138,19 @@ class MapasController < ApplicationController
         Mapa.create!(
           mapa: numero_mapa,
           data: row["Data"],
-          fator: row["Fator"].to_i,
+          fator: begin
+            m = row["MatricMotorista"].to_s.strip
+            a1 = row["MatricAjud1"].to_s.strip
+            a2 = row["MatricAjud2"].to_s.strip
+
+            if m.present? && m != "0" && a1.present? && a1 != "0" && a2.present? && a2 != "0"
+              2
+            elsif m.present? && m != "0" && a1.present? && a1 != "0"
+              1
+            else
+              0
+            end
+          end,
           cx_total: row["CxCarreg"].to_s.gsub(",", ".").to_f,
           cx_real: row["CxEntreg"].to_s.gsub(",", ".").to_f,
           pdv_total: row["QtEntregasCarreg(RV)"].to_s.gsub(",", ".").to_f,
