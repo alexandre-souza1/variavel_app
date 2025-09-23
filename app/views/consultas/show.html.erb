@@ -174,8 +174,8 @@
               <% quantidade_mapas = @mapas.size %>  <!-- 'mapas' deve ser o nome da variável que contém os mapas -->
 
               <% # Calculando o percentual de devolução %>
-              <% total_pdv_real = @mapas.sum { |mapa| mapa.pdv_real.to_f } %>  <!-- Soma dos valores de pdv_real -->
-              <% total_pdv_total = @mapas.sum { |mapa| mapa.pdv_total.to_f } %>  <!-- Soma dos valores de pdv_total -->
+              <% total_pdv_real = @mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.pdv_real.to_f } %>
+              <% total_pdv_total = @mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.pdv_total.to_f } %>
               <% quantidade_devolucoes =  total_pdv_total.to_f - total_pdv_real.to_f %>
               <% percentual_devolucao = total_pdv_total.to_f.zero? ? 0 : (total_pdv_total.to_f - total_pdv_real.to_f) / total_pdv_total.to_f %><!-- Percentual de devolução -->
               <% bonus_devolucao = (quantidade_mapas >= 15 && percentual_devolucao <= 0.03) ? @valor_bonus_devolucao : 0 %>
@@ -211,9 +211,11 @@
                     <% valor_mp = valor_cx + valor_pdv %>
                   <% end %>
 
-                  <% total_cx_real += mapa.cx_real %>
-                  <% total_valor_cx += valor_cx %>
-                  <% total_valor_pdv += valor_pdv %>
+                  <% unless mapa.recarga == "SIM" %>
+                    <% total_cx_real += mapa.cx_real %>
+                    <% total_valor_cx += valor_cx %>
+                    <% total_valor_pdv += valor_pdv %>
+                  <% end %>
                   <% unless @categoria == "van" %>
                     <% total_recarga += 1 if mapa.recarga == "SIM" %>
                     <% total_valor_rec += valor_rec %>
