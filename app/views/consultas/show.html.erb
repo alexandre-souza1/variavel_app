@@ -240,8 +240,8 @@
                       <td><%= mapa.recarga %></td>
                     <% end %>
 
-                    <td><%= number_to_currency(valor_cx, unit: "R$ ", separator: ",", delimiter: ".") %></td>
-                    <td><%= number_to_currency(valor_pdv, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                    <td><%= number_to_currency(mapa.recarga == "SIM" ? 0 : valor_cx, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                    <td><%= number_to_currency(mapa.recarga == "SIM" ? 0 : valor_pdv, unit: "R$ ", separator: ",", delimiter: ".") %></td>
 
                     <% unless @categoria == "van" %>
                       <td><%= number_to_currency(valor_rec, unit: "R$ ", separator: ",", delimiter: ".") %></td>
@@ -271,11 +271,12 @@
           </div>
           <div class="card-body p-3">
             <% if params[:periodo_mes].present? %>
-              <table class="table table-borderless align-middle">
+              <table class="table table-border-bottom align-middle">
                 <thead>
                   <tr>
-                    <th></th>
+                    <th>Tipo</th>
                     <th>Quantidade</th>
+                    <th>Percentual</th>
                     <th>Valor Total</th>
                   </tr>
                 </thead>
@@ -283,33 +284,39 @@
                   <tr>
                     <td>Cx Real</td>
                     <td><%= total_cx_real.to_i %></td>
+                    <td></td>
                     <td><%= number_to_currency(total_valor_cx, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                   </tr>
                   <tr>
                     <td>PDV Real</td>
                     <td><%= total_pdv_real.to_i %></td>
+                    <td></td>
                     <td><%= number_to_currency(total_valor_pdv, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                   </tr>
                   <% unless @categoria == "van" %>
                     <tr>
                       <td>Recargas</td>
                       <td><%= total_recarga %></td>
+                      <td></td>
                       <td><%= number_to_currency(total_valor_rec, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                     </tr>
                   <% end %>
                   <tr>
                     <td>Quantidade de Mapas</td>
                     <td><%= quantidade_mapas %></td>
+                    <td></td>
+                    <td></td>
                   </tr>
                   <tr>
                     <td>Devolução</td>
-                    <td><%= quantidade_devolucoes %></td>
+                    <td><%= quantidade_devolucoes.to_i %></td>
                     <td><%= (percentual_devolucao * 100).round(2) %>%</td>
                     <td><%= number_to_currency(bonus_devolucao, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                   </tr>
                   <tr class="fw-bold">
                     <td>Total Mapas</td>
                     <td><%= total_mapas%></td>
+                    <td></td>
                     <td><%= number_to_currency(total_valor_mp  += bonus_devolucao, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                   </tr>
                 </tbody>
