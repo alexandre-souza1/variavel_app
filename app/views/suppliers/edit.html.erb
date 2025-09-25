@@ -1,0 +1,15 @@
+<h1>Editar Fornecedor</h1>
+
+<%= form_with(model: @supplier, local: true) do |f| %>
+  <div class="mb-3">
+    <%= f.label :name, "Nome" %>
+    <%= f.text_field :name, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :cnpj, "CNPJ" %>
+    <%= f.text_field :cnpj, class: "form-control" %>
+  </div>
+
+  <%= f.submit "Salvar", class: "btn btn-primary" %>
+<% end %>

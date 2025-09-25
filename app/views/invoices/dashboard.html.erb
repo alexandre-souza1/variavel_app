@@ -1,0 +1,56 @@
+<div class="container mt-4">
+  <h1 class="mb-4">📊 Dashboard de Notas Fiscais</h1>
+
+  <!-- Totais -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h5>Total Geral</h5>
+          <p class="fs-4 fw-bold text-success">R$ <%= number_to_currency(@total_spent, unit: "", separator: ",", delimiter: ".") %></p>
+        </div>
+      </div>
+    </div>
+
+<% @spent_per_category.each do |category_name, total| %>
+  <div class="col-md-4">
+    <div class="card shadow-sm mb-3">
+      <div class="card-body text-center">
+        <h6><%= category_name.titleize %></h6>
+        <p class="fs-5 fw-bold">
+          R$ <%= number_to_currency(total, unit: "", separator: ",", delimiter: ".") %>
+        </p>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<%= pie_chart @spent_per_category.transform_keys(&:titleize) %>
+<%= column_chart @spent_per_category.transform_keys(&:titleize) %>
+
+
+  <!-- Últimos lançamentos -->
+  <h3 class="mt-5">📑 Últimos Lançamentos</h3>
+  <table class="table table-striped table-hover mt-3">
+    <thead>
+      <tr>
+        <th>Fornecedor</th>
+        <th>NFs</th>
+        <th>Data Lançamento</th>
+        <th>Categoria</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @latest_invoices.each do |invoice| %>
+        <tr>
+          <td><%= invoice.supplier.name %></td>
+          <td><%= invoice.invoice_numbers.map(&:number).join(", ") %></td>
+          <td><%= l(invoice.date_issued) %></td>
+          <td><%= invoice.budget_category.titleize %></td>
+          <td>R$ <%= number_to_currency(invoice.total, unit: "", separator: ",", delimiter: ".") %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

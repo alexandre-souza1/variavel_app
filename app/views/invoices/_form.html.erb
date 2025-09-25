@@ -1,0 +1,61 @@
+<%= form_with(model: @invoice, local: true) do |f| %>
+  <div class="mb-3">
+    <%= f.label :code, "Código da NF" %>
+    <%= f.text_field :code, placeholder: "Ex: ID1755707018874279", class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :supplier_id, "Fornecedor" %>
+    <%= f.collection_select :supplier_id, Supplier.all, :id, :name, { prompt: "Selecione o fornecedor" }, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
+    <h5>Números da NF</h5>
+    <div id="invoice-numbers">
+      <%= f.fields_for :invoice_numbers do |nf_form| %>
+        <div class="d-flex mb-2 align-items-center">
+          <%= nf_form.text_field :number, class: "form-control me-2", placeholder: "Número da NF" %>
+          <%= nf_form.check_box :_destroy %> <span class="ms-1">Remover</span>
+        </div>
+      <% end %>
+    </div>
+    <%= link_to "Adicionar NF", "#", id: "add-invoice-number", class: "btn btn-sm btn-outline-primary" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :date_issued, "Data de lançamento" %>
+    <%= f.date_field :date_issued, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :due_date, "Data de vencimento" %>
+    <%= f.date_field :due_date, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :budget_category, "Categoria" %>
+    <%= f.select :budget_category, Invoice.budget_categories.keys.map { |c| [c.titleize, c] }, { prompt: "Selecione a categoria" }, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :purchaser, "Comprador" %>
+    <%= f.select :purchaser, Invoice::PURCHASERS, { prompt: "Selecione o comprador" }, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :cost_center, "Centro de Custo" %>
+    <%= f.select :cost_center, Invoice.cost_centers.keys.map { |c| [c.titleize, c] }, { prompt: "Selecione o centro de custo" }, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :total, "Valor total" %>
+    <%= f.number_field :total, step: 0.01, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :notes, "Observações" %>
+    <%= f.text_area :notes, class: "form-control" %>
+  </div>
+
+  <%= f.submit "Salvar NF", class: "btn btn-primary" %>
+<% end %>

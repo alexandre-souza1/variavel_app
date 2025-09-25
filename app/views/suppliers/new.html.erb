@@ -1,0 +1,13 @@
+<%= form_with(model: @supplier, local: true, data: { controller: "supplier" }) do |f| %>
+  <div class="mb-3">
+    <%= f.label :cnpj, "CNPJ" %>
+    <%= f.text_field :cnpj, class: "form-control", data: { supplier_target: "cnpj", action: "blur->supplier#fetchName" } %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :name, "Nome" %>
+    <%= f.text_field :name, class: "form-control", data: { supplier_target: "name" }, readonly: true, placeholder: "Preencha o CNPJ" %>
+  </div>
+
+  <%= f.submit "Salvar", class: "btn btn-primary" %>
+<% end %>

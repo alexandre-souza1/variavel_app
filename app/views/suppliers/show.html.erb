@@ -1,0 +1,25 @@
+<h1>Fornecedor</h1>
+
+<p>
+  <strong>Nome:</strong>
+  <%= @supplier.name %>
+</p>
+
+<p>
+  <strong>CNPJ:</strong>
+  <%= @supplier.cnpj %>
+</p>
+
+<p>
+  <strong>Notas Fiscais cadastradas:</strong>
+</p>
+<ul>
+  <% @supplier.invoices.each do |invoice| %>
+    <li>
+      <%= link_to invoice.number, invoice_path(invoice) %> - <%= invoice.date_issued %> - R$ <%= number_to_currency(invoice.total) %>
+    </li>
+  <% end %>
+</ul>
+
+<%= link_to "Editar", edit_supplier_path(@supplier), class: "btn btn-warning" %>
+<%= link_to "Voltar", suppliers_path, class: "btn btn-secondary" %>

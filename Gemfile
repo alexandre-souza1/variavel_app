@@ -19,10 +19,11 @@ gem "csv"
 gem 'nokogiri', '~> 1.18.6', platforms: :ruby, require: false
 
 gem "devise"
-
+gem "oauth2"
+gem "faraday"
 gem 'chartkick'
 gem 'groupdate'
-
+gem 'httparty'
 gem "cloudinary"
 gem "activestorage-cloudinary-service"
 

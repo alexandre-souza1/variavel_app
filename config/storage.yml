@@ -6,7 +6,12 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
-  
+# novo serviço para PDFs
+temporary_db:
+  service: Disk
+  root: <%= Rails.root.join("tmp/storage") %>
+
+
 cloudinary:
   service: Cloudinary
   cloud_name: <%= ENV["CLOUDINARY_CLOUD_NAME"] %>

@@ -90,6 +90,24 @@ Rails.application.routes.draw do
     end
   end
 
+  # Rota custom para API
+  get 'suppliers/search_cnpj', to: 'suppliers#search_cnpj'
+
+  # CRUD completo normal
+  resources :suppliers
+
+  resources :budget_categories
+
+  resources :invoices do
+    collection do
+      get :dashboard
+    end
+
+    member do
+      get :document_proxy  # rota para servir o PDF protegido
+    end
+  end
+
   namespace :admin do
     resources :users, only: [:index, :edit, :update, :destroy]
   end

@@ -1,0 +1,36 @@
+<div id="<%= dom_id invoice %>">
+  <p>
+    <strong>Fornecedor:</strong>
+    <%= invoice.supplier.name %>
+  </p>
+
+  <p>
+    <strong>Categoria:</strong>
+    <%= invoice.budget_category.titleize %>
+  </p>
+
+  <p>
+    <strong>Números NF:</strong>
+    <% if invoice.invoice_numbers.any? %>
+      <%= invoice.invoice_numbers.map(&:number).join(", ") %>
+    <% else %>
+      <em>Nenhum número cadastrado</em>
+    <% end %>
+  </p>
+
+  <p>
+    <strong>Data de Lançamento:</strong>
+    <%= invoice.date_issued %>
+  </p>
+
+  <p>
+    <strong>Total:</strong>
+    <%= invoice.total %>
+  </p>
+
+  <p>
+    <strong>Observações:</strong>
+    <%= invoice.notes %>
+  </p>
+
+</div>

@@ -10,8 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_17_225656) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_25_145340) do
   # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
 
   create_table "active_storage_attachments", force: :cascade do |t|
@@ -75,16 +76,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_17_225656) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "az_coletivas", force: :cascade do |t|
-    t.date "data"
-    t.integer "tipo"
-    t.string "turno"
-    t.float "resultado"
-    t.boolean "atingiu_meta", default: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "az_mapas", force: :cascade do |t|
     t.date "data"
     t.integer "turno", default: [], array: true
@@ -95,28 +86,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_17_225656) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "az_operadors", force: :cascade do |t|
-    t.string "matricula"
-    t.string "nome"
+  create_table "budget_categories", force: :cascade do |t|
+    t.string "name"
+    t.decimal "limit"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-  end
-
-  create_table "az_periodos", force: :cascade do |t|
-    t.date "inicio"
-    t.date "fim"
-    t.string "descricao"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "az_tarefa_wms", force: :cascade do |t|
-    t.bigint "az_operador_id", null: false
-    t.date "data"
-    t.integer "quantidade"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["az_operador_id"], name: "index_az_tarefa_wms_on_az_operador_id"
   end
 
   create_table "checklist_items", force: :cascade do |t|
@@ -197,6 +171,33 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_17_225656) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "invoice_numbers", force: :cascade do |t|
+    t.string "number"
+    t.bigint "invoice_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["invoice_id"], name: "index_invoice_numbers_on_invoice_id"
+  end
+
+  create_table "invoices", force: :cascade do |t|
+    t.bigint "supplier_id", null: false
+    t.string "number"
+    t.date "date"
+    t.decimal "total"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "code"
+    t.date "date_issued"
+    t.date "due_date"
+    t.string "purchaser"
+    t.integer "budget_category"
+    t.integer "cost_center"
+    t.text "document_urls", default: [], array: true
+    t.index ["code"], name: "index_invoices_on_code", unique: true
+    t.index ["supplier_id"], name: "index_invoices_on_supplier_id"
+  end
+
   create_table "mapas", force: :cascade do |t|
     t.string "mapa"
     t.string "data"
@@ -211,15 +212,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_17_225656) do
     t.datetime "updated_at", null: false
     t.string "matric_ajudante"
     t.string "matric_ajudante_2"
-  end
-
-  create_table "meta", force: :cascade do |t|
-    t.integer "tipo", null: false
-    t.decimal "valor", null: false
-    t.date "data", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["tipo", "data"], name: "index_meta_on_tipo_and_data", unique: true
   end
 
   create_table "operators", force: :cascade do |t|
@@ -246,6 +238,13 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_17_225656) do
     t.string "setor"
     t.string "perfil"
     t.string "tipo"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "suppliers", force: :cascade do |t|
+    t.string "name"
+    t.string "cnpj"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -282,12 +281,13 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_17_225656) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "az_tarefa_wms", "az_operadors"
   add_foreign_key "checklist_items", "checklist_templates"
   add_foreign_key "checklist_responses", "checklist_items"
   add_foreign_key "checklist_responses", "checklists"
   add_foreign_key "checklists", "checklist_templates"
   add_foreign_key "checklists", "plates"
   add_foreign_key "checklists", "users"
+  add_foreign_key "invoice_numbers", "invoices"
+  add_foreign_key "invoices", "suppliers"
   add_foreign_key "wms_tasks", "operators"
 end
