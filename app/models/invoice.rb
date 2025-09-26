@@ -1,5 +1,6 @@
 class Invoice < ApplicationRecord
   belongs_to :supplier
+  belongs_to :purchaser, class_name: 'User', foreign_key: 'purchaser_id'
   has_many_attached :documents, service: :temporary_db
   has_many :invoice_numbers, dependent: :destroy
 
@@ -25,12 +26,21 @@ class Invoice < ApplicationRecord
     # placas podem ser adicionadas dinamicamente
   }
 
-  # Invoice.rb
-  PURCHASERS = ["Jovana", "Maria", "Carlos", "Fernanda", "Lucas"]
-  validates :purchaser, inclusion: { in: PURCHASERS }
+  # Remove a constante PURCHASERS e substitui por um método de classe
+  validates :purchaser_id, presence: true
 
-  validates :code, :date_issued, :due_date, :total, :supplier_id, :purchaser, :budget_category, :cost_center, presence: true
+  validates :code, :date_issued, :due_date, :total, :supplier_id, :budget_category, :cost_center, presence: true
   validates :code, uniqueness: true
+
+  # Método para obter a lista de purchasers ativos
+  def self.available_purchasers
+    User.all.order(:name).pluck(:name, :id)  # ✅ Remove .active
+  end
+
+  # Método para compatibilidade com views existentes
+  def purchaser_name
+    purchaser&.name
+  end
 
   # Método para obter documentos do OneDrive com URLs de download diretas
   def onedrive_documents_with_download

@@ -1,5 +1,6 @@
 class InvoicesController < ApplicationController
   before_action :set_invoice, only: %i[ show edit update destroy ]
+  before_action :set_purchasers, only: [:new, :edit, :create, :update]
 
   # GET /invoices or /invoices.json
   def index
@@ -43,12 +44,14 @@ class InvoicesController < ApplicationController
   def new
     @invoice = Invoice.new
     @invoice.invoice_numbers.build   # 🔑 garante que aparece o campo no form
+    @available_purchasers = User.all.order(:name)
   end
 
   # GET /invoices/1/edit
   def edit
     @invoice = Invoice.find(params[:id])
     @invoice.invoice_numbers.build if @invoice.invoice_numbers.empty?
+    @available_purchasers = User.all.order(:name)
   end
 
   def dashboard
@@ -86,7 +89,6 @@ class InvoicesController < ApplicationController
 
     respond_to do |format|
       if @invoice.save
-        # ❌ REMOVER a lógica de upload - já está no model
         format.html { redirect_to @invoice, notice: "Invoice was successfully created." }
         format.json { render :show, status: :created, location: @invoice }
       else
@@ -100,7 +102,6 @@ class InvoicesController < ApplicationController
   def update
     respond_to do |format|
       if @invoice.update(invoice_params)
-        # ❌ REMOVER a lógica de upload - já está no model
         format.html { redirect_to @invoice, notice: "Invoice was successfully updated.", status: :see_other }
         format.json { render :show, status: :ok, location: @invoice }
       else
@@ -154,15 +155,21 @@ rescue => e
 end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_invoice
-      @invoice = Invoice.find(params[:id])
-    end
+
+  def set_purchasers
+    @purchasers = User.all.order(:name)  # ✅ Mude para .all por enquanto
+  end
+
+
+  # Use callbacks to share common setup or constraints between actions.
+  def set_invoice
+    @invoice = Invoice.find(params[:id])
+  end
 
     # Only allow a list of trusted parameters through.
   def invoice_params
     params.require(:invoice).permit(
-      :supplier_id, :date_issued, :due_date, :total, :purchaser, :budget_category, :cost_center, :notes, :code, documents: [],
+      :supplier_id, :date_issued, :due_date, :total, :purchaser_id, :budget_category, :cost_center, :notes, :code, documents: [],
       invoice_numbers_attributes: [:id, :number, :_destroy]
     )
   end

@@ -1,87 +1,133 @@
-<% if @invoice.errors.any? %>
-  <div class="alert alert-danger">
-    <h5><%= pluralize(@invoice.errors.count, "erro") %> impedem o salvamento da NF:</h5>
-    <ul>
-      <% @invoice.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
-      <% end %>
-    </ul>
-  </div>
-<% end %>
-
-<div class="container">
-<%= form_with(model: @invoice, local: true) do |f| %>
-  <div class="mb-3">
-    <%= f.label :code, "Código da NF" %>
-    <%= f.text_field :code, placeholder: "Ex: ID1755707018874279", class: "form-control" %>
+<div class="invoice-form-container">
+  <div class="container p-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="mb-0"><i class="bi bi-receipt"></i> <%= @invoice.persisted? ? 'Editar Nota Fiscal' : 'Nova Nota Fiscal' %></h1>
+      </div>
+      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
+        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+      </div>
+    </div>
   </div>
 
-  <div class="mb-3">
-    <%= f.label :supplier_id, "Fornecedor" %>
-    <%= f.collection_select :supplier_id, Supplier.all, :id, :name, { prompt: "Selecione o fornecedor" }, class: "form-select" %>
-  </div>
+  <div class="container">
+    <% if @invoice.errors.any? %>
+      <div class="alert alert-danger mb-4">
+        <h5><%= pluralize(@invoice.errors.count, "erro") %> impedem o salvamento da NF:</h5>
+        <ul class="mb-0">
+          <% @invoice.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
 
-  <div class="mb-3" data-controller="invoice-numbers">
-    <h5>Números da NF</h5>
+    <div class="card shadow-sm rounded mb-4">
+      <div class="card-header bg-light border-bottom">
+        <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Dados da Nota Fiscal</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with(model: @invoice, local: true) do |f| %>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :code, "Código da NF", class: "form-label fw-bold" %>
+              <%= f.text_field :code, placeholder: "Ex: ID1755707018874279", class: "form-control" %>
+            </div>
 
-    <div data-invoice-numbers-target="container">
-      <%= f.fields_for :invoice_numbers do |nf_form| %>
-        <div class="nested-fields d-flex mb-2 align-items-center" data-new-record="false">
-          <%= nf_form.text_field :number, class: "form-control me-2", placeholder: "Número da NF" %>
-          <%= nf_form.check_box :_destroy, style: "display: none" %>
-          <button class="btn btn-sm btn-outline-danger" data-action="click->invoice-numbers#remove">Remover</button>
-        </div>
-      <% end %>
+            <div class="col-md-6 mb-3">
+              <%= f.label :supplier_id, "Fornecedor", class: "form-label fw-bold" %>
+              <%= f.collection_select :supplier_id, Supplier.all, :id, :name, { prompt: "Selecione o fornecedor" }, class: "form-select" %>
+            </div>
+          </div>
+
+          <div class="mb-3" data-controller="invoice-numbers">
+            <%= f.label :invoice_numbers, "Números da NF", class: "form-label fw-bold" %>
+
+            <div data-invoice-numbers-target="container" class="mb-2">
+              <%= f.fields_for :invoice_numbers do |nf_form| %>
+                <div class="nested-fields d-flex mb-2 align-items-center" data-new-record="false">
+                  <%= nf_form.text_field :number, class: "form-control me-2", placeholder: "Número da NF" %>
+                  <%= nf_form.check_box :_destroy, style: "display: none" %>
+                  <button type="button" class="btn btn-sm btn-outline-danger" data-action="click->invoice-numbers#remove">Remover</button>
+                </div>
+              <% end %>
+            </div>
+
+            <template data-invoice-numbers-target="template">
+              <div class="nested-fields d-flex mb-2 align-items-center" data-new-record="true">
+                <input class="form-control me-2" placeholder="Número da NF" type="text" name="invoice[invoice_numbers_attributes][NEW_RECORD][number]" id="invoice_invoice_numbers_attributes_NEW_RECORD_number">
+                <input type="hidden" name="invoice[invoice_numbers_attributes][NEW_RECORD][_destroy]" id="invoice_invoice_numbers_attributes_NEW_RECORD__destroy" value="false">
+                <button type="button" class="btn btn-sm btn-outline-danger" data-action="click->invoice-numbers#remove">Remover</button>
+              </div>
+            </template>
+
+            <%= link_to "#", class: "btn btn-sm btn-outline-primary", data: { action: "click->invoice-numbers#add" } do %>
+              <i class="bi bi-plus-circle"></i> Adicionar NF
+            <% end %>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :date_issued, "Data de lançamento", class: "form-label fw-bold" %>
+              <%= f.date_field :date_issued, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= f.label :due_date, "Data de vencimento", class: "form-label fw-bold" %>
+              <%= f.date_field :due_date, class: "form-control" %>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <%= f.label :budget_category, "Categoria", class: "form-label fw-bold" %>
+              <%= f.select :budget_category, Invoice.budget_categories.keys.map { |c| [c.titleize, c] }, { prompt: "Selecione a categoria" }, class: "form-select" %>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= f.label :purchaser, "Comprador", class: "form-label fw-bold" %>
+              <%= f.collection_select :purchaser_id,
+                          User.all.order(:name),
+                          :id,
+                          :name,
+                          { prompt: "Selecione o comprador" },
+                          class: "form-select" %>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= f.label :cost_center, "Centro de Custo", class: "form-label fw-bold" %>
+              <%= f.select :cost_center, Invoice.cost_centers.keys.map { |c| [c.titleize, c] }, { prompt: "Selecione o centro de custo" }, class: "form-select" %>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :total, "Valor total", class: "form-label fw-bold" %>
+              <div class="input-group">
+                <span class="input-group-text">R$</span>
+                <%= f.number_field :total, step: 0.01, class: "form-control" %>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= f.label :documents, "Anexos", class: "form-label fw-bold" %>
+              <%= f.file_field :documents, multiple: true, direct_upload: true, class: "form-control" %>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <%= f.label :notes, "Observações", class: "form-label fw-bold" %>
+            <%= f.text_area :notes, class: "form-control", rows: 3 %>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <%= link_to "Cancelar", invoices_path, class: "btn btn-outline-secondary" %>
+            <%= f.submit @invoice.persisted? ? "Atualizar NF" : "Salvar NF", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
     </div>
 
-    <template data-invoice-numbers-target="template">
-      <div class="nested-fields d-flex mb-2 align-items-center" data-new-record="true">
-        <input class="form-control me-2" placeholder="Número da NF" type="text" name="invoice[invoice_numbers_attributes][NEW_RECORD][number]" id="invoice_invoice_numbers_attributes_NEW_RECORD_number">
-        <input type="hidden" name="invoice[invoice_numbers_attributes][NEW_RECORD][_destroy]" id="invoice_invoice_numbers_attributes_NEW_RECORD__destroy" value="false">
-        <button class="btn btn-sm btn-outline-danger" data-action="click->invoice-numbers#remove">Remover</button>
-      </div>
-    </template>
-
-    <%= link_to "Adicionar NF", "#", class: "btn btn-sm btn-outline-primary mt-2", data: { action: "click->invoice-numbers#add" } %>
+    <%= link_to "Voltar para Notas Fiscais", invoices_path, class: "btn btn-primary shadow-sm p-3 w-100" %>
   </div>
-
-  <div class="mb-3">
-    <%= f.label :date_issued, "Data de lançamento" %>
-    <%= f.date_field :date_issued, class: "form-control" %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :due_date, "Data de vencimento" %>
-    <%= f.date_field :due_date, class: "form-control" %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :budget_category, "Categoria" %>
-    <%= f.select :budget_category, Invoice.budget_categories.keys.map { |c| [c.titleize, c] }, { prompt: "Selecione a categoria" }, class: "form-select" %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :purchaser, "Comprador" %>
-    <%= f.select :purchaser, Invoice::PURCHASERS, { prompt: "Selecione o comprador" }, class: "form-select" %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :cost_center, "Centro de Custo" %>
-    <%= f.select :cost_center, Invoice.cost_centers.keys.map { |c| [c.titleize, c] }, { prompt: "Selecione o centro de custo" }, class: "form-select" %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :total, "Valor total" %>
-    <%= f.number_field :total, step: 0.01, class: "form-control" %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :notes, "Observações" %>
-    <%= f.text_area :notes, class: "form-control" %>
-  </div>
-
-  <%= f.file_field :documents, multiple: true, direct_upload: true %>
-
-  <%= f.submit "Salvar NF", class: "btn btn-primary" %>
-<% end %>
 </div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_26_135232) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_26_154653) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -190,11 +190,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_26_135232) do
     t.string "code"
     t.date "date_issued"
     t.date "due_date"
-    t.string "purchaser"
     t.integer "budget_category"
     t.integer "cost_center"
     t.text "document_urls", default: [], array: true
+    t.bigint "purchaser_id"
     t.index ["code"], name: "index_invoices_on_code", unique: true
+    t.index ["purchaser_id"], name: "index_invoices_on_purchaser_id"
     t.index ["supplier_id"], name: "index_invoices_on_supplier_id"
   end
 
@@ -299,5 +300,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_26_135232) do
   add_foreign_key "checklists", "users"
   add_foreign_key "invoice_numbers", "invoices"
   add_foreign_key "invoices", "suppliers"
+  add_foreign_key "invoices", "users", column: "purchaser_id"
   add_foreign_key "wms_tasks", "operators"
 end
