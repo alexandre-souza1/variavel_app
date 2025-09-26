@@ -32,7 +32,52 @@ class Invoice < ApplicationRecord
   validates :code, :date_issued, :due_date, :total, :supplier_id, :purchaser, :budget_category, :cost_center, presence: true
   validates :code, uniqueness: true
 
+  # Método para obter documentos do OneDrive com URLs de download diretas
+  def onedrive_documents_with_download
+    return [] unless document_urls.present?
+
+    # Usa cache para evitar chamadas repetidas à API
+    Rails.cache.fetch("invoice_#{id}_download_urls", expires_in: 1.hour) do
+      service = OnedriveService.new
+
+      document_urls.map.with_index do |sharepoint_url, index|
+        # Tenta obter URL de download direta
+        download_url = service.get_direct_download_url(sharepoint_url) ||
+                      service.create_anonymous_download_link(sharepoint_url) ||
+                      sharepoint_url
+
+        {
+          url: download_url,
+          filename: extract_filename_from_url(sharepoint_url) || "documento_#{index + 1}.pdf",
+          index: index
+        }
+      end
+    end
+  end
+
+  # Método para usar na controller action (sem cache)
+  def get_download_url(document_index)
+    return nil unless document_urls.present? && document_urls[document_index]
+
+    sharepoint_url = document_urls[document_index]
+    service = OnedriveService.new
+
+    service.get_direct_download_url(sharepoint_url) ||
+    service.create_anonymous_download_link(sharepoint_url) ||
+    sharepoint_url
+  end
+
   private
+
+  def extract_filename_from_url(url)
+    begin
+      uri = URI.parse(url)
+      filename = File.basename(uri.path)
+      filename.present? ? CGI.unescape(filename) : nil
+    rescue
+      nil
+    end
+  end
 
   def upload_documents_to_onedrive
     return unless documents.attached?
@@ -70,19 +115,23 @@ class Invoice < ApplicationRecord
       end
     end
 
-
     # Atualiza o campo no banco (sem sobrescrever os antigos)
     self.update_column(:document_urls, (document_urls + new_urls).uniq)
+
+    # Opcional: Limpar os arquivos do banco de dados após upload para o OneDrive
+    clean_local_documents_after_upload
   end
 
+  def clean_local_documents_after_upload
+    # Aguarda um pouco para garantir que o upload foi concluído
+    DocumentsCleanupJob.set(wait: 5.minutes).perform_later(self.id)
+  end
 
   def generate_folder_name
-    # Limpar caracteres especiais para evitar problemas no SharePoint
     timestamp = Time.now.strftime("%Y%m%d_%H%M%S")
     supplier_name = supplier&.name&.gsub(/[^\w\-]/, '_')&.first(50) || 'unknown_supplier'
     code_clean = code.gsub(/[^\w\-]/, '_')&.first(50)
 
     "#{code_clean}_#{supplier_name}_#{timestamp}"
   end
-
 end

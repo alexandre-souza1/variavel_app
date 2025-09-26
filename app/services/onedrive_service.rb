@@ -2,7 +2,6 @@ require "oauth2"
 require "faraday"
 
 class OnedriveService
-
   require "net/http"
   require "json"
 
@@ -33,78 +32,132 @@ class OnedriveService
     nil
   end
 
-    # Upload direto do conteúdo binário para SharePoint
-    def upload_sharepoint_temp(file_content, remote_name, folder_path = "")
-      # Criar nome seguro com timestamp para evitar duplicatas
-      timestamp = Time.now.strftime("%Y%m%d_%H%M%S")
-      safe_name = "invoice_#{timestamp}_#{SecureRandom.hex(4)}#{File.extname(remote_name)}"
+  # Upload direto do conteúdo binário para SharePoint
+  def upload_sharepoint_temp(file_content, remote_name, folder_path = "")
+    # Criar nome seguro com timestamp para evitar duplicatas
+    timestamp = Time.now.strftime("%Y%m%d_%H%M%S")
+    safe_name = "invoice_#{timestamp}_#{SecureRandom.hex(4)}#{File.extname(remote_name)}"
 
-      # Montar o caminho completo da pasta - INCLUIR "Invoices/" no início
-      base_folder = "Invoices"
-      full_path = if folder_path.present?
-                    "#{base_folder}/#{folder_path}/#{safe_name}"
-                  else
-                    "#{base_folder}/#{safe_name}"
-                  end
+    # Montar o caminho completo da pasta - INCLUIR "Invoices/" no início
+    base_folder = "Invoices"
+    full_path = if folder_path.present?
+                  "#{base_folder}/#{folder_path}/#{safe_name}"
+                else
+                  "#{base_folder}/#{safe_name}"
+                end
 
-      url = URI("#{GRAPH_URL}/sites/#{SITE_ID}/drives/#{DRIVE_ID}/root:/#{full_path}:/content")
+    url = URI("#{GRAPH_URL}/sites/#{SITE_ID}/drives/#{DRIVE_ID}/root:/#{full_path}:/content")
+
+    http = Net::HTTP.new(url.host, url.port)
+    http.use_ssl = true
+
+    request = Net::HTTP::Put.new(url)
+    request["Authorization"] = "Bearer #{@access_token}"
+    request["Content-Type"] = "application/octet-stream"
+    request.body = file_content.force_encoding("BINARY")
+
+    response = http.request(request)
+
+    if response.code.to_i.between?(200,299)
+      Rails.logger.info("Upload realizado com sucesso! -> #{JSON.parse(response.body)['webUrl']}")
+      JSON.parse(response.body)
+    else
+      Rails.logger.error("Erro no upload (sharepoint): #{response.code} - #{response.body}")
+      nil
+    end
+  end
+
+  # Método para obter URL de download direta (sem autenticação necessária)
+  def get_direct_download_url(sharepoint_url)
+    return nil unless @access_token
+
+    # Primeiro, encontra o ID do item pelo caminho
+    item_id = find_item_id_by_path(extract_path_from_url(sharepoint_url))
+    return nil unless item_id
+
+    begin
+      # Obtém a URL de download direta temporária
+      url = URI("#{GRAPH_URL}/sites/#{SITE_ID}/drives/#{DRIVE_ID}/items/#{item_id}")
 
       http = Net::HTTP.new(url.host, url.port)
       http.use_ssl = true
 
-      request = Net::HTTP::Put.new(url)
+      request = Net::HTTP::Get.new(url)
       request["Authorization"] = "Bearer #{@access_token}"
-      request["Content-Type"] = "application/octet-stream"
-      request.body = file_content.force_encoding("BINARY")
 
       response = http.request(request)
 
-      if response.code.to_i.between?(200,299)
-        Rails.logger.info("Upload realizado com sucesso! -> #{JSON.parse(response.body)['webUrl']}")
-        JSON.parse(response.body)
+      if response.code.to_i == 200
+        data = JSON.parse(response.body)
+        # Esta URL permite download sem autenticação
+        download_url = data["@microsoft.graph.downloadUrl"]
+
+        if download_url
+          Rails.logger.info("✅ URL de download direta obtida: #{download_url}")
+          return download_url
+        else
+          Rails.logger.error("URL de download não encontrada na resposta")
+          return nil
+        end
       else
-        Rails.logger.error("Erro no upload (sharepoint): #{response.code} - #{response.body}")
+        Rails.logger.error("Erro ao obter URL de download: #{response.code} - #{response.body}")
         nil
       end
+    rescue => e
+      Rails.logger.error("Erro no get_direct_download_url: #{e.message}")
+      nil
     end
+  end
 
-  # === Cria a pasta Invoices (somente em OneDrive de usuário) ===
-  def ensure_invoices_folder
-    access_token = token&.token
-    return nil unless access_token
+  # Método para criar um link compartilhável anônimo + URL de download
+  def create_anonymous_download_link(sharepoint_url)
+    return nil unless @access_token
 
-    conn = Faraday.new(url: GRAPH_URL)
+    item_id = find_item_id_by_path(extract_path_from_url(sharepoint_url))
+    return nil unless item_id
 
-    response = conn.get("/users/#{@user_id}/drive/root/children?$filter=name eq 'Invoices'") do |req|
-      req.headers["Authorization"] = "Bearer #{access_token}"
-    end
+    begin
+      # Primeiro, cria um link de visualização anônimo
+      url = URI("#{GRAPH_URL}/sites/#{SITE_ID}/drives/#{DRIVE_ID}/items/#{item_id}/createLink")
 
-    if response.success?
-      data = JSON.parse(response.body)
-      return data['value'][0]['id'] if data['value'].any?
-    end
+      http = Net::HTTP.new(url.host, url.port)
+      http.use_ssl = true
 
-    response = conn.post("/users/#{@user_id}/drive/root/children") do |req|
-      req.headers["Authorization"] = "Bearer #{access_token}"
-      req.headers["Content-Type"] = "application/json"
-      req.body = {
-        name: "Invoices",
-        folder: {},
-        "@microsoft.graph.conflictBehavior": "rename"
+      request = Net::HTTP::Post.new(url)
+      request["Authorization"] = "Bearer #{@access_token}"
+      request["Content-Type"] = "application/json"
+      request.body = {
+        type: "view",
+        scope: "anonymous"
       }.to_json
-    end
 
-    handle_response(response, "criação de pasta Invoices")&.dig("id")
+      response = http.request(request)
+
+      if response.code.to_i == 200 || response.code.to_i == 201
+        data = JSON.parse(response.body)
+        web_url = data["link"]["webUrl"]
+
+        # Converte para URL de download
+        download_url = web_url + '?download=1'
+        Rails.logger.info("✅ Link anônimo criado: #{download_url}")
+        return download_url
+      else
+        Rails.logger.error("Erro ao criar link anônimo: #{response.code} - #{response.body}")
+        nil
+      end
+    rescue => e
+      Rails.logger.error("Erro no create_anonymous_download_link: #{e.message}")
+      nil
+    end
   end
 
   # === Testes ===
   def test_user_drive
-    access_token = token&.token
-    return "Token não disponível" unless access_token
+    return "Token não disponível" unless @access_token
 
     conn = Faraday.new(url: GRAPH_URL)
     response = conn.get("/users/#{@user_id}/drive") do |req|
-      req.headers["Authorization"] = "Bearer #{access_token}"
+      req.headers["Authorization"] = "Bearer #{@access_token}"
     end
 
     if response.success?
@@ -116,12 +169,11 @@ class OnedriveService
   end
 
   def test_sharepoint
-    access_token = token&.token
-    return "Token não disponível" unless access_token
+    return "Token não disponível" unless @access_token
 
     conn = Faraday.new(url: GRAPH_URL)
     response = conn.get("/sites/#{SITE_ID}/drives/#{DRIVE_ID}") do |req|
-      req.headers["Authorization"] = "Bearer #{access_token}"
+      req.headers["Authorization"] = "Bearer #{@access_token}"
     end
 
     if response.success?
@@ -133,6 +185,49 @@ class OnedriveService
   end
 
   private
+
+  def extract_path_from_url(sharepoint_url)
+    # Extrai o caminho do arquivo da URL do SharePoint
+    uri = URI.parse(sharepoint_url)
+    path = uri.path
+
+    # Remove o prefixo do site para obter o caminho relativo
+    site_prefix = "/sites/nf_budget_app/Documentos%20Compartilhados"
+    if path.start_with?(site_prefix)
+      path = path[site_prefix.length..-1]
+    end
+
+    URI.decode_www_form_component(path)
+  end
+
+  def find_item_id_by_path(file_path)
+    return nil if file_path.blank?
+
+    begin
+      # Busca o item pelo caminho no SharePoint
+      encoded_path = URI.encode_www_form_component(file_path).gsub('+', '%20')
+      url = URI("#{GRAPH_URL}/sites/#{SITE_ID}/drives/#{DRIVE_ID}/root:#{encoded_path}")
+
+      http = Net::HTTP.new(url.host, url.port)
+      http.use_ssl = true
+
+      request = Net::HTTP::Get.new(url)
+      request["Authorization"] = "Bearer #{@access_token}"
+
+      response = http.request(request)
+
+      if response.code.to_i == 200
+        data = JSON.parse(response.body)
+        data["id"]
+      else
+        Rails.logger.error("Erro ao buscar item por caminho: #{response.code} - #{response.body}")
+        nil
+      end
+    rescue => e
+      Rails.logger.error("Erro no find_item_id_by_path: #{e.message}")
+      nil
+    end
+  end
 
   def handle_response(response, action)
     if response.success?

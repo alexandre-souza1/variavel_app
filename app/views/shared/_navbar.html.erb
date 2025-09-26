@@ -34,6 +34,12 @@
             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
 
               <% if current_user.admin? || current_user.supervisor? %>
+                <div class="dropdown-header">Módulos</div>
+                <%= link_to invoices_path, class: "dropdown-item bg-primary text-white fw-bold d-flex justify-content-between align-items-center" do %>
+                  Workstation Fin
+                  <span class="badge bg-success ms-2">New</span>
+                <% end %>
+                <%= link_to "Workstation RV", root_path, class: "dropdown-item" %>
                 <div class="dropdown-header">DU</div>
                 <%= link_to "Motoristas", drivers_path, class: "dropdown-item" %>
                 <%= link_to "Ajudantes", ajudantes_path, class: "dropdown-item" %>

@@ -26,6 +26,7 @@ gem 'groupdate'
 gem 'httparty'
 gem "cloudinary"
 gem "activestorage-cloudinary-service"
+gem 'cpf_cnpj'
 
 gem "bootstrap"
 

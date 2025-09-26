@@ -83,16 +83,18 @@
               <%= invoice.invoice_numbers.map(&:number).join(", ") %>
             </td>
             <td>
-              <% if invoice.documents.attached? %>
+              <% if invoice.document_urls.present? %>
                 <div class="dropdown">
                   <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" id="dropdownMenuButton<%= invoice.id %>" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fas fa-download"></i>
                   </button>
                   <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton<%= invoice.id %>">
-                    <% invoice.documents.each do |doc| %>
+                    <% invoice.document_urls.each_with_index do |url, index| %>
                       <li>
-                        <%= link_to rails_blob_path(doc, disposition: "attachment"), class: "dropdown-item" do %>
-                          <i class="fas fa-file"></i> <%= doc.filename.to_s %>
+                        <%= link_to download_document_invoice_path(invoice, document_index: index),
+                                    class: "dropdown-item",
+                                    data: { turbo: false } do %>
+                          <i class="fas fa-file"></i> Documento <%= index + 1 %>
                         <% end %>
                       </li>
                     <% end %>

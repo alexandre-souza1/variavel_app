@@ -1,13 +1,134 @@
-<%= form_with(model: @supplier, local: true, data: { controller: "supplier" }) do |f| %>
-  <div class="mb-3">
-    <%= f.label :cnpj, "CNPJ" %>
-    <%= f.text_field :cnpj, class: "form-control", data: { supplier_target: "cnpj", action: "blur->supplier#fetchName" } %>
-  </div>
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      <div class="d-flex justify-content-between align-items-center">
+        <h4 class="mb-0"><i class="fas fa-building me-2"></i>
+          <%= @supplier.persisted? ? "Editar Fornecedor" : "Novo Fornecedor" %>
+        </h4>
+      </div>
+    </div>
 
-  <div class="mb-3">
-    <%= f.label :name, "Nome" %>
-    <%= f.text_field :name, class: "form-control", data: { supplier_target: "name" }, readonly: true, placeholder: "Preencha o CNPJ" %>
-  </div>
+    <%= form_with(model: @supplier, local: true, data: { controller: "supplier" }, class: "card-body") do |f| %>
+      <div class="row">
+        <div class="col-md-12 mb-4">
+          <h5 class="text-primary border-bottom pb-2"><i class="fas fa-id-card me-2"></i>Dados Cadastrais</h5>
+        </div>
 
-  <%= f.submit "Salvar", class: "btn btn-primary" %>
-<% end %>
+        <div class="col-md-6 mb-3">
+          <%= f.label :cnpj, "CNPJ", class: "form-label fw-bold text-muted" %>
+          <%= f.text_field :cnpj, class: "form-control form-control-lg",
+                          data: { supplier_target: "cnpj", action: "blur->supplier#fetchSupplierData" },
+                          placeholder: "Digite o CNPJ..." %>
+          <div class="form-text">Digite o CNPJ para preenchimento automático</div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <%= f.label :name, "Razão Social", class: "form-label fw-bold text-muted" %>
+          <%= f.text_field :name, class: "form-control form-control-lg",
+                          data: { supplier_target: "name" },
+                          readonly: true,
+                          placeholder: "Preenchido automaticamente" %>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <%= f.label :situation, "Situação", class: "form-label fw-bold text-muted" %>
+          <%= f.text_field :situation, class: "form-control",
+                          data: { supplier_target: "situation" },
+                          readonly: true,
+                          placeholder: "Preenchido automaticamente" %>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <%= f.label :email, "E-mail", class: "form-label fw-bold text-muted" %>
+          <%= f.email_field :email, class: "form-control",
+                          data: { supplier_target: "email" },
+                          readonly: true,
+                          placeholder: "Preenchido automaticamente" %>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <%= f.label :phone, "Telefone", class: "form-label fw-bold text-muted" %>
+          <%= f.text_field :phone, class: "form-control",
+                          data: { supplier_target: "phone" },
+                          readonly: true,
+                          placeholder: "Preenchido automaticamente" %>
+        </div>
+      </div>
+
+      <div class="row mt-4">
+        <div class="col-md-12 mb-4">
+          <h5 class="text-primary border-bottom pb-2"><i class="fas fa-map-marker-alt me-2"></i>Endereço</h5>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <%= f.label :street, "Logradouro", class: "form-label fw-bold text-muted" %>
+          <%= f.text_field :street, class: "form-control",
+                          data: { supplier_target: "street" },
+                          readonly: true,
+                          placeholder: "Preenchido automaticamente" %>
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <%= f.label :number, "Número", class: "form-label fw-bold text-muted" %>
+          <%= f.text_field :number, class: "form-control",
+                          data: { supplier_target: "number" },
+                          readonly: true,
+                          placeholder: "Preenchido automaticamente" %>
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <%= f.label :complement, "Complemento", class: "form-label fw-bold text-muted" %>
+          <%= f.text_field :complement, class: "form-control",
+                          data: { supplier_target: "complement" },
+                          readonly: true,
+                          placeholder: "Preenchido automaticamente" %>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <%= f.label :neighborhood, "Bairro", class: "form-label fw-bold text-muted" %>
+          <%= f.text_field :neighborhood, class: "form-control",
+                          data: { supplier_target: "neighborhood" },
+                          readonly: true,
+                          placeholder: "Preenchido automaticamente" %>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <%= f.label :city, "Cidade", class: "form-label fw-bold text-muted" %>
+          <%= f.text_field :city, class: "form-control",
+                          data: { supplier_target: "city" },
+                          readonly: true,
+                          placeholder: "Preenchido automaticamente" %>
+        </div>
+
+        <div class="col-md-2 mb-3">
+          <%= f.label :state, "Estado", class: "form-label fw-bold text-muted" %>
+          <%= f.text_field :state, class: "form-control",
+                          data: { supplier_target: "state" },
+                          readonly: true,
+                          placeholder: "Preenchido automaticamente" %>
+        </div>
+
+        <div class="col-md-2 mb-3">
+          <%= f.label :zip_code, "CEP", class: "form-label fw-bold text-muted" %>
+          <%= f.text_field :zip_code, class: "form-control",
+                          data: { supplier_target: "zipCode" },
+                          readonly: true,
+                          placeholder: "Preenchido automaticamente" %>
+        </div>
+      </div>
+
+      <div class="card-footer bg-light mt-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <%= f.submit @supplier.persisted? ? "Atualizar Fornecedor" : "Cadastrar Fornecedor",
+                        class: "btn btn-primary btn-lg me-2" %>
+            <button type="button" class="btn btn-outline-secondary btn-lg" data-action="click->supplier#clearFields">
+              <i class="fas fa-broom me-1"></i>Limpar Campos
+            </button>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <%= link_to "Voltar", suppliers_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
+</div>

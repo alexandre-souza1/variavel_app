@@ -13,4 +13,15 @@ module ApplicationHelper
       per_page: per_page
     }
   end
+
+  def category_color(category)
+  colors = {
+    'combustivel' => 'warning',
+    'manutencao' => 'info',
+    'pecas' => 'success',
+    'seguro' => 'danger',
+    'outros' => 'secondary'
+  }
+  colors[category.downcase] || 'primary'
+end
 end

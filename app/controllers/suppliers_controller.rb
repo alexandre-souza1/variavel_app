@@ -43,20 +43,36 @@ class SuppliersController < ApplicationController
   end
 
   def search_cnpj
-    cnpj = params[:cnpj].to_s.gsub(/\D/, "") # remove pontos, traços e barras
+    cnpj = params[:cnpj].to_s.gsub(/\D/, "")
     return render json: { error: "CNPJ inválido" }, status: :bad_request if cnpj.length != 14
 
     response = HTTParty.get("https://www.receitaws.com.br/v1/cnpj/#{cnpj}")
 
     if response.code == 200
       data = JSON.parse(response.body) rescue nil
+
       if data && data["nome"]
-        render json: { name: data["nome"], cnpj: data["cnpj"] }
+        supplier_data = {
+          name: data["nome"],
+          cnpj: data["cnpj"]&.gsub(/\D/, ''),
+          situation: data["situacao"],
+          email: data["email"],
+          phone: data["telefone"],
+          street: data["logradouro"],
+          number: data["numero"],
+          complement: data["complemento"],
+          neighborhood: data["bairro"],
+          city: data["municipio"],
+          state: data["uf"],
+          zip_code: data["cep"]&.gsub(/\D/, '')
+        }
+
+        render json: supplier_data
       else
         render json: { error: "CNPJ não encontrado" }, status: :not_found
       end
     else
-      render json: { error: "Erro na API" }, status: :bad_gateway
+      render json: { error: "Erro na API da ReceitaWS" }, status: :bad_gateway
     end
   rescue => e
     render json: { error: e.message }, status: :internal_server_error
@@ -65,7 +81,7 @@ class SuppliersController < ApplicationController
   private
 
   def supplier_params
-    params.require(:supplier).permit(:name, :cnpj)
+    params.require(:supplier).permit(:name, :cnpj, :fantasy_name, :situation, :email, :phone, :street, :number, :complement, :neighborhood, :city, :state, :zip_code)
   end
 
   def set_supplier

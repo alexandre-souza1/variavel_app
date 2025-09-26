@@ -104,7 +104,7 @@ Rails.application.routes.draw do
     end
 
     member do
-      get :document_proxy  # rota para servir o PDF protegido
+      get :download_document
     end
   end
 

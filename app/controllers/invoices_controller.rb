@@ -58,6 +58,26 @@ class InvoicesController < ApplicationController
     @spent_per_category = Invoice.all.group_by(&:budget_category).transform_values { |invoices| invoices.sum(&:total) }
 
     @latest_invoices = Invoice.includes(:supplier, :invoice_numbers).order(created_at: :desc).limit(10)
+    @invoices_count = Invoice.count
+    @suppliers_count = Supplier.count
+    @current_month_total = Invoice.where('date_issued >= ?', Date.today.beginning_of_month).sum(:total)
+    @current_month_count = Invoice.where('date_issued >= ?', Date.today.beginning_of_month).count
+    @monthly_average = Invoice.where('date_issued >= ?', 6.months.ago).average(:total).to_f
+    @monthly_totals = Invoice.group_by_month(:date_issued, format: "%b %Y").sum(:total)
+    @top_suppliers = Supplier.joins(:invoices)
+                            .select('suppliers.*, COUNT(invoices.id) as invoices_count, SUM(invoices.total) as total_amount')
+                            .group('suppliers.id')
+                            .order('total_amount DESC')
+                            .limit(5)
+    @recent_invoices = Invoice.where('date_issued >= ?', 7.days.ago)
+    @high_value_invoices = Invoice.where('total > ?', 10000)
+    @total_invoices_count = Invoice.count
+
+    # Cálculo de variação mensal
+    current_month = Invoice.where('date_issued >= ?', Date.today.beginning_of_month).sum(:total)
+    last_month = Invoice.where('date_issued >= ? AND date_issued < ?',
+                              1.month.ago.beginning_of_month, Date.today.beginning_of_month).sum(:total)
+    @monthly_variation = last_month > 0 ? ((current_month - last_month) / last_month * 100).round(2) : 0
   end
 
   # POST /invoices or /invoices.json
@@ -99,7 +119,40 @@ class InvoicesController < ApplicationController
       format.json { head :no_content }
     end
   end
-  
+
+def download_document
+  invoice = Invoice.find(params[:id])
+  document_index = params[:document_index].to_i
+
+  if invoice.document_urls.present? && invoice.document_urls[document_index]
+    sharepoint_url = invoice.document_urls[document_index]
+
+    # Tenta obter a URL de download direta
+    service = OnedriveService.new
+    download_url = service.get_direct_download_url(sharepoint_url) ||
+                  service.create_anonymous_download_link(sharepoint_url)
+
+    if download_url
+      # Verifica se a URL de download é válida (não é a URL original do SharePoint)
+      if download_url != sharepoint_url
+        # URL de download direta obtida com sucesso - redireciona
+        redirect_to download_url, allow_other_host: true
+      else
+        # Não conseguiu obter URL de download direta - arquivo pode não existir
+        redirect_to invoices_path, alert: 'Arquivo não encontrado no OneDrive. O arquivo pode ter sido excluído.'
+      end
+    else
+      # Não conseguiu obter nenhuma URL de download
+      redirect_to invoices_path, alert: 'Arquivo não encontrado no OneDrive. O arquivo pode ter sido excluído.'
+    end
+  else
+    redirect_to invoices_path, alert: 'Documento não encontrado.'
+  end
+rescue => e
+  Rails.logger.error("Erro ao baixar documento: #{e.message}")
+  redirect_to invoices_path, alert: 'Erro ao tentar baixar o arquivo. O arquivo pode ter sido excluído.'
+end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_invoice

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_25_145340) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_26_135232) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -247,6 +247,16 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_25_145340) do
     t.string "cnpj"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "situation"
+    t.string "email"
+    t.string "phone"
+    t.string "street"
+    t.string "number"
+    t.string "complement"
+    t.string "neighborhood"
+    t.string "city"
+    t.string "state"
+    t.string "zip_code"
   end
 
   create_table "users", force: :cascade do |t|
