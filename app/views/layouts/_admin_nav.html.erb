@@ -1,11 +1,13 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
   <div class="container">
-    <%= link_to 'Painel Admin', root_path, class: 'navbar-brand' %>
+    <%= link_to 'Workstation Fin', invoices_path, class: 'navbar-brand' %>
 
     <div class="navbar-nav">
       <%= link_to 'Centros de Custo', admin_cost_centers_path, class: 'nav-link' %>
       <%= link_to 'Categorias', admin_budget_categories_path, class: 'nav-link' %>
-      <%= link_to 'Voltar ao App', root_path, class: 'nav-link' %>
+      <%= link_to "Dashboard", dashboard_invoices_path, class: "nav-link" %>
+      <%= link_to "Novo Lançamento", new_invoice_path, class: "nav-link" %>
+      <%= link_to "Fornecedores", suppliers_path, class: "nav-link" %>
     </div>
   </div>
 </nav>

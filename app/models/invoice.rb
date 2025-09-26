@@ -3,40 +3,25 @@ class Invoice < ApplicationRecord
   belongs_to :purchaser, class_name: 'User', foreign_key: 'purchaser_id'
   has_many_attached :documents, service: :temporary_db
   has_many :invoice_numbers, dependent: :destroy
-  belongs_to :cost_center  # Nova associação
-  belongs_to :budget_category  # Nova associação
+  belongs_to :cost_center
+  belongs_to :budget_category
+
+  before_validation :ensure_code_for_abastecimento, on: :create
 
   accepts_nested_attributes_for :invoice_numbers, allow_destroy: true
 
   after_commit :upload_documents_to_onedrive, on: :create
 
-  # # Categorias possíveis
-  # enum budget_category: {
-  #   diesel: 0,
-  #   arla: 1,
-  #   pneu: 2,
-  #   alinhamento: 3,
-  #   manutencao_caminhao: 4,
-  #   lavagem: 5
-  # }
-
-  # # Centro de custo (placa ou opções fixas)
-  # enum cost_center: {
-  #   foz_rota: 0,
-  #   foz_as: 1,
-  #   estoque: 2
-  #   # placas podem ser adicionadas dinamicamente
-  # }
-
-  # Remove a constante PURCHASERS e substitui por um método de classe
   validates :purchaser_id, presence: true
+  validates :date_issued, :due_date, :total, :supplier_id, :budget_category_id, :cost_center_id, presence: true
+  validates :code, uniqueness: { allow_blank: true }
 
-  validates :code, :date_issued, :due_date, :total, :supplier_id, :budget_category, :cost_center, presence: true
-  validates :code, uniqueness: true
+  # Validação customizada para o code
+  validate :code_required_unless_abastecimento
 
   # Método para obter a lista de purchasers ativos
   def self.available_purchasers
-    User.all.order(:name).pluck(:name, :id)  # ✅ Remove .active
+    User.all.order(:name).pluck(:name, :id)
   end
 
   # Método para compatibilidade com views existentes
@@ -48,12 +33,10 @@ class Invoice < ApplicationRecord
   def onedrive_documents_with_download
     return [] unless document_urls.present?
 
-    # Usa cache para evitar chamadas repetidas à API
     Rails.cache.fetch("invoice_#{id}_download_urls", expires_in: 1.hour) do
       service = OnedriveService.new
 
       document_urls.map.with_index do |sharepoint_url, index|
-        # Tenta obter URL de download direta
         download_url = service.get_direct_download_url(sharepoint_url) ||
                       service.create_anonymous_download_link(sharepoint_url) ||
                       sharepoint_url
@@ -81,6 +64,20 @@ class Invoice < ApplicationRecord
 
   private
 
+  def code_required_unless_abastecimento
+    # Se NÃO for abastecimento E code estiver em branco, adiciona erro
+    if budget_category&.name&.downcase != 'abastecimento' && code.blank?
+      errors.add(:code, "é obrigatório para esta categoria")
+    end
+  end
+
+  def ensure_code_for_abastecimento
+    # Se for abastecimento e não tiver código, gera um automático
+    if budget_category&.name&.downcase == 'abastecimento' && code.blank?
+      self.code = "ABAST-#{Date.today.strftime('%Y%m%d')}-#{SecureRandom.alphanumeric(6).upcase}"
+    end
+  end
+
   def extract_filename_from_url(url)
     begin
       uri = URI.parse(url)
@@ -102,7 +99,6 @@ class Invoice < ApplicationRecord
 
     documents.each do |doc|
       begin
-        # cria um blob temporário no serviço disk/database
         temp_blob = ActiveStorage::Blob.create_and_upload!(
           io: StringIO.new(doc.download),
           filename: doc.filename,
@@ -110,7 +106,6 @@ class Invoice < ApplicationRecord
           service_name: :temporary_db
         )
 
-        # envia para SharePoint
         result = OnedriveService.new.upload_sharepoint_temp(temp_blob.download, doc.filename.to_s, folder_name)
 
         if result.present?
@@ -119,7 +114,6 @@ class Invoice < ApplicationRecord
           Rails.logger.info("✅ Arquivo #{doc.filename} salvo -> #{url}")
         end
 
-        # limpa o blob temporário
         temp_blob.purge
 
       rescue => e
@@ -127,15 +121,11 @@ class Invoice < ApplicationRecord
       end
     end
 
-    # Atualiza o campo no banco (sem sobrescrever os antigos)
     self.update_column(:document_urls, (document_urls + new_urls).uniq)
-
-    # Opcional: Limpar os arquivos do banco de dados após upload para o OneDrive
     clean_local_documents_after_upload
   end
 
   def clean_local_documents_after_upload
-    # Aguarda um pouco para garantir que o upload foi concluído
     DocumentsCleanupJob.set(wait: 5.minutes).perform_later(self.id)
   end
 

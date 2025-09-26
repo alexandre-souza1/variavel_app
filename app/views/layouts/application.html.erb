@@ -21,6 +21,11 @@
 
   <body>
   <%= render "shared/navbar" %>
+  <% if request.path.start_with?('/admin') ||
+      controller_name == 'suppliers' ||
+      controller_name == 'invoices' %>
+  <%= render 'layouts/admin_nav' %>
+<% end %>
   <%= render "shared/flashes" %>
   <main class="flex-grow-1">
     <%= yield %>
