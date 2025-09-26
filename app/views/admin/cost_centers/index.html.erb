@@ -1,0 +1,36 @@
+<%= render 'layouts/admin_nav' %>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Centros de Custo</h1>
+    <%= link_to 'Novo Centro de Custo', new_admin_cost_center_path, class: 'btn btn-primary' %>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Setor</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @cost_centers.each do |cost_center| %>
+            <tr>
+              <td><%= cost_center.name %></td>
+              <td><span class="badge bg-secondary"><%= cost_center.sector %></span></td>
+              <td>
+                <%= link_to 'Editar', edit_admin_cost_center_path(cost_center), class: 'btn btn-sm btn-warning' %>
+                <%= button_to 'Excluir', admin_cost_center_path(cost_center),
+                              method: :delete,
+                              class: 'btn btn-sm btn-danger',
+                              data: { confirm: 'Tem certeza?' } %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

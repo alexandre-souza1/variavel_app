@@ -1,0 +1,31 @@
+<%= form_with(model: [:admin, cost_center], local: true) do |form| %>
+  <% if cost_center.errors.any? %>
+    <div class="alert alert-danger">
+      <h4><%= pluralize(cost_center.errors.count, "erro") %> impediram este centro de custo de ser salvo:</h4>
+      <ul>
+        <% cost_center.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= form.label :name, "Nome do Centro de Custo", class: 'form-label' %>
+    <%= form.text_field :name, class: 'form-control', required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :sector, "Setor", class: 'form-label' %>
+    <%= form.select :sector,
+                    CostCenter.sectors.keys.map { |k| [k.humanize.upcase, k] },
+                    { include_blank: 'Selecione um setor' },
+                    class: 'form-control',
+                    required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.submit cost_center.persisted? ? 'Atualizar' : 'Criar Centro de Custo', class: 'btn btn-primary' %>
+    <%= link_to 'Cancelar', admin_cost_centers_path, class: 'btn btn-secondary' %>
+  </div>
+<% end %>

@@ -48,7 +48,18 @@
 
           <div class="mb-3">
             <strong class="text-muted"><i class="fas fa-tags me-2"></i>Categoria Orçamentária:</strong>
-            <p class="fs-5"><%= @invoice.budget_category.titleize %></p>
+            <p class="fs-5">
+              <%= @invoice.budget_category.name.titleize %>
+              <small class="text-muted">(<%= @invoice.budget_category.sector %>)</small>
+            </p>
+          </div>
+
+          <div class="mb-3">
+            <strong class="text-muted"><i class="fas fa-building me-2"></i>Centro de Custo:</strong>
+            <p class="fs-5">
+              <%= @invoice.cost_center.name.titleize %>
+              <small class="text-muted">(<%= @invoice.cost_center.sector %>)</small>
+            </p>
           </div>
 
           <div class="mb-3">
@@ -116,6 +127,7 @@
           </small>
         </div>
       </div>
+    </div>
     </div>
 
   <div class="mt-3">

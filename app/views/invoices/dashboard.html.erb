@@ -66,7 +66,7 @@
           <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Distribuição por Categoria</h6>
         </div>
         <div class="card-body">
-          <%= pie_chart @spent_per_category.transform_keys(&:titleize),
+          <%= pie_chart @spent_per_category,
                        donut: true,
                        colors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] %>
         </div>
@@ -164,6 +164,7 @@
             <th>NFs</th>
             <th>Data</th>
             <th>Categoria</th>
+            <th>Centro de Custo</th>
             <th>Valor</th>
             <th>Ações</th>
           </tr>
@@ -184,7 +185,12 @@
               <td><%= l(invoice.date_issued, format: :short) %></td>
               <td>
                 <span class="badge bg-<%= category_color(invoice.budget_category) %>">
-                  <%= invoice.budget_category.titleize %>
+                  <%= invoice.budget_category.name.titleize %>
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-secondary">
+                  <%= invoice.cost_center.name.titleize %>
                 </span>
               </td>
               <td class="fw-bold text-success">

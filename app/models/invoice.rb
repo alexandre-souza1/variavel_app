@@ -3,28 +3,30 @@ class Invoice < ApplicationRecord
   belongs_to :purchaser, class_name: 'User', foreign_key: 'purchaser_id'
   has_many_attached :documents, service: :temporary_db
   has_many :invoice_numbers, dependent: :destroy
+  belongs_to :cost_center  # Nova associação
+  belongs_to :budget_category  # Nova associação
 
   accepts_nested_attributes_for :invoice_numbers, allow_destroy: true
 
   after_commit :upload_documents_to_onedrive, on: :create
 
-  # Categorias possíveis
-  enum budget_category: {
-    diesel: 0,
-    arla: 1,
-    pneu: 2,
-    alinhamento: 3,
-    manutencao_caminhao: 4,
-    lavagem: 5
-  }
+  # # Categorias possíveis
+  # enum budget_category: {
+  #   diesel: 0,
+  #   arla: 1,
+  #   pneu: 2,
+  #   alinhamento: 3,
+  #   manutencao_caminhao: 4,
+  #   lavagem: 5
+  # }
 
-  # Centro de custo (placa ou opções fixas)
-  enum cost_center: {
-    foz_rota: 0,
-    foz_as: 1,
-    estoque: 2
-    # placas podem ser adicionadas dinamicamente
-  }
+  # # Centro de custo (placa ou opções fixas)
+  # enum cost_center: {
+  #   foz_rota: 0,
+  #   foz_as: 1,
+  #   estoque: 2
+  #   # placas podem ser adicionadas dinamicamente
+  # }
 
   # Remove a constante PURCHASERS e substitui por um método de classe
   validates :purchaser_id, presence: true

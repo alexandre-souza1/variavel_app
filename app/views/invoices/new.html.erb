@@ -80,8 +80,13 @@
 
           <div class="row">
             <div class="col-md-4 mb-3">
-              <%= f.label :budget_category, "Categoria", class: "form-label fw-bold" %>
-              <%= f.select :budget_category, Invoice.budget_categories.keys.map { |c| [c.titleize, c] }, { prompt: "Selecione a categoria" }, class: "form-select" %>
+              <%= f.label :budget_category_id, "Categoria Orçamentária", class: "form-label fw-bold" %>
+              <%= f.collection_select :budget_category_id,
+                            BudgetCategory.all.order(:name),
+                            :id,
+                            :name,
+                            { prompt: "Selecione a categoria" },
+                            class: "form-select" %>
             </div>
 
             <div class="col-md-4 mb-3">
@@ -95,8 +100,13 @@
             </div>
 
             <div class="col-md-4 mb-3">
-              <%= f.label :cost_center, "Centro de Custo", class: "form-label fw-bold" %>
-              <%= f.select :cost_center, Invoice.cost_centers.keys.map { |c| [c.titleize, c] }, { prompt: "Selecione o centro de custo" }, class: "form-select" %>
+              <%= f.label :cost_center_id, "Centro de Custo", class: "form-label fw-bold" %>
+              <%= f.collection_select :cost_center_id,
+                            CostCenter.all.order(:name),
+                            :id,
+                            :name,
+                            { prompt: "Selecione o centro de custo" },
+                            class: "form-select" %>
             </div>
           </div>
 

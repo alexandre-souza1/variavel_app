@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_26_154653) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_26_173232) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -88,7 +88,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_26_154653) do
 
   create_table "budget_categories", force: :cascade do |t|
     t.string "name"
-    t.decimal "limit"
+    t.string "sector"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -131,6 +131,13 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_26_154653) do
     t.index ["checklist_template_id"], name: "index_checklists_on_checklist_template_id"
     t.index ["plate_id"], name: "index_checklists_on_plate_id"
     t.index ["user_id"], name: "index_checklists_on_user_id"
+  end
+
+  create_table "cost_centers", force: :cascade do |t|
+    t.string "name"
+    t.string "sector"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "downloads", force: :cascade do |t|
@@ -190,11 +197,14 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_26_154653) do
     t.string "code"
     t.date "date_issued"
     t.date "due_date"
-    t.integer "budget_category"
     t.integer "cost_center"
     t.text "document_urls", default: [], array: true
     t.bigint "purchaser_id"
+    t.bigint "cost_center_id"
+    t.bigint "budget_category_id"
+    t.index ["budget_category_id"], name: "index_invoices_on_budget_category_id"
     t.index ["code"], name: "index_invoices_on_code", unique: true
+    t.index ["cost_center_id"], name: "index_invoices_on_cost_center_id"
     t.index ["purchaser_id"], name: "index_invoices_on_purchaser_id"
     t.index ["supplier_id"], name: "index_invoices_on_supplier_id"
   end
@@ -299,6 +309,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_26_154653) do
   add_foreign_key "checklists", "plates"
   add_foreign_key "checklists", "users"
   add_foreign_key "invoice_numbers", "invoices"
+  add_foreign_key "invoices", "budget_categories"
+  add_foreign_key "invoices", "cost_centers"
   add_foreign_key "invoices", "suppliers"
   add_foreign_key "invoices", "users", column: "purchaser_id"
   add_foreign_key "wms_tasks", "operators"

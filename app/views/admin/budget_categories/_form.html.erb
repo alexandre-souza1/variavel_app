@@ -1,0 +1,31 @@
+<%= form_with(model: [:admin, budget_category], local: true) do |form| %>
+  <% if budget_category.errors.any? %>
+    <div class="alert alert-danger">
+      <h4><%= pluralize(budget_category.errors.count, "erro") %> impediram esta categoria de ser salva:</h4>
+      <ul>
+        <% budget_category.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= form.label :name, "Nome da Categoria", class: 'form-label' %>
+    <%= form.text_field :name, class: 'form-control', required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :sector, "Setor", class: 'form-label' %>
+    <%= form.select :sector,
+                    BudgetCategory.sectors.keys.map { |k| [k.humanize.upcase, k] },
+                    { include_blank: 'Selecione um setor' },
+                    class: 'form-control',
+                    required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.submit budget_category.persisted? ? 'Atualizar' : 'Criar Categoria', class: 'btn btn-primary' %>
+    <%= link_to 'Cancelar', admin_budget_categories_path, class: 'btn btn-secondary' %>
+  </div>
+<% end %>

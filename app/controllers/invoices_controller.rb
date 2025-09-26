@@ -56,25 +56,31 @@ class InvoicesController < ApplicationController
 
   def dashboard
     @total_spent = Invoice.sum(:total)
-
-    # garante que as chaves sejam inteiros
-    @spent_per_category = Invoice.all.group_by(&:budget_category).transform_values { |invoices| invoices.sum(&:total) }
-
-    @latest_invoices = Invoice.includes(:supplier, :invoice_numbers).order(created_at: :desc).limit(10)
     @invoices_count = Invoice.count
     @suppliers_count = Supplier.count
     @current_month_total = Invoice.where('date_issued >= ?', Date.today.beginning_of_month).sum(:total)
     @current_month_count = Invoice.where('date_issued >= ?', Date.today.beginning_of_month).count
     @monthly_average = Invoice.where('date_issued >= ?', 6.months.ago).average(:total).to_f
+
+    # Agrupa por nome da categoria (não mais pelo enum)
+    @spent_per_category = Invoice.joins(:budget_category)
+                                .group('budget_categories.name')
+                                .sum(:total)
+
     @monthly_totals = Invoice.group_by_month(:date_issued, format: "%b %Y").sum(:total)
+
     @top_suppliers = Supplier.joins(:invoices)
                             .select('suppliers.*, COUNT(invoices.id) as invoices_count, SUM(invoices.total) as total_amount')
                             .group('suppliers.id')
                             .order('total_amount DESC')
                             .limit(5)
+
     @recent_invoices = Invoice.where('date_issued >= ?', 7.days.ago)
     @high_value_invoices = Invoice.where('total > ?', 10000)
     @total_invoices_count = Invoice.count
+    @latest_invoices = Invoice.includes(:supplier, :budget_category, :cost_center, :invoice_numbers)
+                            .order(date_issued: :desc)
+                            .limit(10)
 
     # Cálculo de variação mensal
     current_month = Invoice.where('date_issued >= ?', Date.today.beginning_of_month).sum(:total)
@@ -169,7 +175,7 @@ end
     # Only allow a list of trusted parameters through.
   def invoice_params
     params.require(:invoice).permit(
-      :supplier_id, :date_issued, :due_date, :total, :purchaser_id, :budget_category, :cost_center, :notes, :code, documents: [],
+      :supplier_id, :date_issued, :due_date, :total, :purchaser_id, :budget_category_id, :cost_center_id, :notes, :code, documents: [],
       invoice_numbers_attributes: [:id, :number, :_destroy]
     )
   end

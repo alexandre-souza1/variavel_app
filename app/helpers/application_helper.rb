@@ -13,15 +13,19 @@ module ApplicationHelper
       per_page: per_page
     }
   end
+  
+  def category_color(budget_category)
+    # Mapeia cores baseadas no setor ou nome da categoria
+    colors = {
+      'combustivel' => 'warning',
+      'manutencao' => 'info',
+      'pecas' => 'success',
+      'seguro' => 'danger',
+      'outros' => 'secondary'
+    }
 
-  def category_color(category)
-  colors = {
-    'combustivel' => 'warning',
-    'manutencao' => 'info',
-    'pecas' => 'success',
-    'seguro' => 'danger',
-    'outros' => 'secondary'
-  }
-  colors[category.downcase] || 'primary'
-end
+    # Tenta pelo setor primeiro, depois pelo nome
+    color_key = budget_category.sector.downcase
+    colors[color_key] || 'primary'
+  end
 end

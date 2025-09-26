@@ -110,6 +110,8 @@ Rails.application.routes.draw do
 
   namespace :admin do
     resources :users, only: [:index, :edit, :update, :destroy]
+    resources :cost_centers
+    resources :budget_categories
   end
 
    resources :operators do
