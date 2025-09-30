@@ -69,7 +69,8 @@ class InvoicesController < ApplicationController
 
     @monthly_totals = Invoice.group_by_month(:date_issued, format: "%b %Y").sum(:total)
 
-    @top_suppliers = Supplier.joins(:invoices)
+    @top_suppliers = Supplier.joins(invoices: :budget_category)
+                            .where.not(budget_categories: { name: "Abastecimento" })
                             .select('suppliers.*, COUNT(invoices.id) as invoices_count, SUM(invoices.total) as total_amount')
                             .group('suppliers.id')
                             .order('total_amount DESC')
