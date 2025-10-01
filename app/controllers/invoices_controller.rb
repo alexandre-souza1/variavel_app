@@ -6,6 +6,12 @@ class InvoicesController < ApplicationController
   def index
     @invoices = Invoice.includes(:supplier, :invoice_numbers).all
 
+    # filtro por categoria orçamentária
+    @invoices = @invoices.where(budget_category_id: params[:budget_category_id]) if params[:budget_category_id].present?
+
+    # filtro por categoria orçamentária
+    @invoices = @invoices.where(cost_center_id: params[:cost_center_id]) if params[:cost_center_id].present?
+
     # filtro por ID da invoice
     @invoices = @invoices.where(id: params[:id]) if params[:id].present?
 
@@ -33,6 +39,15 @@ class InvoicesController < ApplicationController
 
     # opcional: ordenar por ID decrescente
     @invoices = @invoices.order(id: :desc)
+
+    # pega per_page do params, default 10
+    per_page = (params[:per_page] || 10).to_i
+
+    pagination = helpers.paginate_records(@invoices, params, per_page: per_page)
+
+    @invoices     = pagination[:records]
+    @current_page = pagination[:current_page]
+    @total_pages  = pagination[:total_pages]
   end
 
 

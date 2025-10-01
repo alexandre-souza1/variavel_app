@@ -28,8 +28,10 @@
 <% end %>
   <%= render "shared/flashes" %>
   <main class="flex-grow-1">
+    <div class="container my-4">
     <%= yield %>
-    </main>
+    </div>
+  </main>
   <%= render 'shared/footer' %>
   </body>
 </html>
