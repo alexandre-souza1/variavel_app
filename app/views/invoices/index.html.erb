@@ -101,9 +101,7 @@
               <td><%= invoice.date_issued %></td>
               <td><%= invoice.due_date %></td>
               <td>R$ <%= number_with_precision(invoice.total, precision: 2, delimiter: ".") %></td>
-              <td>
-                <%= invoice.invoice_numbers.map(&:number).join(", ") %>
-              </td>
+              <td><%= truncated_list(invoice.invoice_numbers, :number, 3) %></td>
               <td>
                 <% if invoice.document_urls.present? %>
                   <div class="dropdown">
