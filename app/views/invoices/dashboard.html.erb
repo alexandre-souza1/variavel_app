@@ -1,13 +1,23 @@
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>📊 Dashboard Financeiro</h1>
-    <div class="d-grid gap-2 d-md-flex">
-      <%= link_to new_invoice_path, class: "btn btn-success me-md-2" do %>
-        <i class="fas fa-plus me-1"></i>Nova Nota Fiscal
+
+    <div class="d-flex align-items-center gap-2">
+      <%= form_with url: dashboard_invoices_path, method: :get, local: true, class: "d-flex justify-content-between gap-2" do %>
+        <%= select_tag :month,
+            options_for_select((1..12).map { |m| [I18n.t("date.month_names")[m], m] }, params[:month]),
+            include_blank: "Mês",
+            class: "form-select" %>
+
+        <%= select_tag :year,
+            options_for_select((2022..Date.today.year).to_a.reverse, params[:year]),
+            include_blank: "Ano",
+            class: "form-select" %>
+
+        <%= submit_tag "Filtrar", class: "btn btn-outline-primary" %>
       <% end %>
-      <%= link_to invoices_path, class: "btn btn-primary" do %>
-        <i class="fas fa-list me-1"></i>Ver Todas as Notas
-      <% end %>
+
+      <%= link_to "Limpar filtros", dashboard_invoices_path, class: "btn btn-outline-primary" %>
     </div>
   </div>
 

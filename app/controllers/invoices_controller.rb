@@ -54,41 +54,65 @@ class InvoicesController < ApplicationController
     @available_purchasers = User.all.order(:name)
   end
 
-  def dashboard
-    @total_spent = Invoice.sum(:total)
-    @invoices_count = Invoice.count
-    @suppliers_count = Supplier.count
-    @current_month_total = Invoice.where('date_issued >= ?', Date.today.beginning_of_month).sum(:total)
-    @current_month_count = Invoice.where('date_issued >= ?', Date.today.beginning_of_month).count
-    @monthly_average = Invoice.where('date_issued >= ?', 6.months.ago).average(:total).to_f
+def dashboard
+  # 🔹 pega filtros (se existirem)
+  @month = params[:month].presence&.to_i
+  @year  = params[:year].presence&.to_i
 
-    # Agrupa por nome da categoria (não mais pelo enum)
-    @spent_per_category = Invoice.joins(:budget_category)
-                                .group('budget_categories.name')
-                                .sum(:total)
+  invoices_scope = Invoice.all
 
-    @monthly_totals = Invoice.group_by_month(:date_issued, format: "%b %Y").sum(:total)
-
-    @top_suppliers = Supplier.joins(invoices: :budget_category)
-                            .where.not(budget_categories: { name: "Abastecimento" })
-                            .select('suppliers.*, COUNT(invoices.id) as invoices_count, SUM(invoices.total) as total_amount')
-                            .group('suppliers.id')
-                            .order('total_amount DESC')
-                            .limit(5)
-
-    @recent_invoices = Invoice.where('date_issued >= ?', 7.days.ago)
-    @high_value_invoices = Invoice.where('total > ?', 10000)
-    @total_invoices_count = Invoice.count
-    @latest_invoices = Invoice.includes(:supplier, :budget_category, :cost_center, :invoice_numbers)
-                            .order(date_issued: :desc)
-                            .limit(10)
-
-    # Cálculo de variação mensal
-    current_month = Invoice.where('date_issued >= ?', Date.today.beginning_of_month).sum(:total)
-    last_month = Invoice.where('date_issued >= ? AND date_issued < ?',
-                              1.month.ago.beginning_of_month, Date.today.beginning_of_month).sum(:total)
-    @monthly_variation = last_month > 0 ? ((current_month - last_month) / last_month * 100).round(2) : 0
+  # 🔹 aplica filtros de período
+  if @month && @year
+    invoices_scope = invoices_scope.where(
+      "EXTRACT(MONTH FROM date_issued) = ? AND EXTRACT(YEAR FROM date_issued) = ?",
+      @month, @year
+    )
+  elsif @year
+    invoices_scope = invoices_scope.where("EXTRACT(YEAR FROM date_issued) = ?", @year)
   end
+
+  # 🔹 Cards de resumo
+  @total_spent = invoices_scope.sum(:total)
+  @invoices_count = invoices_scope.count
+  @suppliers_count = invoices_scope.select(:supplier_id).distinct.count
+  @current_month_total = invoices_scope.where('date_issued >= ?', Date.today.beginning_of_month).sum(:total)
+  @current_month_count = invoices_scope.where('date_issued >= ?', Date.today.beginning_of_month).count
+
+  # média dos últimos 6 meses no escopo filtrado
+  monthly_totals_hash = invoices_scope.group("DATE_TRUNC('month', date_issued)").sum(:total)
+  @monthly_average = monthly_totals_hash.values.last(6).sum / [monthly_totals_hash.values.last(6).size, 1].max
+
+  # 🔹 Gráficos
+  @spent_per_category = invoices_scope.joins(:budget_category)
+                                      .group('budget_categories.name')
+                                      .sum(:total)
+
+  @monthly_totals = invoices_scope.group("DATE_TRUNC('month', date_issued)").sum(:total)
+
+  # 🔹 Top fornecedores (mantém filtro e exclui abastecimento)
+  @top_suppliers = Supplier.joins(invoices: :budget_category)
+                           .merge(invoices_scope)
+                           .where.not(budget_categories: { name: "Abastecimento" })
+                           .select('suppliers.*, COUNT(invoices.id) as invoices_count, SUM(invoices.total) as total_amount')
+                           .group('suppliers.id')
+                           .order('total_amount DESC')
+                           .limit(5)
+
+  # 🔹 Alertas
+  @recent_invoices = invoices_scope.where('date_issued >= ?', 7.days.ago)
+  @high_value_invoices = invoices_scope.where('total > ?', 10_000)
+  @total_invoices_count = invoices_scope.count
+  @latest_invoices = invoices_scope.includes(:supplier, :budget_category, :cost_center, :invoice_numbers)
+                                   .order(date_issued: :desc)
+                                   .limit(10)
+
+  # 🔹 Variação mensal (baseada no escopo filtrado)
+  current_month = invoices_scope.where('date_issued >= ?', Date.today.beginning_of_month).sum(:total)
+  last_month = invoices_scope.where('date_issued >= ? AND date_issued < ?',
+                                    1.month.ago.beginning_of_month, Date.today.beginning_of_month).sum(:total)
+  @monthly_variation = last_month > 0 ? ((current_month - last_month) / last_month * 100).round(2) : 0
+end
+
 
   # POST /invoices or /invoices.json
   def create
