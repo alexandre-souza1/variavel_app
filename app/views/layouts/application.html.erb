@@ -21,7 +21,8 @@
 
   <body>
   <%= render "shared/navbar" %>
-  <% if request.path.start_with?('/admin') ||
+  <% if request.path.start_with?('/admin/budget_categories') ||
+      request.path.start_with?('/admin/cost_centers') ||
       controller_name == 'suppliers' ||
       controller_name == 'invoices' %>
   <%= render 'layouts/admin_nav' %>

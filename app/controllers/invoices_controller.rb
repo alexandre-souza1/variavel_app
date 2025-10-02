@@ -93,6 +93,48 @@ def dashboard
   @current_month_total = invoices_scope.where('date_issued >= ?', Date.today.beginning_of_month).sum(:total)
   @current_month_count = invoices_scope.where('date_issued >= ?', Date.today.beginning_of_month).count
 
+  # 🔹 Gastos por categoria do período filtrado (CORRIGIDO)
+  if @month && @year
+    # Se tem filtro de mês/ano específico, usa esse período
+    start_date = Date.new(@year, @month, 1)
+    end_date = start_date.end_of_month
+    @period_display = "#{I18n.t('date.month_names')[@month]}/#{@year}"
+    @has_period_filter = true
+  else
+    # Se não tem filtro, mostra mensagem para selecionar
+    start_date = nil
+    end_date = nil
+    @period_display = "Mês/Ano"
+    @has_period_filter = false
+  end
+
+@current_month_categories = invoices_scope
+  .where(date_issued: start_date..end_date)
+  .joins(:budget_category)
+  .group('budget_categories.id', 'budget_categories.name', 'budget_categories.sector')
+  .select(
+    'budget_categories.id',
+    'budget_categories.name',
+    'budget_categories.sector',
+    'SUM(invoices.total) as total',
+    'COUNT(invoices.id) as count'
+  )
+  .map do |record|
+    {
+      category: BudgetCategory.new(
+        id: record.id,
+        name: record.name,
+        sector: record.sector
+      ),
+      total: record.total.to_f,
+      count: record.count
+    }
+  end
+  .sort_by { |cat| -cat[:total] }
+
+  # Também precisamos atualizar o total do período para calcular as porcentagens
+  @period_total = invoices_scope.where(date_issued: start_date..end_date).sum(:total)
+
   # média dos últimos 6 meses no escopo filtrado
   monthly_totals_hash = invoices_scope.group("DATE_TRUNC('month', date_issued)").sum(:total)
   @monthly_average = monthly_totals_hash.values.last(6).sum / [monthly_totals_hash.values.last(6).size, 1].max

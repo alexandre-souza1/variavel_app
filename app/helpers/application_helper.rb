@@ -13,7 +13,7 @@ module ApplicationHelper
       per_page: per_page
     }
   end
-  
+
   def category_color(budget_category)
     # Mapeia cores baseadas no setor ou nome da categoria
     colors = {
@@ -28,4 +28,19 @@ module ApplicationHelper
     color_key = budget_category.sector.downcase
     colors[color_key] || 'primary'
   end
+
+  def category_icon(budget_category)
+  # Mapeia ícones baseados no setor ou nome da categoria
+  icons = {
+    'combustivel' => 'gas-pump',
+    'manutencao' => 'tools',
+    'pecas' => 'cog',
+    'seguro' => 'shield-alt',
+    'outros' => 'tag'
+  }
+
+  # Tenta pelo setor primeiro, depois pelo nome
+  icon_key = budget_category.sector.downcase
+  icons[icon_key] || 'tag'
+end
 end

@@ -67,6 +67,69 @@
   </div>
 </div>
 
+
+<!-- Gastos por Categoria do Período -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-header bg-light">
+        <h6 class="mb-0"><i class="fas fa-tags me-2"></i>Gastos por Categoria - <%= @period_display %></h6>
+      </div>
+      <div class="card-body">
+        <% if @has_period_filter %>
+          <div class="row">
+            <% if @current_month_categories.any? %>
+              <% @current_month_categories.each do |category_data| %>
+                <div class="col-md-3 col-sm-6 mb-3">
+                  <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                      <div class="mb-2">
+                        <span class="badge bg-<%= category_color(category_data[:category]) %> p-2">
+                          <i class="fas fa-<%= category_icon(category_data[:category]) %> fa-lg"></i>
+                        </span>
+                      </div>
+                      <h6 class="card-title text-truncate"><%= category_data[:category].name.titleize %></h6>
+                      <p class="card-text fw-bold text-primary fs-5">
+                        R$ <%= number_to_currency(category_data[:total], unit: "", separator: ",", delimiter: ".") %>
+                      </p>
+                      <small class="text-muted">
+                        <%= category_data[:count] %> <%= category_data[:count] == 1 ? 'nota' : 'notas' %>
+                      </small>
+                      <% if @period_total > 0 %>
+                        <div class="progress mt-2" style="height: 6px;">
+                          <div class="progress-bar bg-<%= category_color(category_data[:category]) %>"
+                               style="width: <%= (category_data[:total] / @period_total * 100).round(1) %>%"
+                               title="<%= (category_data[:total] / @period_total * 100).round(1) %>% do total do período">
+                          </div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">
+                          <%= (category_data[:total] / @period_total * 100).round(1) %>%
+                        </small>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="col-12 text-center py-4">
+                <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                <p class="text-muted">Nenhuma nota fiscal encontrada para <%= @period_display %>.</p>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-5">
+            <i class="fas fa-filter fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Selecione o mês e ano no filtro</h5>
+            <p class="text-muted">Use os filtros acima para visualizar os gastos por categoria de um período específico.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- Gráficos em Grid -->
 <div class="row mb-4">
   <div class="col-md-6">
@@ -75,7 +138,7 @@
         <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Distribuição por Categoria</h6>
       </div>
       <div class="card-body">
-        <%= bar_chart @spent_per_category,
+        <%= pie_chart @spent_per_category,
                       donut: true,
                       colors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] %>
       </div>

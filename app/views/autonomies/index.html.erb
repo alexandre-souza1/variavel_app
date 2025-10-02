@@ -93,6 +93,25 @@
           <% end %>
           </div>
         <% else %>
+
+        <% if @recent_autonomies.present? %>
+          <h6 class="mb-2 text-center">Últimas Autonomias</h6>
+          <div class="ticker-container mb-4">
+            <div class="ticker-wrap">
+              <div class="ticker">
+                <% @recent_autonomies.each do |auto| %>
+                  <div class="ticker-item">
+                    <strong><%= auto.plate %></strong>
+                    | Usuário: <%= auto.user&.nome %>
+                    | Serviço: <%= auto.service_type %>
+                    | <%= I18n.l(auto.created_at.to_date, format: :default) %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
           <!-- Visão para usuários não logados ou não admin -->
           <div class="row justify-content-center">
             <div class="col-md-8">

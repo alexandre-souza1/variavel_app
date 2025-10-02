@@ -4,15 +4,15 @@ class AutonomiesController < ApplicationController
 
   def index
     all_autonomies = if params[:search].present?
-                      Autonomy.includes(:user)
-                              .where(registration: params[:search])
-                              .order(created_at: :desc)
-                    elsif current_user&.admin?
-                      Autonomy.includes(:user)
-                              .order(created_at: :desc)
-                    else
-                      Autonomy.none
-                    end
+                        Autonomy.includes(:user)
+                                .where(registration: params[:search])
+                                .order(created_at: :desc)
+                      elsif current_user&.admin?
+                        Autonomy.includes(:user)
+                                .order(created_at: :desc)
+                      else
+                        Autonomy.none
+                      end
 
     pagination = helpers.paginate_records(all_autonomies, params, per_page: 15)
 
@@ -20,7 +20,17 @@ class AutonomiesController < ApplicationController
     @current_page = pagination[:current_page]
     @total_pages = pagination[:total_pages]
     @total_autonomies = all_autonomies.count
+
+    # últimas placas distintas (só para operador, sem busca ativa)
+    if !current_user&.admin? && params[:search].blank?
+      @recent_autonomies = Autonomy
+                            .select("DISTINCT ON (plate) autonomies.*")
+                            .order("plate, created_at DESC")
+                            .includes(:user)
+                            .limit(5)
+    end
   end
+
 
   def new
     @autonomy = Autonomy.new

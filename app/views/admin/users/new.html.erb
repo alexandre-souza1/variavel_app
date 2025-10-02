@@ -1,0 +1,75 @@
+  <!-- Card Principal -->
+<div class="card shadow-lg rounded-4 border-0">
+  <!-- Cabeçalho do Card -->
+  <div class="card-header bg-primary text-white rounded-top-4 py-3">
+    <div class="d-flex justify-content-between align-items-center">
+      <h1 class="h4 mb-0 fw-bold">
+        <i class="fas fa-user-plus me-2"></i>Criar Novo Usuário
+      </h1>
+      <%= link_to "Voltar", admin_users_path, class: "btn btn-light btn-sm" %>
+    </div>
+  </div>
+
+  <!-- Corpo do Card -->
+  <div class="card-body p-4">
+    <%= form_with(model: [:admin, @user], local: true, html: { multipart: true }) do |f| %>
+      <% if @user.errors.any? %>
+        <div class="alert alert-danger">
+          <h5 class="fw-bold">Ocorreram erros:</h5>
+          <ul class="mb-0">
+            <% @user.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <%= f.label :name, class: "form-label fw-semibold" %>
+          <%= f.text_field :name, class: "form-control" %>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :email, class: "form-label fw-semibold" %>
+          <%= f.email_field :email, class: "form-control" %>
+        </div>
+      </div>
+
+      <% if current_user.admin? %>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <%= f.label :role, class: "form-label fw-semibold" %>
+            <%= f.select :role, User.roles.keys.map { |r| [r.titleize, r] }, {}, class: "form-select" %>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <%= f.label :password, class: "form-label fw-semibold" %>
+          <%= f.password_field :password, class: "form-control" %>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :password_confirmation, class: "form-label fw-semibold" %>
+          <%= f.password_field :password_confirmation, class: "form-control" %>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <%= f.label :photo, class: "form-label fw-semibold" %>
+          <%= f.file_field :photo, class: "form-control" %>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end">
+        <%= f.submit "Criar Usuário", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Rodapé do Card -->
+  <div class="card-footer bg-light rounded-bottom-4 py-3">
+    <small class="text-muted">Preencha os dados para criar um novo usuário.</small>
+  </div>
+</div>
