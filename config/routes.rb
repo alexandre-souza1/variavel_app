@@ -111,7 +111,9 @@ Rails.application.routes.draw do
   namespace :admin do
     resources :users, only: [:index, :edit, :update, :destroy, :new, :create]
     resources :cost_centers
-    resources :budget_categories
+    resources :budget_categories do
+      get :expenses, on: :member
+    end
   end
 
    resources :operators do
@@ -142,6 +144,13 @@ Rails.application.routes.draw do
     collection do
       get :import
       post :import_csv
+    end
+  end
+
+  resources :remuneration_periods do
+    member do
+      get :compare
+      get :export_csv
     end
   end
 

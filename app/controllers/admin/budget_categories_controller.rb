@@ -35,6 +35,31 @@ class Admin::BudgetCategoriesController < ApplicationController
     redirect_to admin_budget_categories_path, notice: 'Categoria orçamentária excluída com sucesso.'
   end
 
+  def expenses
+    @budget_category = BudgetCategory.find(params[:id])
+
+    # 🔹 busca invoices da categoria
+    invoices_scope = @budget_category.invoices
+                                    .includes(:supplier, :invoice_numbers, :cost_center)
+                                    .order(date_issued: :desc)
+
+    # 🔹 paginação manual
+    per_page = (params[:per_page] || 10).to_i
+    pagination = helpers.paginate_records(invoices_scope, params, per_page: per_page)
+
+    @expenses      = pagination[:records]
+    @current_page  = pagination[:current_page]
+    @total_pages   = pagination[:total_pages]
+
+    render partial: "admin/budget_categories/expenses_table",
+          locals: {
+            category: @budget_category,
+            expenses: @expenses,
+            current_page: @current_page,
+            total_pages: @total_pages
+          }
+  end
+
   private
 
   def set_budget_category

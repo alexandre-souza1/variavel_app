@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_26_173232) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_03_145222) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -253,6 +253,26 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_26_173232) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "remuneration_category_values", force: :cascade do |t|
+    t.bigint "vehicle_remuneration_id", null: false
+    t.bigint "budget_category_id", null: false
+    t.decimal "value", precision: 15, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["budget_category_id"], name: "index_remuneration_category_values_on_budget_category_id"
+    t.index ["vehicle_remuneration_id", "budget_category_id"], name: "index_rcv_on_vehicle_and_budget", unique: true
+    t.index ["vehicle_remuneration_id"], name: "index_remuneration_category_values_on_vehicle_remuneration_id"
+  end
+
+  create_table "remuneration_periods", force: :cascade do |t|
+    t.string "label", null: false
+    t.date "start_date", null: false
+    t.date "end_date", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["label"], name: "index_remuneration_periods_on_label", unique: true
+  end
+
   create_table "suppliers", force: :cascade do |t|
     t.string "name"
     t.string "cnpj"
@@ -284,6 +304,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_26_173232) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "vehicle_remunerations", force: :cascade do |t|
+    t.bigint "remuneration_period_id", null: false
+    t.string "vehicle_type", null: false
+    t.integer "fleet_quantity", default: 0
+    t.decimal "km_remunerated", precision: 12, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["remuneration_period_id", "vehicle_type"], name: "index_vr_on_period_and_vehicle", unique: true
+    t.index ["remuneration_period_id"], name: "index_vehicle_remunerations_on_remuneration_period_id"
+  end
+
   create_table "wms_tasks", force: :cascade do |t|
     t.bigint "operator_id", null: false
     t.string "task_type"
@@ -313,5 +344,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_26_173232) do
   add_foreign_key "invoices", "cost_centers"
   add_foreign_key "invoices", "suppliers"
   add_foreign_key "invoices", "users", column: "purchaser_id"
+  add_foreign_key "remuneration_category_values", "budget_categories"
+  add_foreign_key "remuneration_category_values", "vehicle_remunerations"
+  add_foreign_key "vehicle_remunerations", "remuneration_periods"
   add_foreign_key "wms_tasks", "operators"
 end

@@ -1,0 +1,33 @@
+<h3>Comparativo — <%= @period.label %></h3>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Categoria</th>
+      <th>Planejado</th>
+      <th>Real</th>
+      <th>Diferença</th>
+      <th>% Diferença</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @comparison.each do |row| %>
+      <% planned = row[:planned].to_f; real = row[:real].to_f %>
+      <tr>
+        <td><%= row[:budget_category].name %></td>
+        <td><%= number_to_currency(planned) %></td>
+        <td><%= number_to_currency(real) %></td>
+        <td><%= number_to_currency(row[:diff]) %></td>
+        <td>
+          <% if planned.zero? %>
+            -
+          <% else %>
+            <%= number_to_percentage((real - planned) / planned * 100.0, precision: 1) %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to "Exportar CSV", export_csv_remuneration_period_path(@period), class: "btn btn-outline-secondary" %>

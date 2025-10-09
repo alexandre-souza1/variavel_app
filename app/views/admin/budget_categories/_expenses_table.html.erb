@@ -1,0 +1,98 @@
+<div class="card shadow-sm">
+  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+    <h6 class="mb-0">
+      <i class="fas fa-receipt me-2"></i> Gastos da categoria: <%= category.name.titleize %>
+    </h6>
+    <button class="btn btn-sm btn-outline-secondary"
+            onclick="document.getElementById('category-details-container').innerHTML = ''">
+      Fechar
+    </button>
+  </div>
+
+  <div class="card-body table-responsive">
+    <% if expenses.any? %>
+      <table class="table table-striped table-hover">
+        <thead class="table">
+          <tr>
+            <th>Fornecedor</th>
+            <th>NFs</th>
+            <th>Data</th>
+            <th>Centro de Custo</th>
+            <th>Valor</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% expenses.each do |invoice| %>
+            <tr>
+              <td>
+                <strong><%= invoice.supplier.name %></strong><br>
+                <small class="text-muted"><%= invoice.supplier.cnpj %></small>
+              </td>
+
+              <td>
+                <% invoice.invoice_numbers.each do |num| %>
+                  <span class="badge bg-info"><%= num.number %></span>
+                <% end %>
+              </td>
+
+              <td>
+                <%= invoice.date_issued.present? ? l(invoice.date_issued, format: :short) : "-" %>
+              </td>
+
+              <td>
+                <% if invoice.cost_center.present? %>
+                  <span class="badge bg-secondary">
+                    <%= invoice.cost_center.name.titleize %>
+                  </span>
+                <% else %>
+                  <span class="text-muted">—</span>
+                <% end %>
+              </td>
+
+              <td class="fw-bold text-success">
+                R$ <%= number_to_currency(invoice.total, unit: "", separator: ",", delimiter: ".") %>
+              </td>
+
+              <td>
+                <%= link_to invoice_path(invoice),
+                            class: "btn btn-sm btn-outline-primary",
+                            title: "Ver detalhes" do %>
+                  <i class="fas fa-eye"></i>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <!-- 🔹 Paginação -->
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <div>
+          <small class="text-muted">
+            Página <%= current_page %> de <%= total_pages %>
+          </small>
+        </div>
+        <div>
+          <% if current_page > 1 %>
+            <button class="btn btn-sm btn-outline-primary"
+                    data-action="click->category-details#changePage"
+                    data-page="<%= current_page - 1 %>">
+              <i class="fas fa-chevron-left"></i> Anterior
+            </button>
+          <% end %>
+
+          <% if current_page < total_pages %>
+            <button class="btn btn-sm btn-outline-primary"
+                    data-action="click->category-details#changePage"
+                    data-page="<%= current_page + 1 %>">
+              Próxima <i class="fas fa-chevron-right"></i>
+            </button>
+          <% end %>
+        </div>
+      </div>
+    <% else %>
+      <p class="text-muted mb-0">Nenhum gasto encontrado para esta categoria no período selecionado.</p>
+    <% end %>
+  </div>
+</div>
