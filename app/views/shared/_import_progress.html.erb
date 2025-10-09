@@ -1,0 +1,74 @@
+<%
+# Define valores padrão para evitar erros
+current = local_assigns[:current] || 0
+total = local_assigns[:total] || 0
+progress = local_assigns[:progress] || 0
+message = local_assigns[:message] || "Processando..."
+visible = local_assigns.fetch(:visible, true)
+completed = local_assigns[:completed] || false
+show_link = local_assigns[:show_link] || false
+error = local_assigns[:error] || false
+%>
+
+<div class="import-progress-container position-fixed bottom-0 end-0 m-3" style="z-index: 1050; width: 350px; <%= 'display: none;' unless visible %>">
+  <div class="card shadow-lg border-0 <%= 'border-success' if completed && !error %> <%= 'border-danger' if error %>">
+    <div class="card-body p-3">
+      <% if error %>
+        <%# Estado de erro %>
+        <div class="d-flex align-items-center">
+          <div class="flex-shrink-0 text-danger">
+            <i class="fas fa-exclamation-triangle fa-lg"></i>
+          </div>
+          <div class="flex-grow-1 ms-3">
+            <h6 class="card-title mb-1 text-danger">Erro na Importação</h6>
+            <p class="card-text small mb-0"><%= message %></p>
+          </div>
+          <button type="button" class="btn-close" onclick="this.closest('.import-progress-container').style.display='none'"></button>
+        </div>
+
+      <% elsif completed %>
+        <%# Estado concluído %>
+        <div class="d-flex align-items-center">
+          <div class="flex-shrink-0 text-success">
+            <i class="fas fa-check-circle fa-lg"></i>
+          </div>
+          <div class="flex-grow-1 ms-3">
+            <h6 class="card-title mb-1 text-success">Importação Concluída</h6>
+            <p class="card-text small mb-2"><%= message %></p>
+            <% if show_link %>
+              <%= link_to "📊 Ver Tarefas", wms_tasks_path, class: "btn btn-sm btn-success w-100" %>
+            <% end %>
+          </div>
+          <button type="button" class="btn-close" onclick="this.closest('.import-progress-container').style.display='none'"></button>
+        </div>
+
+      <% else %>
+        <%# Estado em progresso %>
+        <div class="d-flex align-items-center">
+          <div class="flex-shrink-0 text-primary">
+            <div class="spinner-border spinner-border-sm" role="status">
+              <span class="visually-hidden">Carregando...</span>
+            </div>
+          </div>
+          <div class="flex-grow-1 ms-3">
+            <h6 class="card-title mb-1">Importando Tarefas...</h6>
+            <p class="card-text small mb-1"><%= message %></p>
+
+            <%# Progress Bar %>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar progress-bar-striped progress-bar-animated"
+                   role="progressbar"
+                   style="width: <%= progress %>%"
+                   aria-valuenow="<%= progress %>"
+                   aria-valuemin="0"
+                   aria-valuemax="100">
+              </div>
+            </div>
+
+            <small class="text-muted"><%= progress %>% completo (<%= current %>/<%= total %>)</small>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

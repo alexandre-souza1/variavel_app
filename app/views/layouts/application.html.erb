@@ -27,12 +27,18 @@
       controller_name == 'invoices' %>
   <%= render 'layouts/admin_nav' %>
 <% end %>
-  <%= render "shared/flashes" %>
+  <div id="flash-container">
+    <%= render 'shared/flashes' %>
+  </div>
   <main class="flex-grow-1">
     <div class="container my-4">
     <%= yield %>
     </div>
   </main>
+  <div id="import-progress"
+      data-controller="reconnect"
+      data-reconnect-user-id-value="<%= current_user&.id %>">
+  </div>
   <%= render 'shared/footer' %>
   </body>
 </html>
