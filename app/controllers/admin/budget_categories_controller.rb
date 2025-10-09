@@ -1,9 +1,9 @@
 # app/controllers/admin/budget_categories_controller.rb
 class Admin::BudgetCategoriesController < ApplicationController
-  before_action :set_budget_category, only: [:edit, :update, :destroy]
+  before_action :set_budget_category, only: [:edit, :update, :destroy, :expenses]
 
   def index
-    @budget_categories = BudgetCategory.all.order(:sector, :name)
+    @budget_categories = BudgetCategory.order(:sector, :name)
   end
 
   def new
@@ -19,8 +19,7 @@ class Admin::BudgetCategoriesController < ApplicationController
     end
   end
 
-  def edit
-  end
+  def edit; end
 
   def update
     if @budget_category.update(budget_category_params)
@@ -35,15 +34,26 @@ class Admin::BudgetCategoriesController < ApplicationController
     redirect_to admin_budget_categories_path, notice: 'Categoria orçamentária excluída com sucesso.'
   end
 
+  # ✅ Requisição assíncrona (via Stimulus)
   def expenses
-    @budget_category = BudgetCategory.find(params[:id])
-
-    # 🔹 busca invoices da categoria
     invoices_scope = @budget_category.invoices
-                                    .includes(:supplier, :invoice_numbers, :cost_center)
-                                    .order(date_issued: :desc)
+                                     .includes(:supplier, :cost_center)
+                                     .order(date_issued: :desc)
 
-    # 🔹 paginação manual
+    # 🔹 Aplica filtro de mês/ano (vindo da dashboard)
+    if params[:month].present? && params[:year].present?
+      month = params[:month].to_i
+      year  = params[:year].to_i
+      start_date = Date.new(year, month, 1)
+      end_date   = start_date.end_of_month
+
+      invoices_scope = invoices_scope.where(date_issued: start_date..end_date)
+    elsif params[:year].present?
+      year = params[:year].to_i
+      invoices_scope = invoices_scope.where("EXTRACT(YEAR FROM date_issued) = ?", year)
+    end
+
+    # 🔹 Paginação manual
     per_page = (params[:per_page] || 10).to_i
     pagination = helpers.paginate_records(invoices_scope, params, per_page: per_page)
 
@@ -52,12 +62,12 @@ class Admin::BudgetCategoriesController < ApplicationController
     @total_pages   = pagination[:total_pages]
 
     render partial: "admin/budget_categories/expenses_table",
-          locals: {
-            category: @budget_category,
-            expenses: @expenses,
-            current_page: @current_page,
-            total_pages: @total_pages
-          }
+           locals: {
+             category: @budget_category,
+             expenses: @expenses,
+             current_page: @current_page,
+             total_pages: @total_pages
+           }
   end
 
   private

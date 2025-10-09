@@ -25,7 +25,11 @@ export default class extends Controller {
       </div>
     `
 
-    fetch(`/admin/budget_categories/${categoryId}/expenses?page=${page}`)
+    // 🔹 Pega os filtros ativos da URL (ex: ?month=8&year=2025)
+    const params = new URLSearchParams(window.location.search)
+    params.set("page", page)
+
+    fetch(`/admin/budget_categories/${categoryId}/expenses?${params.toString()}`)
       .then(response => response.text())
       .then(html => {
         container.innerHTML = html
