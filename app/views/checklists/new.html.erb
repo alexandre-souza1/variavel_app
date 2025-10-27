@@ -39,10 +39,16 @@
 
         <div data-response-target="details" class="mt-2 d-none">
           <%= response_form.label :comment, "Comentário" %>
-          <%= response_form.text_area :comment, rows: 2, class: "form-control mb-2" %>
+          <%= response_form.text_area :comment, rows: 2,
+                class: "form-control mb-2",
+                data: { response_target: "commentInput" },
+                disabled: true %>
 
           <%= response_form.label :photo, "Foto" %>
-          <%= response_form.file_field :photo, class: "form-control" %>
+          <%= response_form.file_field :photo,
+                class: "form-control",
+                data: { response_target: "photoInput" },
+                disabled: true %>
         </div>
       </div>
     <% end %>
