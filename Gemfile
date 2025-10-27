@@ -27,6 +27,8 @@ gem 'httparty'
 gem "cloudinary"
 gem "activestorage-cloudinary-service"
 gem 'cpf_cnpj'
+gem 'prawn'
+gem 'prawn-table'
 
 gem "bootstrap"
 

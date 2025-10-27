@@ -42,7 +42,17 @@ class ChecklistsController < ApplicationController
   end
 
   def show
-    @checklist = Checklist.find(params[:id])
+      @checklist = Checklist.find(params[:id])
+        respond_to do |format|
+      format.html
+      format.pdf do
+        pdf = ChecklistPdf.new(@checklist)
+        send_data pdf.render,
+                  filename: "checklist_#{@checklist.id}.pdf",
+                  type: "application/pdf",
+                  disposition: "inline"
+      end
+    end
   end
 
   private
