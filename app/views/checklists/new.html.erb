@@ -2,7 +2,7 @@
 
 <%= form_with model: @checklist, local: true do |f| %>
   <%= f.hidden_field :checklist_template_id %>
-  <div class="list-group">
+    <div class="list-group" data-controller="response">
 
   <% if @template.plate_required? %>
     <div class="mb-3">
@@ -10,6 +10,12 @@
       <%= f.collection_select :plate_id, @plates, :id, :placa, prompt: "Escolha uma placa", class: "form-select" %>
     </div>
   <% end %>
+
+    <button type="button"
+            class="btn btn-sm btn-warning mb-3"
+            data-action="click->response#markAllOk">
+      🔧 Marcar tudo como OK (teste)
+    </button>
 
     <%= f.fields_for :checklist_responses do |response_form| %>
       <% item = response_form.object.checklist_item %>
@@ -21,20 +27,28 @@
 
         <div class="btn-group mt-2" role="group">
           <input type="radio"
-                 name="<%= response_form.object_name %>[status]"
-                 value="ok"
-                 id="<%= "ok-#{item.id}" %>"
-                 class="btn-check"
-                 data-action="change->response#hideDetails">
+                name="<%= response_form.object_name %>[status]"
+                value="ok"
+                id="<%= "ok-#{item.id}" %>"
+                class="btn-check"
+                data-action="change->response#hideDetails">
           <label class="btn btn-outline-success" for="<%= "ok-#{item.id}" %>">OK</label>
 
           <input type="radio"
-                 name="<%= response_form.object_name %>[status]"
-                 value="nok"
-                 id="<%= "nok-#{item.id}" %>"
-                 class="btn-check"
-                 data-action="change->response#showDetails">
+                name="<%= response_form.object_name %>[status]"
+                value="nok"
+                id="<%= "nok-#{item.id}" %>"
+                class="btn-check"
+                data-action="change->response#showDetails">
           <label class="btn btn-outline-danger" for="<%= "nok-#{item.id}" %>">NOK</label>
+
+          <input type="radio"
+                name="<%= response_form.object_name %>[status]"
+                value="na"
+                id="<%= "na-#{item.id}" %>"
+                class="btn-check"
+                data-action="change->response#hideDetails">
+          <label class="btn btn-outline-secondary" for="<%= "na-#{item.id}" %>">N/A</label>
         </div>
 
         <div data-response-target="details" class="mt-2 d-none">

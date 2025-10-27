@@ -1,9 +1,13 @@
-require 'prawn'
-require 'prawn/table'
+# app/pdfs/checklist_pdf.rb
+require "prawn"
+require "prawn/table"
+require "open-uri"
 
 class ChecklistPdf < Prawn::Document
+  include Rails.application.routes.url_helpers
+
   def initialize(checklist)
-    super()
+    super(top_margin: 50)
     @checklist = checklist
     header
     checklist_details
@@ -21,25 +25,51 @@ class ChecklistPdf < Prawn::Document
   end
 
   def checklist_details
-    text "Colaborador: #{@checklist.user.name}" if @checklist.respond_to?(:user) && @checklist.user.present?
+    if @checklist.respond_to?(:user) && @checklist.user.present?
+      text "Colaborador: #{@checklist.user.name}"
+    end
     move_down 10
   end
 
-  def checklist_items
-    table_data = [["Item", "Status", "Comentário"]]
-    @checklist.checklist_responses.each do |resp|
-      item = resp.checklist_item
-      table_data << [
-        item.description,
-        resp.status.upcase,
-        resp.comment.presence || "-"
-      ]
+def checklist_items
+  # Monta as linhas da tabela
+  data = [["Descrição", "Status", "Comentário", "Foto"]] # cabeçalho
+
+  @checklist.checklist_responses.each do |resp|
+    item = resp.checklist_item
+    text_cell = item.description
+    status_cell = resp.status.upcase
+    comment_cell = resp.comment.presence || "-"
+
+    # Prepara a foto
+    if resp.photo.attached?
+      begin
+        image_url = resp.photo.url
+        file = URI.open(image_url)
+        # no Prawn, a imagem dentro de uma célula é um hash { image: arquivo, fit: [largura, altura] }
+        photo_cell = { image: file, fit: [80, 80], position: :center }
+      rescue => e
+        photo_cell = "Erro ao carregar foto"
+      end
+    else
+      photo_cell = "" # célula vazia se não houver foto
     end
 
-    table(table_data, header: true, width: bounds.width) do
-      row(0).font_style = :bold
-      columns(1..2).align = :center
-      self.row_colors = ["F0F0F0", "FFFFFF"]
-    end
+    data << [text_cell, status_cell, comment_cell, photo_cell]
   end
+
+  # Cria a tabela
+  table(data, header: true, column_widths: [200, 60, 150, 130]) do
+    row(0).font_style = :bold
+    row(0).background_color = "DDDDDD"
+    cells.padding = 5
+    cells.align = :left
+    cells.valign = :center
+    cells.borders = [:bottom]
+    row(0).borders = [:bottom] # cabeçalho com linha inferior
+  end
+
+  move_down 20
+end
+
 end

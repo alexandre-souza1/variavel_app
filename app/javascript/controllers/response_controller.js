@@ -8,24 +8,45 @@ export default class extends Controller {
   }
 
   showDetails() {
-    console.log("Mostrando detalhes para:", this.element)
     this.detailsTarget.classList.remove("d-none")
 
-    // habilita os campos quando o usuário marca NOK
     if (this.hasPhotoInputTarget) this.photoInputTarget.disabled = false
     if (this.hasCommentInputTarget) this.commentInputTarget.disabled = false
   }
 
   hideDetails() {
-    console.log("Ocultando detalhes para:", this.element)
     this.detailsTarget.classList.add("d-none")
 
-    // desabilita os campos quando o usuário marca OK
     if (this.hasPhotoInputTarget) this.photoInputTarget.disabled = true
     if (this.hasCommentInputTarget) this.commentInputTarget.disabled = true
 
-    // limpa os valores (opcional, mas evita envio acidental)
     if (this.hasCommentInputTarget) this.commentInputTarget.value = ""
     if (this.hasPhotoInputTarget) this.photoInputTarget.value = null
+  }
+
+  // 🔧 Marcar tudo como OK
+  markAllOk(event) {
+    event.preventDefault()
+    const okRadios = document.querySelectorAll('input[type="radio"][value="ok"]')
+
+    okRadios.forEach(radio => {
+      radio.checked = true
+      radio.dispatchEvent(new Event("change"))
+    })
+
+    alert("Todos os itens foram marcados como OK ✅")
+  }
+
+  // 🆕 Marcar tudo como N/A
+  markAllNa(event) {
+    event.preventDefault()
+    const naRadios = document.querySelectorAll('input[type="radio"][value="na"]')
+
+    naRadios.forEach(radio => {
+      radio.checked = true
+      radio.dispatchEvent(new Event("change"))
+    })
+
+    alert("Todos os itens foram marcados como N/A ⚙️")
   }
 }
