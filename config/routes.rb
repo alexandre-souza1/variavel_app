@@ -43,7 +43,7 @@ Rails.application.routes.draw do
   resources :fuel_consumptions, only: [:index, :new, :create]
 
   resources :checklist_templates do
-    resources :checklist_items, only: [:new, :create, :destroy]
+    resources :checklist_items, only: [:new, :create, :edit, :update, :destroy]
   end
 
   resources :autonomies do
