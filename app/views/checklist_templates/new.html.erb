@@ -11,7 +11,12 @@
 
         <div class="mb-3">
           <%= f.label :setor, "Setor", class: "form-label" %>
-          <%= f.select :setor, options_for_select(["ARMAZEM", "ROTA"]), {}, class: "form-select" %>
+          <%= f.select :setor, options_for_select(["ARMAZEM", "ROTA", "TRANSFERÊNCIA"]), {}, class: "form-select" %>
+        </div>
+
+        <div class="form-check mb-3">
+          <%= f.check_box :plate_required, class: "form-check-input", id: "plate_required" %>
+          <%= f.label :plate_required, "Exigir placa neste checklist", class: "form-check-label" %>
         </div>
 
         <div class="form-check mb-3">

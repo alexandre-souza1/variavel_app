@@ -65,6 +65,7 @@ class ChecklistsController < ApplicationController
     params.require(:checklist).permit(
       :checklist_template_id,
       :plate_id,
+      :placa_manual,
       checklist_responses_attributes: [:id, :checklist_item_id, :status, :comment, :photo]
     )
   end

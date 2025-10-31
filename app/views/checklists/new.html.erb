@@ -4,10 +4,15 @@
   <%= f.hidden_field :checklist_template_id %>
     <div class="list-group" data-controller="response">
 
-  <% if @template.plate_required? %>
+  <% if @template.plate_required? && (@template.setor == "ARMAZEM" || @template.setor == "ROTA") %>
     <div class="mb-3">
       <%= f.label :plate_id, "Selecione a Placa" %>
       <%= f.collection_select :plate_id, @plates, :id, :placa, prompt: "Escolha uma placa", class: "form-select" %>
+    </div>
+  <% elsif @template.plate_required && @template.setor == "TRANSFERÊNCIA" %>
+    <div class="mb-3">
+      <%= f.label :placa_manual, "Digite a placa" %>
+      <%= f.text_field :placa_manual, class: "form-control", placeholder: "Digite a placa" %>
     </div>
   <% end %>
 
