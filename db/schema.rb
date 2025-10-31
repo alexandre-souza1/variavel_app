@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_31_170313) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_31_174201) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -122,7 +122,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_31_170313) do
     t.string "setor"
     t.boolean "kilometer_required"
     t.boolean "gas_state_required"
-    t.boolean "vechile_model_required"
+    t.boolean "vehicle_model_required"
     t.boolean "responsavel_required"
   end
 
@@ -134,7 +134,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_31_170313) do
     t.bigint "plate_id"
     t.string "placa_manual"
     t.string "responsavel"
-    t.string "vechile_model"
+    t.string "vehicle_model"
     t.string "gas_state"
     t.float "kilometer"
     t.index ["checklist_template_id"], name: "index_checklists_on_checklist_template_id"

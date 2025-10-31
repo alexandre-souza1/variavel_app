@@ -66,6 +66,10 @@ class ChecklistsController < ApplicationController
       :checklist_template_id,
       :plate_id,
       :placa_manual,
+      :responsavel,
+      :vehicle_model,
+      :gas_state,
+      :kilometer,
       checklist_responses_attributes: [:id, :checklist_item_id, :status, :comment, :photo]
     )
   end

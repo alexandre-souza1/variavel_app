@@ -26,6 +26,6 @@ class ChecklistTemplatesController < ApplicationController
   private
 
   def template_params
-    params.require(:checklist_template).permit(:name, :plate_required, :setor)
+    params.require(:checklist_template).permit(:name, :plate_required, :kilometer_required, :gas_state_required, :vehicle_model_required, :responsavel_required, :setor)
   end
 end

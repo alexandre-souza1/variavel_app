@@ -20,8 +20,23 @@
         </div>
 
         <div class="form-check mb-3">
-          <%= f.check_box :plate_required, class: "form-check-input", id: "plate_required" %>
-          <%= f.label :plate_required, "Exigir placa neste checklist", class: "form-check-label" %>
+          <%= f.check_box :kilometer_required, class: "form-check-input", id: "kilometer_required" %>
+          <%= f.label :kilometer_required, "Exigir quilometragem neste checklist", class: "form-check-label" %>
+        </div>
+
+        <div class="form-check mb-3">
+          <%= f.check_box :gas_state_required, class: "form-check-input", id: "gas_state_required" %>
+          <%= f.label :gas_state_required, "Exigir estado do gás neste checklist", class: "form-check-label" %>
+        </div>
+
+        <div class="form-check mb-3">
+          <%= f.check_box :vehicle_model_required, class: "form-check-input", id: "vehicle_model_required" %>
+          <%= f.label :vehicle_model_required, "Exigir modelo do veículo neste checklist", class: "form-check-label" %>
+        </div>
+
+        <div class="form-check mb-3">
+          <%= f.check_box :responsavel_required, class: "form-check-input", id: "responsavel_required" %>
+          <%= f.label :responsavel_required, "Exigir responsável neste checklist", class: "form-check-label" %>
         </div>
 
         <%= f.submit "Criar", class: "btn btn-primary w-100" %>

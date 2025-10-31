@@ -16,6 +16,34 @@
     </div>
   <% end %>
 
+  <% if @template.kilometer_required? %>
+    <div class="mb-3">
+      <%= f.label :kilometer, "Digite a quilometragem" %>
+      <%= f.text_field :kilometer, class: "form-control", placeholder: "Digite a quilometragem" %>
+    </div>
+  <% end %>
+
+  <% if @template.gas_state_required? %>
+    <div class="mb-3">
+      <%= f.label :gas_state, "Nível de combustível" %>
+      <%= f.select :gas_state, options_for_select([["Cheio", "full"], ["3/4", "three_quarters"], ["1/2", "half"], ["1/4", "quarter"], ["Vazio", "empty"]]), { prompt: "Selecione o nível de combustível" }, class: "form-select" %>
+    </div>
+  <% end %>
+
+  <% if @template.vehicle_model_required? %>
+    <div class="mb-3">
+      <%= f.label :vehicle_model, "Modelo do veículo" %>
+      <%= f.text_field :vehicle_model, class: "form-control", placeholder: "Digite o modelo do veículo" %>
+    </div>
+  <% end %>
+
+  <% if @template.responsavel_required? %>
+    <div class="mb-3">
+      <%= f.label :responsavel, "Responsável" %>
+      <%= f.text_field :responsavel, class: "form-control", placeholder: "Digite o nome do responsável" %>
+    </div>
+  <% end %>
+
     <button type="button"
             class="btn btn-sm btn-warning mb-3"
             data-action="click->response#markAllOk">
