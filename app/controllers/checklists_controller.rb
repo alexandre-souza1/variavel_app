@@ -76,6 +76,12 @@ class ChecklistsController < ApplicationController
       :origin,
       :gas_state,
       :kilometer,
+      :photo_front,
+      :photo_left_truck,
+      :photo_left_trailer,
+      :photo_back,
+      :photo_right_trailer,
+      :photo_right_truck,
       checklist_responses_attributes: [:id, :checklist_item_id, :status, :comment, :photo]
     )
   end

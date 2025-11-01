@@ -50,7 +50,7 @@
       <%= f.text_field :origin, class: "form-control", placeholder: "Digite a origem" %>
     </div>
   <% end %>
-  
+
 
     <button type="button"
             class="btn btn-sm btn-warning mb-3"
@@ -108,6 +108,43 @@
       </div>
     <% end %>
   </div>
+
+  <% if @template.photos_required? %>
+    <h4 class="mt-4">Fotos do Caminhão</h4>
+
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <%= f.label :photo_front, "Frente" %>
+        <%= f.file_field :photo_front, class: "form-control" %>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <%= f.label :photo_left_truck, "Lado esquerdo (cavalo)" %>
+        <%= f.file_field :photo_left_truck, class: "form-control" %>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <%= f.label :photo_left_trailer, "Lado esquerdo (implemento)" %>
+        <%= f.file_field :photo_left_trailer, class: "form-control" %>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <%= f.label :photo_back, "Traseira" %>
+        <%= f.file_field :photo_back, class: "form-control" %>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <%= f.label :photo_right_trailer, "Lado direito (implemento)" %>
+        <%= f.file_field :photo_right_trailer, class: "form-control" %>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <%= f.label :photo_right_truck, "Lado direito (cavalo)" %>
+        <%= f.file_field :photo_right_truck, class: "form-control" %>
+      </div>
+    </div>
+  <% end %>
+
 
   <%= f.submit "Enviar Checklist", class: "btn btn-primary mt-3" %>
 <% end %>

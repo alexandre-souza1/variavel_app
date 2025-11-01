@@ -1,16 +1,24 @@
 class Checklist < ApplicationRecord
   belongs_to :user
   belongs_to :checklist_template
-  belongs_to :plate, optional: true  # <-- ESSA LINHA É ESSENCIAL
+  belongs_to :plate, optional: true
   has_many :checklist_responses, dependent: :destroy
   accepts_nested_attributes_for :checklist_responses
 
-    validate :validate_plate_presence_if_required
-    validate :validate_reponsavel_presence_if_required
-    validate :validate_vehicle_model_presence_if_required
-    validate :validate_kilometer_presence_if_required
-    validate :validate_gas_state_presence_if_required
-    validate :validate_origin_presence_if_required
+  has_one_attached :photo_front
+  has_one_attached :photo_left_truck
+  has_one_attached :photo_left_trailer
+  has_one_attached :photo_back
+  has_one_attached :photo_right_trailer
+  has_one_attached :photo_right_truck
+
+  validate :validate_plate_presence_if_required
+  validate :validate_reponsavel_presence_if_required
+  validate :validate_vehicle_model_presence_if_required
+  validate :validate_kilometer_presence_if_required
+  validate :validate_gas_state_presence_if_required
+  validate :validate_origin_presence_if_required
+  validate :validate_photos_presence_if_required
 
   private
 
@@ -67,4 +75,38 @@ class Checklist < ApplicationRecord
       errors.add(:origin, "deve ser preenchida")
     end
   end
+
+  def validate_photos_presence_if_required
+    return unless checklist_template&.photos_required?
+
+  # Validação para foto frontal
+  if checklist_template.photo_front_required? && !photo_front.attached?
+    errors.add(:photos_required, "deve ser anexada")
+  end
+
+  # Validação para foto traseira
+  if checklist_template.photo_back_required? && !photo_back.attached?
+    errors.add(:photos_required, "deve ser anexada")
+  end
+
+  # Validação para foto lateral esquerda do caminhão
+  if checklist_template.photo_left_truck_required? && !photo_left_truck.attached?
+    errors.add(:photos_required, "deve ser anexada")
+  end
+
+  # Validação para foto lateral esquerda do reboque
+  if checklist_template.photo_left_trailer_required? && !photo_left_trailer.attached?
+    errors.add(:photos_required, "deve ser anexada")
+  end
+
+  # Validação para foto lateral direita do reboque
+  if checklist_template.photo_right_trailer_required? && !photo_right_trailer.attached?
+    errors.add(:photos_required, "deve ser anexada")
+  end
+
+  # Validação para foto lateral direita do caminhão
+  if checklist_template.photo_right_truck_required? && !photo_right_truck.attached?
+    errors.add(:photos_required, "deve ser anexada")
+  end
+end
 end

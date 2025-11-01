@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_11_01_103015) do
+ActiveRecord::Schema[7.1].define(version: 2025_11_01_133057) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -125,6 +125,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_01_103015) do
     t.boolean "vehicle_model_required"
     t.boolean "responsavel_required"
     t.boolean "origin_required"
+    t.boolean "photos_required"
   end
 
   create_table "checklists", force: :cascade do |t|

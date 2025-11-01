@@ -9,4 +9,5 @@ class ChecklistTemplate < ApplicationRecord
   attribute :vehicle_model_required, :boolean, default: false
   attribute :responsavel_required, :boolean, default: false
   attribute :origin_required, :boolean, default: false
+  attribute :photos_required, :boolean, default: false
 end

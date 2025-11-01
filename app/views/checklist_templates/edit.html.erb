@@ -43,6 +43,11 @@
         <%= f.label :origin_required, "Exigir origem da placa", class: "form-check-label" %>
       </div>
 
+      <div class="form-check mb-3">
+        <%= f.check_box :photos_required, class: "form-check-input", id: "photos_required" %>
+        <%= f.label :photos_required, "Exigir fotos 360° neste checklist", class: "form-check-label" %>
+      </div>
+
       <%= f.submit "Salvar alterações", class: "btn btn-primary" %>
       <%= link_to "Cancelar", checklist_template_path(@template), class: "btn btn-secondary ms-2" %>
     <% end %>

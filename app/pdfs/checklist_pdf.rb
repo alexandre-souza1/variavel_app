@@ -11,6 +11,7 @@ class ChecklistPdf < Prawn::Document
 
     header
     checklist_details
+    truck_photos_section # 🔹 nova seção com as 6 fotos
     checklist_items
     signature_section
   end
@@ -34,13 +35,8 @@ class ChecklistPdf < Prawn::Document
   def checklist_details
     lines = []
 
-    if @checklist.vehicle_model.present?
-      lines << ["Modelo do veículo", @checklist.vehicle_model]
-    end
-
-    if @checklist.kilometer.present?
-      lines << ["Quilometragem", "#{@checklist.kilometer} km"]
-    end
+    lines << ["Modelo do veículo", @checklist.vehicle_model] if @checklist.vehicle_model.present?
+    lines << ["Quilometragem", "#{@checklist.kilometer} km"] if @checklist.kilometer.present?
 
     if @checklist.gas_state.present?
       gas_label = {
@@ -50,17 +46,11 @@ class ChecklistPdf < Prawn::Document
         "quarter" => "1/4",
         "empty" => "Vazio"
       }[@checklist.gas_state] || @checklist.gas_state
-
       lines << ["Nível de combustível", gas_label]
     end
 
-    if @checklist.responsavel.present?
-      lines << ["Responsável", @checklist.responsavel]
-    end
-
-    if @checklist.origin.present?
-      lines << ["Origem", @checklist.origin]
-    end
+    lines << ["Responsável", @checklist.responsavel] if @checklist.responsavel.present?
+    lines << ["Origem", @checklist.origin] if @checklist.origin.present?
 
     return if lines.empty?
 
@@ -71,6 +61,69 @@ class ChecklistPdf < Prawn::Document
 
     move_down 20
   end
+
+def truck_photos_section
+  photos = {
+    "Frente" => @checklist.photo_front,
+    "Lado esquerdo (cavalo)" => @checklist.photo_left_truck,
+    "Lado esquerdo (implemento)" => @checklist.photo_left_trailer,
+    "Traseira" => @checklist.photo_back,
+    "Lado direito (implemento)" => @checklist.photo_right_trailer,
+    "Lado direito (cavalo)" => @checklist.photo_right_truck
+  }
+
+  attached_photos = photos.select { |_label, photo| photo.attached? }
+  return if attached_photos.empty?
+
+  text "Fotos do Caminhão", size: 14, style: :bold
+  move_down 10
+
+  attached_photos.each_slice(3) do |row_photos|
+    # Cria arrays separados para imagens e legendas
+    image_cells = []
+    label_cells = []
+
+    row_photos.each do |label, photo|
+      begin
+        file = URI.open(photo.url)
+        image_cells << { image: file, fit: [160, 160], position: :center }
+        label_cells << { content: label, align: :center, size: 10 }
+      rescue
+        image_cells << { content: "Erro ao carregar\nfoto", align: :center, valign: :center, size: 8 }
+        label_cells << { content: label, align: :center, size: 10 }
+      end
+    end
+
+    # Preenche células vazias se a linha não estiver completa
+    while image_cells.length < 3
+      image_cells << { content: "" }
+      label_cells << { content: "" }
+    end
+
+    # Calcula a largura das colunas antes de entrar no bloco da tabela
+    column_width = bounds.width / 3
+
+    # Cria tabela com duas linhas: uma para imagens, outra para legendas
+    table([image_cells, label_cells],
+          width: bounds.width,
+          cell_style: {
+            borders: [],
+            padding: [2, 5, 2, 5],
+            align: :center
+          }) do |table|
+      # Define alturas para as linhas
+      table.row(0).height = 100 # Altura para as imagens
+      table.row(1).height = 15  # Altura para as legendas
+
+      # Define larguras iguais para as colunas
+      table.columns(0..2).width = column_width
+    end
+
+    move_down 10
+  end
+
+  move_down 20
+end
 
   def checklist_items
     data = [["Descrição", "Status", "Comentário", "Foto"]]
@@ -116,6 +169,7 @@ class ChecklistPdf < Prawn::Document
       ]
     ]
 
-    table(data, cell_style: { borders: [], padding: [10, 10], size: 10 }, column_widths: [250, 250], position: :center)
+    table(data, cell_style: { borders: [], padding: [10, 10], size: 10 },
+          column_widths: [250, 250], position: :center)
   end
 end

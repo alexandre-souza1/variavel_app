@@ -93,6 +93,34 @@
     </ul>
   </div>
 
+<% if @checklist.photo_front.attached? %>
+  <h4 class="mt-4">Fotos do Caminhão</h4>
+
+  <div class="row">
+    <% {
+      "Frente" => @checklist.photo_front,
+      "Lado esquerdo (cavalo)" => @checklist.photo_left_truck,
+      "Lado esquerdo (implemento)" => @checklist.photo_left_trailer,
+      "Traseira" => @checklist.photo_back,
+      "Lado direito (implemento)" => @checklist.photo_right_trailer,
+      "Lado direito (cavalo)" => @checklist.photo_right_truck
+    }.each do |label, photo| %>
+      <div class="col-md-4 mb-3 text-center">
+        <strong><%= label %></strong><br>
+        <% if photo.attached? %>
+          <%= cl_image_tag photo.key,
+                width: 400,
+                height: 400,
+                crop: :limit,
+                class: "img-fluid rounded shadow" %>
+        <% else %>
+          <p class="text-muted">Sem foto</p>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
   <!-- Botões -->
   <div class="mt-4 d-flex justify-content-between align-items-center">
     <%= link_to "Voltar", checklists_path, class: "btn btn-secondary shadow-sm px-4" %>

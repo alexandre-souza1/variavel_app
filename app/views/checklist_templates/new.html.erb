@@ -39,6 +39,16 @@
           <%= f.label :responsavel_required, "Exigir responsável neste checklist", class: "form-check-label" %>
         </div>
 
+        <div class="form-check mb-3">
+          <%= f.check_box :origin_required, class: "form-check-input" %>
+          <%= f.label :origin_required, "Exigir origem da placa", class: "form-check-label" %>
+        </div>
+
+        <div class="form-check mb-3">
+          <%= f.check_box :photos_required, class: "form-check-input", id: "photos_required" %>
+          <%= f.label :photos_required, "Exigir fotos 360° neste checklist", class: "form-check-label" %>
+        </div>
+
         <%= f.submit "Criar", class: "btn btn-primary w-100" %>
       <% end %>
     </div>

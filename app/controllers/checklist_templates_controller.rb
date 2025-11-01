@@ -51,6 +51,7 @@ class ChecklistTemplatesController < ApplicationController
       :origin_required,
       :vehicle_model_required,
       :responsavel_required,
+      :photos_required,
       :setor
     )
   end
