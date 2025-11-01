@@ -1,7 +1,47 @@
 <div class="container my-4">
-  <h1 class="mb-4"><%= @template.name %></h1>
+  <!-- Cabeçalho -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="mb-1"><%= @template.name %></h1>
+      <p class="text-muted mb-0">
+        <i class="bi bi-diagram-3"></i> Setor: <strong><%= @template.setor.presence || "Não informado" %></strong>
+      </p>
+    </div>
+    <%= link_to "Editar Template", edit_checklist_template_path(@template), class: "btn btn-outline-primary" %>
+  </div>
 
-  <!-- Formulário para adicionar item -->
+  <!-- Informações do Template -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">Informações do Template</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <% info = {
+          "Exigir placa" => @template.plate_required,
+          "Exigir quilometragem" => @template.kilometer_required,
+          "Exigir nível de combustível" => @template.gas_state_required,
+          "Exigir modelo do veículo" => @template.vehicle_model_required,
+          "Exigir responsável" => @template.responsavel_required
+        } %>
+
+        <% info.each do |label, value| %>
+          <div class="col-md-6 col-lg-4 mb-2">
+            <div class="d-flex align-items-center">
+              <% if value %>
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+              <% else %>
+                <i class="bi bi-x-circle-fill text-danger me-2"></i>
+              <% end %>
+              <span><%= label %></span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulário para adicionar novo item -->
   <div class="card shadow-sm mb-4">
     <div class="card-header">
       <h5 class="mb-0">Adicionar Item ao Checklist</h5>
@@ -20,22 +60,36 @@
     </div>
   </div>
 
-  <!-- Lista de itens -->
+  <!-- Lista de Itens -->
   <div class="card shadow-sm mb-4">
-    <div class="card-header">
+    <div class="card-header bg-light">
       <h5 class="mb-0">Itens do Template</h5>
     </div>
     <ul class="list-group list-group-flush">
       <% @template.checklist_items.each do |item| %>
         <li class="list-group-item d-flex justify-content-between align-items-center">
           <span><%= item.description %></span>
-          <%= button_to "Remover", checklist_template_checklist_item_path(@template, item), method: :delete, class: "btn btn-sm btn-danger" %>
+
+          <% if item.deletable? %>
+            <%= button_to "Remover",
+                  checklist_template_checklist_item_path(@template, item),
+                  method: :delete,
+                  data: { confirm: "Tem certeza que deseja remover este item?" },
+                  class: "btn btn-sm btn-danger" %>
+          <% else %>
+            <span class="text-muted small fst-italic">Usado em checklists</span>
+          <% end %>
         </li>
       <% end %>
+
       <% if @template.checklist_items.empty? %>
-        <li class="list-group-item text-muted text-center">Nenhum item adicionado ainda.</li>
+        <li class="list-group-item text-muted text-center py-3">
+          Nenhum item adicionado ainda.
+        </li>
       <% end %>
     </ul>
   </div>
+
+
   <%= link_to "Voltar", checklist_templates_path, class: "btn btn-primary shadow-sm p-3 w-100" %>
 </div>

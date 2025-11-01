@@ -1,6 +1,6 @@
 class ChecklistsController < ApplicationController
-  before_action :authenticate_user!
-  before_action :set_template, only: [:new] # Adicione esta linha
+  before_action :authenticate_user!, except: [:new, :create, :show]
+  before_action :set_template, only: [:new]
 
   def index
     @checklists = current_user.checklists.includes(:checklist_template)
@@ -23,20 +23,25 @@ class ChecklistsController < ApplicationController
   end
 
   def create
-    @checklist = current_user.checklists.new(checklist_params)
     @template = ChecklistTemplate.find(checklist_params[:checklist_template_id])
+
+    if user_signed_in?
+      @checklist = current_user.checklists.new(checklist_params)
+    else
+      # cria o checklist sem usuário logado
+      @checklist = Checklist.new(checklist_params)
+      # define user_id como "usuário não registrado"
+      # (criaremos um usuário padrão pra isso no passo 3)
+      @checklist.user = User.find_by(email: "anon@system.local")
+    end
 
     if @checklist.save
       redirect_to @checklist, notice: 'Checklist enviado com sucesso.'
     else
-      # Recarrega os checklist_items para o form funcionar corretamente
       @checklist.checklist_responses.each do |response|
         response.checklist_item ||= ChecklistItem.find(response.checklist_item_id)
       end
-
-      # Recarrega as placas para o formulário (se der erro)
       @plates = Plate.where(setor: @template.setor)
-
       render :new
     end
   end
@@ -68,6 +73,7 @@ class ChecklistsController < ApplicationController
       :placa_manual,
       :responsavel,
       :vehicle_model,
+      :origin,
       :gas_state,
       :kilometer,
       checklist_responses_attributes: [:id, :checklist_item_id, :status, :comment, :photo]

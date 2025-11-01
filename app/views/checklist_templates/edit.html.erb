@@ -38,6 +38,11 @@
         <%= f.label :responsavel_required, "Exigir responsável", class: "form-check-label" %>
       </div>
 
+      <div class="form-check mb-3">
+        <%= f.check_box :origin_required, class: "form-check-input" %>
+        <%= f.label :origin_required, "Exigir origem da placa", class: "form-check-label" %>
+      </div>
+
       <%= f.submit "Salvar alterações", class: "btn btn-primary" %>
       <%= link_to "Cancelar", checklist_template_path(@template), class: "btn btn-secondary ms-2" %>
     <% end %>

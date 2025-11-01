@@ -48,6 +48,7 @@ class ChecklistTemplatesController < ApplicationController
       :plate_required,
       :kilometer_required,
       :gas_state_required,
+      :origin_required,
       :vehicle_model_required,
       :responsavel_required,
       :setor

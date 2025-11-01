@@ -8,4 +8,5 @@ class ChecklistTemplate < ApplicationRecord
   attribute :gas_state_required, :boolean, default: false
   attribute :vehicle_model_required, :boolean, default: false
   attribute :responsavel_required, :boolean, default: false
+  attribute :origin_required, :boolean, default: false
 end

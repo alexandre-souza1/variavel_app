@@ -10,6 +10,7 @@ class Checklist < ApplicationRecord
     validate :validate_vehicle_model_presence_if_required
     validate :validate_kilometer_presence_if_required
     validate :validate_gas_state_presence_if_required
+    validate :validate_origin_presence_if_required
 
   private
 
@@ -56,6 +57,14 @@ class Checklist < ApplicationRecord
 
     if gas_state.blank?
       errors.add(:gas_state, "deve ser preenchida")
+    end
+  end
+
+  def validate_origin_presence_if_required
+    return unless checklist_template&.origin_required?
+
+    if origin.blank?
+      errors.add(:origin, "deve ser preenchida")
     end
   end
 end

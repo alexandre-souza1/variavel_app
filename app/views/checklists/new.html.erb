@@ -44,6 +44,14 @@
     </div>
   <% end %>
 
+  <% if @template.origin_required? %>
+    <div class="mb-3">
+      <%= f.label :origin, "Origem" %>
+      <%= f.text_field :origin, class: "form-control", placeholder: "Digite a origem" %>
+    </div>
+  <% end %>
+  
+
     <button type="button"
             class="btn btn-sm btn-warning mb-3"
             data-action="click->response#markAllOk">

@@ -12,6 +12,7 @@ class ChecklistPdf < Prawn::Document
     header
     checklist_details
     checklist_items
+    signature_section
   end
 
   private
@@ -57,6 +58,10 @@ class ChecklistPdf < Prawn::Document
       lines << ["Responsável", @checklist.responsavel]
     end
 
+    if @checklist.origin.present?
+      lines << ["Origem", @checklist.origin]
+    end
+
     return if lines.empty?
 
     table(lines, cell_style: { borders: [], padding: [3, 5] }, column_widths: [160, 300]) do
@@ -97,5 +102,20 @@ class ChecklistPdf < Prawn::Document
       cells.valign = :center
       row(0).borders = [:bottom]
     end
+
+    move_down 40
+  end
+
+  def signature_section
+    move_down 60
+
+    data = [
+      [
+        { content: "______________________________\nResponsável pela assinatura", align: :center },
+        { content: "______________________________\nData", align: :center }
+      ]
+    ]
+
+    table(data, cell_style: { borders: [], padding: [10, 10], size: 10 }, column_widths: [250, 250], position: :center)
   end
 end
