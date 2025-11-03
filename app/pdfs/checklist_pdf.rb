@@ -6,7 +6,7 @@ class ChecklistPdf < Prawn::Document
   include Rails.application.routes.url_helpers
 
   def initialize(checklist)
-    super(top_margin: 50)
+    super(top_margin: 30)
     @checklist = checklist
 
     header
@@ -54,12 +54,12 @@ class ChecklistPdf < Prawn::Document
 
     return if lines.empty?
 
-    table(lines, cell_style: { borders: [], padding: [3, 5] }, column_widths: [160, 300]) do
+    table(lines, cell_style: { borders: [], padding: [3, 5] }, column_widths: [200, 250]) do
       cells.size = 12
       column(0).font_style = :bold
     end
 
-    move_down 20
+    move_down 10
   end
 
 def truck_photos_section
@@ -75,8 +75,16 @@ def truck_photos_section
   attached_photos = photos.select { |_label, photo| photo.attached? }
   return if attached_photos.empty?
 
-  text "Fotos do Caminhão", size: 14, style: :bold
-  move_down 10
+  table(
+  [[{ content: "Fotos do Caminhão", align: :center, size: 14, font_style: :bold }]],
+  width: bounds.width,
+  cell_style: {
+    borders: [:top, :bottom, :left, :right],
+    border_width: 1,
+    border_color: '000000',
+    padding: [6, 0, 6, 0]
+  }
+)
 
   attached_photos.each_slice(3) do |row_photos|
     # Processa cada foto individualmente
@@ -100,7 +108,8 @@ def truck_photos_section
           cell_style: {
             borders: [],
             padding: [2, 5, 2, 5],
-            align: :center
+            align: :center,
+            borders: [:top, :left, :right, :bottom]
           }) do |table|
       table.row(0).height = 120
       table.row(1).height = 15
@@ -108,7 +117,6 @@ def truck_photos_section
       table.row(0).valign = :center
     end
 
-    move_down 15
   end
 
   move_down 20
@@ -135,7 +143,7 @@ def process_truck_photo(label, photo)
     # 🔹 Usar dimensions mais conservadoras
     image_cell = {
       image: file,
-      fit: [180, 100],  # Box mais largo que alto
+      fit: [200, 100],  # Box mais largo que alto
       position: :center,
       vposition: :center
     }
@@ -183,7 +191,7 @@ end
       data << [text_cell, status_cell, comment_cell, photo_cell]
     end
 
-    table(data, header: true, column_widths: [180, 60, 150, 130]) do
+    table(data, header: true, column_widths: [200, 60, 150, 130]) do
       row(0).font_style = :bold
       row(0).background_color = "DDDDDD"
       cells.padding = 5
