@@ -188,7 +188,7 @@ end
       row(0).background_color = "DDDDDD"
       cells.padding = 5
       cells.valign = :center
-      row(0).borders = [:bottom]
+      row(0).borders = [:top, :left, :right, :bottom]
     end
 
     move_down 40
