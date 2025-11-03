@@ -79,31 +79,22 @@ def truck_photos_section
   move_down 10
 
   attached_photos.each_slice(3) do |row_photos|
-    # Cria arrays separados para imagens e legendas
-    image_cells = []
-    label_cells = []
-
-    row_photos.each do |label, photo|
-      begin
-        file = URI.open(photo.url)
-        image_cells << { image: file, fit: [160, 160], position: :center }
-        label_cells << { content: label, align: :center, size: 10 }
-      rescue
-        image_cells << { content: "Erro ao carregar\nfoto", align: :center, valign: :center, size: 8 }
-        label_cells << { content: label, align: :center, size: 10 }
-      end
+    # Processa cada foto individualmente
+    row_data = row_photos.map do |label, photo|
+      process_truck_photo(label, photo)
     end
 
-    # Preenche células vazias se a linha não estiver completa
-    while image_cells.length < 3
-      image_cells << { content: "" }
-      label_cells << { content: "" }
+    # Preenche linha incompleta
+    while row_data.length < 3
+      row_data << [{ content: "" }, { content: "" }]
     end
 
-    # Calcula a largura das colunas antes de entrar no bloco da tabela
+    # Extrai imagens e labels
+    image_cells = row_data.map { |data| data[0] }
+    label_cells = row_data.map { |data| data[1] }
+
     column_width = bounds.width / 3
 
-    # Cria tabela com duas linhas: uma para imagens, outra para legendas
     table([image_cells, label_cells],
           width: bounds.width,
           cell_style: {
@@ -111,18 +102,62 @@ def truck_photos_section
             padding: [2, 5, 2, 5],
             align: :center
           }) do |table|
-      # Define alturas para as linhas
-      table.row(0).height = 100 # Altura para as imagens
-      table.row(1).height = 15  # Altura para as legendas
-
-      # Define larguras iguais para as colunas
+      table.row(0).height = 120
+      table.row(1).height = 15
       table.columns(0..2).width = column_width
+      table.row(0).valign = :center
     end
 
-    move_down 10
+    move_down 15
   end
 
   move_down 20
+end
+
+private
+
+def process_truck_photo(label, photo)
+  begin
+    # 🔹 URL otimizada para o Cloudinary
+    cloudinary_url = photo.url(
+      transformation: [
+        {
+          width: 400,
+          height: 300,
+          crop: 'limit',
+          quality: 'auto:good'
+        }
+      ]
+    )
+
+    file = URI.open(cloudinary_url)
+
+    # 🔹 Usar dimensions mais conservadoras
+    image_cell = {
+      image: file,
+      fit: [180, 100],  # Box mais largo que alto
+      position: :center,
+      vposition: :center
+    }
+
+    label_cell = { content: label, align: :center, size: 10 }
+
+    [image_cell, label_cell]
+
+  rescue => e
+    puts "Erro ao processar foto #{label}: #{e.message}"
+
+    image_cell = {
+      content: "Erro ao\ncarregar foto",
+      align: :center,
+      valign: :center,
+      size: 8
+    }
+
+    label_cell = { content: label, align: :center, size: 10 }
+
+    [image_cell, label_cell]
+  end
 end
 
   def checklist_items
