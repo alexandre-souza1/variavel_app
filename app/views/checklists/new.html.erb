@@ -102,6 +102,7 @@
           <%= response_form.label :photo, "Foto" %>
           <%= response_form.file_field :photo,
                 class: "form-control",
+                upload_preset: "checklist_compressed",
                 data: { response_target: "photoInput" },
                 disabled: true %>
         </div>
@@ -115,32 +116,32 @@
     <div class="row">
       <div class="col-md-4 mb-3">
         <%= f.label :photo_front, "Frente" %>
-        <%= f.file_field :photo_front, class: "form-control" %>
+        <%= f.file_field :photo_front, class: "form-control", upload_preset: "checklist_compressed" %>
       </div>
 
       <div class="col-md-4 mb-3">
         <%= f.label :photo_left_truck, "Lado esquerdo (cavalo)" %>
-        <%= f.file_field :photo_left_truck, class: "form-control" %>
+        <%= f.file_field :photo_left_truck, class: "form-control", upload_preset: "checklist_compressed" %>
       </div>
 
       <div class="col-md-4 mb-3">
         <%= f.label :photo_left_trailer, "Lado esquerdo (implemento)" %>
-        <%= f.file_field :photo_left_trailer, class: "form-control" %>
+        <%= f.file_field :photo_left_trailer, class: "form-control", upload_preset: "checklist_compressed" %>
       </div>
 
       <div class="col-md-4 mb-3">
         <%= f.label :photo_back, "Traseira" %>
-        <%= f.file_field :photo_back, class: "form-control" %>
+        <%= f.file_field :photo_back, class: "form-control", upload_preset: "checklist_compressed" %>
       </div>
 
       <div class="col-md-4 mb-3">
         <%= f.label :photo_right_trailer, "Lado direito (implemento)" %>
-        <%= f.file_field :photo_right_trailer, class: "form-control" %>
+        <%= f.file_field :photo_right_trailer, class: "form-control", upload_preset: "checklist_compressed" %>
       </div>
 
       <div class="col-md-4 mb-3">
         <%= f.label :photo_right_truck, "Lado direito (cavalo)" %>
-        <%= f.file_field :photo_right_truck, class: "form-control" %>
+        <%= f.file_field :photo_right_truck, class: "form-control", upload_preset: "checklist_compressed" %>
       </div>
     </div>
   <% end %>

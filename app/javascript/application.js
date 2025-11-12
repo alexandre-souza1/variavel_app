@@ -5,3 +5,5 @@ import "@popperjs/core"
 import "bootstrap"
 import "chartkick"
 import "Chart.bundle"
+import * as ActiveStorage from "@rails/activestorage"
+ActiveStorage.start()
