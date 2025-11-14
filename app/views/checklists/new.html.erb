@@ -1,151 +1,193 @@
 <h1><%= @template.name %></h1>
 
-<%= form_with model: @checklist, local: true do |f| %>
+<%= form_with model: @checklist, local: true, data: {
+      controller: "checklist-validation",
+      action: "submit->checklist-validation#validate" } do |f| %>
   <%= f.hidden_field :checklist_template_id %>
-    <div class="list-group" data-controller="response">
 
-  <% if @template.plate_required? && (@template.setor == "ARMAZEM" || @template.setor == "ROTA") %>
-    <div class="mb-3">
-      <%= f.label :plate_id, "Selecione a Placa" %>
-      <%= f.collection_select :plate_id, @plates, :id, :placa, prompt: "Escolha uma placa", class: "form-select" %>
-    </div>
-  <% elsif @template.plate_required && @template.setor == "TRANSFERÊNCIA" %>
-    <div class="mb-3">
-      <%= f.label :placa_manual, "Digite a placa" %>
-      <%= f.text_field :placa_manual, class: "form-control", placeholder: "Digite a placa" %>
-    </div>
-  <% end %>
+  <div class="list-group" data-controller="response">
 
-  <% if @template.kilometer_required? %>
-    <div class="mb-3">
-      <%= f.label :kilometer, "Digite a quilometragem" %>
-      <%= f.text_field :kilometer, class: "form-control", placeholder: "Digite a quilometragem" %>
-    </div>
-  <% end %>
+    <% if @template.plate_required? && (@template.setor == "ARMAZEM" || @template.setor == "ROTA") %>
+      <%= field_with_errors(f, :plate_id) do %>
+        <%= f.label :plate_id, "Selecione a Placa" %>
+        <%= f.collection_select :plate_id, @plates, :id, :placa,
+              { prompt: "Escolha uma placa" },
+              class: "form-select",
+              data: { checklist_validation_target: "required" } %>
+      <% end %>
 
-  <% if @template.gas_state_required? %>
-    <div class="mb-3">
-      <%= f.label :gas_state, "Nível de combustível" %>
-      <%= f.select :gas_state, options_for_select([["Cheio", "full"], ["3/4", "three_quarters"], ["1/2", "half"], ["1/4", "quarter"], ["Vazio", "empty"]]), { prompt: "Selecione o nível de combustível" }, class: "form-select" %>
-    </div>
-  <% end %>
+    <% elsif @template.plate_required? && @template.setor == "TRANSFERÊNCIA" %>
+      <%= field_with_errors(f, :placa_manual) do %>
+        <%= f.label :placa_manual, "Digite a placa" %>
+        <%= f.text_field :placa_manual,
+              class: "form-control",
+              placeholder: "Digite a placa",
+              data: { checklist_validation_target: "required" } %>
+      <% end %>
+    <% end %>
 
-  <% if @template.vehicle_model_required? %>
-    <div class="mb-3">
-      <%= f.label :vehicle_model, "Modelo do veículo" %>
-      <%= f.text_field :vehicle_model, class: "form-control", placeholder: "Digite o modelo do veículo" %>
-    </div>
-  <% end %>
+    <% if @template.kilometer_required? %>
+      <%= field_with_errors(f, :kilometer) do %>
+        <%= f.label :kilometer, "Digite a quilometragem" %>
+        <%= f.text_field :kilometer,
+              class: "form-control",
+              data: { checklist_validation_target: "required" } %>
+      <% end %>
+    <% end %>
 
-  <% if @template.responsavel_required? %>
-    <div class="mb-3">
-      <%= f.label :responsavel, "Responsável" %>
-      <%= f.text_field :responsavel, class: "form-control", placeholder: "Digite o nome do responsável" %>
-    </div>
-  <% end %>
+    <% if @template.gas_state_required? %>
+      <%= field_with_errors(f, :gas_state) do %>
+        <%= f.label :gas_state, "Nível de combustível" %>
+        <%= f.select :gas_state,
+          options_for_select([["Cheio", "full"], ["3/4", "three_quarters"],
+                              ["1/2", "half"], ["1/4", "quarter"], ["Vazio", "empty"]],
+                              @checklist.gas_state),
+          { prompt: "Selecione o nível de combustível" },
+          class: "form-select",
+          data: { checklist_validation_target: "required" } %>
+      <% end %>
+    <% end %>
 
-  <% if @template.origin_required? %>
-    <div class="mb-3">
-      <%= f.label :origin, "Origem" %>
-      <%= f.text_field :origin, class: "form-control", placeholder: "Digite a origem" %>
-    </div>
-  <% end %>
+    <% if @template.vehicle_model_required? %>
+      <%= field_with_errors(f, :vehicle_model) do %>
+        <%= f.label :vehicle_model, "Modelo do veículo" %>
+        <%= f.text_field :vehicle_model,
+              class: "form-control",
+              data: { checklist_validation_target: "required" } %>
+      <% end %>
+    <% end %>
 
+    <% if @template.responsavel_required? %>
+      <%= field_with_errors(f, :responsavel) do %>
+        <%= f.label :responsavel, "Responsável" %>
+        <%= f.text_field :responsavel,
+              class: "form-control",
+              data: { checklist_validation_target: "required" } %>
+      <% end %>
+    <% end %>
 
-    <button type="button"
-            class="btn btn-sm btn-warning mb-3"
-            data-action="click->response#markAllOk">
-      🔧 Marcar tudo como OK (teste)
-    </button>
+    <% if @template.origin_required? %>
+      <%= field_with_errors(f, :origin) do %>
+        <%= f.label :origin, "Origem" %>
+        <%= f.text_field :origin,
+              class: "form-control",
+              data: { checklist_validation_target: "required" } %>
+      <% end %>
+    <% end %>
+
+    <% if current_user&.admin? %>
+      <button type="button"
+              class="btn btn-sm btn-warning mb-3"
+              data-action="click->response#markAllOk">
+        🔧 Marcar tudo como OK (teste)
+      </button>
+    <% end %>
 
     <%= f.fields_for :checklist_responses do |response_form| %>
       <% item = response_form.object.checklist_item %>
 
       <%= response_form.hidden_field :checklist_item_id %>
 
-      <div class="list-group-item mb-3" data-controller="response">
-        <strong><%= item.description %></strong><br>
+      <%= field_with_errors(response_form, :status) do %>
+        <div class="list-group-item mb-3" data-controller="response">
 
-        <div class="btn-group mt-2" role="group">
-          <input type="radio"
-                name="<%= response_form.object_name %>[status]"
-                value="ok"
-                id="<%= "ok-#{item.id}" %>"
-                class="btn-check"
-                data-action="change->response#hideDetails">
-          <label class="btn btn-outline-success" for="<%= "ok-#{item.id}" %>">OK</label>
+          <strong><%= item.description %></strong><br>
 
-          <input type="radio"
-                name="<%= response_form.object_name %>[status]"
-                value="nok"
-                id="<%= "nok-#{item.id}" %>"
-                class="btn-check"
-                data-action="change->response#showDetails">
-          <label class="btn btn-outline-danger" for="<%= "nok-#{item.id}" %>">NOK</label>
+          <div class="btn-group mt-2" role="group">
 
-          <input type="radio"
-                name="<%= response_form.object_name %>[status]"
-                value="na"
-                id="<%= "na-#{item.id}" %>"
-                class="btn-check"
-                data-action="change->response#hideDetails">
-          <label class="btn btn-outline-secondary" for="<%= "na-#{item.id}" %>">N/A</label>
+            <!-- OK -->
+            <%= response_form.radio_button :status, "ok",
+                  id: "ok-#{item.id}",
+                  class: "btn-check",
+                  data: {
+                    action: "change->response#hideDetails",
+                    checklist_validation_target: "required"
+                  } %>
+            <label class="btn btn-outline-success" for="ok-<%= item.id %>">OK</label>
+
+            <!-- NOK -->
+            <%= response_form.radio_button :status, "nok",
+                  id: "nok-#{item.id}",
+                  class: "btn-check",
+                  data: {
+                    action: "change->response#showDetails",
+                    checklist_validation_target: "required"
+                  } %>
+            <label class="btn btn-outline-danger" for="nok-<%= item.id %>">NOK</label>
+
+            <!-- N/A -->
+            <%= response_form.radio_button :status, "na",
+                  id: "na-#{item.id}",
+                  class: "btn-check",
+                  data: {
+                    action: "change->response#hideDetails",
+                    checklist_validation_target: "required"
+                  } %>
+            <label class="btn btn-outline-secondary" for="na-<%= item.id %>">N/A</label>
+
+          </div>
+
+          <% show_details = response_form.object.status == "nok" %>
+
+          <div data-response-target="details"
+               class="mt-2 <%= show_details ? "" : "d-none" %>">
+
+            <%= response_form.label :comment, "Comentário" %>
+            <%= response_form.text_area :comment,
+                  rows: 2,
+                  class: "form-control mb-2",
+                  data: {
+                    response_target: "commentInput",
+                    checklist_validation_target: "nokComment"
+                  },
+                  disabled: !show_details %>
+
+            <%= response_form.label :photo, "Foto" %>
+            <%= response_form.file_field :photo,
+                  class: "form-control",
+                  upload_preset: "checklist_compressed",
+                  data: {
+                    response_target: "photoInput",
+                    checklist_validation_target: "photo"
+                  },
+                  disabled: !show_details %>
+          </div>
+
         </div>
-
-        <div data-response-target="details" class="mt-2 d-none">
-          <%= response_form.label :comment, "Comentário" %>
-          <%= response_form.text_area :comment, rows: 2,
-                class: "form-control mb-2",
-                data: { response_target: "commentInput" },
-                disabled: true %>
-
-          <%= response_form.label :photo, "Foto" %>
-          <%= response_form.file_field :photo,
-                class: "form-control",
-                upload_preset: "checklist_compressed",
-                data: { response_target: "photoInput" },
-                disabled: true %>
-        </div>
-      </div>
+      <% end %>
     <% end %>
+
   </div>
 
   <% if @template.photos_required? %>
     <h4 class="mt-4">Fotos do Caminhão</h4>
 
     <div class="row">
-      <div class="col-md-4 mb-3">
-        <%= f.label :photo_front, "Frente" %>
-        <%= f.file_field :photo_front, class: "form-control", upload_preset: "checklist_compressed" %>
-      </div>
+      <% photo_labels = {
+        photo_front: "Frente",
+        photo_back: "Traseira",
+        photo_left_truck: "Lado Esquerdo (Cavalo)",
+        photo_left_trailer: "Lado Esquerdo (Implemento)",
+        photo_right_trailer: "Lado Direito (Implemento)",
+        photo_right_truck: "Lado Direito (Cavalo)"
+      } %>
 
-      <div class="col-md-4 mb-3">
-        <%= f.label :photo_left_truck, "Lado esquerdo (cavalo)" %>
-        <%= f.file_field :photo_left_truck, class: "form-control", upload_preset: "checklist_compressed" %>
-      </div>
+      <% [:photo_front, :photo_left_truck, :photo_left_trailer, :photo_back,
+          :photo_right_trailer, :photo_right_truck].each do |photo_field| %>
 
-      <div class="col-md-4 mb-3">
-        <%= f.label :photo_left_trailer, "Lado esquerdo (implemento)" %>
-        <%= f.file_field :photo_left_trailer, class: "form-control", upload_preset: "checklist_compressed" %>
-      </div>
+        <div class="col-md-4 mb-3">
+          <%= field_with_errors(f, photo_field) do %>
+            <%= f.label photo_field, photo_labels[photo_field] %>
+            <%= f.file_field photo_field,
+                  class: "form-control",
+                  upload_preset: "checklist_compressed",
+                  data: { checklist_validation_target: "photo" } %>
+          <% end %>
+        </div>
 
-      <div class="col-md-4 mb-3">
-        <%= f.label :photo_back, "Traseira" %>
-        <%= f.file_field :photo_back, class: "form-control", upload_preset: "checklist_compressed" %>
-      </div>
-
-      <div class="col-md-4 mb-3">
-        <%= f.label :photo_right_trailer, "Lado direito (implemento)" %>
-        <%= f.file_field :photo_right_trailer, class: "form-control", upload_preset: "checklist_compressed" %>
-      </div>
-
-      <div class="col-md-4 mb-3">
-        <%= f.label :photo_right_truck, "Lado direito (cavalo)" %>
-        <%= f.file_field :photo_right_truck, class: "form-control", upload_preset: "checklist_compressed" %>
-      </div>
+      <% end %>
     </div>
   <% end %>
-
 
   <%= f.submit "Enviar Checklist", class: "btn btn-primary mt-3" %>
 <% end %>

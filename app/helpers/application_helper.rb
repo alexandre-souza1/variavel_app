@@ -42,5 +42,14 @@ module ApplicationHelper
   # Tenta pelo setor primeiro, depois pelo nome
   icon_key = budget_category.sector.downcase
   icons[icon_key] || 'tag'
-end
+  end
+
+  def field_with_errors(form, field, &block)
+    content_tag(:div, class: "mb-3") do
+      concat capture(&block)
+      if form.object.errors[field].any?
+        concat content_tag(:div, form.object.errors[field].first, class: "text-danger mt-1")
+      end
+    end
+  end
 end

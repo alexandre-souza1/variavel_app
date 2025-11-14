@@ -38,11 +38,8 @@ class ChecklistsController < ApplicationController
     if @checklist.save
       redirect_to @checklist, notice: 'Checklist enviado com sucesso.'
     else
-      @checklist.checklist_responses.each do |response|
-        response.checklist_item ||= ChecklistItem.find(response.checklist_item_id)
-      end
       @plates = Plate.where(setor: @template.setor)
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 

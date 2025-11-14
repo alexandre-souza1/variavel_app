@@ -27,11 +27,11 @@ class Checklist < ApplicationRecord
 
     if checklist_template.setor == "TRANSFERÊNCIA"
       if placa_manual.blank?
-        errors.add(:placa_manual, "deve ser preenchida para checklists de Transferência")
+        errors.add(:placa_manual, "Deve ser preenchida para checklists de Transferência")
       end
     else
       if plate_id.blank?
-        errors.add(:plate, "deve ser selecionada")
+        errors.add(:plate, "Deve ser selecionada")
       end
     end
   end
@@ -40,7 +40,7 @@ class Checklist < ApplicationRecord
     return unless checklist_template&.responsavel_required?
 
     if responsavel.blank?
-      errors.add(:responsavel, "deve ser preenchida")
+      errors.add(:responsavel, "Deve ser preenchida")
     end
   end
 
@@ -48,7 +48,7 @@ class Checklist < ApplicationRecord
     return unless checklist_template&.vehicle_model_required?
 
     if vehicle_model.blank?
-      errors.add(:vehicle_model, "deve ser preenchida")
+      errors.add(:vehicle_model, "Deve ser preenchida")
     end
   end
 
@@ -56,7 +56,7 @@ class Checklist < ApplicationRecord
     return unless checklist_template&.kilometer_required?
 
     if kilometer.blank?
-      errors.add(:kilometer, "deve ser preenchida")
+      errors.add(:kilometer, "Deve ser preenchida")
     end
   end
 
@@ -64,7 +64,7 @@ class Checklist < ApplicationRecord
     return unless checklist_template&.gas_state_required?
 
     if gas_state.blank?
-      errors.add(:gas_state, "deve ser preenchida")
+      errors.add(:gas_state, "Deve ser preenchida")
     end
   end
 
@@ -72,7 +72,7 @@ class Checklist < ApplicationRecord
     return unless checklist_template&.origin_required?
 
     if origin.blank?
-      errors.add(:origin, "deve ser preenchida")
+      errors.add(:origin, "Deve ser preenchida")
     end
   end
 
@@ -90,7 +90,7 @@ class Checklist < ApplicationRecord
 
     required_photos.each do |photo_attr, label|
       unless send(photo_attr).attached?
-        errors.add(photo_attr, "deve ser anexada (#{label})")
+        errors.add(photo_attr, "Deve ser anexada (#{label})")
       end
     end
   end
