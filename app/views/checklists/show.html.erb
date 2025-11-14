@@ -72,10 +72,11 @@
       <% @checklist.checklist_responses.each do |resp| %>
         <li class="list-group-item">
           <div class="d-flex justify-content-between align-items-center">
-            <strong><%= resp.checklist_item.description %></strong>
-            <span class="badge <%= resp.status == "ok" ? "bg-success" : "bg-danger" %>">
-              <%= resp.status.upcase %>
-            </span>
+          <strong><%= resp.checklist_item&.description || "Sem descrição" %></strong>
+
+          <span class="badge <%= resp.status == "ok" ? "bg-success" : "bg-danger" %>">
+            <%= resp.status&.upcase || "N/A" %>
+          </span>
           </div>
 
           <% if resp.comment.present? %>
