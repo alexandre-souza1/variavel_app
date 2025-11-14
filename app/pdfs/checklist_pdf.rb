@@ -173,8 +173,8 @@ end
 
     @checklist.checklist_responses.each do |resp|
       item = resp.checklist_item
-      text_cell = item.description
-      status_cell = resp.status.upcase
+      text_cell = item&.description || "Sem descrição"
+      status_cell = resp.status&.upcase || "N/A"
       comment_cell = resp.comment.presence || "-"
 
       if resp.photo.attached?
