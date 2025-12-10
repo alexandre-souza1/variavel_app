@@ -16,17 +16,22 @@
         <%= f.number_field :id, value: params[:id], class: "form-control" %>
       </div>
 
-      <div class="col-md-3">
+      <div class="col-md-2">
         <%= f.label :supplier_cnpj, "CNPJ do Fornecedor", class: "form-label" %>
         <%= f.text_field :supplier_cnpj, value: params[:supplier_cnpj], class: "form-control" %>
       </div>
 
       <div class="col-md-3">
+        <%= f.label :supplier_name, "Nome do Fornecedor", class: "form-label" %>
+        <%= f.text_field :supplier_name, value: params[:supplier_name], class: "form-control" %>
+      </div>
+
+      <div class="col-md-2">
         <%= f.label :date_issued, "Data de Emissão", class: "form-label" %>
         <%= f.date_field :date_issued, value: params[:date_issued], class: "form-control" %>
       </div>
 
-      <div class="col-md-3">
+      <div class="col-md-2">
         <%= f.label :due_date, "Data de Vencimento", class: "form-label" %>
         <%= f.date_field :due_date, value: params[:due_date], class: "form-control" %>
       </div>

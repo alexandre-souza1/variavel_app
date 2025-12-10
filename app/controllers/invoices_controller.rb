@@ -21,6 +21,13 @@ class InvoicesController < ApplicationController
                           .where("suppliers.cnpj LIKE ?", "%#{params[:supplier_cnpj]}%")
     end
 
+    # filtro por nome do fornecedor
+    if params[:supplier_name].present?
+      name = params[:supplier_name].strip
+      @invoices = @invoices.joins(:supplier)
+                          .where("suppliers.name ILIKE ?", "%#{name}%")
+    end
+
     # filtro por data de emissão
     @invoices = @invoices.where(date_issued: params[:date_issued]) if params[:date_issued].present?
 
