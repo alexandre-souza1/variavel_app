@@ -37,7 +37,7 @@ class Admin::BudgetCategoriesController < ApplicationController
   # ✅ Requisição assíncrona (via Stimulus)
   def expenses
     invoices_scope = @budget_category.invoices
-                                     .includes(:supplier, :cost_center)
+                                     .includes(:supplier, invoice_numbers: :cost_center)
                                      .order(date_issued: :desc)
 
     # 🔹 Aplica filtro de mês/ano (vindo da dashboard)

@@ -104,7 +104,24 @@
             <tr>
               <td><%= invoice.code %></td>
               <td><%= invoice.supplier.name %> (<%= invoice.supplier.cnpj %>)</td>
-              <td><%= invoice.cost_center.name if invoice.cost_center %></td>
+              <td>
+                <% if invoice.invoice_numbers.any? %>
+                  <% invoice.invoice_numbers.each do |nf| %>
+                    <div class="mb-1">
+                      </span>
+
+                      <% if nf.cost_center.present? %>
+                          <%= nf.cost_center.name %>
+                        </span>
+                      <% else %>
+                        <span class="text-muted">(sem CC)</span>
+                      <% end %>
+                    </div>
+                  <% end %>
+                <% else %>
+                  <span class="text-muted">—</span>
+                <% end %>
+              </td>
               <td><%= invoice.budget_category.name if invoice.budget_category %></td>
               <td><%= invoice.date_issued %></td>
               <td><%= invoice.due_date %></td>

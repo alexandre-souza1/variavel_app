@@ -10,7 +10,11 @@ class InvoicesController < ApplicationController
     @invoices = @invoices.where(budget_category_id: params[:budget_category_id]) if params[:budget_category_id].present?
 
     # filtro por categoria orçamentária
-    @invoices = @invoices.where(cost_center_id: params[:cost_center_id]) if params[:cost_center_id].present?
+    if params[:cost_center_id].present?
+      @invoices = @invoices.joins(:invoice_numbers)
+                          .where(invoice_numbers: { cost_center_id: params[:cost_center_id] })
+                          .distinct
+    end
 
     # filtro por ID da invoice
     @invoices = @invoices.where(id: params[:id]) if params[:id].present?
@@ -64,6 +68,7 @@ class InvoicesController < ApplicationController
 
   # GET /invoices/new
   def new
+    @cost_centers = CostCenter.all
     @invoice = Invoice.new
     @invoice.invoice_numbers.build   # 🔑 garante que aparece o campo no form
     @available_purchasers = User.all.order(:name)
@@ -71,17 +76,24 @@ class InvoicesController < ApplicationController
 
   # GET /invoices/1/edit
   def edit
+    @cost_centers = CostCenter.all
     @invoice = Invoice.find(params[:id])
     @invoice.invoice_numbers.build if @invoice.invoice_numbers.empty?
     @available_purchasers = User.all.order(:name)
   end
 
   def dashboard
+
     # 🔹 pega filtros (se existirem)
     @month = params[:month].presence&.to_i
     @year  = params[:year].presence&.to_i
 
-    invoices_scope = Invoice.all
+    invoices_scope = Invoice.joins(:invoice_numbers).distinct
+
+    # aplica filtro por cost center se houver
+    if params[:cost_center_id].present?
+      invoices_scope = invoices_scope.where(invoice_numbers: { cost_center_id: params[:cost_center_id] })
+    end
 
     # 🔹 aplica filtros de período
     if @month && @year
@@ -166,9 +178,10 @@ class InvoicesController < ApplicationController
     @recent_invoices = invoices_scope.where('date_issued >= ?', 7.days.ago)
     @high_value_invoices = invoices_scope.where('total > ?', 10_000)
     @total_invoices_count = invoices_scope.count
-    @latest_invoices = invoices_scope.includes(:supplier, :budget_category, :cost_center, :invoice_numbers)
-                                    .order(date_issued: :desc)
-                                    .limit(10)
+    @latest_invoices = invoices_scope
+      .includes(:supplier, :budget_category, invoice_numbers: :cost_center)
+      .order(date_issued: :desc)
+      .limit(10)
 
     # 🔹 Variação mensal (baseada no escopo filtrado)
     current_month = invoices_scope.where('date_issued >= ?', Date.today.beginning_of_month).sum(:total)
@@ -265,7 +278,7 @@ class InvoicesController < ApplicationController
   def invoice_params
     params.require(:invoice).permit(
       :supplier_id, :date_issued, :due_date, :total, :purchaser_id, :budget_category_id, :cost_center_id, :notes, :code, documents: [],
-      invoice_numbers_attributes: [:id, :number, :_destroy]
+      invoice_numbers_attributes: [:id, :number, :cost_center_id, :_destroy]
     )
   end
 end

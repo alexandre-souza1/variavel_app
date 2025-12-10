@@ -40,15 +40,17 @@
                 <%= invoice.date_issued.present? ? l(invoice.date_issued, format: :short) : "-" %>
               </td>
 
-              <td>
-                <% if invoice.cost_center.present? %>
-                  <span class="badge bg-secondary">
-                    <%= invoice.cost_center.name.titleize %>
-                  </span>
-                <% else %>
-                  <span class="text-muted">—</span>
-                <% end %>
-              </td>
+<td>
+  <% centers = invoice.invoice_numbers.includes(:cost_center).map(&:cost_center).compact.uniq %>
+
+  <% if centers.any? %>
+    <% centers.each do |cc| %>
+      <span class="badge bg-secondary"><%= cc.name.upcase %></span>
+    <% end %>
+  <% else %>
+    <span class="text-muted">—</span>
+  <% end %>
+</td>
 
               <td class="fw-bold text-success">
                 R$ <%= number_to_currency(invoice.total, unit: "", separator: ",", delimiter: ".") %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_11_01_133057) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_10_171402) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -195,6 +195,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_01_133057) do
     t.bigint "invoice_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "cost_center_id"
+    t.index ["cost_center_id"], name: "index_invoice_numbers_on_cost_center_id"
     t.index ["invoice_id"], name: "index_invoice_numbers_on_invoice_id"
   end
 
@@ -212,11 +214,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_01_133057) do
     t.integer "cost_center"
     t.text "document_urls", default: [], array: true
     t.bigint "purchaser_id"
-    t.bigint "cost_center_id"
     t.bigint "budget_category_id"
     t.index ["budget_category_id"], name: "index_invoices_on_budget_category_id"
     t.index ["code"], name: "index_invoices_on_code", unique: true
-    t.index ["cost_center_id"], name: "index_invoices_on_cost_center_id"
     t.index ["purchaser_id"], name: "index_invoices_on_purchaser_id"
     t.index ["supplier_id"], name: "index_invoices_on_supplier_id"
   end
@@ -351,9 +351,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_01_133057) do
   add_foreign_key "checklists", "checklist_templates"
   add_foreign_key "checklists", "plates"
   add_foreign_key "checklists", "users"
+  add_foreign_key "invoice_numbers", "cost_centers"
   add_foreign_key "invoice_numbers", "invoices"
   add_foreign_key "invoices", "budget_categories"
-  add_foreign_key "invoices", "cost_centers"
   add_foreign_key "invoices", "suppliers"
   add_foreign_key "invoices", "users", column: "purchaser_id"
   add_foreign_key "remuneration_category_values", "budget_categories"

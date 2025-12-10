@@ -45,21 +45,68 @@
 
             <div data-invoice-numbers-target="container" class="mb-2">
               <%= f.fields_for :invoice_numbers do |nf_form| %>
-                <div class="nested-fields d-flex mb-2 align-items-center" data-new-record="false">
-                  <%= nf_form.text_field :number, class: "form-control me-2", placeholder: "Número da NF" %>
-                  <%= nf_form.check_box :_destroy, style: "display: none" %>
-                  <button type="button" class="btn btn-sm btn-outline-danger" data-action="click->invoice-numbers#remove">Remover</button>
+                <div class="nested-fields mb-3" data-new-record="false">
+                  <div class="row align-items-center">
+
+                    <div class="col-md-4">
+                      <%= nf_form.label :number, "Número da NF", class: "form-label" %>
+                      <%= nf_form.text_field :number, class: "form-control", placeholder: "Número da NF" %>
+                    </div>
+
+                    <div class="col-md-6">
+                      <%= nf_form.label :cost_center_id, "Centro de Custo", class: "form-label" %>
+                      <%= nf_form.collection_select :cost_center_id,
+                            CostCenter.all.order(:name),
+                            :id,
+                            :name,
+                            { prompt: "Selecione o centro de custo" },
+                            class: "form-select" %>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                      <%= nf_form.check_box :_destroy, style: "display: none" %>
+                      <button type="button" class="btn btn-sm btn-outline-danger" data-action="click->invoice-numbers#remove">Remover</button>
+                    </div>
+
+                  </div>
                 </div>
               <% end %>
             </div>
 
             <template data-invoice-numbers-target="template">
-              <div class="nested-fields d-flex mb-2 align-items-center" data-new-record="true">
-                <input class="form-control me-2" placeholder="Número da NF" type="text" name="invoice[invoice_numbers_attributes][NEW_RECORD][number]" id="invoice_invoice_numbers_attributes_NEW_RECORD_number">
-                <input type="hidden" name="invoice[invoice_numbers_attributes][NEW_RECORD][_destroy]" id="invoice_invoice_numbers_attributes_NEW_RECORD__destroy" value="false">
-                <button type="button" class="btn btn-sm btn-outline-danger" data-action="click->invoice-numbers#remove">Remover</button>
+              <div class="nested-fields mb-3" data-new-record="true">
+                <div class="row align-items-center">
+
+                  <div class="col-md-4">
+                    <label class="form-label">Número da NF</label>
+                    <input class="form-control"
+                          placeholder="Número da NF"
+                          type="text"
+                          name="invoice[invoice_numbers_attributes][NEW_RECORD][number]">
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Centro de Custo</label>
+                    <select name="invoice[invoice_numbers_attributes][NEW_RECORD][cost_center_id]"
+                            class="form-select">
+                      <option value="">Selecione o centro de custo</option>
+                      <% CostCenter.all.order(:name).each do |cc| %>
+                        <option value="<%= cc.id %>"><%= cc.name %></option>
+                      <% end %>
+                    </select>
+                  </div>
+
+                  <div class="col-md-2 d-flex align-items-end">
+                    <input type="hidden"
+                          name="invoice[invoice_numbers_attributes][NEW_RECORD][_destroy]"
+                          value="false">
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-action="click->invoice-numbers#remove">Remover</button>
+                  </div>
+
+                </div>
               </div>
             </template>
+
 
             <%= link_to "#", class: "btn btn-sm btn-outline-primary", data: { action: "click->invoice-numbers#add" } do %>
               <i class="bi bi-plus-circle"></i> Adicionar NF
@@ -97,16 +144,6 @@
                           :name,
                           { prompt: "Selecione o comprador" },
                           class: "form-select" %>
-            </div>
-
-            <div class="col-md-4 mb-3">
-              <%= f.label :cost_center_id, "Centro de Custo", class: "form-label fw-bold" %>
-              <%= f.collection_select :cost_center_id,
-                            CostCenter.all.order(:name),
-                            :id,
-                            :name,
-                            { prompt: "Selecione o centro de custo" },
-                            class: "form-select" %>
             </div>
           </div>
 

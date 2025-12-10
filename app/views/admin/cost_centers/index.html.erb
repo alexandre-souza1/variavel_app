@@ -18,13 +18,15 @@
           <% @cost_centers.each do |cost_center| %>
             <tr>
               <td><%= cost_center.name %></td>
-              <td><span class="badge bg-secondary"><%= cost_center.sector %></span></td>
+              <td><span class="badge bg-secondary"><%= cost_center.sector.upcase %></span></td>
               <td>
+              <div class="d-flex gap-2">
                 <%= link_to 'Editar', edit_admin_cost_center_path(cost_center), class: 'btn btn-sm btn-warning' %>
                 <%= button_to 'Excluir', admin_cost_center_path(cost_center),
                               method: :delete,
                               class: 'btn btn-sm btn-danger',
                               data: { confirm: 'Tem certeza?' } %>
+              </div>
               </td>
             </tr>
           <% end %>

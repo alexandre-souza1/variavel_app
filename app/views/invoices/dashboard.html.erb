@@ -252,9 +252,13 @@
               </span>
             </td>
             <td>
-              <span class="badge bg-secondary">
-                <%= invoice.cost_center.name.titleize %>
-              </span>
+              <% invoice.invoice_numbers.each do |num| %>
+                <% if num.cost_center.present? %>
+                  <span class="badge bg-secondary d-block mb-1">
+                    <%= num.cost_center.name.upcase %>
+                  </span>
+                <% end %>
+              <% end %>
             </td>
             <td class="fw-bold text-success">
               R$ <%= number_to_currency(invoice.total, unit: "", separator: ",", delimiter: ".") %>

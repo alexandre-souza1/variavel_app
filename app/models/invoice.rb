@@ -3,7 +3,6 @@ class Invoice < ApplicationRecord
   belongs_to :purchaser, class_name: 'User', foreign_key: 'purchaser_id'
   has_many_attached :documents, service: :temporary_db
   has_many :invoice_numbers, dependent: :destroy
-  belongs_to :cost_center
   belongs_to :budget_category
 
   before_validation :ensure_code_for_abastecimento, on: :create
@@ -13,7 +12,7 @@ class Invoice < ApplicationRecord
   after_commit :upload_documents_to_onedrive, on: :create
 
   validates :purchaser_id, presence: true
-  validates :date_issued, :due_date, :total, :supplier_id, :budget_category_id, :cost_center_id, presence: true
+  validates :date_issued, :due_date, :total, :supplier_id, :budget_category_id, presence: true
   validates :code, uniqueness: { allow_blank: true }
 
   # Validação customizada para o code
