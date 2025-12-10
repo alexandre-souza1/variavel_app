@@ -1,5 +1,5 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h1 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Consultas de NF's e Boletos</h1>
+  <h1 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Consultas de NFs e Boletos</h1>
   <div class="d-flex gap-2">
   </div>
 </div>
@@ -36,13 +36,13 @@
         <%= f.date_field :due_date, value: params[:due_date], class: "form-control" %>
       </div>
 
-<div class="col-md-3">
-  <%= f.label :total, "Valor", class: "form-label" %>
-  <div class="input-group">
-    <span class="input-group-text">R$</span>
-    <%= f.text_field :total, value: params[:total], type: "number", step: "0.01", placeholder: "0,00", class: "form-control" %>
-  </div>
-</div>
+      <div class="col-md-3">
+        <%= f.label :total, "Valor", class: "form-label" %>
+        <div class="input-group">
+          <span class="input-group-text">R$</span>
+          <%= f.text_field :total, value: params[:total], type: "number", step: "0.01", placeholder: "0,00", class: "form-control" %>
+        </div>
+      </div>
 
       <div class="col-md-3">
         <%= f.label :budget_category_id, "Categoria Orçamentária", class: "form-label" %>
@@ -106,18 +106,24 @@
               <td><%= invoice.supplier.name %> (<%= invoice.supplier.cnpj %>)</td>
               <td>
                 <% if invoice.invoice_numbers.any? %>
-                  <% invoice.invoice_numbers.each do |nf| %>
-                    <div class="mb-1">
-                      </span>
+                  <% displayed = invoice.invoice_numbers.first(2) %>
 
+                  <% displayed.each do |nf| %>
+                    <div class="mb-1">
                       <% if nf.cost_center.present? %>
-                          <%= nf.cost_center.name %>
-                        </span>
+                        <span class="badge bg-secondary"><%= nf.cost_center.name %></span>
                       <% else %>
                         <span class="text-muted">(sem CC)</span>
                       <% end %>
                     </div>
                   <% end %>
+
+                  <% if invoice.invoice_numbers.count > 2 %>
+                    <small class="text-muted">
+                      +<%= invoice.invoice_numbers.count - 2 %> outros
+                    </small>
+                  <% end %>
+
                 <% else %>
                   <span class="text-muted">—</span>
                 <% end %>
