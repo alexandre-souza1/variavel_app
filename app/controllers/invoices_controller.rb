@@ -90,6 +90,8 @@ class InvoicesController < ApplicationController
 
     invoices_scope = Invoice.joins(:invoice_numbers).distinct
 
+    invoice_ids = invoices_scope.pluck(:id).uniq
+
     # aplica filtro por cost center se houver
     if params[:cost_center_id].present?
       invoices_scope = invoices_scope.where(invoice_numbers: { cost_center_id: params[:cost_center_id] })
@@ -106,11 +108,16 @@ class InvoicesController < ApplicationController
     end
 
     # 🔹 Cards de resumo
-    @total_spent = invoices_scope.sum(:total)
-    @invoices_count = invoices_scope.count
-    @suppliers_count = invoices_scope.select(:supplier_id).distinct.count
-    @current_month_total = invoices_scope.where('date_issued >= ?', Date.today.beginning_of_month).sum(:total)
-    @current_month_count = invoices_scope.where('date_issued >= ?', Date.today.beginning_of_month).count
+    @total_spent = Invoice.where(id: invoice_ids).sum(:total)
+    @invoices_count = invoice_ids.count
+    @suppliers_count = Invoice.where(id: invoice_ids).select(:supplier_id).distinct.count
+    @current_month_total = Invoice.where(id: invoice_ids)
+      .where("date_issued >= ?", Date.today.beginning_of_month)
+      .sum(:total)
+
+    @current_month_count = Invoice.where(id: invoice_ids)
+      .where("date_issued >= ?", Date.today.beginning_of_month)
+      .count
 
     # 🔹 Gastos por categoria do período filtrado (CORRIGIDO)
     if @month && @year
@@ -127,7 +134,7 @@ class InvoicesController < ApplicationController
       @has_period_filter = false
     end
 
-  @current_month_categories = invoices_scope
+  @current_month_categories = Invoice.where(id: invoice_ids)
     .where(date_issued: start_date..end_date)
     .joins(:budget_category)
     .group('budget_categories.id', 'budget_categories.name', 'budget_categories.sector')
@@ -155,7 +162,9 @@ class InvoicesController < ApplicationController
     @period_total = invoices_scope.where(date_issued: start_date..end_date).sum(:total)
 
     # média dos últimos 6 meses no escopo filtrado
-    monthly_totals_hash = invoices_scope.group("DATE_TRUNC('month', date_issued)").sum(:total)
+    monthly_totals_hash = Invoice.where(id: invoice_ids)
+      .group("DATE_TRUNC('month', date_issued)")
+      .sum(:total)
     @monthly_average = monthly_totals_hash.values.last(6).sum / [monthly_totals_hash.values.last(6).size, 1].max
 
     # 🔹 Gráficos
