@@ -168,9 +168,19 @@ class InvoicesController < ApplicationController
     @monthly_average = monthly_totals_hash.values.last(6).sum / [monthly_totals_hash.values.last(6).size, 1].max
 
     # 🔹 Gráficos
-    @spent_per_category = invoices_scope.joins(:budget_category)
-                                        .group('budget_categories.name')
-                                        .sum(:total)
+    @spent_per_category = Invoice.where(id: invoice_ids)
+              .where(date_issued: start_date..end_date)
+              .joins(:budget_category)
+              .group('budget_categories.name')
+              .sum(:total)
+              .transform_values { |value| value.to_f.round(2) }
+
+
+    @count_per_cost_center = Invoice.where(id: invoice_ids)
+                                      .where(date_issued: start_date..end_date)
+                                      .joins(invoice_numbers: :cost_center)
+                                      .group('cost_centers.name')
+                                      .count(:total)
 
     @monthly_totals = invoices_scope.group("DATE_TRUNC('month', date_issued)").sum(:total)
 
