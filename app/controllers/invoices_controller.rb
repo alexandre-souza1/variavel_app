@@ -178,6 +178,8 @@ class InvoicesController < ApplicationController
 
     @count_per_cost_center = Invoice.where(id: invoice_ids)
                                       .where(date_issued: start_date..end_date)
+                                      .joins(:budget_category)
+                                      .where(budget_categories: { name: "Manutenção de Caminhão" })
                                       .joins(invoice_numbers: :cost_center)
                                       .group('cost_centers.name')
                                       .count(:total)
