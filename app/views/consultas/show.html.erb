@@ -131,8 +131,14 @@
             </div>
 
             <div class="col-auto">
-              <%= number_field_tag :periodo_ano, params[:periodo_ano] || Date.today.year,
-                  class: "form-control form-control-sm", readonly: true %>
+              <%= select_tag :periodo_ano,
+                  options_for_select((Date.today.year - 5..Date.today.year).to_a.reverse, params[:periodo_ano] || Date.today.year),
+                  class: "form-select form-select-sm",
+                  data: {
+                    autosubmit_target: "select",
+                    action: "change->autosubmit#submitOnChange"
+                  },
+                  required: true %>
             </div>
 
             <div class="col-auto">
