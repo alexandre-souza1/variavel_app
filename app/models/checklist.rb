@@ -20,6 +20,8 @@ class Checklist < ApplicationRecord
   validate :validate_origin_presence_if_required
   validate :validate_photos_presence_if_required
 
+  validate :validate_photos_are_images
+
   private
 
   def validate_plate_presence_if_required
@@ -73,6 +75,27 @@ class Checklist < ApplicationRecord
 
     if origin.blank?
       errors.add(:origin, "Deve ser preenchida")
+    end
+  end
+
+  def validate_photos_are_images
+    photo_attributes = [
+      :photo_front,
+      :photo_back,
+      :photo_left_truck,
+      :photo_left_trailer,
+      :photo_right_trailer,
+      :photo_right_truck
+    ]
+
+    photo_attributes.each do |photo_attr|
+      photo = send(photo_attr)
+
+      next unless photo.attached?
+
+      unless photo.image?
+        errors.add(photo_attr, "deve ser uma imagem (JPEG, PNG, etc)")
+      end
     end
   end
 

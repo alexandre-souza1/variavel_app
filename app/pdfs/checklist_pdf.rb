@@ -11,7 +11,7 @@ class ChecklistPdf < Prawn::Document
 
     header
     checklist_details
-    truck_photos_section # 🔹 nova seção com as 6 fotos
+    truck_photos_section
     checklist_items
     signature_section
   end
@@ -62,131 +62,125 @@ class ChecklistPdf < Prawn::Document
     move_down 10
   end
 
-def truck_photos_section
-  photos = {
-    "Frente" => @checklist.photo_front,
-    "Lado esquerdo (cavalo)" => @checklist.photo_left_truck,
-    "Lado esquerdo (implemento)" => @checklist.photo_left_trailer,
-    "Traseira" => @checklist.photo_back,
-    "Lado direito (implemento)" => @checklist.photo_right_trailer,
-    "Lado direito (cavalo)" => @checklist.photo_right_truck
-  }
+  # =========================
+  # FOTOS DO CAMINHÃO
+  # =========================
+  def truck_photos_section
+    photos = {
+      "Frente" => @checklist.photo_front,
+      "Lado esquerdo (cavalo)" => @checklist.photo_left_truck,
+      "Lado esquerdo (implemento)" => @checklist.photo_left_trailer,
+      "Traseira" => @checklist.photo_back,
+      "Lado direito (implemento)" => @checklist.photo_right_trailer,
+      "Lado direito (cavalo)" => @checklist.photo_right_truck
+    }
 
-  attached_photos = photos.select { |_label, photo| photo.attached? }
-  return if attached_photos.empty?
+    attached_photos = photos.select { |_label, photo| photo.attached? }
+    return if attached_photos.empty?
 
-  table(
-  [[{ content: "Fotos do Caminhão", align: :center, size: 14, font_style: :bold }]],
-  width: bounds.width,
-  cell_style: {
-    borders: [:top, :bottom, :left, :right],
-    border_width: 1,
-    border_color: '000000',
-    padding: [6, 0, 6, 0]
-  }
-)
-
-  attached_photos.each_slice(3) do |row_photos|
-    # Processa cada foto individualmente
-    row_data = row_photos.map do |label, photo|
-      process_truck_photo(label, photo)
-    end
-
-    # Preenche linha incompleta
-    while row_data.length < 3
-      row_data << [{ content: "" }, { content: "" }]
-    end
-
-    # Extrai imagens e labels
-    image_cells = row_data.map { |data| data[0] }
-    label_cells = row_data.map { |data| data[1] }
-
-    column_width = bounds.width / 3
-
-    table([image_cells, label_cells],
-          width: bounds.width,
-          cell_style: {
-            borders: [],
-            padding: [2, 5, 2, 5],
-            align: :center,
-            borders: [:top, :left, :right, :bottom]
-          }) do |table|
-      table.row(0).height = 120
-      table.row(1).height = 15
-      table.columns(0..2).width = column_width
-      table.row(0).valign = :center
-    end
-
-  end
-
-  move_down 20
-end
-
-private
-
-def process_truck_photo(label, photo)
-  begin
-    # 🔹 URL otimizada para o Cloudinary
-    cloudinary_url = photo.url(
-      transformation: [
-        {
-          width: 400,
-          height: 300,
-          crop: 'limit',
-          quality: 'auto:good'
-        }
-      ]
+    table(
+      [[{ content: "Fotos do Caminhão", align: :center, size: 14, font_style: :bold }]],
+      width: bounds.width,
+      cell_style: {
+        borders: [:top, :bottom, :left, :right],
+        border_width: 1,
+        border_color: "000000",
+        padding: [6, 0, 6, 0]
+      }
     )
 
-    file = URI.open(cloudinary_url)
+    attached_photos.each_slice(3) do |row_photos|
+      row_data = row_photos.map do |label, photo|
+        process_truck_photo(label, photo)
+      end
 
-    # 🔹 Usar dimensions mais conservadoras
-    image_cell = {
-      image: file,
-      fit: [200, 100],  # Box mais largo que alto
-      position: :center,
-      vposition: :center
-    }
+      while row_data.length < 3
+        row_data << [{ content: "" }, { content: "" }]
+      end
 
-    label_cell = { content: label, align: :center, size: 10 }
+      image_cells = row_data.map { |d| d[0] }
+      label_cells = row_data.map { |d| d[1] }
 
-    [image_cell, label_cell]
+      table([image_cells, label_cells],
+            width: bounds.width,
+            cell_style: { borders: [:top, :left, :right, :bottom], align: :center }) do |t|
+        t.row(0).height = 120
+        t.row(1).height = 15
+        t.columns(0..2).width = bounds.width / 3
+        t.row(0).valign = :center
+      end
+    end
 
-  rescue => e
-    puts "Erro ao processar foto #{label}: #{e.message}"
-
-    image_cell = {
-      content: "Erro ao\ncarregar foto",
-      align: :center,
-      valign: :center,
-      size: 8
-    }
-
-    label_cell = { content: label, align: :center, size: 10 }
-
-    [image_cell, label_cell]
+    move_down 20
   end
-end
 
+  def process_truck_photo(label, photo)
+    return unsupported_photo_cell(label) unless photo.image?
+
+    begin
+      url = photo.url(
+        transformation: [
+          { width: 400, height: 300, crop: "limit", quality: "auto:good" }
+        ]
+      )
+
+      file = URI.open(url)
+
+      image_cell = {
+        image: file,
+        fit: [200, 100],
+        position: :center,
+        vposition: :center
+      }
+
+      label_cell = { content: label, align: :center, size: 10 }
+
+      [image_cell, label_cell]
+    rescue
+      error_photo_cell(label)
+    end
+  end
+
+  def unsupported_photo_cell(label)
+    [
+      { content: "Formato não\nsuportado", align: :center, valign: :center, size: 8 },
+      { content: label, align: :center, size: 10 }
+    ]
+  end
+
+  def error_photo_cell(label)
+    [
+      { content: "Erro ao\ncarregar foto", align: :center, valign: :center, size: 8 },
+      { content: label, align: :center, size: 10 }
+    ]
+  end
+
+  # =========================
+  # ITENS DO CHECKLIST
+  # =========================
   def checklist_items
     data = [["Descrição", "Status", "Comentário", "Foto"]]
 
     @checklist.checklist_responses.each do |resp|
-      item = resp.checklist_item
-      text_cell = item&.description || "Sem descrição"
+      text_cell = resp.checklist_item&.description || "Sem descrição"
       status_cell = resp.status&.upcase || "N/A"
       comment_cell = resp.comment.presence || "-"
 
-      if resp.photo.attached?
-        begin
-          file = URI.open(resp.photo.url)
-          photo_cell = { image: file, fit: [80, 80], position: :center }
-        rescue
-          photo_cell = "Erro ao carregar foto"
+      photo_cell =
+        if resp.photo.attached?
+          if resp.photo.image?
+            begin
+              file = URI.open(resp.photo.url)
+              { image: file, fit: [80, 80], position: :center }
+            rescue
+              "Erro ao carregar imagem"
+            end
+          else
+            "Formato não suportado"
+          end
+        else
+          ""
         end
-      else
-        photo_cell = ""
-      end
 
       data << [text_cell, status_cell, comment_cell, photo_cell]
     end
@@ -205,14 +199,14 @@ end
   def signature_section
     move_down 60
 
-    data = [
-      [
+    table(
+      [[
         { content: "______________________________\nResponsável pela assinatura", align: :center },
         { content: "______________________________\nData", align: :center }
-      ]
-    ]
-
-    table(data, cell_style: { borders: [], padding: [10, 10], size: 10 },
-          column_widths: [250, 250], position: :center)
+      ]],
+      cell_style: { borders: [], padding: [10, 10], size: 10 },
+      column_widths: [250, 250],
+      position: :center
+    )
   end
 end
