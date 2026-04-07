@@ -1,0 +1,21 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Planos de Ação</h2>
+    <%= link_to "Novo Plano", new_action_plan_path, class: "btn btn-primary" %>
+  </div>
+
+  <div class="row">
+    <% @action_plans.each do |plan| %>
+      <div class="col-md-4">
+        <div class="card mb-3 shadow-sm">
+          <div class="card-body">
+            <h5><%= plan.name %></h5>
+            <p><%= plan.description %></p>
+
+            <%= link_to "Abrir", action_plan_path(plan), class: "btn btn-outline-primary btn-sm" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -10,10 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_10_171402) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_07_182109) do
+  create_schema "_heroku"
+
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
+
+  create_table "action_plans", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_action_plans_on_user_id"
+  end
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -86,6 +97,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_10_171402) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "buckets", force: :cascade do |t|
+    t.string "name"
+    t.integer "position"
+    t.bigint "action_plan_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["action_plan_id"], name: "index_buckets_on_action_plan_id"
+  end
+
   create_table "budget_categories", force: :cascade do |t|
     t.string "name"
     t.string "sector"
@@ -143,6 +163,16 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_10_171402) do
     t.index ["checklist_template_id"], name: "index_checklists_on_checklist_template_id"
     t.index ["plate_id"], name: "index_checklists_on_plate_id"
     t.index ["user_id"], name: "index_checklists_on_user_id"
+  end
+
+  create_table "comments", force: :cascade do |t|
+    t.text "content"
+    t.bigint "task_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["task_id"], name: "index_comments_on_task_id"
+    t.index ["user_id"], name: "index_comments_on_user_id"
   end
 
   create_table "cost_centers", force: :cascade do |t|
@@ -219,6 +249,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_10_171402) do
     t.index ["code"], name: "index_invoices_on_code", unique: true
     t.index ["purchaser_id"], name: "index_invoices_on_purchaser_id"
     t.index ["supplier_id"], name: "index_invoices_on_supplier_id"
+  end
+
+  create_table "labels", force: :cascade do |t|
+    t.string "name"
+    t.string "color"
+    t.bigint "action_plan_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["action_plan_id"], name: "index_labels_on_action_plan_id"
   end
 
   create_table "mapas", force: :cascade do |t|
@@ -302,6 +341,49 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_10_171402) do
     t.string "zip_code"
   end
 
+  create_table "task_labels", force: :cascade do |t|
+    t.bigint "task_id", null: false
+    t.bigint "label_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["label_id"], name: "index_task_labels_on_label_id"
+    t.index ["task_id"], name: "index_task_labels_on_task_id"
+  end
+
+  create_table "tasklist_items", force: :cascade do |t|
+    t.string "content"
+    t.boolean "completed"
+    t.bigint "tasklist_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tasklist_id"], name: "index_tasklist_items_on_tasklist_id"
+  end
+
+  create_table "tasklists", force: :cascade do |t|
+    t.string "title"
+    t.bigint "task_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["task_id"], name: "index_tasklists_on_task_id"
+  end
+
+  create_table "tasks", force: :cascade do |t|
+    t.string "title"
+    t.text "description"
+    t.datetime "start_at"
+    t.datetime "due_at"
+    t.datetime "completed_at"
+    t.integer "position"
+    t.bigint "bucket_id", null: false
+    t.bigint "creator_id", null: false
+    t.bigint "assignee_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
+    t.index ["bucket_id"], name: "index_tasks_on_bucket_id"
+    t.index ["creator_id"], name: "index_tasks_on_creator_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -343,21 +425,33 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_10_171402) do
     t.index ["task_code"], name: "index_wms_tasks_on_task_code"
   end
 
+  add_foreign_key "action_plans", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "buckets", "action_plans"
   add_foreign_key "checklist_items", "checklist_templates"
   add_foreign_key "checklist_responses", "checklist_items"
   add_foreign_key "checklist_responses", "checklists"
   add_foreign_key "checklists", "checklist_templates"
   add_foreign_key "checklists", "plates"
   add_foreign_key "checklists", "users"
+  add_foreign_key "comments", "tasks"
+  add_foreign_key "comments", "users"
   add_foreign_key "invoice_numbers", "cost_centers"
   add_foreign_key "invoice_numbers", "invoices"
   add_foreign_key "invoices", "budget_categories"
   add_foreign_key "invoices", "suppliers"
   add_foreign_key "invoices", "users", column: "purchaser_id"
+  add_foreign_key "labels", "action_plans"
   add_foreign_key "remuneration_category_values", "budget_categories"
   add_foreign_key "remuneration_category_values", "vehicle_remunerations"
+  add_foreign_key "task_labels", "labels"
+  add_foreign_key "task_labels", "tasks"
+  add_foreign_key "tasklist_items", "tasklists"
+  add_foreign_key "tasklists", "tasks"
+  add_foreign_key "tasks", "buckets"
+  add_foreign_key "tasks", "users", column: "assignee_id"
+  add_foreign_key "tasks", "users", column: "creator_id"
   add_foreign_key "vehicle_remunerations", "remuneration_periods"
   add_foreign_key "wms_tasks", "operators"
 end

@@ -20,6 +20,7 @@
   </head>
 
   <body>
+  <script nonce="<%= request.content_security_policy_nonce %>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <%= render "shared/navbar" %>
   <% if request.path.start_with?('/admin/budget_categories') ||
       request.path.start_with?('/admin/cost_centers') ||
@@ -39,6 +40,7 @@
       data-controller="reconnect"
       data-reconnect-user-id-value="<%= current_user&.id %>">
   </div>
+  <div id="modal-container"></div>
   <%= render 'shared/footer' %>
   </body>
 </html>

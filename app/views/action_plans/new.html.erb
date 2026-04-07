@@ -1,0 +1,15 @@
+<h2>Novo Plano</h2>
+
+<%= form_with model: @action_plan do |f| %>
+  <div class="mb-3">
+    <%= f.label :name %>
+    <%= f.text_field :name, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :description %>
+    <%= f.text_area :description, class: "form-control" %>
+  </div>
+
+  <%= f.submit "Criar", class: "btn btn-primary" %>
+<% end %>

@@ -1,0 +1,61 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3><%= @action_plan.name %></h3>
+  </div>
+
+<div class="mb-3">
+  <%= form_with model: [@action_plan, Bucket.new], local: true do |f| %>
+    <div class="input-group">
+      <%= f.text_field :name, placeholder: "Novo bucket...", class: "form-control" %>
+      <button class="btn btn-primary">Criar</button>
+    </div>
+  <% end %>
+</div>
+
+  <div class="row flex-nowrap overflow-auto">
+
+    <% @buckets.each do |bucket| %>
+      <div class="col-3">
+        <div class="card bg-light mb-3">
+
+          <div class="card-header">
+            <strong><%= bucket.name %></strong>
+          </div>
+
+          <div
+            class="card-body"
+            data-controller="sortable"
+            data-sortable-bucket-id-value="<%= bucket.id %>"
+            style="min-height: 300px;"
+          >
+            <% bucket.tasks.order(:position).each do |task| %>
+              <div
+                class="card mb-2 p-2 shadow-sm"
+                data-id="<%= task.id %>"
+                data-controller="task-modal"
+                data-action="click->task-modal#open"
+                data-task-id="<%= task.id %>"
+                data-plan-id="<%= @action_plan.id %>"
+                style="cursor: pointer;"
+              >
+                <strong><%= task.title %></strong>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="card-footer">
+            <%= form_with model: [@action_plan, bucket, Task.new], local: true do |f| %>
+              <div class="input-group">
+                <%= f.text_field :title, placeholder: "Nova tarefa...", class: "form-control" %>
+                <button class="btn btn-primary">+</button>
+              </div>
+            <% end %>
+          </div>
+
+        </div>
+      </div>
+    <% end %>
+
+
+  </div>
+</div>

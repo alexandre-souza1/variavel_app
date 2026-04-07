@@ -55,6 +55,16 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :action_plans do
+    resources :buckets, only: [:create, :update, :destroy] do
+      resources :tasks, only: [:create]
+    end
+
+    resources :tasks, only: [:update, :show]
+  end
+
+  patch "tasks/:id/move", to: "tasks#move"
+
   resources :common do
     collection do
       get :home

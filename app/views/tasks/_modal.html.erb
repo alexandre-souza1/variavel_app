@@ -1,0 +1,32 @@
+<div class="modal fade" id="taskModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Editar Tarefa</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <%= form_with model: [task.bucket.action_plan, task], local: true do |f| %>
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <%= f.label :title %>
+            <%= f.text_field :title, class: "form-control" %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :description %>
+            <%= f.text_area :description, class: "form-control" %>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <%= f.submit "Salvar", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+
+    </div>
+  </div>
+</div>

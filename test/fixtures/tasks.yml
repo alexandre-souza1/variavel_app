@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: MyString
+  description: MyText
+  start_at: 2026-04-07 15:15:36
+  due_at: 2026-04-07 15:15:36
+  completed_at: 2026-04-07 15:15:36
+  position: 1
+  bucket: one
+  creator: one
+  assignee: one
+
+two:
+  title: MyString
+  description: MyText
+  start_at: 2026-04-07 15:15:36
+  due_at: 2026-04-07 15:15:36
+  completed_at: 2026-04-07 15:15:36
+  position: 1
+  bucket: two
+  creator: two
+  assignee: two
