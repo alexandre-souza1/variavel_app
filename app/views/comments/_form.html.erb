@@ -1,0 +1,17 @@
+<%= form_with model: [task.bucket.action_plan, task, comment],
+              html: {
+                id: "new_comment_form_#{task.id}",
+                data: {
+                  controller: "comment-form",
+                  action: "turbo:submit-end->comment-form#reset"
+                }
+              } do |f| %>
+
+  <%= f.text_area :content,
+        class: "form-control mb-2",
+        rows: 2,
+        placeholder: "Escreva um comentário..." %>
+
+  <%= f.submit "Comentar", class: "btn btn-sm btn-primary w-100" %>
+
+<% end %>

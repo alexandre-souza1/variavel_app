@@ -60,7 +60,9 @@ Rails.application.routes.draw do
       resources :tasks, only: [:create]
     end
 
-    resources :tasks, only: [:update, :show]
+    resources :tasks, only: [:update, :show] do
+      resources :comments, only: [:create]
+    end
   end
 
   patch "tasks/:id/move", to: "tasks#move"

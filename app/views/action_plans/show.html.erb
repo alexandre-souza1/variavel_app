@@ -18,8 +18,36 @@
       <div class="col-3">
         <div class="card bg-light mb-3">
 
-          <div class="card-header">
-            <strong><%= bucket.name %></strong>
+          <div class="card-header d-flex justify-content-between align-items-center">
+
+            <div data-controller="bucket-edit" data-bucket-id="<%= bucket.id %>" class="flex-grow-1">
+
+              <!-- Título -->
+              <span data-bucket-edit-target="title"
+                    data-action="click->bucket-edit#edit"
+                    style="cursor: pointer;">
+                <%= bucket.name %>
+              </span>
+
+              <!-- Input oculto -->
+              <input type="text"
+                    value="<%= bucket.name %>"
+                    data-bucket-edit-target="input"
+                    data-action="blur->bucket-edit#save keydown->bucket-edit#enter"
+                    class="form-control form-control-sm d-none"
+                    autocomplete="off">
+
+            </div>
+
+            <%= link_to "❌",
+              action_plan_bucket_path(@action_plan, bucket),
+              data: {
+                turbo_method: :delete,
+                turbo_confirm: "Tem certeza?"
+              },
+              class: "btn btn-sm"
+            %>
+
           </div>
 
           <div

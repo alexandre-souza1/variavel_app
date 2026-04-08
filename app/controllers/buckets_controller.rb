@@ -12,6 +12,25 @@ class BucketsController < ApplicationController
     end
   end
 
+  def update
+    @bucket = Bucket.find(params[:id])
+
+    if @bucket.update(bucket_params)
+      head :ok
+    else
+      head :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @bucket = Bucket.find(params[:id])
+    action_plan = @bucket.action_plan
+
+    @bucket.destroy
+
+    redirect_to action_plan_path(action_plan)
+  end
+
 private
 
   def bucket_params

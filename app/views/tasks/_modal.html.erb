@@ -7,25 +7,120 @@
         <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
-      <%= form_with model: [task.bucket.action_plan, task], local: true do |f| %>
-        <div class="modal-body">
+      <div class="modal-body">
+        <div class="row">
 
-          <div class="mb-3">
-            <%= f.label :title %>
-            <%= f.text_field :title, class: "form-control" %>
-          </div>
+          <!-- COLUNA ESQUERDA -->
+          <div class="col-md-7">
 
-          <div class="mb-3">
-            <%= f.label :description %>
-            <%= f.text_area :description, class: "form-control" %>
+            <%= form_with model: [task.bucket.action_plan, task], local: true do |f| %>
+
+              <!-- TÍTULO -->
+              <div class="mb-3">
+                <%= f.text_field :title, class: "form-control form-control-lg", placeholder: "Título da tarefa" %>
+              </div>
+
+              <!-- DESCRIÇÃO -->
+              <div class="mb-3">
+                <%= f.text_area :description, class: "form-control", rows: 3, placeholder: "Descrição..." %>
+              </div>
+
+              <!-- LABELS -->
+              <div class="mb-3">
+                <label>Labels</label>
+
+                <div class="d-flex flex-wrap gap-2">
+                  <% Label.all.each do |label| %>
+                    <div class="form-check">
+                      <%= check_box_tag "task[label_ids][]", label.id, task.labels.include?(label), id: "label_#{label.id}" %>
+                      <%= label_tag "label_#{label.id}", label.name, class: "badge", style: "background: #{label.color}" %>
+                    </div>
+                  <% end %>
+                </div>
+
+                <!-- CRIAR NOVA LABEL -->
+                <div class="mt-2">
+                  <small>Nova label:</small>
+
+                  <div class="input-group">
+                    <input type="text" id="new_label_name" class="form-control form-control-sm" placeholder="Nome" autocomplete="off">
+                    <input type="color" id="new_label_color" class="form-control form-control-sm form-control-color" autocomplete="off">
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-action="click->label#create">
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CHECKLIST -->
+              <div class="mb-3">
+                <h6>Checklist</h6>
+
+                <% task.tasklists.each do |list| %>
+                  <div class="border p-2 mb-2">
+                    <strong><%= list.title %></strong>
+
+                    <% list.tasklist_items.each do |item| %>
+                      <div class="form-check">
+                        <% if item.completed %>
+                          <input type="checkbox" class="form-check-input" checked>
+                        <% else %>
+                          <input type="checkbox" class="form-check-input">
+                        <% end %>
+                        <label class="form-check-label"><%= item.content %></label>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+
+              <!-- DATAS -->
+              <div class="row">
+                <div class="col">
+                  <%= f.label :start_at %>
+                  <%= f.datetime_local_field :start_at, class: "form-control" %>
+                </div>
+
+                <div class="col">
+                  <%= f.label :due_at %>
+                  <%= f.datetime_local_field :due_at, class: "form-control" %>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <%= f.submit "Salvar", class: "btn btn-primary" %>
+              </div>
+          <% end %>
+        </div>
+
+          <!-- COLUNA DIREITA (COMENTÁRIOS) -->
+          <div class="col-md-5 border-start">
+
+            <h6>Comentários</h6>
+
+            <%= turbo_stream_from "comments_task_#{task.id}" %>
+
+            <!-- LISTA DE COMENTÁRIOS -->
+            <div id="comments_task_<%= task.id %>"
+              data-controller="comment-list"
+              class="comments-box"
+              style="max-height: 400px; overflow-y: auto;">
+              <% task.comments.each do |comment| %>
+                <%= render "comments/comment", comment: comment %>
+              <% end %>
+            </div>
+
+            <hr>
+
+            <!-- FORMULÁRIO -->
+            <div id="new_comment_form_<%= task.id %>">
+              <%= render "comments/form", task: task, comment: Comment.new %>
+            </div>
+
           </div>
 
         </div>
-
-        <div class="modal-footer">
-          <%= f.submit "Salvar", class: "btn btn-primary" %>
-        </div>
-      <% end %>
+      </div>
 
     </div>
   </div>

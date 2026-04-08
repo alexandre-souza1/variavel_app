@@ -1,0 +1,20 @@
+<div class="comment-item d-flex gap-2 mb-3">
+  <!-- Avatar -->
+  <div class="comment-avatar">
+    <%= comment.user.name.first.upcase %>
+  </div>
+
+  <!-- Conteúdo -->
+  <div class="comment-body">
+    <div class="comment-header">
+      <strong><%= comment.user.name.split.first %></strong>
+      <span class="comment-time">
+        <%= comment.created_at.strftime("%d/%m %H:%M") %>
+      </span>
+    </div>
+
+    <div class="comment-content">
+      <%= comment.content %>
+    </div>
+  </div>
+</div>
