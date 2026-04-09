@@ -3,87 +3,26 @@
     <h3><%= @action_plan.name %></h3>
   </div>
 
-<div class="mb-3">
+  <div class="mb-3">
+    <%= link_to "Kanban", action_plan_path(@action_plan, view: "kanban"),
+        class: "btn btn-outline-primary #{params[:view] != 'list' ? 'active' : ''}" %>
+
+    <%= link_to "Lista", action_plan_path(@action_plan, view: "list"),
+        class: "btn btn-outline-primary #{params[:view] == 'list' ? 'active' : ''}" %>
+  </div>
+
+  <div class="mb-3">
   <%= form_with model: [@action_plan, Bucket.new], local: true do |f| %>
-    <div class="input-group">
+      <div class="input-group">
       <%= f.text_field :name, placeholder: "Novo bucket...", class: "form-control" %>
       <button class="btn btn-primary">Criar</button>
-    </div>
-  <% end %>
-</div>
-
-  <div class="row flex-nowrap overflow-auto">
-
-    <% @buckets.each do |bucket| %>
-      <div class="col-3">
-        <div class="card bg-light mb-3">
-
-          <div class="card-header d-flex justify-content-between align-items-center">
-
-            <div data-controller="bucket-edit" data-bucket-id="<%= bucket.id %>" class="flex-grow-1">
-
-              <!-- Título -->
-              <span data-bucket-edit-target="title"
-                    data-action="click->bucket-edit#edit"
-                    style="cursor: pointer;">
-                <%= bucket.name %>
-              </span>
-
-              <!-- Input oculto -->
-              <input type="text"
-                    value="<%= bucket.name %>"
-                    data-bucket-edit-target="input"
-                    data-action="blur->bucket-edit#save keydown->bucket-edit#enter"
-                    class="form-control form-control-sm d-none"
-                    autocomplete="off">
-
-            </div>
-
-            <%= link_to "❌",
-              action_plan_bucket_path(@action_plan, bucket),
-              data: {
-                turbo_method: :delete,
-                turbo_confirm: "Tem certeza?"
-              },
-              class: "btn btn-sm"
-            %>
-
-          </div>
-
-          <div
-            class="card-body"
-            data-controller="sortable"
-            data-sortable-bucket-id-value="<%= bucket.id %>"
-            style="min-height: 300px;"
-          >
-            <% bucket.tasks.order(:position).each do |task| %>
-              <div
-                class="card mb-2 p-2 shadow-sm"
-                data-id="<%= task.id %>"
-                data-controller="task-modal"
-                data-action="click->task-modal#open"
-                data-task-id="<%= task.id %>"
-                data-plan-id="<%= @action_plan.id %>"
-                style="cursor: pointer;"
-              >
-                <strong><%= task.title %></strong>
-              </div>
-            <% end %>
-          </div>
-
-          <div class="card-footer">
-            <%= form_with model: [@action_plan, bucket, Task.new], local: true do |f| %>
-              <div class="input-group">
-                <%= f.text_field :title, placeholder: "Nova tarefa...", class: "form-control" %>
-                <button class="btn btn-primary">+</button>
-              </div>
-            <% end %>
-          </div>
-
-        </div>
       </div>
-    <% end %>
-
-
+  <% end %>
   </div>
+
+  <% if params[:view] == "list" %>
+    <%= render "list_view", buckets: @buckets, action_plan: @action_plan %>
+  <% else %>
+    <%= render "kanban_view", buckets: @buckets, action_plan: @action_plan %>
+  <% end %>
 </div>

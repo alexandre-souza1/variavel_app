@@ -1,0 +1,38 @@
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th>Tarefa</th>
+      <th>Descrição</th>
+      <th>Bucket</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% buckets.each do |bucket| %>
+      <% bucket.tasks.each do |task| %>
+        <tr
+          data-controller="task-modal"
+          data-action="click->task-modal#open"
+          data-task-id="<%= task.id %>"
+          data-plan-id="<%= action_plan.id %>"
+          style="cursor: pointer;"
+        >
+          <td><strong><%= task.title %></strong></td>
+          <td><%= task.description %></td>
+          <td><span class="badge bg-secondary"><%= bucket.name %></span></td>
+          <td>
+            <button
+            class="btn btn-sm btn-outline-primary"
+            data-controller="task-modal"
+            data-action="click->task-modal#open"
+            data-task-id="<%= task.id %>"
+            data-plan-id="<%= action_plan.id %>"
+            >
+            Editar
+            </button>
+          </td>
+        </tr>
+      <% end %>
+    <% end %>
+  </tbody>
+</table>
