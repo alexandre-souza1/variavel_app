@@ -44,54 +44,70 @@
         style="min-height: 300px;"
         >
         <% bucket.tasks.order(:position).each do |task| %>
-<div
-  class="task-card mb-2 p-2 shadow-sm"
-  data-id="<%= task.id %>"
-  data-controller="task-modal"
-  data-action="click->task-modal#open"
-  data-task-id="<%= task.id %>"
-  data-plan-id="<%= action_plan.id %>"
->
+          <div
+            class="task-card mb-2 p-2 shadow-sm"
+            data-id="<%= task.id %>"
+            data-controller="task-modal"
+            data-action="click->task-modal#open"
+            data-task-id="<%= task.id %>"
+            data-plan-id="<%= action_plan.id %>"
+          >
 
-  <!-- Labels -->
-  <div class="task-labels mb-1">
-    <span class="badge bg-success">Alta</span>
-    <!-- depois você pode dinamizar -->
-  </div>
+            <!-- Labels -->
+            <div class="task-labels mb-1">
+              <span class="badge bg-success">Alta</span>
+              <!-- depois você pode dinamizar -->
+            </div>
 
-  <!-- Título -->
-  <div class="task-title">
-    <%= task.title %>
-  </div>
+            <!-- Título -->
+            <div class="task-title">
+              <%= task.title %>
+            </div>
 
-  <!-- Descrição -->
-  <% if task.description.present? %>
-    <div class="task-desc">
-      <%= truncate(task.description, length: 80) %>
-    </div>
-  <% end %>
+            <!-- Descrição -->
+            <% if task.description.present? %>
+              <div class="task-desc">
+                <%= truncate(task.description, length: 80) %>
+              </div>
+            <% end %>
 
-  <!-- Footer -->
-  <div class="task-footer mt-2 d-flex justify-content-between align-items-center">
+            <!-- Footer -->
+            <div class="task-footer d-flex justify-content-between align-items-center mt-2">
 
-    <div class="task-meta">
-      <small>📅 <%= task.due_at %></small>
-    </div>
+              <!-- ESQUERDA -->
+              <div class="task-meta">
+                <% if task.due_at.present? %>
+                  <small class="task-date">
+                    📅 <%= task.due_at.strftime("%d/%m") %>
+                  </small>
+                <% end %>
+              </div>
 
-    <div class="task-icons d-flex gap-2">
-      <% if task.comments.any? %>
-        <small>💬 <%= task.comments.count %></small>
-      <% end %>
-      <% if task.assignee.present? %>
-        <div class="avatar-circle">
-          <%= task.assignee.name.first.upcase %>
-        </div>
-      <% end %>
-    </div>
+              <!-- DIREITA -->
+              <div class="task-icons d-flex align-items-center gap-2">
 
-  </div>
+                <% if task.comments.any? %>
+                  <small class="task-icon">💬</small>
+                <% end %>
 
-</div>
+                <div class="avatar-group">
+                  <% task.users.limit(3).each do |user| %>
+                    <div class="avatar-circle-sm">
+                      <%= user.name.first.upcase %>
+                    </div>
+                  <% end %>
+
+                  <% if task.users.count > 3 %>
+                    <div class="avatar-circle-sm extra">
+                      +<%= task.users.count - 3 %>
+                    </div>
+                  <% end %>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
         <% end %>
         </div>
 

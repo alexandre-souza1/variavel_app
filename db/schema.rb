@@ -10,9 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_07_182109) do
-  create_schema "_heroku"
-
+ActiveRecord::Schema[7.1].define(version: 2026_04_10_172611) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -341,6 +339,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_07_182109) do
     t.string "zip_code"
   end
 
+  create_table "task_assignments", force: :cascade do |t|
+    t.bigint "task_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["task_id", "user_id"], name: "index_task_assignments_on_task_id_and_user_id", unique: true
+    t.index ["task_id"], name: "index_task_assignments_on_task_id"
+    t.index ["user_id"], name: "index_task_assignments_on_user_id"
+  end
+
   create_table "task_labels", force: :cascade do |t|
     t.bigint "task_id", null: false
     t.bigint "label_id", null: false
@@ -379,6 +387,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_07_182109) do
     t.bigint "assignee_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "status", default: 0, null: false
     t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
     t.index ["bucket_id"], name: "index_tasks_on_bucket_id"
     t.index ["creator_id"], name: "index_tasks_on_creator_id"
@@ -445,6 +454,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_07_182109) do
   add_foreign_key "labels", "action_plans"
   add_foreign_key "remuneration_category_values", "budget_categories"
   add_foreign_key "remuneration_category_values", "vehicle_remunerations"
+  add_foreign_key "task_assignments", "tasks"
+  add_foreign_key "task_assignments", "users"
   add_foreign_key "task_labels", "labels"
   add_foreign_key "task_labels", "tasks"
   add_foreign_key "tasklist_items", "tasklists"

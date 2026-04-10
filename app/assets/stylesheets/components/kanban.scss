@@ -23,12 +23,23 @@
   margin-top: 2px;
 }
 
-.task-footer {
-  font-size: 11px;
-  color: #6c757d;
-}
-
 .task-labels .badge {
   font-size: 10px;
   padding: 3px 6px;
+}
+
+
+.task-footer {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.task-date {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.task-icon {
+  font-size: 13px;
+  opacity: 0.7;
 }

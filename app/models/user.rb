@@ -9,6 +9,8 @@ class User < ApplicationRecord
   has_many :checklists
   has_many :invoices, foreign_key: 'purchaser_id', dependent: :nullify
   has_many :action_plans, dependent: :destroy
+  has_many :task_assignments
+  has_many :tasks, through: :task_assignments
 
   scope :active, -> { where.not(confirmed_at: nil) }
 

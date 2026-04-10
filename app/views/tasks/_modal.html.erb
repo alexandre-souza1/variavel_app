@@ -87,6 +87,16 @@
                 </div>
               </div>
 
+              <div class="mb-3">
+                <label>Responsáveis</label>
+
+                <%= select_tag "task[user_ids][]",
+                  options_from_collection_for_select(User.all, :id, :name, task.users.pluck(:id)),
+                  multiple: true,
+                  class: "form-control",
+                  data: { controller: "tom-select-users" } %>
+              </div>
+
               <div class="mt-3">
                 <%= f.submit "Salvar", class: "btn btn-primary" %>
               </div>

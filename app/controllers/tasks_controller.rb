@@ -48,7 +48,9 @@ class TasksController < ApplicationController
       :start_at,
       :due_at,
       :comment,
-      :assignee_id
+      :assignee_id,
+      label_ids: [],
+      user_ids: [],
     )
   end
 end
