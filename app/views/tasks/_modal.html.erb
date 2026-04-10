@@ -26,26 +26,53 @@
               </div>
 
               <!-- LABELS -->
-              <div class="mb-3">
+              <div
+                class="mb-3"
+                data-controller="label"
+                data-label-action-plan-id-value="<%= task.bucket.action_plan.id %>">
+
                 <label>Labels</label>
 
-                <div class="d-flex flex-wrap gap-2">
-                  <% Label.all.each do |label| %>
-                    <div class="form-check">
-                      <%= check_box_tag "task[label_ids][]", label.id, task.labels.include?(label), id: "label_#{label.id}" %>
-                      <%= label_tag "label_#{label.id}", label.name, class: "badge", style: "background: #{label.color}" %>
-                    </div>
-                  <% end %>
-                </div>
+                <input type="hidden" name="task[label_ids][]" value="">
 
-                <!-- CRIAR NOVA LABEL -->
+                <select name="task[label_ids][]" multiple class="form-control" data-controller="tom-select">
+                  <% task.bucket.action_plan.labels.each do |label| %>
+                    <% if task.labels.include?(label) %>
+                      <option
+                        value="<%= label.id %>"
+                        data-color="<%= label.color %>"
+                        selected>
+                        <%= label.name %>
+                      </option>
+                    <% else %>
+                      <option
+                        value="<%= label.id %>"
+                        data-color="<%= label.color %>">
+                        <%= label.name %>
+                      </option>
+                    <% end %>
+                  <% end %>
+                </select>
+
+                <!-- CRIAR LABEL -->
                 <div class="mt-2">
                   <small>Nova label:</small>
 
                   <div class="input-group">
-                    <input type="text" id="new_label_name" class="form-control form-control-sm" placeholder="Nome" autocomplete="off">
-                    <input type="color" id="new_label_color" class="form-control form-control-sm form-control-color" autocomplete="off">
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-action="click->label#create">
+                    <input type="text"
+                          class="form-control form-control-sm"
+                          placeholder="Nome"
+                          autocomplete="off"
+                          data-label-target="name">
+
+                    <input type="color"
+                          class="form-control form-control-sm form-control-color"
+                          autocomplete="off"
+                          data-label-target="color">
+
+                    <button type="button"
+                            class="btn btn-sm btn-outline-primary"
+                            data-action="click->label#create">
                       +
                     </button>
                   </div>

@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get 'labels/create'
   get 'fuel_consumptions/index'
   get 'fuel_consumptions/new'
   get 'fuel_consumptions/create'
@@ -64,6 +65,8 @@ Rails.application.routes.draw do
       resources :comments, only: [:create]
     end
   end
+
+  resources :labels, only: [:create]
 
   patch "tasks/:id/move", to: "tasks#move"
 

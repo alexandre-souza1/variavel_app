@@ -51,6 +51,8 @@ class TasksController < ApplicationController
       :assignee_id,
       label_ids: [],
       user_ids: [],
-    )
+    ).tap do |whitelisted|
+      whitelisted[:label_ids] = whitelisted[:label_ids].reject(&:blank?)
+    end
   end
 end
