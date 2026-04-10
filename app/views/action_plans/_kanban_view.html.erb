@@ -40,6 +40,7 @@
         class="card-body"
         data-controller="sortable"
         data-sortable-bucket-id-value="<%= bucket.id %>"
+        data-bucket-id="<%= bucket.id %>"
         style="min-height: 300px;"
         >
         <% bucket.tasks.order(:position).each do |task| %>

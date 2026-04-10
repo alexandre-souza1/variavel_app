@@ -14,7 +14,7 @@ export default class extends Controller {
 
   async onEnd(event) {
     const taskId = event.item.dataset.id
-    const newBucketId = this.bucketIdValue
+    const newBucketId = event.to.dataset.bucketId
     const newPosition = event.newIndex
 
     await fetch(`/tasks/${taskId}/move`, {
