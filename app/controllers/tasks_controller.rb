@@ -52,7 +52,8 @@ class TasksController < ApplicationController
       label_ids: [],
       user_ids: [],
     ).tap do |whitelisted|
-      whitelisted[:label_ids] = whitelisted[:label_ids].reject(&:blank?)
+      whitelisted[:label_ids] = whitelisted[:label_ids]&.reject(&:blank?) || []
+      whitelisted[:user_ids]  = whitelisted[:user_ids]&.reject(&:blank?) || []
     end
   end
 end
