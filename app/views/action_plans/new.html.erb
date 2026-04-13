@@ -1,15 +1,40 @@
-<h2>Novo Plano</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0">
+    <i class="fas fa-plus me-2"></i> Novo Plano de Ação
+  </h2>
 
-<%= form_with model: @action_plan do |f| %>
-  <div class="mb-3">
-    <%= f.label :name %>
-    <%= f.text_field :name, class: "form-control" %>
+  <%= link_to action_plans_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left me-1"></i> Voltar
+  <% end %>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <%= form_with model: @action_plan do |f| %>
+
+      <!-- Nome -->
+      <div class="mb-3">
+        <%= f.label :name, "Nome do Plano", class: "form-label fw-semibold" %>
+        <%= f.text_field :name,
+              class: "form-control",
+              placeholder: "Ex: Plano de melhoria logística" %>
+      </div>
+
+      <!-- Descrição -->
+      <div class="mb-3">
+        <%= f.label :description, "Descrição", class: "form-label fw-semibold" %>
+        <%= f.text_area :description,
+              class: "form-control",
+              rows: 4,
+              placeholder: "Descreva os objetivos e ações..." %>
+      </div>
+
+      <!-- Ações -->
+      <div class="d-flex justify-content-end gap-2">
+        <%= link_to "Cancelar", action_plans_path, class: "btn btn-outline-secondary" %>
+        <%= f.submit "Criar plano", class: "btn btn-primary" %>
+      </div>
+
+    <% end %>
   </div>
-
-  <div class="mb-3">
-    <%= f.label :description %>
-    <%= f.text_area :description, class: "form-control" %>
-  </div>
-
-  <%= f.submit "Criar", class: "btn btn-primary" %>
-<% end %>
+</div>

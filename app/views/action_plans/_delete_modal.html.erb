@@ -1,0 +1,49 @@
+<div class="modal fade" id="deleteModal-<%= plan.id %>" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" data-controller="confirm-delete">
+
+      <div class="modal-header">
+        <h5 class="modal-title text-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Confirmar exclusão
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>
+          Você está prestes a excluir o plano:
+          <strong><%= plan.name %></strong>
+        </p>
+
+        <p class="text-danger small">
+          Esta ação é irreversível. Todas as ações vinculadas também serão removidas.
+        </p>
+
+        <label class="form-label">
+          Digite <strong>EXCLUIR</strong> para confirmar:
+        </label>
+
+        <input type="text"
+               class="form-control"
+               autocomplete="off"
+               data-confirm-delete-target="input"
+               data-action="input->confirm-delete#validate">
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+
+        <%= button_to "Excluir definitivamente",
+              action_plan_path(plan),
+              method: :delete,
+              class: "btn btn-danger",
+              disabled: true,
+              data: { confirm_delete_target: "button" } %>
+      </div>
+
+    </div>
+  </div>
+</div>

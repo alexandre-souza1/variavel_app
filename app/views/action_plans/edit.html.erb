@@ -1,0 +1,99 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0">
+    <i class="fas fa-edit me-2"></i> Editar Plano de Ação
+  </h2>
+
+  <%= link_to action_plans_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left me-1"></i> Voltar
+  <% end %>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <%= form_with model: @action_plan do |f| %>
+
+      <!-- Nome -->
+      <div class="mb-3">
+        <%= f.label :name, "Nome do Plano", class: "form-label fw-semibold" %>
+        <%= f.text_field :name, class: "form-control", placeholder: "Ex: Plano de melhoria logística" %>
+      </div>
+
+      <!-- Descrição -->
+      <div class="mb-3">
+        <%= f.label :description, "Descrição", class: "form-label fw-semibold" %>
+        <%= f.text_area :description, class: "form-control", rows: 4, placeholder: "Descreva os objetivos e ações..." %>
+      </div>
+
+      <!-- Ações -->
+      <div class="d-flex justify-content-end gap-2">
+        <%= link_to "Cancelar", action_plans_path, class: "btn btn-outline-secondary" %>
+        <%= f.submit "Salvar alterações", class: "btn btn-success" %>
+      </div>
+
+    <% end %>
+
+    <hr>
+
+    <div class="list-group">
+
+      <% @buckets.each do |bucket| %>
+        <div class="list-group-item">
+
+          <div class="d-flex justify-content-between align-items-center">
+
+            <!-- EDIT INLINE AUTO SAVE -->
+            <%= form_with model: [@action_plan, bucket],
+                  class: "d-flex gap-2 w-100",
+                  data: {
+                    controller: "auto-save",
+                    action: "blur->auto-save#submit keydown.enter->auto-save#submit"
+                  } do |f| %>
+
+              <%= f.text_field :name,
+                    class: "form-control form-control-sm",
+                    data: { auto_save_target: "input" } %>
+
+              <!-- contador -->
+              <span class="badge bg-secondary align-self-center">
+                <%= bucket.tasks.count %>
+              </span>
+
+            <% end %>
+
+            <!-- DELETE -->
+            <%= button_to "Excluir",
+                  action_plan_bucket_path(@action_plan, bucket),
+                  method: :delete,
+                  class: "btn btn-outline-danger btn-sm ms-2",
+                  data: {
+                    turbo_confirm: "Tem certeza? Todas as tasks deste bucket serão excluídas."
+                  } %>
+
+          </div>
+
+        </div>
+      <% end %>
+
+    </div>
+
+    <!-- CRIAR NOVO BUCKET -->
+    <div class="mt-3">
+      <%= form_with model: [@action_plan, @bucket],
+            class: "d-flex gap-2",
+            data: {
+              controller: "auto-save",
+              action: "keydown.enter->auto-save#submit"
+            } do |f| %>
+
+        <%= f.text_field :name,
+              class: "form-control",
+              placeholder: "Digite um novo bucket e pressione Enter...",
+              data: { auto_save_target: "input" } %>
+
+        <%= f.submit "Adicionar", class: "btn btn-primary" %>
+
+      <% end %>
+    </div>
+
+  </div>
+</div>

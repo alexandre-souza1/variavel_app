@@ -13,9 +13,19 @@
             <p><%= plan.description %></p>
 
             <%= link_to "Abrir", action_plan_path(plan), class: "btn btn-outline-primary btn-sm" %>
+            <%= link_to "Editar", edit_action_plan_path(plan), class: "btn btn-outline-secondary btn-sm" %>
+            <button type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteModal-<%= plan.id %>">
+              Excluir
+            </button>
           </div>
         </div>
       </div>
+
+        <%= render "delete_modal", plan: plan %>
     <% end %>
   </div>
 </div>
+<%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>

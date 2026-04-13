@@ -23,6 +23,28 @@ class ActionPlansController < ApplicationController
     end
   end
 
+  def edit
+    @action_plan = current_user.action_plans.find(params[:id])
+    @buckets = @action_plan.buckets
+    @bucket = Bucket.new
+  end 
+
+  def update
+    @action_plan = current_user.action_plans.find(params[:id])
+    
+    if @action_plan.update(action_plan_params)
+      redirect_to @action_plan, notice: "Plano atualizado com sucesso"
+    else
+      render :edit 
+    end
+  end
+
+  def destroy
+    @action_plan = current_user.action_plans.find(params[:id])
+    @action_plan.destroy
+    redirect_to action_plans_path, notice: "Plano excluído com sucesso"
+  end
+
   private
 
   def set_action_plan

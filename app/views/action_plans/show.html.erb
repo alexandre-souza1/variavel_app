@@ -1,7 +1,27 @@
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3><%= @action_plan.name %></h3>
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+  <!-- LEFT -->
+  <div class="d-flex align-items-center gap-3">
+
+    <div>
+      <h3 class="mb-0">
+        <i class="fas fa-file-invoice me-2"></i>
+        <%= @action_plan.name %>
+      </h3>
+
+      <small class="text-muted">
+        Criado em <%= l(@action_plan.created_at, format: :long) %>
+      </small>
+    </div>
+
   </div>
+
+  <!-- RIGHT -->
+  <div class="d-flex gap-2">
+  </div>
+
+</div>
 
   <div class="mb-3">
     <%= link_to "Kanban", action_plan_path(@action_plan, view: "kanban"),
@@ -25,4 +45,6 @@
   <% else %>
     <%= render "kanban_view", buckets: @buckets, action_plan: @action_plan %>
   <% end %>
+
+<%= link_to "Voltar", action_plans_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
 </div>
