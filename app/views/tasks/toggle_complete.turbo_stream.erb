@@ -1,3 +1,17 @@
-<%= turbo_stream.replace dom_id(@task) do %>
-  <%= render "tasks/task", task: @task %>
+<% if @task.completed %>
+
+  <%= turbo_stream.remove dom_id(@task) %>
+
+  <%= turbo_stream.append "done-tasks-#{@task.bucket.id}" do %>
+    <%= render "tasks/task", task: @task %>
+  <% end %>
+
+<% else %>
+
+  <%= turbo_stream.remove dom_id(@task) %>
+
+  <%= turbo_stream.append "open-tasks-#{@task.bucket.id}" do %>
+    <%= render "tasks/task", task: @task %>
+  <% end %>
+
 <% end %>

@@ -125,7 +125,6 @@
             <%# CARD BODY %>
             <div
             class="card-body"
-            data-controller="sortable"
             data-sortable-bucket-id-value="<%= bucket.id %>"
             data-bucket-id="<%= bucket.id %>"
             style="min-height: 300px;"
@@ -134,16 +133,45 @@
             <% open_tasks = bucket.tasks.where(completed: false).order(:position) %>
             <% done_tasks = bucket.tasks.where(completed: true).order(:position) %>
 
-            <% open_tasks.each do |task| %>
-              <%= render partial: "tasks/task", locals: { task: task } %>
-            <% end %>
-
-            <!-- 🔽 TAREFAS CONCLUÍDAS -->
-            <% if done_tasks.any? %>
-              <% done_tasks.each do |task| %>
-                <%= render partial: "tasks/task", locals: { task: task } %>
+            <%# OPEN TASKS %>
+            <div id="open-tasks-<%= bucket.id %>" class="mb-3" data-controller="sortable">
+              <% open_tasks.each do |task| %>
+                <%= render "tasks/task", task: task %>
               <% end %>
-            <% end %>
+            </div>
+
+            <%# DONE TASKS %>
+            <div class="mt-3">
+
+            <div data-controller="toggle-done">
+
+              <div
+                class="d-flex justify-content-between align-items-center mt-3 mb-2"
+                style="cursor: pointer;"
+                data-action="click->toggle-done#toggle"
+              >
+                <small class="text-muted">
+                  ✔️ Tarefas concluídas (<%= done_tasks.count %>)
+                </small>
+
+                <span data-toggle-done-target="icon">▼</span>
+              </div>
+
+              <div data-toggle-done-target="list" class="d-none">
+                <% done_tasks.each do |task| %>
+                  <%= render "tasks/task", task: task %>
+                <% end %>
+              </div>
+
+            </div>
+
+              <div id="done-tasks-<%= bucket.id %>" class="d-none" data-toggle-done-target="list">
+                <% done_tasks.each do |task| %>
+                  <%= render "tasks/task", task: task %>
+                <% end %>
+              </div>
+
+            </div>
 
             </div>
         </div>

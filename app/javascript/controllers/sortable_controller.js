@@ -8,6 +8,7 @@ export default class extends Controller {
     this.sortable = Sortable.create(this.element, {
       group: "tasks",
       animation: 150,
+      draggable: ".task-card",
       onEnd: this.onEnd.bind(this)
     })
   }
