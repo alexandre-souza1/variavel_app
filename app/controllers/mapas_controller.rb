@@ -118,16 +118,27 @@ class MapasController < ApplicationController
   def import
     file = params[:file]
 
-    if file.present?
-      mapas_no_arquivo = Set.new
-      mapas_ignorados = []
+    if file.blank?
+      redirect_to mapas_path, alert: "Selecione um arquivo CSV."
+      return
+    end
 
-      CSV.foreach(file.path, headers: true, col_sep: ";", encoding: "ISO-8859-1:utf-8") do |row|
+    mapas_no_arquivo = Set.new
+    mapas_ignorados = []
+    erros_importacao = []
+
+    CSV.foreach(file.path, headers: true, col_sep: ";", encoding: "ISO-8859-1:utf-8").with_index(2) do |row, line|
+
+      begin
         next unless row["Entrega"]&.strip == "Rota"
 
         numero_mapa = row["Mapa"].to_s.strip
 
-        # Verifica duplicidade
+        if numero_mapa.blank?
+          erros_importacao << "Linha #{line}: mapa vazio"
+          next
+        end
+
         if Mapa.exists?(mapa: numero_mapa) || mapas_no_arquivo.include?(numero_mapa)
           mapas_ignorados << numero_mapa
           next
@@ -135,11 +146,12 @@ class MapasController < ApplicationController
 
         mapas_no_arquivo.add(numero_mapa)
 
-        Mapa.create!(
+        mapa = Mapa.new(
           mapa: numero_mapa,
           data: row["Data"],
+
           fator: begin
-            m = row["MatricMotorista"].to_s.strip
+            m  = row["MatricMotorista"].to_s.strip
             a1 = row["MatricAjud1"].to_s.strip
             a2 = row["MatricAjud2"].to_s.strip
 
@@ -151,26 +163,38 @@ class MapasController < ApplicationController
               0
             end
           end,
+
           cx_total: row["CxCarreg"].to_s.gsub(",", ".").to_f,
           cx_real: row["CxEntreg"].to_s.gsub(",", ".").to_f,
           pdv_total: row["QtEntregasCarreg(RV)"].to_s.gsub(",", ".").to_f,
           pdv_real: row["QtEntregasEntreg(RV)"].to_s.gsub(",", ".").to_f,
           recarga: row["Recarga"],
-          matric_motorista: row["MatricMotorista"].to_s.strip.to_i.to_s,
-          matric_ajudante: row["MatricAjud1"].to_s.strip.to_i.to_s,
-          matric_ajudante_2: row["MatricAjud2"].to_s.strip.to_i.to_s
+
+          matric_motorista: row["MatricMotorista"].to_s.strip.presence,
+          matric_ajudante: row["MatricAjud1"].to_s.strip.presence,
+          matric_ajudante_2: row["MatricAjud2"].to_s.strip.presence
         )
-      end
 
-      notice_msg = "Mapas importados com sucesso!"
-      if mapas_ignorados.any?
-        notice_msg += " Os seguintes mapas foram ignorados por duplicidade: #{mapas_ignorados.uniq.sort.join(', ')}."
-      end
+        unless mapa.save
+          erros_importacao << "Linha #{line} (Mapa #{numero_mapa}): #{mapa.errors.full_messages.join(', ')}"
+        end
 
-      redirect_to mapas_todos_path, notice: notice_msg
-    else
-      redirect_to mapas_path, alert: "Selecione um arquivo CSV."
+      rescue => e
+        erros_importacao << "Linha #{line} (Mapa #{row['Mapa']}): erro inesperado - #{e.message}"
+      end
     end
+
+    notice_msg = "Importação finalizada!"
+
+    if mapas_ignorados.any?
+      notice_msg += " Ignorados (duplicados): #{mapas_ignorados.uniq.join(', ')}."
+    end
+
+    if erros_importacao.any?
+      notice_msg += " Erros: #{erros_importacao.first(10).join(' | ')}"
+    end
+
+    redirect_to mapas_todos_path, notice: notice_msg
   end
 
   private

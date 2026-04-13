@@ -1,0 +1,88 @@
+<div id="<%= dom_id(task) %>"
+     class="task-card mb-2 p-2 shadow-sm"
+     data-id="<%= task.id %>"
+     data-controller="task-modal"
+     data-action="click->task-modal#open"
+     data-task-id="<%= task.id %>"
+     data-plan-id="<%= task.bucket.action_plan.id %>">
+
+  <!-- Labels -->
+  <% if task.labels.any? %>
+    <div class="task-labels mb-1">
+      <% task.labels.each do |label| %>
+        <span class="badge" style="background-color: <%= label.color %>">
+          <%= label.name %>
+        </span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- HEADER (check + título) -->
+  <div class="d-flex align-items-start gap-2">
+
+    <!-- BOTÃO ✔ -->
+    <%= button_to toggle_complete_action_plan_bucket_task_path(task.bucket.action_plan, task.bucket, task),
+      method: :patch,
+      data: { turbo_stream: true },
+      class: "btn btn-sm p-0 border-0",
+      onclick: "event.stopPropagation();" do %>
+
+      <% if task.completed %>
+        <i class="bi bi-check-circle-fill text-success"></i>
+      <% else %>
+        <i class="bi bi-circle"></i>
+      <% end %>
+
+    <% end %>
+
+    <!-- Título -->
+    <div class="task-title <%= 'text-decoration-line-through opacity-50' if task.completed %>">
+      <%= task.title %>
+    </div>
+
+  </div>
+
+  <!-- Descrição -->
+  <% if task.description.present? %>
+    <div class="task-desc">
+      <%= truncate(task.description, length: 80) %>
+    </div>
+  <% end %>
+
+  <!-- Footer -->
+  <div class="task-footer d-flex justify-content-between align-items-center mt-2">
+
+    <!-- ESQUERDA -->
+    <div class="task-meta">
+      <% if task.due_at.present? %>
+        <small class="task-date">
+          📅 <%= task.due_at.strftime("%d/%m") %>
+        </small>
+      <% end %>
+    </div>
+
+    <!-- DIREITA -->
+    <div class="task-icons d-flex align-items-center gap-2">
+
+      <% if task.comments.any? %>
+        <small class="task-icon">💬</small>
+      <% end %>
+
+      <div class="avatar-group">
+        <% task.users.limit(3).each do |user| %>
+          <div class="avatar-circle-sm">
+            <%= user.name.first.upcase %>
+          </div>
+        <% end %>
+
+        <% if task.users.count > 3 %>
+          <div class="avatar-circle-sm extra">
+            +<%= task.users.count - 3 %>
+          </div>
+        <% end %>
+      </div>
+
+    </div>
+  </div>
+
+</div>

@@ -8,4 +8,8 @@ class Task < ApplicationRecord
   has_many :users, through: :task_assignments
   has_many :task_labels, dependent: :destroy
   has_many :labels, through: :task_labels
+
+  after_initialize do
+    self.completed = false if self.completed.nil?
+  end
 end

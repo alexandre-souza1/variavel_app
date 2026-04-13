@@ -13,7 +13,7 @@ export default class extends Controller {
   }
 
   async onEnd(event) {
-    const taskId = event.item.dataset.id
+    const taskId = event.item.dataset.id || event.item.querySelector("[data-id]")?.dataset.id
     const newBucketId = event.to.dataset.bucketId
     const newPosition = event.newIndex
 

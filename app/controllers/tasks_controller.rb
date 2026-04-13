@@ -39,6 +39,18 @@ class TasksController < ApplicationController
     head :ok
   end
 
+  def toggle_complete
+    @task = Task.find(params[:id])
+    @task.update(completed: !@task.completed)
+    @action_plan = @task.bucket.action_plan
+    @buckets = @action_plan.buckets.includes(tasks: [:users, :labels])
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_back fallback_location: root_path }
+    end
+  end
+
   private
 
   def task_params

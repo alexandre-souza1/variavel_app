@@ -58,7 +58,11 @@ Rails.application.routes.draw do
 
   resources :action_plans do
     resources :buckets, only: [:create, :update, :destroy] do
-      resources :tasks, only: [:create]
+      resources :tasks, only: [:create] do
+        member do
+          patch :toggle_complete
+        end
+      end
     end
 
     resources :tasks, only: [:update, :show] do
@@ -86,6 +90,7 @@ Rails.application.routes.draw do
       delete :bulk_delete
       delete :delete_by_month
       post :import
+      get :import_progress
       delete :destroy_all
     end
   end
