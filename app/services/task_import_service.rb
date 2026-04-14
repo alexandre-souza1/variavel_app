@@ -1,109 +1,174 @@
 class TaskImportService
+  # Constantes para evitar strings mágicas
+  BUCKET_NAME_KEYS = ["Nome do Bucket", "Bucket Name"].freeze
+  LABEL_KEYS = ["Rótulos", "Labels"].freeze
+  
   def initialize(file, current_user)
     @file = file
     @current_user = current_user
   end
 
   def call
-    spreadsheet = Roo::Excelx.new(@file.path)
-    header = spreadsheet.row(1).map { |h| h.to_s.strip }
-
+    rows = parse_spreadsheet
     create_action_plan
-
-    rows = (2..spreadsheet.last_row).map do |i|
-      Hash[[header, spreadsheet.row(i)].transpose]
-    end
-
     prepare_buckets(rows)
+    prepare_labels(rows)
 
-    rows.each do |row|
-      import_task(row)
-    end
+    rows.each { |row| import_task(row) }
 
     @action_plan
   end
 
   private
 
-  def create_action_plan
-    name = File.basename(@file.original_filename, ".xlsx")
+  def parse_spreadsheet
+    spreadsheet = Roo::Excelx.new(@file.path)
+    header = spreadsheet.row(1).map { |h| h.to_s.strip }
 
-    @action_plan = ActionPlan.create!(
-      name: name,
-      user: @current_user
-    )
+    (2..spreadsheet.last_row).map do |i|
+      Hash[[header, spreadsheet.row(i)].transpose]
+    end
   end
 
-  # 🔥 AQUI ESTÁ O GANHO DE PERFORMANCE
-  def prepare_buckets(rows)
-    bucket_names = rows.map do |row|
-      row["Nome do Bucket"] || row["Bucket Name"]
-    end.compact.map(&:strip).uniq
+  def create_action_plan
+    name = File.basename(@file.original_filename, ".xlsx")
+    @action_plan = ActionPlan.create!(name: name, user: @current_user)
+  end
 
+  def prepare_buckets(rows)
+    bucket_names = extract_bucket_names(rows)
+    
     existing_buckets = Bucket.where(
       action_plan: @action_plan,
       name: bucket_names
     ).index_by(&:name)
 
-    @buckets_cache = existing_buckets
-
-    (bucket_names - existing_buckets.keys).each do |name|
-      bucket = Bucket.create!(
-        name: name,
-        action_plan: @action_plan
-      )
-
-      @buckets_cache[name] = bucket
+    missing_names = bucket_names - existing_buckets.keys
+    
+    missing_names.each do |name|
+      bucket = Bucket.create!(name: name, action_plan: @action_plan)
+      existing_buckets[name] = bucket
     end
+    
+    @buckets_cache = existing_buckets
+  end
+
+  def prepare_labels(rows)
+    label_names = extract_label_names(rows)
+    return if label_names.empty?
+
+    existing_labels = Label.where(
+      name: label_names,
+      action_plan: @action_plan
+    ).index_by(&:name)
+    
+    missing_names = label_names - existing_labels.keys
+    
+    if missing_names.any?
+      Label.insert_all(
+        missing_names.map { |name| label_attributes(name) }
+      )
+    end
+    
+    @labels_cache = Label.where(
+      name: label_names,
+      action_plan: @action_plan
+    ).index_by(&:name)
   end
 
   def import_task(row)
-    bucket_name =
-      row["Nome do Bucket"] ||
-      row["Bucket Name"]
+    task = Task.new(task_attributes(row))
+    
+    if task.save
+      associate_labels(task, row)
+    else
+      Rails.logger.error "❌ Erro ao salvar task: #{task.errors.full_messages}"
+    end
 
-    name = bucket_name.to_s.strip
-    name = "Sem Bucket" if name.blank?
+    task
+  end
 
-    task = Task.new(
+  # Métodos auxiliares de extração
+  def extract_bucket_names(rows)
+    rows.map { |row| find_value(row, BUCKET_NAME_KEYS) }
+        .compact.map(&:strip).uniq
+  end
+
+  def extract_label_names(rows)
+    rows.flat_map { |row| parse_labels(row) }.uniq.compact
+  end
+
+  def parse_labels(row)
+    label_string = find_value(row, LABEL_KEYS)
+    return [] if label_string.blank?
+    
+    label_string.to_s.split(";").map(&:strip).reject(&:blank?)
+  end
+
+  def find_value(row, keys)
+    keys.each { |key| return row[key] if row[key].present? }
+    nil
+  end
+
+  # Métodos de construção de atributos
+  def label_attributes(name)
+    {
+      name: name,
+      action_plan_id: @action_plan.id,
+      color: random_color,
+      created_at: Time.current,
+      updated_at: Time.current
+    }
+  end
+
+  def task_attributes(row)
+    {
       title: row["Nome da tarefa"],
       description: row["Descrição"],
       start_at: parse_date(row["Data de início"]),
       due_at: parse_date(row["Data de conclusão"]),
-      completed: completed?(row),
+      completed: row["Concluído em"].present?,
       completed_at: parse_date(row["Concluído em"]),
       status: map_status(row["Progresso"]),
       creator: @current_user,
       assignee_id: @current_user.id,
-      bucket: @buckets_cache[name]
-    )
-
-    task.save!
+      bucket: find_bucket(row)
+    }
   end
 
+  def find_bucket(row)
+    bucket_name = find_value(row, BUCKET_NAME_KEYS).to_s.strip
+    bucket_name = "Sem Bucket" if bucket_name.blank?
+    @buckets_cache[bucket_name]
+  end
+
+  def associate_labels(task, row)
+    label_names = parse_labels(row)
+    return if label_names.empty?
+
+    labels = label_names.map { |name| @labels_cache[name] }.compact
+    task.labels << labels if labels.any?
+  end
+
+  # Métodos utilitários
   def map_status(progress)
     value = progress.to_s.downcase
 
-    if value.include?("conclu")
-      "done"
-    elsif value.include?("andamento")
-      "in_progress"
-    else
-      "pending"
+    case value
+    when /conclu/ then "done"
+    when /andamento/ then "in_progress"
+    else "pending"
     end
-  end
-
-  def completed?(row)
-    row["Concluído em"].present?
   end
 
   def parse_date(value)
     return nil if value.blank?
+    return value if value.is_a?(Date) || value.is_a?(Time)
+    
+    Date.parse(value.to_s) rescue nil
+  end
 
-    if value.is_a?(Date) || value.is_a?(Time)
-      value
-    else
-      Date.parse(value.to_s) rescue nil
-    end
+  def random_color
+    "##{SecureRandom.hex(3).upcase}"
   end
 end

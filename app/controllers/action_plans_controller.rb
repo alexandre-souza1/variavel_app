@@ -7,6 +7,7 @@ class ActionPlansController < ApplicationController
 
   def show
     @buckets = @action_plan.buckets
+    @buckets = @action_plan.buckets.order(:name)
   end
 
   def new
