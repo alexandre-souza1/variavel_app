@@ -9,7 +9,7 @@ class TasksController < ApplicationController
     if @task.save
       redirect_to action_plan_path(@bucket.action_plan)
     else
-      redirect_to action_plan_path(@bucket.action_plan), alert: "Erro ao criar tarefa"
+      redirect_to action_plan_path(@bucket.action_plan), alert: @task.errors.full_messages.to_sentence
     end
   end
 
@@ -31,17 +31,24 @@ class TasksController < ApplicationController
   def move
     @task = Task.find(params[:id])
 
-    @task.update(
-      bucket_id: params[:bucket_id],
-      position: params[:position]
-    )
+    new_bucket_id = params[:bucket_id]
+    new_position = params[:position].to_i
+
+    if new_bucket_id.present? && new_bucket_id.to_i != @task.bucket_id
+      @task.update!(bucket_id: new_bucket_id)
+    end
+
+    @task.insert_at(new_position + 1)
 
     head :ok
   end
 
   def toggle_complete
     @task = Task.find(params[:id])
-    @task.update!(completed: !@task.completed)
+      @task.update!(
+      completed: !@task.completed,
+      completed_at: @task.completed ? nil : Time.current  # 👈 Adicionar isso
+    )
   end
 
   private

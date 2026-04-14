@@ -31,6 +31,19 @@ class BucketsController < ApplicationController
     redirect_to action_plan_path(action_plan)
   end
 
+  def done_tasks
+    bucket = Bucket.find(params[:id])
+    @tasks = bucket.tasks
+    .where(completed: true)
+    .order(completed_at: :desc, due_at: :desc)
+
+    render partial: "tasks/done_tasks", locals: { tasks: @tasks }
+  end
+
+  def toggle_complete
+    @task.update!(completed: !@task.completed, completed_at: Time.current)
+  end
+
 private
 
   def bucket_params

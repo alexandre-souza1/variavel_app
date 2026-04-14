@@ -6,7 +6,7 @@ class ActionPlansController < ApplicationController
   end
 
   def show
-    @buckets = @action_plan.buckets.includes(:tasks)
+    @buckets = @action_plan.buckets
   end
 
   def new
@@ -48,7 +48,10 @@ class ActionPlansController < ApplicationController
   private
 
   def set_action_plan
-    @action_plan = current_user.action_plans.find(params[:id])
+    @action_plan = current_user
+      .action_plans
+      .includes(buckets: :tasks)
+      .find(params[:id])
   end
 
   def action_plan_params

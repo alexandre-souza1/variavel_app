@@ -56,8 +56,15 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :task_imports, only: [:new, :create]
+
   resources :action_plans do
     resources :buckets, only: [:create, :update, :destroy] do
+      member do
+        get :done_tasks
+        get :open_tasks
+      end
+
       resources :tasks, only: [:create] do
         member do
           patch :toggle_complete

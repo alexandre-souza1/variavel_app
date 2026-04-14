@@ -1,17 +1,17 @@
+<% bucket = @task.bucket %>
+
+<%= turbo_stream.remove dom_id(@task) %>
+
 <% if @task.completed %>
-
-  <%= turbo_stream.remove dom_id(@task) %>
-
-  <%= turbo_stream.append "done-tasks-#{@task.bucket.id}" do %>
+  <%= turbo_stream.prepend "done-tasks-#{bucket.id}" do %>
     <%= render "tasks/task", task: @task %>
   <% end %>
-
 <% else %>
-
-  <%= turbo_stream.remove dom_id(@task) %>
-
-  <%= turbo_stream.append "open-tasks-#{@task.bucket.id}" do %>
+  <%= turbo_stream.prepend "open-tasks-#{bucket.id}" do %>
     <%= render "tasks/task", task: @task %>
   <% end %>
+<% end %>
 
+<%= turbo_stream.update "done-count-#{bucket.id}" do %>
+  ✔️ Tarefas concluídas (<%= bucket.done_count %>)
 <% end %>

@@ -29,7 +29,7 @@ gem "activestorage-cloudinary-service"
 gem 'cpf_cnpj'
 gem 'prawn'
 gem 'prawn-table'
-
+gem 'acts_as_list'
 gem "bootstrap"
 
 gem 'dotenv-rails'

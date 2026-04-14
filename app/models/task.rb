@@ -1,7 +1,7 @@
 class Task < ApplicationRecord
   belongs_to :bucket
   belongs_to :creator, class_name: "User"
-
+  acts_as_list scope: :bucket
   has_many :comments, dependent: :destroy
   has_many :tasklists, dependent: :destroy
   has_many :task_assignments, dependent: :destroy
