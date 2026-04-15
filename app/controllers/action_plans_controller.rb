@@ -3,6 +3,24 @@ class ActionPlansController < ApplicationController
 
   def index
     @action_plans = ActionPlan.all
+
+    if params[:query].present?
+      q = "%#{params[:query]}%"
+
+      @action_plans = @action_plans
+        .left_joins(buckets: :tasks)
+        .left_joins(buckets: { tasks: :users })
+        .where(
+          "action_plans.name ILIKE :q
+          OR action_plans.description ILIKE :q
+          OR tasks.title ILIKE :q
+          OR users.name ILIKE :q",
+          q: q
+        )
+        .distinct
+    end
+
+    @action_plans = @action_plans.includes(buckets: { tasks: :users })
   end
 
   def show
