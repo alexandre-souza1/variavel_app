@@ -1,4 +1,12 @@
-.alert {
+#flash-container {
   position: fixed;
-  z-index: 1000;
+  top: 20px;
+  right: 20px;
+  z-index: 1050;
+  width: 300px;
+}
+
+#flash-container .alert {
+  margin-bottom: 10px;
+  transition: opacity 0.15s ease-in-out;
 }

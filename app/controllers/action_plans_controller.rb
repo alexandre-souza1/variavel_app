@@ -2,7 +2,7 @@ class ActionPlansController < ApplicationController
   before_action :set_action_plan, only: [:show]
 
   def index
-    @action_plans = current_user.action_plans
+    @action_plans = ActionPlan.all
   end
 
   def show
@@ -28,29 +28,33 @@ class ActionPlansController < ApplicationController
     @action_plan = current_user.action_plans.find(params[:id])
     @buckets = @action_plan.buckets
     @bucket = Bucket.new
-  end 
+  end
 
   def update
     @action_plan = current_user.action_plans.find(params[:id])
-    
+
     if @action_plan.update(action_plan_params)
       redirect_to @action_plan, notice: "Plano atualizado com sucesso"
     else
-      render :edit 
+      render :edit
     end
   end
 
   def destroy
-    @action_plan = current_user.action_plans.find(params[:id])
-    @action_plan.destroy
-    redirect_to action_plans_path, notice: "Plano excluído com sucesso"
+    @action_plan = ActionPlan.find(params[:id])
+
+    if @action_plan.user == current_user
+      @action_plan.destroy
+      redirect_to action_plans_path, notice: "Plano excluído com sucesso"
+    else
+      redirect_to action_plans_path, alert: "Você não tem permissão para excluir este plano"
+    end
   end
 
   private
 
   def set_action_plan
-    @action_plan = current_user
-      .action_plans
+    @action_plan = ActionPlan
       .includes(buckets: :tasks)
       .find(params[:id])
   end

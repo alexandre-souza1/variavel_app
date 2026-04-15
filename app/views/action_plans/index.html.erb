@@ -1,20 +1,19 @@
 <div class="container">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Planos de Ação</h2>
-    <%= link_to "Novo Plano", new_action_plan_path, class: "btn btn-primary" %>
+    <div class="d-flex align-items-center">
+      <i class="fas fa-tasks me-2"></i>
+      <h2>Planos de Ação</h2>
+    </div>
+    <div class="d-flex gap-2">
+      <%= link_to "Novo Plano", new_action_plan_path, class: "btn btn-primary" %>
+      <%= link_to new_task_import_path, class: "btn btn-outline-primary" do %>
+        <i class="fas fa-file-import me-1"></i> Importar Tasks
+        <% end %>
+      <%= link_to root_path, class: "btn btn-outline-secondary" do %>
+        <i class="fas fa-arrow-left me-1"></i> Voltar
+      <% end %>
+    </div>
   </div>
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1 class="mb-0">
-    <i class="fas fa-tasks me-2"></i> Tasks
-  </h1>
-
-  <div class="d-flex gap-2">
-    <%= link_to new_task_import_path, class: "btn btn-outline-primary" do %>
-      <i class="fas fa-file-import me-1"></i> Importar Tasks
-    <% end %>
-  </div>
-</div>
 
   <div class="row">
     <% @action_plans.each do |plan| %>
@@ -25,6 +24,7 @@
             <p><%= plan.description %></p>
 
             <%= link_to "Abrir", action_plan_path(plan), class: "btn btn-outline-primary btn-sm" %>
+            <% if plan.user == current_user %>
             <%= link_to "Editar", edit_action_plan_path(plan), class: "btn btn-outline-secondary btn-sm" %>
             <button type="button"
                     class="btn btn-outline-danger btn-sm"
@@ -32,6 +32,7 @@
                     data-bs-target="#deleteModal-<%= plan.id %>">
               Excluir
             </button>
+            <% end %>
           </div>
         </div>
       </div>
@@ -40,4 +41,3 @@
     <% end %>
   </div>
 </div>
-<%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>

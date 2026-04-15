@@ -13,79 +13,79 @@
 
     <!-- Links -->
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-<ul class="navbar-nav me-auto">
-  <% if user_signed_in? %>
-    <% if current_user.admin? || current_user.supervisor? %>
-      <li class="nav-item">
-        <%= link_to "Importar 2ART", mapas_path, class: "nav-link" %>
-      </li>
-      <li class="nav-item">
-        <%= link_to "Importar Parâmetros", import_parametro_calculos_path, class: "nav-link" %>
-      </li>
-      <li class="nav-item">
-        <%= link_to "Importar WMS", new_import_wms_tasks_path, class: "nav-link" %>
-      </li>
+      <ul class="navbar-nav me-auto">
+        <% if user_signed_in? %>
+          <% if current_user.admin? || current_user.supervisor? %>
+            <li class="nav-item">
+              <%= link_to "Importar 2ART", mapas_path, class: "nav-link" %>
+            </li>
+            <li class="nav-item">
+              <%= link_to "Importar Parâmetros", import_parametro_calculos_path, class: "nav-link" %>
+            </li>
+            <li class="nav-item">
+              <%= link_to "Importar WMS", new_import_wms_tasks_path, class: "nav-link" %>
+            </li>
 
-      <!-- Dropdown DU -->
-      <li class="nav-item dropdown">
-        <button class="nav-link dropdown-toggle" id="duDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="bi bi-truck"></i> DU
-        </button>
-        <ul class="dropdown-menu">
-          <li>
-            <%= link_to drivers_path, class: "dropdown-item" do %>
-              <i class="bi bi-truck-front me-2"></i> Motoristas
-            <% end %>
-          </li>
-          <li>
-            <%= link_to ajudantes_path, class: "dropdown-item" do %>
-              <i class="bi bi-people me-2"></i> Ajudantes
-            <% end %>
-          </li>
-          <li>
-            <%= link_to mapas_todos_path, class: "dropdown-item" do %>
-              <i class="bi bi-map me-2"></i> Mapas
-            <% end %>
-          </li>
-          <li>
-            <%= link_to fuel_consumptions_path, class: "dropdown-item" do %>
-              <i class="bi bi-fuel-pump me-2"></i> Consumo de Combustível
-            <% end %>
-          </li>
-        </ul>
-      </li>
+            <!-- Dropdown DU -->
+            <li class="nav-item dropdown">
+              <button class="nav-link dropdown-toggle" id="duDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-truck"></i> DU
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <%= link_to drivers_path, class: "dropdown-item" do %>
+                    <i class="bi bi-truck-front me-2"></i> Motoristas
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to ajudantes_path, class: "dropdown-item" do %>
+                    <i class="bi bi-people me-2"></i> Ajudantes
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to mapas_todos_path, class: "dropdown-item" do %>
+                    <i class="bi bi-map me-2"></i> Mapas
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to fuel_consumptions_path, class: "dropdown-item" do %>
+                    <i class="bi bi-fuel-pump me-2"></i> Consumo de Combustível
+                  <% end %>
+                </li>
+              </ul>
+            </li>
 
-      <!-- Dropdown AZ -->
-      <li class="nav-item dropdown">
-        <button class="nav-link dropdown-toggle" id="azDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="bi bi-house-door"></i> AZ
-        </button>
-        <ul class="dropdown-menu">
-          <li>
-            <%= link_to operators_path, class: "dropdown-item" do %>
-              <i class="bi bi-person-workspace me-2"></i> Operadores
-            <% end %>
-          </li>
-          <li>
-            <%= link_to az_ajudantes_path, class: "dropdown-item" do %>
-              <i class="bi bi-people-fill me-2"></i> Ajudantes
-            <% end %>
-          </li>
-          <li>
-            <%= link_to az_mapas_path, class: "dropdown-item" do %>
-              <i class="bi bi-calendar-check me-2"></i> Resultados Diários
-            <% end %>
-          </li>
-          <li>
-            <%= link_to wms_tasks_path, class: "dropdown-item" do %>
-              <i class="bi bi-bar-chart-line me-2"></i> Resultados WMS
-            <% end %>
-          </li>
-        </ul>
-      </li>
-    <% end %>
-  <% end %>
-</ul>
+            <!-- Dropdown AZ -->
+            <li class="nav-item dropdown">
+              <button class="nav-link dropdown-toggle" id="azDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-house-door"></i> AZ
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <%= link_to operators_path, class: "dropdown-item" do %>
+                    <i class="bi bi-person-workspace me-2"></i> Operadores
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to az_ajudantes_path, class: "dropdown-item" do %>
+                    <i class="bi bi-people-fill me-2"></i> Ajudantes
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to az_mapas_path, class: "dropdown-item" do %>
+                    <i class="bi bi-calendar-check me-2"></i> Resultados Diários
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to wms_tasks_path, class: "dropdown-item" do %>
+                    <i class="bi bi-bar-chart-line me-2"></i> Resultados WMS
+                  <% end %>
+                </li>
+              </ul>
+            </li>
+          <% end %>
+        <% end %>
+      </ul>
 
       <!-- Avatar Dropdown -->
       <% if user_signed_in? %>

@@ -4,14 +4,16 @@ export default class extends Controller {
   static targets = ["alert"]
 
   connect() {
-    // Espera 3 segundos (3000ms) e depois remove a classe "show" para fazer o alerta desaparecer
     setTimeout(() => {
       this.hideAlert()
-    }, 3000)  // 3000ms = 3 segundos
+    }, 3000)
   }
 
   hideAlert() {
     this.alertTarget.classList.remove("show")
-    this.alertTarget.classList.add("fade")
+
+    setTimeout(() => {
+      this.element.remove()
+    }, 150) // tempo da animação do Bootstrap
   }
 }
