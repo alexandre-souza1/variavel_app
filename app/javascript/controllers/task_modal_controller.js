@@ -10,7 +10,16 @@ export default class extends Controller {
 
     document.getElementById("modal-container").innerHTML = html
 
-    const modal = new bootstrap.Modal(document.getElementById("taskModal"))
+    const modalElement = document.getElementById("taskModal")
+    const modal = new bootstrap.Modal(modalElement)
+
+    // 👇 AGORA NO MOMENTO CERTO
+    modalElement.addEventListener("hide.bs.modal", () => {
+      if (document.activeElement) {
+        document.activeElement.blur()
+      }
+    }, { once: true })
+
     modal.show()
   }
 }

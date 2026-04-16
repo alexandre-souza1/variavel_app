@@ -35,3 +35,7 @@
     <% end %>
   <% end %>
 <% end %>
+
+<%= turbo_stream.update "flash-container" do %>
+  <%= render "shared/flashes", notice: @flash_container %>
+<% end %>

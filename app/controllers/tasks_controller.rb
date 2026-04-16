@@ -53,6 +53,8 @@ class TasksController < ApplicationController
       completed_at: new_status ? Time.current : nil
     )
 
+    @flash_container = new_status ? "Tarefa concluída" : "Tarefa reaberta"
+
     respond_to do |format|
       format.turbo_stream
       format.html { redirect_to action_plan_path(@task.bucket.action_plan) }
