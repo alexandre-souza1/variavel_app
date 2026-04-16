@@ -10,6 +10,8 @@ Rails.application.routes.draw do
   get 'checklist_templates/create'
   get 'checklist_templates/show'
 
+  mount ActionCable.server => '/cable'
+
   resources :az_ajudantes
   get 'az_consultas/index'
   get 'az_consultas/new'
