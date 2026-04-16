@@ -65,18 +65,19 @@ class TasksController < ApplicationController
 
   def task_params
     params.require(:task).permit(
-      :title,
-      :description,
-      :start_at,
-      :due_at,
-      :comment,
-      :assignee_id,
-      :recurrence,
-      label_ids: [],
-      user_ids: [],
+      :title, :description,
+      :start_at, :due_at,
+      :comment, :assignee_id,
+      :recurrence, :completed,
+      label_ids: [], user_ids: [],
+      tasklist_attributes: [
+        :id, :title, :_destroy,
+        tasklist_items_attributes: [:id, :content, :completed, :_destroy]
+      ]
     ).tap do |whitelisted|
       whitelisted[:label_ids] = whitelisted[:label_ids]&.reject(&:blank?) || []
       whitelisted[:user_ids]  = whitelisted[:user_ids]&.reject(&:blank?) || []
     end
   end
+
 end

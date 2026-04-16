@@ -1,10 +1,11 @@
 <div id="<%= dom_id(task) %>"
-     class="task-card mb-2 p-2 shadow-sm"
-     data-id="<%= task.id %>"
-     data-controller="task-modal"
-     data-action="click->task-modal#open"
-     data-task-id="<%= task.id %>"
-     data-plan-id="<%= task.bucket.action_plan.id %>">
+    class="task-card mb-2 p-2 shadow-sm"
+    data-id="<%= task.id %>"
+    data-controller="task-modal"
+    data-action="click->task-modal#open"
+    data-plan-id="<%= task.bucket.action_plan.id %>"
+    data-bucket-id="<%= task.bucket.id %>"
+    data-task-id="<%= task.id %>">
 
   <!-- Labels -->
   <% if task.labels.any? %>

@@ -1,0 +1,80 @@
+def task_params
+    params.require(:task).permit(
+      :title, :description,
+      :start_at, :due_at,
+      :comment, :assignee_id,
+      :recurrence, :completed,
+      label_ids: [], user_ids: [],
+      tasklist_attributes: [
+        :id, :title, :_destroy,
+        tasklist_items_attributes: [:id, :content, :completed, :_destroy]
+      ]
+    ).tap do |whitelisted|
+      whitelisted[:label_ids] = whitelisted[:label_ids]&.reject(&:blank?) || []
+      whitelisted[:user_ids]  = whitelisted[:user_ids]&.reject(&:blank?) || []
+    end
+  end
+
+
+                <!-- CHECKLIST -->
+              <div class="mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0">Checklist</h6>
+
+                  <% if task.tasklist.present? %>
+                    <%= link_to "Apagar checklist",
+                          action_plan_bucket_task_tasklist_path(
+                            task.bucket.action_plan,
+                            task.bucket,
+                            task
+                          ),
+                          method: :delete,
+                          class: "btn btn-sm btn-danger",
+                          data: { turbo_confirm: "Tem certeza?" } %>
+                  <% else %>
+                    <%= link_to "Criar checklist",
+                          action_plan_bucket_task_tasklist_path(
+                            task.bucket.action_plan,
+                            task.bucket,
+                            task
+                          ),
+                          method: :post,
+                          class: "btn btn-sm btn-primary" %>
+                  <% end %>
+                </div>
+
+                <% if task.tasklist.present? %>
+                  <div class="border rounded p-2 bg-light">
+                    <strong class="d-block mb-2">
+                      <%= task.tasklist.title %>
+                    </strong>
+
+                    <!-- INÍCIO DA CORREÇÃO: fields_for DENTRO do form principal -->
+                    <%= f.fields_for :tasklist do |tasklist_form| %>
+                      <%= tasklist_form.hidden_field :id %>  <!-- essencial para o Rails identificar o registro existente -->
+
+                      <ul class="list-unstyled mb-0">
+                        <% task.tasklist.tasklist_items.each do |item| %>
+                          <%= tasklist_form.fields_for :tasklist_items, item do |item_form| %>
+                            <li class="mb-2">
+                              <div class="form-check d-flex align-items-center gap-2">
+                                <%= item_form.check_box :completed,
+                                      class: "form-check-input",
+                                      data: { action: "change->tasklist#toggle" } %>
+
+                                <label class="form-check-label <%= "text-decoration-line-through" if item.completed %>">
+                                  <%= item.content %>
+                                </label>
+
+                                <%= item_form.hidden_field :id %>
+                              </div>
+                            </li>
+                          <% end %>
+                        <% end %>
+                      </ul>
+                    <% end %>
+                    <!-- FIM DA CORREÇÃO -->
+
+                  </div>
+                <% end %>
+              </div>

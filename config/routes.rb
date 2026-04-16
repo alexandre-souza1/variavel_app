@@ -61,21 +61,23 @@ Rails.application.routes.draw do
   resources :task_imports, only: [:new, :create]
 
   resources :action_plans do
-    resources :buckets, only: [:create, :update, :destroy] do
+    resources :buckets do
       member do
         get :done_tasks
         get :open_tasks
       end
 
-      resources :tasks, only: [:create] do
+      resources :tasks do
         member do
           patch :toggle_complete
         end
-      end
-    end
 
-    resources :tasks, only: [:update, :show] do
-      resources :comments, only: [:create]
+        resources :comments, only: [:create]
+
+        resource :tasklist, only: [:create, :destroy] do
+          resources :tasklist_items, only: [:update, :destroy, :create]
+        end
+      end
     end
   end
 

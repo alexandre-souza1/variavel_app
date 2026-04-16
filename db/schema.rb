@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_16_112215) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_16_172356) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -460,8 +460,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_16_112215) do
   add_foreign_key "task_assignments", "users"
   add_foreign_key "task_labels", "labels"
   add_foreign_key "task_labels", "tasks"
-  add_foreign_key "tasklist_items", "tasklists"
-  add_foreign_key "tasklists", "tasks"
+  add_foreign_key "tasklist_items", "tasklists", on_delete: :cascade
+  add_foreign_key "tasklists", "tasks", on_delete: :cascade
   add_foreign_key "tasks", "buckets"
   add_foreign_key "tasks", "users", column: "assignee_id"
   add_foreign_key "tasks", "users", column: "creator_id"

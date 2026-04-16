@@ -1,6 +1,6 @@
 <% bucket = @task.bucket %>
 
-<%= turbo_stream.remove dom_id(@task) %>
+<%= turbo_stream.remove "task_#{@task.id}" %>
 
 <% if @task.completed %>
   <%= turbo_stream.prepend "done-tasks-#{bucket.id}" do %>

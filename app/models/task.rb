@@ -3,7 +3,8 @@ class Task < ApplicationRecord
   belongs_to :creator, class_name: "User"
   acts_as_list scope: :bucket
   has_many :comments, dependent: :destroy
-  has_many :tasklists, dependent: :destroy
+  has_one :tasklist, dependent: :destroy
+  accepts_nested_attributes_for :tasklist, allow_destroy: true
   has_many :task_assignments, dependent: :destroy
   has_many :users, through: :task_assignments
   has_many :task_labels, dependent: :destroy
@@ -15,6 +16,8 @@ class Task < ApplicationRecord
   end
 
   after_update_commit :create_next_task_if_completed
+  after_create :ensure_tasklist
+
 
   def create_next_task_if_completed
     return unless saved_change_to_completed? && completed?
@@ -71,6 +74,10 @@ class Task < ApplicationRecord
       target: "done-count-#{bucket_id}",
       html: "✔️ Tarefas concluídas (#{bucket.done_count})"
     )
+  end
+
+  def ensure_tasklist
+    create_tasklist(title: "Checklist") unless tasklist.present?
   end
 
   def broadcast_new_task(task)

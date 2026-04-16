@@ -13,7 +13,7 @@
           <!-- COLUNA ESQUERDA -->
           <div class="col-md-7">
 
-            <%= form_with model: [task.bucket.action_plan, task], local: true do |f| %>
+            <%= form_with model: [task.bucket.action_plan, task.bucket, task], local: true do |f| %>
 
               <!-- TÍTULO -->
               <div class="mb-3">
@@ -80,25 +80,47 @@
               </div>
 
               <!-- CHECKLIST -->
-              <div class="mb-3">
-                <h6>Checklist</h6>
-
-                <% task.tasklists.each do |list| %>
-                  <div class="border p-2 mb-2">
-                    <strong><%= list.title %></strong>
-
-                    <% list.tasklist_items.each do |item| %>
-                      <div class="form-check">
-                        <% if item.completed %>
-                          <input type="checkbox" class="form-check-input" checked>
-                        <% else %>
-                          <input type="checkbox" class="form-check-input">
-                        <% end %>
-                        <label class="form-check-label"><%= item.content %></label>
-                      </div>
-                    <% end %>
+              <div class="mt-4" data-controller="task-checklist">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0">Checklist</h6>
+                  <div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-action="click->task-checklist#addItem">
+                      + Adicionar item
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-action="click->task-checklist#clearAllItems" data-turbo-confirm="Limpar todos os itens?">
+                      Limpar checklist
+                    </button>
                   </div>
-                <% end %>
+                </div>
+
+                <div class="border rounded p-2 bg-light">
+                  <%= f.fields_for :tasklist do |tasklist_form| %>
+                    <%= tasklist_form.hidden_field :id %>
+                    <div data-task-checklist-target="itemsContainer">
+                      <% task.tasklist&.tasklist_items&.each do |item| %>
+                        <%= tasklist_form.fields_for :tasklist_items, item do |item_form| %>
+                          <div class="task-checklist-item mb-2 d-flex align-items-center gap-2">
+                            <%= item_form.check_box :completed, class: "form-check-input" %>
+                            <%= item_form.text_field :content, class: "form-control form-control-sm flex-grow-1", placeholder: "Item" %>
+                            <%= item_form.hidden_field :id %>
+                            <%= item_form.hidden_field :_destroy, value: false %>
+                            <button type="button" class="btn btn-sm btn-link text-danger" data-action="click->task-checklist#removeItem"><i class="bi bi-trash"></i></button>
+                          </div>
+                        <% end %>
+                      <% end %>
+                    </div>
+
+                    <template data-task-checklist-target="itemTemplate">
+                      <div class="task-checklist-item mb-2 d-flex align-items-center gap-2">
+                        <input type="hidden" name="task[tasklist_attributes][tasklist_items_attributes][NEW_RECORD][id]" value="">
+                        <input type="hidden" name="task[tasklist_attributes][tasklist_items_attributes][NEW_RECORD][_destroy]" value="false">
+                        <input type="checkbox" name="task[tasklist_attributes][tasklist_items_attributes][NEW_RECORD][completed]" value="1" class="form-check-input">
+                        <input type="text" name="task[tasklist_attributes][tasklist_items_attributes][NEW_RECORD][content]" class="form-control form-control-sm flex-grow-1" placeholder="Novo item">
+                        <button type="button" class="btn btn-sm btn-link text-danger" data-action="click->task-checklist#removeItem">🗑</button>
+                      </div>
+                    </template>
+                  <% end %>
+                </div>
               </div>
 
               <!-- DATAS -->
@@ -112,21 +134,6 @@
                   <%= f.label :due_at %>
                   <%= f.datetime_local_field :due_at, class: "form-control" %>
                 </div>
-              </div>
-
-              <!-- RECORRÊNCIA -->
-              <div class="mb-3">
-                <label>Repetir tarefa</label>
-
-                <%= f.select :recurrence,
-                  options_for_select([
-                    ["Não repetir", nil],
-                    ["Diariamente", "daily"],
-                    ["Semanalmente", "weekly"],
-                    ["Mensalmente", "monthly"]
-                  ], task.recurrence),
-                  {},
-                  class: "form-control" %>
               </div>
 
               <div class="mb-3">
