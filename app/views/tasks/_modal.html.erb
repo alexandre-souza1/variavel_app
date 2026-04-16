@@ -136,6 +136,21 @@
                 </div>
               </div>
 
+              <!-- RECORRÊNCIA -->
+              <div class="mb-3">
+                <label>Repetir tarefa</label>
+
+                <%= f.select :recurrence,
+                  options_for_select([
+                    ["Não repetir", nil],
+                    ["Diariamente", "daily"],
+                    ["Semanalmente", "weekly"],
+                    ["Mensalmente", "monthly"]
+                  ], task.recurrence),
+                  {},
+                  class: "form-control" %>
+              </div>
+
               <div class="mb-3">
                 <label>Responsáveis</label>
 
