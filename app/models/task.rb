@@ -13,6 +13,7 @@ class Task < ApplicationRecord
 
   after_initialize do
     self.completed = false if self.completed.nil?
+    self.start_at ||= Time.current
   end
 
   after_update_commit :create_next_task_if_completed

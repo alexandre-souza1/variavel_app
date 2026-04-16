@@ -18,6 +18,11 @@
               <!-- TÍTULO -->
               <div class="mb-3">
                 <%= f.text_field :title, class: "form-control form-control-lg", placeholder: "Título da tarefa" %>
+                <% if f.object.persisted? %>
+                  <small class="text-muted">
+                    Criado em: <%= f.object.created_at.strftime("%d/%m/%Y %H:%M") %>
+                  </small>
+                <% end %>
               </div>
 
               <!-- DESCRIÇÃO -->
