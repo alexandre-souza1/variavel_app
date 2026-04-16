@@ -24,15 +24,17 @@ export default class extends Controller {
     }
   }
 
-  clearAllItems() {
-    this.itemsContainerTarget.querySelectorAll('.task-checklist-item').forEach(item => {
-      const destroyField = item.querySelector('input[name$="[_destroy]"]')
-      if (destroyField) {
-        destroyField.value = "1"
-        item.classList.add('d-none')
-      } else {
-        item.remove()
-      }
-    })
+  clearAllItems(event) {
+    if (confirm("Limpar todos os itens?")) {
+      this.itemsContainerTarget.querySelectorAll('.task-checklist-item').forEach(item => {
+        const destroyField = item.querySelector('input[name$="[_destroy]"]')
+        if (destroyField) {
+          destroyField.value = "1"
+          item.classList.add('d-none')
+        } else {
+          item.remove()
+        }
+      })
+    }
   }
 }

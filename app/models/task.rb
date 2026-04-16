@@ -24,31 +24,31 @@ class Task < ApplicationRecord
     return unless saved_change_to_completed? && completed?
     return if recurrence.blank? || due_at.blank?
 
-    next_date =
-      case recurrence
-      when "daily"
-        due_at + 1.day
-      when "weekly"
-        due_at + 1.week
-      when "monthly"
-        due_at + 1.month
-      end
+    next_date = case recurrence
+                when "daily"   then due_at + 1.day
+                when "weekly"  then due_at + 1.week
+                when "monthly" then due_at + 1.month
+                end
 
     return if Task.exists?(bucket: bucket, due_at: next_date, title: title)
 
-    new_task = Task.create!(
+    new_task = Task.new(
       title: title,
       description: description,
       bucket: bucket,
       start_at: start_at,
       due_at: next_date,
       recurrence: recurrence,
-      users: users,
-      labels: labels,
-      creator: creator
+      creator: creator,
+      user_ids: user_ids,      # ← usa os IDs
+      label_ids: label_ids     # ← se tiver labels, também use IDs
     )
 
-    broadcast_new_task(new_task)
+    if new_task.save
+      broadcast_new_task(new_task)
+    else
+      Rails.logger.error "❌ Falha ao criar tarefa recorrente: #{new_task.errors.full_messages}"
+    end
   end
 
   after_update_commit :broadcast_task_update
