@@ -45,10 +45,18 @@ class TasksController < ApplicationController
 
   def toggle_complete
     @task = Task.find(params[:id])
-      @task.update!(
-      completed: !@task.completed,
-      completed_at: @task.completed ? nil : Time.current  # 👈 Adicionar isso
+
+    new_status = !@task.completed
+
+    @task.update!(
+      completed: new_status,
+      completed_at: new_status ? Time.current : nil
     )
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to action_plan_path(@task.bucket.action_plan) }
+    end
   end
 
   private
@@ -61,6 +69,7 @@ class TasksController < ApplicationController
       :due_at,
       :comment,
       :assignee_id,
+      :recurrence,
       label_ids: [],
       user_ids: [],
     ).tap do |whitelisted|

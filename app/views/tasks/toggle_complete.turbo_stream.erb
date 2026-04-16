@@ -15,3 +15,23 @@
 <%= turbo_stream.update "done-count-#{bucket.id}" do %>
   ✔️ Tarefas concluídas (<%= bucket.done_count %>)
 <% end %>
+
+<% if @task.completed && @task.recurrence.present? %>
+  <% next_task = Task.find_by(
+    bucket: bucket,
+    title: @task.title,
+    due_at: @task.due_at + (
+      case @task.recurrence
+      when "daily" then 1.day
+      when "weekly" then 1.week
+      when "monthly" then 1.month
+      end
+    )
+  ) %>
+
+  <% if next_task.present? %>
+    <%= turbo_stream.prepend "open-tasks-#{bucket.id}" do %>
+      <%= render "tasks/task", task: next_task %>
+    <% end %>
+  <% end %>
+<% end %>
