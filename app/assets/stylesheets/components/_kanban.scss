@@ -43,3 +43,11 @@
   font-size: 13px;
   opacity: 0.7;
 }
+
+.task-date.overdue {
+  background-color: #dc3545; /* vermelho bootstrap */
+  color: white;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
