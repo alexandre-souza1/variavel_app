@@ -58,7 +58,7 @@
       <% overdue = task.due_at.present? && task.due_at < Time.current && !task.completed %>
       <% if task.due_at.present? %>
         <small class="task-date <%= 'overdue' if overdue %>">
-          📅 <%= task.due_at.strftime("%d/%m") %>
+          <i class="bi bi-calendar-date"></i> <%= task.due_at.strftime("%d/%m") %>
         </small>
       <% end %>
     </div>

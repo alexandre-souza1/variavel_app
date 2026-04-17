@@ -23,7 +23,7 @@ export default class extends Controller {
               <div class="avatar-circle-sm">
                 ${escape(data.text.charAt(0))}
               </div>
-              <span>${escape(data.text)}</span>
+              <span>${escape(data.text.split(" ")[0])}</span>
             </div>
           `
         }

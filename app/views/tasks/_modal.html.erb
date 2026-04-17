@@ -25,63 +25,29 @@
                 <% end %>
               </div>
 
-              <!-- DESCRIÇÃO -->
-              <div class="mb-3">
-                <%= f.text_area :description, class: "form-control", rows: 3, placeholder: "Descrição..." %>
-              </div>
+              <!-- RÓTULOS -->
+              <div class="mb-3 labels-field">
+                <label>Rótulos</label>
+                <select name="task[label_ids][]"
+                        multiple
+                        class="form-control form-control-sm"
+                        data-controller="tom-select"
+                        data-tom-select-action-plan-id-value="<%= task.bucket.action_plan.id %>">
 
-              <!-- LABELS -->
-              <div
-                class="mb-3"
-                data-controller="label"
-                data-label-action-plan-id-value="<%= task.bucket.action_plan.id %>">
-
-                <label>Labels</label>
-
-                <input type="hidden" name="task[label_ids][]" value="">
-
-                <select name="task[label_ids][]" multiple class="form-control" data-controller="tom-select">
                   <% task.bucket.action_plan.labels.each do |label| %>
-                    <% if task.labels.include?(label) %>
-                      <option
-                        value="<%= label.id %>"
-                        data-color="<%= label.color %>"
-                        selected>
-                        <%= label.name %>
-                      </option>
-                    <% else %>
-                      <option
-                        value="<%= label.id %>"
-                        data-color="<%= label.color %>">
-                        <%= label.name %>
-                      </option>
-                    <% end %>
+                    <option
+                      value="<%= label.id %>"
+                      data-color="<%= label.color %>"
+                      <%= "selected" if task.labels.include?(label) %>>
+                      <%= label.name %>
+                    </option>
                   <% end %>
                 </select>
+              </div>
 
-                <!-- CRIAR LABEL -->
-                <div class="mt-2">
-                  <small>Nova label:</small>
-
-                  <div class="input-group">
-                    <input type="text"
-                          class="form-control form-control-sm"
-                          placeholder="Nome"
-                          autocomplete="off"
-                          data-label-target="name">
-
-                    <input type="color"
-                          class="form-control form-control-sm form-control-color"
-                          autocomplete="off"
-                          data-label-target="color">
-
-                    <button type="button"
-                            class="btn btn-sm btn-outline-primary"
-                            data-action="click->label#create">
-                      +
-                    </button>
-                  </div>
-                </div>
+              <!-- DESCRIÇÃO -->
+              <div class="mb-3">
+                <%= f.text_area :description, class: "form-control", rows: 3, placeholder: "Anotações..." %>
               </div>
 
               <!-- CHECKLIST -->
@@ -160,10 +126,14 @@
                       {},
                       class: "form-control" %>
                   </div>
+                  <div class="col-md-6">
+                    <label>Bucket</label>
+                    <%= f.select :bucket_id, options_from_collection_for_select(task.bucket.action_plan.buckets, :id, :name, task.bucket_id), {}, class: "form-control" %>
+                  </div>
                 </div>
               </div>
 
-              <div class="mb-3">
+              <div class="mb-3 users-field">
                 <label>Responsáveis</label>
 
                 <%= select_tag "task[user_ids][]",

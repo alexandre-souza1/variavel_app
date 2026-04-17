@@ -68,7 +68,7 @@ class TasksController < ApplicationController
       :title, :description,
       :start_at, :due_at,
       :comment, :assignee_id,
-      :recurrence, :completed,
+      :recurrence, :completed, :bucket_id,
       label_ids: [], user_ids: [],
       tasklist_attributes: [
         :id, :title, :_destroy,

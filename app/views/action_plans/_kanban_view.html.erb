@@ -24,14 +24,16 @@
 
               </div>
 
-              <%= link_to "❌",
-                  action_plan_bucket_path(action_plan, bucket),
+              <%= link_to action_plan_bucket_path(action_plan, bucket),
                   data: {
-                  turbo_method: :delete,
-                  turbo_confirm: "Tem certeza?"
+                    turbo_method: :delete,
+                    turbo_confirm: "Tem certeza?"
                   },
-                  class: "btn btn-sm"
-              %>
+                  class: "btn btn-sm" do %>
+
+                <i class="bi bi-x-lg text-danger"></i>
+
+              <% end %>
             </div>
 
             <div class="card-footer" data-controller="new-task">
