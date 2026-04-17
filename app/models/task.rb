@@ -36,12 +36,12 @@ class Task < ApplicationRecord
       title: title,
       description: description,
       bucket: bucket,
-      start_at: start_at,
+      start_at: Time.current,
       due_at: next_date,
       recurrence: recurrence,
       creator: creator,
       user_ids: user_ids,      # ← usa os IDs
-      label_ids: label_ids     # ← se tiver labels, também use IDs
+      label_ids: label_ids || []
     )
 
     if new_task.save
