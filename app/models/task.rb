@@ -32,6 +32,10 @@ class Task < ApplicationRecord
 
     return if Task.exists?(bucket: bucket, due_at: next_date, title: title)
 
+    # Filtra apenas labels que ainda existem
+    valid_label_ids = label_ids.select { |id| Label.exists?(id) }
+    valid_user_ids  = user_ids.select { |id| User.exists?(id) }
+
     new_task = Task.new(
       title: title,
       description: description,
@@ -40,8 +44,8 @@ class Task < ApplicationRecord
       due_at: next_date,
       recurrence: recurrence,
       creator: creator,
-      user_ids: user_ids,      # ← usa os IDs
-      label_ids: label_ids     # ← se tiver labels, também use IDs
+      user_ids: valid_user_ids,
+      label_ids: valid_label_ids
     )
 
     if new_task.save
