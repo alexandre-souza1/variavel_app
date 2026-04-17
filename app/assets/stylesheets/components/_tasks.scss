@@ -1,0 +1,36 @@
+@keyframes task-highlight {
+  0% {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    transform: scale(1);
+  }
+  20% {
+    background-color: #ffe69e;
+    border-left: 4px solid #ffc107;
+    transform: scale(1.02);
+  }
+  40% {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    transform: scale(1);
+  }
+  60% {
+    background-color: #ffe69e;
+    border-left: 4px solid #ffc107;
+    transform: scale(1.02);
+  }
+  80% {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    transform: scale(1);
+  }
+  100% {
+    background-color: transparent;
+    border-left: 4px solid transparent;
+    transform: scale(1);
+  }
+}
+
+.task-highlight {
+  animation: task-highlight 2.5s ease-in-out;
+}

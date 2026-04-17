@@ -66,7 +66,13 @@
     <div class="task-icons d-flex align-items-center gap-2">
 
       <% if task.comments.any? %>
-        <small class="task-icon">💬</small>
+        <small class="task-icon"><i class="bi bi-chat-dots-fill"></i></small>
+      <% end %>
+
+      <% if task.recurrence.present? %>
+        <small class="task-icon">
+          <i class="bi bi-arrow-repeat"></i>
+        </small>
       <% end %>
 
       <div class="avatar-group">
