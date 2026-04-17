@@ -6,5 +6,5 @@ class Label < ApplicationRecord
 
   validates :name, presence: true
   validates :color, presence: true
-  validates :name, uniqueness: true
+  validates :name, uniqueness: { scope: :action_plan_id }
 end
