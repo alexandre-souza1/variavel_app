@@ -1,4 +1,6 @@
-<div id="kanban-<%= action_plan.id %>" class="row flex-nowrap overflow-auto">
+<div id="kanban-<%= action_plan.id %>"
+     class="row flex-nowrap overflow-auto"
+     data-controller="drag-scroll">
 
   <% buckets.each do |bucket| %>
       <div id="bucket_<%= bucket.id %>" class="col-12 col-md-4 col-lg-3">
