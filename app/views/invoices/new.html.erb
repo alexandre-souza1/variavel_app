@@ -79,7 +79,7 @@
 
                   <div class="col-md-4">
                     <label class="form-label">Número da NF</label>
-                    <input class="form-control"
+                    <input class="form-control" <%# herb:disable html-input-require-autocomplete %>
                           placeholder="Número da NF"
                           type="text"
                           name="invoice[invoice_numbers_attributes][NEW_RECORD][number]">
@@ -108,7 +108,7 @@
             </template>
 
 
-            <%= link_to "#", class: "btn btn-sm btn-outline-primary", data: { action: "click->invoice-numbers#add" } do %>
+            <%= link_to "#", class: "btn btn-sm btn-outline-primary", data: { action: "click->invoice-numbers#add" } do %> <%# herb:disable html-anchor-require-href %>
               <i class="bi bi-plus-circle"></i> Adicionar NF
             <% end %>
           </div>
@@ -161,6 +161,28 @@
               <%= f.file_field :documents, multiple: true, direct_upload: true, class: "form-control" %>
             </div>
           </div>
+
+          <% if @invoice.documents.attached? %>
+            <div class="mt-3">
+              <label class="form-label fw-bold">Arquivos anexados:</label>
+
+              <ul class="list-group">
+                <% @invoice.documents.each do |doc| %>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                      <i class="bi bi-file-earmark"></i>
+                      <%= doc.filename %>
+                    </span>
+
+                    <%= link_to "Visualizar",
+                        url_for(doc),
+                        target: "_blank",
+                        class: "btn btn-sm btn-outline-primary" %>
+                  </li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
 
           <div class="mb-4">
             <%= f.label :notes, "Observações", class: "form-label fw-bold" %>

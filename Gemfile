@@ -17,7 +17,7 @@ gem "puma", ">= 5.0"
 gem "csv"
 
 gem 'nokogiri', '~> 1.18.6', platforms: :ruby, require: false
-
+gem "aws-sdk-s3", require: false
 gem "devise"
 gem "oauth2"
 gem "faraday"

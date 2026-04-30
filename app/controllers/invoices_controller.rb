@@ -252,35 +252,9 @@ class InvoicesController < ApplicationController
 
   def download_document
     invoice = Invoice.find(params[:id])
-    document_index = params[:document_index].to_i
+    doc = invoice.documents.find(params[:document_id])
 
-    if invoice.document_urls.present? && invoice.document_urls[document_index]
-      sharepoint_url = invoice.document_urls[document_index]
-
-      # Tenta obter a URL de download direta
-      service = OnedriveService.new
-      download_url = service.get_direct_download_url(sharepoint_url) ||
-                    service.create_anonymous_download_link(sharepoint_url)
-
-      if download_url
-        # Verifica se a URL de download é válida (não é a URL original do SharePoint)
-        if download_url != sharepoint_url
-          # URL de download direta obtida com sucesso - redireciona
-          redirect_to download_url, allow_other_host: true
-        else
-          # Não conseguiu obter URL de download direta - arquivo pode não existir
-          redirect_to invoices_path, alert: 'Arquivo não encontrado no OneDrive. O arquivo pode ter sido excluído.'
-        end
-      else
-        # Não conseguiu obter nenhuma URL de download
-        redirect_to invoices_path, alert: 'Arquivo não encontrado no OneDrive. O arquivo pode ter sido excluído.'
-      end
-    else
-      redirect_to invoices_path, alert: 'Documento não encontrado.'
-    end
-  rescue => e
-    Rails.logger.error("Erro ao baixar documento: #{e.message}")
-    redirect_to invoices_path, alert: 'Erro ao tentar baixar o arquivo. O arquivo pode ter sido excluído.'
+    redirect_to rails_blob_url(doc, disposition: "attachment")
   end
 
   private
