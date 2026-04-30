@@ -214,15 +214,27 @@ class InvoicesController < ApplicationController
 
   # POST /invoices or /invoices.json
   def create
-    @invoice = Invoice.new(invoice_params)
+    @invoice = Invoice.new(invoice_params.except(:documents))
 
     respond_to do |format|
       if @invoice.save
-        format.html { redirect_to @invoice, notice: "Invoice was successfully created." }
-        format.json { render :show, status: :created, location: @invoice }
+
+        files = params[:invoice][:documents].reject(&:blank?)
+        types = params[:document_types] || []
+
+        files.each_with_index do |file, index|
+          attachment = @invoice.documents.attach(file).last
+
+          type = types[index].presence || "outro"
+
+          attachment.blob.update!(
+            metadata: attachment.blob.metadata.merge(document_type: type)
+          )
+        end
+
+        format.html { redirect_to @invoice, notice: "Invoice criada com sucesso." }
       else
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @invoice.errors, status: :unprocessable_entity }
       end
     end
   end

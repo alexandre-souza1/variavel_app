@@ -26,6 +26,12 @@ class Invoice < ApplicationRecord
     purchaser&.name
   end
 
+  DOCUMENT_TYPES = {
+    nf: "Nota Fiscal",
+    boleto: "Boleto",
+    outro: "Outro"
+  }.freeze
+
   private
 
   def code_required_unless_abastecimento
@@ -41,5 +47,5 @@ class Invoice < ApplicationRecord
       self.code = "ABAST-#{Date.today.strftime('%Y%m%d')}-#{SecureRandom.alphanumeric(6).upcase}"
     end
   end
-  
+
 end

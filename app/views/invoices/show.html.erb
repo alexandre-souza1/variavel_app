@@ -30,9 +30,17 @@
                     <!-- Nome do arquivo -->
                     <span class="me-2 text-truncate" style="max-width: 160px;">
                       <i class="fas fa-file me-1"></i>
-                      <%= doc.filename %>
+                      <% type = doc.blob.metadata["document_type"] %>
                     </span>
+                    <span>
+                      <%= doc.filename %>
 
+                      <% if type.present? %>
+                        <span class="badge bg-secondary ms-2">
+                          <%= type.upcase %>
+                        </span>
+                      <% end %>
+                    </span>
                     <!-- Ações -->
                     <div class="d-flex gap-1">
 
