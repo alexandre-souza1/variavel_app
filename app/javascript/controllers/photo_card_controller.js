@@ -103,4 +103,8 @@ export default class extends Controller {
 
     }, "image/jpeg", 0.9)
   }
+
+  openFilePicker() {
+    this.inputTarget.click()
+  }
 }
