@@ -16,56 +16,13 @@
       </button>
     </div>
 
-<div class="camera-upload mb-3">
-
-  <video
-    autoplay
-    playsinline
-    class="w-100 rounded d-none mb-2"
-    data-photo-card-target="video">
-  </video>
-
-  <canvas
-    class="d-none"
-    data-photo-card-target="canvas">
-  </canvas>
-
-  <img
-    src=""
-    class="img-fluid rounded d-none mb-2"
-    data-photo-card-target="preview">
-
-      <%= f.file_field :photo,
-            class: "d-none",
-            accept: "image/*",
-            data: {
-              photo_card_target: "input"
-            } %>
-
-      <div class="d-grid gap-2">
-
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-action="photo-card#openCamera">
-
-          Abrir câmera
-
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-success d-none"
-          data-action="photo-card#takePhoto"
-          data-photo-card-target="captureButton">
-
-          Tirar foto
-
-        </button>
-
-      </div>
-
-    </div>
+    <%= f.file_field :photo,
+          class: "form-control form-control-lg mb-3",
+          accept: "image/*",
+          capture: "environment",
+          data: {
+            action: "change->photo-card#preview"
+          } %>
 
     <img
       src=""
