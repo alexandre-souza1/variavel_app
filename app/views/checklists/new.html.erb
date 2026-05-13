@@ -1,7 +1,7 @@
 <h1><%= @template.name %></h1>
 
-<%= form_with model: @checklist, local: true, data: {
-      controller: "checklist-validation",
+<%= form_with model: @checklist, local: true, data: { 
+      controller: "checklist-validation", turbo: false,
       action: "submit->checklist-validation#validate" } do |f| %>
   <%= f.hidden_field :checklist_template_id %>
 
