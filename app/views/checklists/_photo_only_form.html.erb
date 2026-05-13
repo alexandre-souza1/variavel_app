@@ -1,0 +1,227 @@
+<div
+  class="container-fluid px-2 px-md-3"
+  data-controller="photo-checklist"
+  data-photo-checklist-index-value="<%= @checklist.checklist_photos.size %>">
+
+  <!-- CAMPOS GERAIS -->
+
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-body">
+
+      <% if @template.plate_required? &&
+            (@template.setor == "ARMAZEM" ||
+             @template.setor == "ROTA") %>
+
+        <div class="mb-3">
+
+          <%= f.label :plate_id,
+                "Selecione a Placa",
+                class: "form-label fw-semibold" %>
+
+          <%= f.collection_select :plate_id,
+                @plates,
+                :id,
+                :placa,
+                { prompt: "Escolha uma placa" },
+                class: "form-select form-select-lg" %>
+
+        </div>
+
+      <% elsif @template.plate_required? &&
+                @template.setor == "TRANSFERÊNCIA" %>
+
+        <div class="mb-3">
+
+          <%= f.label :placa_manual,
+                "Digite a placa",
+                class: "form-label fw-semibold" %>
+
+          <%= f.text_field :placa_manual,
+                class: "form-control form-control-lg",
+                placeholder: "ABC1D23" %>
+
+        </div>
+
+      <% end %>
+
+      <% if @template.kilometer_required? %>
+
+        <div class="mb-3">
+
+          <%= f.label :kilometer,
+                "Quilometragem",
+                class: "form-label fw-semibold" %>
+
+          <%= f.text_field :kilometer,
+                class: "form-control form-control-lg",
+                inputmode: "numeric",
+                placeholder: "Ex: 125000" %>
+
+        </div>
+
+      <% end %>
+
+      <% if @template.vehicle_model_required? %>
+
+        <div class="mb-3">
+
+          <%= f.label :vehicle_model,
+                "Modelo do veículo",
+                class: "form-label fw-semibold" %>
+
+          <%= f.text_field :vehicle_model,
+                class: "form-control form-control-lg",
+                placeholder: "Ex: FH 540" %>
+
+        </div>
+
+      <% end %>
+
+      <% if @template.responsavel_required? %>
+
+        <div class="mb-0">
+
+          <%= f.label :responsavel,
+                "Responsável",
+                class: "form-label fw-semibold" %>
+
+          <%= f.text_field :responsavel,
+                class: "form-control form-control-lg",
+                placeholder: "Nome do responsável" %>
+
+        </div>
+
+      <% end %>
+
+    </div>
+  </div>
+
+  <!-- FOTOS 360 -->
+
+  <% if @template.photos_required? %>
+
+    <div class="card shadow-sm border-0 mb-4">
+
+      <div class="card-header bg-white border-0 pb-0">
+        <h5 class="mb-1 fw-bold">
+          Fotos 360° do Caminhão
+        </h5>
+
+        <small class="text-muted">
+          Tire fotos em boa iluminação
+        </small>
+      </div>
+
+      <div class="card-body">
+
+        <% photo_labels = {
+          photo_front: "Frente",
+          photo_back: "Traseira",
+          photo_left_truck: "Lado esquerdo (cavalo)",
+          photo_left_trailer: "Lado esquerdo (implemento)",
+          photo_right_trailer: "Lado direito (implemento)",
+          photo_right_truck: "Lado direito (cavalo)"
+        } %>
+
+        <div class="row g-3">
+
+          <% [
+            :photo_front,
+            :photo_left_truck,
+            :photo_left_trailer,
+            :photo_back,
+            :photo_right_trailer,
+            :photo_right_truck
+          ].each do |photo_field| %>
+
+            <div class="col-12 col-md-6">
+
+              <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+
+                <label class="form-label fw-semibold small text-uppercase text-muted">
+                  <%= photo_labels[photo_field] %>
+                </label>
+
+                <%= f.file_field photo_field,
+                      class: "form-control form-control-lg",
+                      accept: "image/*",
+                      capture: "environment" %>
+
+              </div>
+
+            </div>
+
+          <% end %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  <% end %>
+
+  <!-- GALERIA DE AVARIAS -->
+
+  <div class="card shadow-sm border-0 mb-5">
+
+    <div class="card-header bg-white border-0">
+
+      <div class="d-flex flex-column flex-md-row gap-3 justify-content-between align-items-start align-items-md-center">
+
+        <div>
+          <h5 class="mb-1 fw-bold">
+            Fotos de Evidências
+          </h5>
+
+          <small class="text-muted">
+            Adicione fotos de avarias ou evidências
+          </small>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-primary btn-lg w-100 w-md-auto"
+          data-action="photo-checklist#addPhoto">
+
+          + Adicionar Foto
+
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="card-body p-3 p-md-4">
+
+      <div
+        class="d-flex flex-column gap-3"
+        data-photo-checklist-target="container">
+
+        <%= f.fields_for :checklist_photos do |photo_form| %>
+
+          <%= render "photo_field",
+                f: photo_form %>
+
+        <% end %>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <template data-photo-checklist-target="template">
+
+    <%= f.fields_for :checklist_photos,
+          ChecklistPhoto.new,
+          child_index: "NEW_RECORD" do |photo_form| %>
+
+      <%= render "photo_field",
+            f: photo_form %>
+
+    <% end %>
+
+  </template>
+
+</div>

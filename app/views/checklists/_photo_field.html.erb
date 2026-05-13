@@ -1,0 +1,59 @@
+<div
+  class="card shadow-sm mb-4"
+  data-controller="photo-card">
+
+  <div class="card-body">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">Foto</h5>
+
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-danger"
+        data-action="photo-checklist#removePhoto">
+
+        Remover
+      </button>
+    </div>
+
+    <%= f.file_field :photo,
+          class: "form-control mb-3",
+          accept: "image/*",
+          data: {
+            action: "change->photo-card#preview"
+          } %>
+
+    <img
+      src=""
+      class="img-fluid rounded d-none mb-3"
+      data-photo-card-target="preview">
+
+    <%= f.label :kind, "Tipo da Foto" %>
+
+    <%= f.select :kind,
+          options_for_select([
+            ["Foto padrão", "standard"],
+            ["Defeito encontrado", "defect"]
+          ]),
+          {},
+          class: "form-select mb-3",
+          data: {
+            action: "change->photo-card#toggleDescription",
+            photo_card_target: "kind"
+          } %>
+
+    <div
+      class="d-none"
+      data-photo-card-target="descriptionContainer">
+
+      <%= f.label :description,
+            "Descrição do defeito" %>
+
+      <%= f.text_area :description,
+            rows: 3,
+            class: "form-control" %>
+
+    </div>
+
+  </div>
+</div>

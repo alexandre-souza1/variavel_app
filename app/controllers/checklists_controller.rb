@@ -14,8 +14,14 @@ class ChecklistsController < ApplicationController
     @template = ChecklistTemplate.find(params[:template_id])
     @checklist = Checklist.new(checklist_template: @template)
 
-    @template.checklist_items.each do |item|
-      @checklist.checklist_responses.build(checklist_item: item)
+    if @template.photo_only?
+      1.times do
+        @checklist.checklist_photos.build
+      end
+    else
+      @template.checklist_items.each do |item|
+        @checklist.checklist_responses.build(checklist_item: item)
+      end
     end
 
     # Filtra as placas pelo setor do template
@@ -79,6 +85,13 @@ class ChecklistsController < ApplicationController
       :photo_back,
       :photo_right_trailer,
       :photo_right_truck,
+      checklist_photos_attributes: [
+        :id,
+        :photo,
+        :kind,
+        :description,
+        :_destroy
+      ],
       checklist_responses_attributes: [:id, :checklist_item_id, :status, :comment, :photo]
     )
   end

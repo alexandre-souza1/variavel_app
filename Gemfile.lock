@@ -409,6 +409,7 @@ DEPENDENCIES
   rails (~> 7.1.5)
   redis (~> 5.0)
   roo
+  ruby-vips
   sassc-rails
   selenium-webdriver
   sprockets-rails

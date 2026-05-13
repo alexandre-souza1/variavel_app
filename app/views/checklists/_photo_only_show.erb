@@ -1,0 +1,268 @@
+<div class="container my-4">
+
+  <!-- CABEÇALHO / INFORMAÇÕES -->
+
+  <div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-white border-0 pb-0">
+      <h4 class="fw-bold mb-1">
+        Registro Fotográfico
+      </h4>
+
+      <small class="text-muted">
+        Checklist realizado em
+        <%= l(@checklist.created_at, format: :long) %>
+      </small>
+    </div>
+
+    <div class="card-body">
+
+      <div class="row g-3">
+
+        <% if @checklist.plate.present? %>
+
+          <div class="col-12 col-md-6">
+
+            <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+
+              <small class="text-muted text-uppercase d-block">
+                Placa
+              </small>
+
+              <div class="fw-semibold fs-5">
+                <%= @checklist.plate.placa %>
+              </div>
+
+            </div>
+
+          </div>
+
+        <% elsif @checklist.placa_manual.present? %>
+
+          <div class="col-12 col-md-6">
+
+            <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+
+              <small class="text-muted text-uppercase d-block">
+                Placa Informada
+              </small>
+
+              <div class="fw-semibold fs-5">
+                <%= @checklist.placa_manual %>
+              </div>
+
+            </div>
+
+          </div>
+
+        <% end %>
+
+        <% if @checklist.vehicle_model.present? %>
+
+          <div class="col-12 col-md-6">
+
+            <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+
+              <small class="text-muted text-uppercase d-block">
+                Modelo do Veículo
+              </small>
+
+              <div class="fw-semibold">
+                <%= @checklist.vehicle_model %>
+              </div>
+
+            </div>
+
+          </div>
+
+        <% end %>
+
+        <% if @checklist.kilometer.present? %>
+
+          <div class="col-12 col-md-6">
+
+            <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+
+              <small class="text-muted text-uppercase d-block">
+                Quilometragem
+              </small>
+
+              <div class="fw-semibold">
+                <%= number_with_delimiter(@checklist.kilometer, delimiter: ".") %> km
+              </div>
+
+            </div>
+
+          </div>
+
+        <% end %>
+
+        <% if @checklist.responsavel.present? %>
+
+          <div class="col-12 col-md-6">
+
+            <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+
+              <small class="text-muted text-uppercase d-block">
+                Responsável
+              </small>
+
+              <div class="fw-semibold">
+                <%= @checklist.responsavel %>
+              </div>
+
+            </div>
+
+          </div>
+
+        <% end %>
+
+        <% if @checklist.origin.present? %>
+
+          <div class="col-12 col-md-6">
+
+            <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+
+              <small class="text-muted text-uppercase d-block">
+                Origem
+              </small>
+
+              <div class="fw-semibold">
+                <%= @checklist.origin %>
+              </div>
+
+            </div>
+
+          </div>
+
+        <% end %>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- FOTOS -->
+
+  <div class="card shadow-sm border-0">
+
+    <div class="card-header bg-white border-0">
+
+      <div class="d-flex justify-content-between align-items-center">
+
+        <div>
+
+          <h5 class="fw-bold mb-1">
+            Fotos Enviadas
+          </h5>
+
+          <small class="text-muted">
+            <%= @checklist.checklist_photos.count %> foto(s)
+          </small>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="card-body">
+
+      <% if @checklist.checklist_photos.any? %>
+
+        <div class="row g-4">
+
+          <% @checklist.checklist_photos.each do |photo| %>
+
+            <div class="col-12 col-md-6">
+
+              <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+
+                <% if photo.photo.attached? %>
+
+                  <%= cl_image_tag photo.photo.key,
+                        width: 1000,
+                        height: 1000,
+                        crop: :limit,
+                        quality: "auto:eco",
+                        fetch_format: "auto",
+                        class: "card-img-top" %>
+
+                <% end %>
+
+                <div class="card-body">
+
+                  <% if photo.standard? %>
+
+                    <span class="badge bg-success mb-3">
+                      Foto padrão
+                    </span>
+
+                  <% elsif photo.defect? %>
+
+                    <span class="badge bg-danger mb-3">
+                      Defeito encontrado
+                    </span>
+
+                  <% end %>
+
+                  <% if photo.description.present? %>
+
+                    <p class="card-text mb-0">
+
+                      <strong>
+                        Descrição:
+                      </strong>
+
+                      <br>
+
+                      <%= photo.description %>
+
+                    </p>
+
+                  <% else %>
+
+                    <p class="text-muted mb-0">
+                      Sem descrição
+                    </p>
+
+                  <% end %>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          <% end %>
+
+        </div>
+
+      <% else %>
+
+        <div class="alert alert-secondary mb-0">
+          Nenhuma foto enviada.
+        </div>
+
+      <% end %>
+
+    </div>
+
+  </div>
+
+  <!-- BOTÕES -->
+
+  <div class="mt-4 d-flex flex-column flex-md-row gap-3 justify-content-between">
+
+    <%= link_to "Voltar",
+          checklists_path,
+          class: "btn btn-secondary btn-lg shadow-sm px-4" %>
+
+    <%= link_to "Baixar PDF",
+          checklist_path(@checklist, format: :pdf),
+          class: "btn btn-primary btn-lg shadow-sm px-4" %>
+
+  </div>
+
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_16_172356) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_12_173039) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -120,6 +120,15 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_16_172356) do
     t.index ["checklist_template_id"], name: "index_checklist_items_on_checklist_template_id"
   end
 
+  create_table "checklist_photos", force: :cascade do |t|
+    t.bigint "checklist_id", null: false
+    t.string "kind"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["checklist_id"], name: "index_checklist_photos_on_checklist_id"
+  end
+
   create_table "checklist_responses", force: :cascade do |t|
     t.bigint "checklist_id", null: false
     t.bigint "checklist_item_id", null: false
@@ -144,6 +153,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_16_172356) do
     t.boolean "responsavel_required"
     t.boolean "origin_required"
     t.boolean "photos_required"
+    t.boolean "photo_only", default: false
   end
 
   create_table "checklists", force: :cascade do |t|
@@ -441,6 +451,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_16_172356) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "buckets", "action_plans"
   add_foreign_key "checklist_items", "checklist_templates"
+  add_foreign_key "checklist_photos", "checklists"
   add_foreign_key "checklist_responses", "checklist_items"
   add_foreign_key "checklist_responses", "checklists"
   add_foreign_key "checklists", "checklist_templates"

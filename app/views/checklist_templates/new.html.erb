@@ -25,6 +25,13 @@
         </div>
 
         <div class="form-check mb-3">
+          <%= f.check_box :photo_only, class: "form-check-input" %>
+          <%= f.label :photo_only,
+                "Checklist apenas de fotos",
+                class: "form-check-label" %>
+        </div>
+
+        <div class="form-check mb-3">
           <%= f.check_box :gas_state_required, class: "form-check-input", id: "gas_state_required" %>
           <%= f.label :gas_state_required, "Exigir estado do gás neste checklist", class: "form-check-label" %>
         </div>

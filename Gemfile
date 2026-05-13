@@ -31,7 +31,7 @@ gem 'prawn'
 gem 'prawn-table'
 gem 'acts_as_list'
 gem "bootstrap"
-
+gem "ruby-vips"
 gem 'dotenv-rails'
 
 gem 'roo' # Para ler Excel

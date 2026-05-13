@@ -11,6 +11,8 @@ class Checklist < ApplicationRecord
   has_one_attached :photo_back
   has_one_attached :photo_right_trailer
   has_one_attached :photo_right_truck
+  has_many :checklist_photos, dependent: :destroy
+  accepts_nested_attributes_for :checklist_photos, allow_destroy: true
 
   validate :validate_plate_presence_if_required
   validate :validate_reponsavel_presence_if_required
