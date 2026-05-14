@@ -20,7 +20,8 @@ class Checklist < ApplicationRecord
   validate :validate_kilometer_presence_if_required
   validate :validate_gas_state_presence_if_required
   validate :validate_origin_presence_if_required
-  validate :validate_photos_presence_if_required
+  validate :validate_photos_presence_if_required,
+  on: :final_submit
 
   validate :validate_photos_are_images
 
