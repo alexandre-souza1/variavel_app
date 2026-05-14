@@ -37,8 +37,9 @@ gem "rubyzip" # Para criar arquivos zip com as fotos dos checklists
 gem 'roo' # Para ler Excel
 # gem 'kaminari'
 # gem 'kaminari-bootstrap'
-
-
+gem "caxlsx"
+gem "caxlsx_rails"
+gem "mini_magick"
 gem 'image_processing', '~> 1.2'
 
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]

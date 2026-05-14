@@ -13,6 +13,10 @@ class Checklist < ApplicationRecord
   has_one_attached :photo_right_truck
   has_many :checklist_photos, dependent: :destroy
   accepts_nested_attributes_for :checklist_photos, allow_destroy: true
+  has_many :checklist_defects, dependent: :destroy
+  accepts_nested_attributes_for :checklist_defects,
+                                allow_destroy: true,
+                                reject_if: :all_blank
 
   validate :validate_plate_presence_if_required
   validate :validate_reponsavel_presence_if_required
@@ -22,6 +26,7 @@ class Checklist < ApplicationRecord
   validate :validate_origin_presence_if_required
   validate :validate_photos_presence_if_required,
   on: :final_submit
+
 
   validate :validate_photos_are_images
 

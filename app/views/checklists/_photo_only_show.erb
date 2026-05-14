@@ -263,6 +263,10 @@
           download_photos_checklist_path(@checklist),
           class: "btn btn-dark btn-lg shadow-sm px-4" %>      
 
+    <%= link_to "Exportar Excel",
+          export_excel_checklist_path(@checklist, format: :xlsx),
+          class: "btn btn-success btn-lg shadow-sm px-4" %>      
+
     <%= link_to "Baixar PDF",
           checklist_path(@checklist, format: :pdf),
           class: "btn btn-primary btn-lg shadow-sm px-4" %>

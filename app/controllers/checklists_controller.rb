@@ -91,6 +91,18 @@ class ChecklistsController < ApplicationController
               type: "application/zip"
   end
 
+  def export_excel
+    @checklist = Checklist.find(params[:id])
+
+    respond_to do |format|
+      format.xlsx do
+        response.headers[
+          'Content-Disposition'
+        ] = "attachment; filename=checklist_#{@checklist.id}.xlsx"
+      end
+    end
+  end
+
   private
 
   def set_template
@@ -120,7 +132,13 @@ class ChecklistsController < ApplicationController
         :description,
         :_destroy
       ],
-      checklist_responses_attributes: [:id, :checklist_item_id, :status, :comment, :photo]
+      checklist_responses_attributes: [:id, :checklist_item_id, :status, :comment, :photo],
+      checklist_defects_attributes: [
+        :id,
+        :description,
+        :location,
+        :_destroy
+      ]
     )
   end
 end

@@ -45,6 +45,7 @@ Rails.application.routes.draw do
 
     member do
       get :download_photos
+      get :export_excel
     end
   end
   resources :fuel_consumptions, only: [:index, :new, :create]

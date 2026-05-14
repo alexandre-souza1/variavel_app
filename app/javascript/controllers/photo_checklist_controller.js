@@ -3,7 +3,9 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = [
     "container",
-    "template"
+    "template",
+    "defectsContainer",
+    "defectTemplate"
   ]
 
   static values = {
@@ -43,5 +45,15 @@ export default class extends Controller {
     }
 
     reader.readAsDataURL(file)
+  }
+
+  addDefect() {
+    const template = this.defectTemplateTarget.innerHTML
+    const content = template.replace(/NEW_DEFECT/g, Date.now())
+
+    this.defectsContainerTarget.insertAdjacentHTML(
+      "beforeend",
+      content
+    )
   }
 }

@@ -1,0 +1,192 @@
+
+
+require "open-uri"
+require "tempfile"
+require "mini_magick"
+
+wb = xlsx_package.workbook
+styles = wb.styles
+
+title = styles.add_style(
+  b: true,
+  sz: 18,
+  alignment: {
+    horizontal: :center,
+    vertical: :center
+  }
+)
+
+header = styles.add_style(
+  b: true,
+  fg_color: "FFFFFF",
+  bg_color: "2E75B6",
+  alignment: {
+    horizontal: :center,
+    vertical: :center
+  }
+)
+
+section_header = styles.add_style(
+  b: true,
+  sz: 14,
+  fg_color: "FFFFFF",
+  bg_color: "1F4E78",
+  alignment: {
+    horizontal: :center,
+    vertical: :center
+  }
+)
+
+card = styles.add_style(
+  border: {
+    style: :thin,
+    color: "CCCCCC"
+  },
+  alignment: {
+    vertical: :top,
+    wrap_text: true
+  }
+)
+
+description_style = styles.add_style(
+  alignment: {
+    horizontal: :left,
+    vertical: :top,
+    wrap_text: true
+  },
+  border: {
+    style: :thin,
+    color: "CCCCCC"
+  }
+)
+
+wb.add_worksheet(name: "Checklist") do |sheet|
+
+  # largura equilibrada
+  sheet.column_widths 18, 18
+
+  # título
+  sheet.add_row [
+    "RELATÓRIO DE INSPEÇÃO VEICULAR",
+    nil
+  ], style: [title, title]
+
+  sheet.merge_cells("A1:B1")
+  sheet.rows.last.height = 30
+
+  sheet.add_row []
+
+  # informações
+  sheet.add_row [
+    "Placa",
+    @checklist.plate&.placa || @checklist.placa_manual
+  ], style: [header, card]
+
+  sheet.add_row [
+    "Responsável",
+    @checklist.responsavel
+  ], style: [header, card]
+
+  sheet.add_row []
+
+  # cabeçalho das fotos
+  sheet.add_row [
+    "REGISTRO FOTOGRÁFICO",
+    nil
+  ], style: [section_header, section_header]
+
+  sheet.merge_cells("A6:B6")
+  sheet.rows.last.height = 28
+
+  sheet.add_row []
+
+  # fotos em pares
+  photos = @checklist.checklist_photos.each_slice(2)
+
+  photos.each do |photo_pair|
+
+    image_row = sheet.rows.size + 1
+
+    # linha reservada pras imagens
+    sheet.add_row ["", ""]
+    sheet.rows.last.height = 170
+
+    photo_pair.each_with_index do |photo, col|
+
+      begin
+
+        downloaded = URI.open(
+          Rails.application.routes.url_helpers.url_for(photo.photo)
+        )
+
+        original = Tempfile.new(["original", ".jpg"])
+        original.binmode
+        original.write(downloaded.read)
+        original.rewind
+
+        image = MiniMagick::Image.open(original.path)
+
+        # mantém horizontal sem distorcer
+        image.resize "700x400>"
+
+        resized = Tempfile.new(["resized", ".jpg"])
+
+        image.write(resized.path)
+
+        sheet.add_image(
+          image_src: resized.path,
+          noSelect: false,
+          noMove: false
+        ) do |img|
+
+          # pequeno offset evita bug visual do Excel
+          img.start_at col + 0.15, image_row - 1
+
+          img.width = 250
+          img.height = 150
+
+        end
+
+      rescue => e
+
+        sheet.add_row [
+          "Erro ao carregar imagem",
+          e.message
+        ]
+
+      end
+
+    end
+
+    # descrição das fotos
+    descriptions = photo_pair.map do |photo|
+
+      tipo =
+        if photo.defect?
+          "DEFEITO"
+        else
+          "PADRÃO"
+        end
+
+      <<~TEXT
+      Tipo: #{tipo}
+
+      #{photo.description.presence || "Sem descrição"}
+      TEXT
+
+    end
+
+    descriptions << "" if descriptions.size == 1
+
+    sheet.add_row(
+      descriptions,
+      style: [description_style, description_style]
+    )
+
+    sheet.rows.last.height = 85
+
+    sheet.add_row []
+
+  end
+
+end

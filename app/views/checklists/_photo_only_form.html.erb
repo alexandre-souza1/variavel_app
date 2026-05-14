@@ -225,4 +225,159 @@
 
   </template>
 
+  <!-- DEFEITOS SEM FOTO -->
+
+  <div class="card shadow-sm border-0 mb-5">
+
+    <div class="card-header bg-white border-0">
+
+      <div class="d-flex flex-column flex-md-row gap-3 justify-content-between align-items-start align-items-md-center">
+
+        <div>
+          <h5 class="mb-1 fw-bold">
+            Defeitos sem Foto
+          </h5>
+
+          <small class="text-muted">
+            Informe defeitos encontrados que não possuem imagem
+          </small>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-lg"
+          data-action="photo-checklist#addDefect">
+
+          + Adicionar Defeito
+
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="card-body">
+
+      <div
+        class="d-flex flex-column gap-3"
+        data-photo-checklist-target="defectsContainer">
+
+        <% if @checklist.checklist_defects.empty? %>
+
+          <%= f.fields_for :checklist_defects,
+                ChecklistDefect.new do |defect_form| %>
+
+            <div class="border rounded-4 p-3 bg-light-subtle">
+
+              <div class="mb-3">
+
+                <%= defect_form.label :location,
+                      "Local do defeito",
+                      class: "form-label fw-semibold" %>
+
+                <%= defect_form.text_field :location,
+                      class: "form-control",
+                      placeholder: "Ex: Porta esquerda" %>
+
+              </div>
+
+              <div>
+
+                <%= defect_form.label :description,
+                      "Descrição",
+                      class: "form-label fw-semibold" %>
+
+                <%= defect_form.text_area :description,
+                      rows: 3,
+                      class: "form-control",
+                      placeholder: "Descreva o defeito encontrado" %>
+
+              </div>
+
+            </div>
+
+          <% end %>
+
+        <% else %>
+
+          <%= f.fields_for :checklist_defects do |defect_form| %>
+
+            <div class="border rounded-4 p-3 bg-light-subtle">
+
+              <div class="mb-3">
+
+                <%= defect_form.label :location,
+                      "Local do defeito",
+                      class: "form-label fw-semibold" %>
+
+                <%= defect_form.text_field :location,
+                      class: "form-control",
+                      placeholder: "Ex: Porta esquerda" %>
+
+              </div>
+
+              <div>
+
+                <%= defect_form.label :description,
+                      "Descrição",
+                      class: "form-label fw-semibold" %>
+
+                <%= defect_form.text_area :description,
+                      rows: 3,
+                      class: "form-control",
+                      placeholder: "Descreva o defeito encontrado" %>
+
+              </div>
+
+            </div>
+
+          <% end %>
+
+        <% end %>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <template data-photo-checklist-target="defectTemplate">
+
+    <%= f.fields_for :checklist_defects,
+          ChecklistDefect.new,
+          child_index: "NEW_DEFECT" do |defect_form| %>
+
+      <div class="border rounded-4 p-3 bg-light-subtle mb-3">
+
+        <div class="mb-3">
+
+          <%= defect_form.label :location,
+                "Local do defeito",
+                class: "form-label fw-semibold" %>
+
+          <%= defect_form.text_field :location,
+                class: "form-control",
+                placeholder: "Ex: Para-choque traseiro" %>
+
+        </div>
+
+        <div>
+
+          <%= defect_form.label :description,
+                "Descrição",
+                class: "form-label fw-semibold" %>
+
+          <%= defect_form.text_area :description,
+                rows: 3,
+                class: "form-control",
+                placeholder: "Descreva o defeito" %>
+
+        </div>
+
+      </div>
+
+    <% end %>
+
+  </template>
+
 </div>
