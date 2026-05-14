@@ -259,6 +259,10 @@
           checklists_path,
           class: "btn btn-secondary btn-lg shadow-sm px-4" %>
 
+    <%= link_to "Baixar Fotos",
+          download_photos_checklist_path(@checklist),
+          class: "btn btn-dark btn-lg shadow-sm px-4" %>      
+
     <%= link_to "Baixar PDF",
           checklist_path(@checklist, format: :pdf),
           class: "btn btn-primary btn-lg shadow-sm px-4" %>

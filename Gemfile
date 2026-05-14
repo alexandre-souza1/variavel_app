@@ -33,7 +33,7 @@ gem 'acts_as_list'
 gem "bootstrap"
 gem "ruby-vips"
 gem 'dotenv-rails'
-
+gem "rubyzip" # Para criar arquivos zip com as fotos dos checklists
 gem 'roo' # Para ler Excel
 # gem 'kaminari'
 # gem 'kaminari-bootstrap'

@@ -42,6 +42,10 @@ Rails.application.routes.draw do
     collection do
       get :historic
     end
+
+    member do
+      get :download_photos
+    end
   end
   resources :fuel_consumptions, only: [:index, :new, :create]
 

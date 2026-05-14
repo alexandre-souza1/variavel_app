@@ -410,6 +410,7 @@ DEPENDENCIES
   redis (~> 5.0)
   roo
   ruby-vips
+  rubyzip
   sassc-rails
   selenium-webdriver
   sprockets-rails

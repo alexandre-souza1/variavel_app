@@ -63,6 +63,34 @@ class ChecklistsController < ApplicationController
     end
   end
 
+  require "zip"
+
+  def download_photos
+    @checklist = Checklist.find(params[:id])
+
+    compressed_filestream = Zip::OutputStream.write_buffer do |zos|
+
+      @checklist.checklist_photos.each_with_index do |photo, index|
+
+        next unless photo.photo.attached?
+
+        filename =
+          photo.photo.filename.to_s.presence ||
+          "foto_#{index + 1}.jpg"
+
+        zos.put_next_entry(filename)
+
+        zos.write(photo.photo.download)
+      end
+    end
+
+    compressed_filestream.rewind
+
+    send_data compressed_filestream.read,
+              filename: "checklist_#{@checklist.id}_fotos.zip",
+              type: "application/zip"
+  end
+
   private
 
   def set_template
