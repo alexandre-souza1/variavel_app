@@ -181,13 +181,14 @@
 
                 <% if photo.photo.attached? %>
 
-                  <%= cl_image_tag photo.photo.key,
-                        width: 1000,
-                        height: 800,
-                        crop: :limit,
-                        quality: "auto:eco",
-                        fetch_format: "auto",
-                        class: "card-img-top" %>
+                <%= cl_image_tag photo.photo.key,
+                      width: 1000,
+                      height: 800,
+                      crop: :fill,
+                      gravity: :auto,
+                      quality: "auto:eco",
+                      fetch_format: "auto",
+                      class: "card-img-top checklist-photo" %>
 
                 <% end %>
 
