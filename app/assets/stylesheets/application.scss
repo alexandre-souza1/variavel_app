@@ -69,3 +69,9 @@
   from { opacity: 1; }
   to   { opacity: 0.3; }
 }
+
+.checklist-photo {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
