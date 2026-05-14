@@ -319,7 +319,13 @@ class ChecklistPdf < Prawn::Document
   # CHECKLIST FOTO ONLY
   # =========================
   def photo_only_section
-    return if @checklist.checklist_photos.empty?
+    has_photos =
+      @checklist.checklist_photos.any?
+
+    has_defects =
+      @checklist.checklist_defects.any?
+
+    return unless has_photos || has_defects
 
     move_down 10
 
@@ -329,106 +335,152 @@ class ChecklistPdf < Prawn::Document
 
     move_down 10
 
-    photos_data = []
+    # =========================
+    # FOTOS
+    # =========================
+    if has_photos
 
-    @checklist.checklist_photos.each do |photo_record|
+      photos_data = []
 
-      kind_label =
-        case photo_record.kind
-        when "standard"
-          "Foto padrão"
-        when "defect"
-          "Defeito"
-        else
-          photo_record.kind.to_s.humanize
-        end
+      @checklist.checklist_photos.each do |photo_record|
 
-      image_content =
-        if photo_record.photo.attached? && photo_record.photo.image?
+        kind_label =
+          case photo_record.kind
+          when "standard"
+            "Foto padrão"
+          when "defect"
+            "Defeito"
+          else
+            photo_record.kind.to_s.humanize
+          end
 
-          begin
-            url = photo_record.photo.url(
-              transformation: [
-                {
-                  width: 1000,
-                  height: 1000,
-                  crop: "limit",
-                  quality: "auto:eco",
-                  fetch_format: "auto"
-                }
-              ]
-            )
+        image_content =
+          if photo_record.photo.attached? && photo_record.photo.image?
 
-            file = URI.open(url)
+            begin
+              url = photo_record.photo.url(
+                transformation: [
+                  {
+                    width: 1000,
+                    height: 1000,
+                    crop: "limit",
+                    quality: "auto:eco",
+                    fetch_format: "auto"
+                  }
+                ]
+              )
 
+              file = URI.open(url)
+
+              {
+                image: file,
+                fit: [240, 180],
+                position: :center
+              }
+
+            rescue
+              {
+                content: "Erro ao carregar imagem",
+                align: :center,
+                valign: :center
+              }
+            end
+
+          else
             {
-              image: file,
-              fit: [240, 180],
-              position: :center
-            }
-
-          rescue
-            {
-              content: "Erro ao carregar imagem",
+              content: "Imagem indisponível",
               align: :center,
               valign: :center
             }
           end
 
-        else
+        description =
+          if photo_record.description.present?
+            "#{kind_label}\n#{photo_record.description}"
+          else
+            kind_label
+          end
+
+        photos_data << [
+          image_content,
           {
-            content: "Imagem indisponível",
+            content: description,
             align: :center,
-            valign: :center
+            size: 9,
+            padding: [5, 5, 5, 5]
           }
-        end
-
-      description =
-        if photo_record.description.present?
-          "#{kind_label}\n#{photo_record.description}"
-        else
-          kind_label
-        end
-
-      photos_data << [
-        image_content,
-        {
-          content: description,
-          align: :center,
-          size: 9,
-          padding: [5, 5, 5, 5]
-        }
-      ]
-    end
-
-    photos_data.each_slice(2) do |slice|
-
-      while slice.size < 2
-        slice << [
-          { content: "" },
-          { content: "" }
         ]
       end
 
-      image_row = slice.map { |item| item[0] }
-      text_row  = slice.map { |item| item[1] }
+      photos_data.each_slice(2) do |slice|
 
-      table(
-        [image_row, text_row],
-        width: bounds.width,
-        column_widths: [bounds.width / 2, bounds.width / 2],
-        cell_style: {
-          borders: [:top, :bottom, :left, :right],
-          border_width: 0.5,
-          padding: 5,
-          align: :center,
-          valign: :center
-        }
-      ) do |t|
-        t.row(0).height = 190
+        while slice.size < 2
+          slice << [
+            { content: "" },
+            { content: "" }
+          ]
+        end
+
+        image_row = slice.map { |item| item[0] }
+        text_row  = slice.map { |item| item[1] }
+
+        table(
+          [image_row, text_row],
+          width: bounds.width,
+          column_widths: [bounds.width / 2, bounds.width / 2],
+          cell_style: {
+            borders: [:top, :bottom, :left, :right],
+            border_width: 0.5,
+            padding: 5,
+            align: :center,
+            valign: :center
+          }
+        ) do |t|
+          t.row(0).height = 190
+        end
+
+        move_down 10
+      end
+    end
+
+    # =========================
+    # DEFEITOS SEM FOTO
+    # =========================
+    if has_defects
+
+      move_down 15
+
+      text "Defeitos sem Foto",
+          size: 12,
+          style: :bold
+
+      move_down 8
+
+      defects_data = [
+        ["Local", "Descrição"]
+      ]
+
+      @checklist.checklist_defects.each do |defect|
+
+        defects_data << [
+          defect.location.presence || "-",
+          defect.description.presence || "-"
+        ]
       end
 
-      move_down 10
+      table(
+        defects_data,
+        header: true,
+        column_widths: [150, 350]
+      ) do
+
+        row(0).font_style = :bold
+        row(0).background_color = "DDDDDD"
+
+        cells.padding = 6
+        cells.size = 10
+        cells.valign = :center
+      end
     end
   end
 

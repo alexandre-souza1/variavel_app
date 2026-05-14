@@ -1,5 +1,3 @@
-
-
 require "open-uri"
 require "tempfile"
 require "mini_magick"
@@ -7,9 +5,14 @@ require "mini_magick"
 wb = xlsx_package.workbook
 styles = wb.styles
 
+# =========================
+# ESTILOS
+# =========================
+
 title = styles.add_style(
   b: true,
   sz: 18,
+  fg_color: "1F1F1F",
   alignment: {
     horizontal: :center,
     vertical: :center
@@ -22,7 +25,12 @@ header = styles.add_style(
   bg_color: "2E75B6",
   alignment: {
     horizontal: :center,
-    vertical: :center
+    vertical: :center,
+    wrap_text: true
+  },
+  border: {
+    style: :thin,
+    color: "D9D9D9"
   }
 )
 
@@ -40,7 +48,7 @@ section_header = styles.add_style(
 card = styles.add_style(
   border: {
     style: :thin,
-    color: "CCCCCC"
+    color: "D9D9D9"
   },
   alignment: {
     vertical: :top,
@@ -56,81 +64,135 @@ description_style = styles.add_style(
   },
   border: {
     style: :thin,
-    color: "CCCCCC"
+    color: "D9D9D9"
   }
 )
 
+defect_style = styles.add_style(
+  bg_color: "FFF4E5",
+  alignment: {
+    horizontal: :left,
+    vertical: :top,
+    wrap_text: true
+  },
+  border: {
+    style: :thin,
+    color: "E0B97D"
+  }
+)
+
+# =========================
+# PLANILHA
+# =========================
+
 wb.add_worksheet(name: "Checklist") do |sheet|
 
-  # largura equilibrada
-  sheet.column_widths 18, 18
+  # largura inicial (será reforçada no final)
+  sheet.column_widths 35, 35, 35
 
-  # título
+  # =========================
+  # TÍTULO
+  # =========================
+
   sheet.add_row [
     "RELATÓRIO DE INSPEÇÃO VEICULAR",
+    nil,
     nil
-  ], style: [title, title]
+  ], style: [title, title, title]
 
-  sheet.merge_cells("A1:B1")
+  sheet.merge_cells("A1:C1")
+  sheet.rows.last.height = 33
+
+  sheet.add_row []
+
+  # =========================
+  # INFORMAÇÕES
+  # =========================
+
+  sheet.add_row(
+    [
+      "Placa",
+      @checklist.plate&.placa || @checklist.placa_manual || "-",
+      ""
+    ],
+    style: [header, card, card]
+  )
+
+  sheet.add_row(
+    [
+      "Responsável",
+      @checklist.responsavel.presence || "-",
+      ""
+    ],
+    style: [header, card, card]
+  )
+
+  if @checklist.vehicle_model.present?
+    sheet.add_row(
+      [
+        "Modelo",
+        @checklist.vehicle_model,
+        ""
+      ],
+      style: [header, card, card]
+    )
+  end
+
+  if @checklist.kilometer.present?
+    sheet.add_row(
+      [
+        "Quilometragem",
+        "#{@checklist.kilometer} km",
+        ""
+      ],
+      style: [header, card, card]
+    )
+  end
+
+  sheet.add_row []
+
+  # =========================
+  # CABEÇALHO DAS FOTOS
+  # =========================
+
+  section_row = sheet.rows.size + 1
+  sheet.add_row [
+    "REGISTRO FOTOGRÁFICO",
+    nil,
+    nil
+  ], style: [section_header, section_header, section_header]
+
+  sheet.merge_cells("A#{section_row}:C#{section_row}")
   sheet.rows.last.height = 30
 
   sheet.add_row []
 
-  # informações
-  sheet.add_row [
-    "Placa",
-    @checklist.plate&.placa || @checklist.placa_manual
-  ], style: [header, card]
+  # =========================
+  # FOTOS
+  # =========================
 
-  sheet.add_row [
-    "Responsável",
-    @checklist.responsavel
-  ], style: [header, card]
+  photos = @checklist.checklist_photos.each_slice(3)
 
-  sheet.add_row []
-
-  # cabeçalho das fotos
-  sheet.add_row [
-    "REGISTRO FOTOGRÁFICO",
-    nil
-  ], style: [section_header, section_header]
-
-  sheet.merge_cells("A6:B6")
-  sheet.rows.last.height = 28
-
-  sheet.add_row []
-
-  # fotos em pares
-  photos = @checklist.checklist_photos.each_slice(2)
-
-  photos.each do |photo_pair|
-
+  photos.each do |photo_group|
     image_row = sheet.rows.size + 1
+    sheet.add_row ["", "", ""]
+    # CORREÇÃO: altura da linha ajustada para 190
+    sheet.rows.last.height = 190
 
-    # linha reservada pras imagens
-    sheet.add_row ["", ""]
-    sheet.rows.last.height = 170
-
-    photo_pair.each_with_index do |photo, col|
-
+    photo_group.each_with_index do |photo, col|
       begin
-
         downloaded = URI.open(
           Rails.application.routes.url_helpers.url_for(photo.photo)
         )
-
         original = Tempfile.new(["original", ".jpg"])
         original.binmode
         original.write(downloaded.read)
         original.rewind
 
         image = MiniMagick::Image.open(original.path)
-
-        # mantém horizontal sem distorcer
-        image.resize "700x400>"
+        image.resize "1200x900>"
 
         resized = Tempfile.new(["resized", ".jpg"])
-
         image.write(resized.path)
 
         sheet.add_image(
@@ -138,55 +200,108 @@ wb.add_worksheet(name: "Checklist") do |sheet|
           noSelect: false,
           noMove: false
         ) do |img|
-
-          # pequeno offset evita bug visual do Excel
-          img.start_at col + 0.15, image_row - 1
-
-          img.width = 250
-          img.height = 150
-
+          img.start_at col, image_row - 1
+          img.width = 280
+          img.height = 190
         end
 
       rescue => e
-
-        sheet.add_row [
-          "Erro ao carregar imagem",
-          e.message
-        ]
-
+        # CORREÇÃO: apenas loga o erro, sem escrever na célula
+        Rails.logger.error "[CHECKLIST_XLSX] Erro ao carregar imagem da foto ID #{photo.id}: #{e.message}"
       end
-
     end
 
-    # descrição das fotos
-    descriptions = photo_pair.map do |photo|
+    # CORREÇÃO: reforça a altura da linha após adicionar as imagens
+    sheet.rows[image_row - 1].height = 190
 
-      tipo =
-        if photo.defect?
-          "DEFEITO"
-        else
-          "PADRÃO"
-        end
+    # =========================
+    # DESCRIÇÕES DAS FOTOS
+    # =========================
+
+    descriptions = photo_group.map do |photo|
+      tipo = photo.defect? ? "DEFEITO" : "PADRÃO"
+      desc = photo.description.presence || "Sem descrição"
+
+      # LOG: alerta se a descrição for muito longa e sem espaços (possível causa do 713)
+      if desc.length > 200 && desc.exclude?(" ")
+        Rails.logger.warn "[CHECKLIST_XLSX] Descrição da foto ID #{photo.id} tem #{desc.length} caracteres sem espaços – pode forçar largura da coluna."
+      end
 
       <<~TEXT
       Tipo: #{tipo}
 
-      #{photo.description.presence || "Sem descrição"}
+      #{desc}
       TEXT
-
     end
 
-    descriptions << "" if descriptions.size == 1
+    # preenche com strings vazias para completar a linha de 3 colunas
+    descriptions += [""] * (3 - descriptions.size)
 
-    sheet.add_row(
-      descriptions,
-      style: [description_style, description_style]
-    )
+    styles_array = photo_group.map do |photo|
+      photo.defect? ? defect_style : description_style
+    end
+    styles_array += [description_style] * (3 - styles_array.size)
 
-    sheet.rows.last.height = 85
+    sheet.add_row(descriptions, style: styles_array)
+    sheet.rows.last.height = 80
+
+    sheet.add_row []
+  end
+
+  # =========================
+  # DEFEITOS SEM FOTO
+  # =========================
+
+  if @checklist.checklist_defects.any?
+    sheet.add_row []
+
+    defect_section_row = sheet.rows.size + 1
+    sheet.add_row [
+      "DEFEITOS SEM FOTO",
+      nil,
+      nil
+    ], style: [section_header, section_header, section_header]
+
+    sheet.merge_cells("A#{defect_section_row}:C#{defect_section_row}")
+    sheet.rows.last.height = 30
 
     sheet.add_row []
 
+    sheet.add_row(
+      ["Local", "Descrição", ""],
+      style: [header, header, header]
+    )
+
+    @checklist.checklist_defects.each do |defect|
+      desc = defect.description.presence || "-"
+
+      # LOG: verifica defeitos sem espaços e muito longos
+      if desc.length > 200 && desc.exclude?(" ")
+        Rails.logger.warn "[CHECKLIST_XLSX] Descrição do defeito ID #{defect.id} tem #{desc.length} caracteres sem espaços – pode forçar largura da coluna."
+      end
+
+      sheet.add_row(
+        [
+          defect.location.presence || "-",
+          desc,
+          ""
+        ],
+        style: [card, defect_style, card]
+      )
+      sheet.rows.last.height = 65
+    end
   end
 
+  # =========================
+  # CORREÇÃO: FORÇAR LARGURAS NOVAMENTE NO FINAL
+  # Isso garante que qualquer expansão automática seja sobrescrita.
+  # =========================
+  sheet.column_widths 35, 35, 35
+
+  # =========================
+  # CONFIGURAÇÃO DE IMPRESSÃO
+  # =========================
+
+  sheet.page_setup.orientation = :landscape
+  sheet.page_setup.paper_size = 9 # A4
 end

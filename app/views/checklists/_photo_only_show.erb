@@ -251,6 +251,104 @@
 
   </div>
 
+  <!-- DEFEITOS SEM FOTO -->
+
+  <div class="card shadow-sm border-0 mt-4">
+
+    <div class="card-header bg-white border-0">
+
+      <div>
+
+        <h5 class="fw-bold mb-1">
+          Defeitos Informados
+        </h5>
+
+        <small class="text-muted">
+          <%= @checklist.checklist_defects.count %> defeito(s)
+        </small>
+
+      </div>
+
+    </div>
+
+    <div class="card-body">
+
+      <% if @checklist.checklist_defects.any? %>
+
+        <div class="row g-4">
+
+          <% @checklist.checklist_defects.each do |defect| %>
+
+            <div class="col-12 col-md-6">
+
+              <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                <div class="card-body">
+
+                  <span class="badge bg-warning text-dark mb-3">
+                    Defeito sem foto
+                  </span>
+
+                  <% if defect.location.present? %>
+
+                    <div class="mb-3">
+
+                      <small class="text-muted text-uppercase d-block">
+                        Local
+                      </small>
+
+                      <div class="fw-semibold">
+                        <%= defect.location %>
+                      </div>
+
+                    </div>
+
+                  <% end %>
+
+                  <% if defect.description.present? %>
+
+                    <div>
+
+                      <small class="text-muted text-uppercase d-block">
+                        Descrição
+                      </small>
+
+                      <div>
+                        <%= defect.description %>
+                      </div>
+
+                    </div>
+
+                  <% else %>
+
+                    <p class="text-muted mb-0">
+                      Sem descrição
+                    </p>
+
+                  <% end %>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          <% end %>
+
+        </div>
+
+      <% else %>
+
+        <div class="alert alert-secondary mb-0">
+          Nenhum defeito sem foto informado.
+        </div>
+
+      <% end %>
+
+    </div>
+
+  </div>
+
   <!-- BOTÕES -->
 
   <div class="mt-4 d-flex flex-column flex-md-row gap-3 justify-content-between">
