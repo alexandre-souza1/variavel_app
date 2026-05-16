@@ -1,9 +1,12 @@
 <h1><%= @template.name %></h1>
 
-<%= form_with model: @checklist, local: true, data: { 
-      controller: "checklist-validation", turbo: false,
+<%= form_with model: @checklist, local: true, data: {
+  controller: "checklist-validation autosave", turbo: false,
       action: "submit->checklist-validation#validate" } do |f| %>
   <%= f.hidden_field :checklist_template_id %>
+  <%= hidden_field_tag :autosave_id,
+      @checklist.id,
+      id: "autosave_id" %>
 
   <% if @template.photo_only? %>
     <%= render "photo_only_form", f: f %>

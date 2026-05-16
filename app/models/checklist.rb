@@ -4,6 +4,10 @@ class Checklist < ApplicationRecord
   belongs_to :plate, optional: true
   has_many :checklist_responses, dependent: :destroy
   accepts_nested_attributes_for :checklist_responses
+  enum :status, {
+    draft: "draft",
+    completed: "completed"
+  }
 
   has_one_attached :photo_front
   has_one_attached :photo_left_truck

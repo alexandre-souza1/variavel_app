@@ -12,19 +12,51 @@ class ChecklistsController < ApplicationController
 
   def new
     @template = ChecklistTemplate.find(params[:template_id])
-    @checklist = Checklist.new(checklist_template: @template)
+
+    @checklist =
+      if user_signed_in?
+
+        checklist = current_user.checklists.new(
+          checklist_template: @template,
+          status: "draft"
+        )
+
+        checklist.save(validate: false)
+
+        checklist
+
+      else
+
+        checklist = Checklist.new(
+          checklist_template: @template,
+          status: "draft"
+        )
+
+        checklist.user =
+          User.find_by(email: "anon@system.local")
+
+        checklist.save(validate: false)
+
+        checklist
+
+      end
 
     if @template.photo_only?
-      1.times do
-        @checklist.checklist_photos.build
-      end
+
+      @checklist.checklist_photos.build
+
     else
+
       @template.checklist_items.each do |item|
-        @checklist.checklist_responses.build(checklist_item: item)
+
+        @checklist.checklist_responses.build(
+          checklist_item: item
+        )
+
       end
+
     end
 
-    # Filtra as placas pelo setor do template
     @plates = Plate.where(setor: @template.setor)
   end
 
@@ -46,6 +78,27 @@ class ChecklistsController < ApplicationController
     else
       @plates = Plate.where(setor: @template.setor)
       render :new, status: :unprocessable_entity
+    end
+  end
+
+  def update
+    @checklist = Checklist.find(params[:id])
+
+    if @checklist.update(checklist_params)
+
+      @checklist.update(status: "completed")
+
+      redirect_to @checklist,
+                  notice: "Checklist enviado com sucesso."
+
+    else
+
+      @template = @checklist.checklist_template
+      @plates = Plate.where(setor: @template.setor)
+
+      render :new,
+            status: :unprocessable_entity
+
     end
   end
 
@@ -104,6 +157,32 @@ class ChecklistsController < ApplicationController
   end
 
   private
+
+  def autosave
+    if params[:id].present?
+      @checklist = Checklist.find(params[:id])
+      @checklist.update(checklist_params)
+
+    else
+      @checklist = Checklist.new(checklist_params)
+
+      if user_signed_in?
+        @checklist.user = current_user
+      else
+        @checklist.user =
+          User.find_by(email: "anon@system.local")
+      end
+
+      @checklist.status = "draft"
+
+      @checklist.save(validate: false)
+    end
+
+    render json: {
+      success: true,
+      checklist_id: @checklist.id
+    }
+  end
 
   def set_template
     @template = ChecklistTemplate.find(params[:template_id])

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_14_161744) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_16_152621) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -177,6 +177,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_161744) do
     t.string "gas_state"
     t.float "kilometer"
     t.string "origin"
+    t.string "status", default: "draft"
     t.index ["checklist_template_id"], name: "index_checklists_on_checklist_template_id"
     t.index ["plate_id"], name: "index_checklists_on_plate_id"
     t.index ["user_id"], name: "index_checklists_on_user_id"
