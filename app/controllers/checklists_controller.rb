@@ -1,5 +1,8 @@
 class ChecklistsController < ApplicationController
-  before_action :authenticate_user!, except: [:new, :create, :show]
+  ANONYMOUS_USER_EMAIL = "anon@system.local"
+
+  before_action :authenticate_user!,
+                except: [:new, :create, :show, :edit, :update, :autosave, :restart]
   before_action :set_template, only: [:new]
 
   def index
@@ -11,53 +14,95 @@ class ChecklistsController < ApplicationController
   end
 
   def new
-    @template = ChecklistTemplate.find(params[:template_id])
+    @template =
+      ChecklistTemplate.find(params[:template_id])
 
-    @checklist =
+    # =========================
+    # DEFINE O USUÁRIO
+    # =========================
+
+    user =
+      checklist_user
+
+    # =========================
+    # PROCURA DRAFT EXISTENTE
+    # =========================
+
+    existing_draft =
       if user_signed_in?
-
-        checklist = current_user.checklists.new(
+        user.checklists.find_by(
           checklist_template: @template,
           status: "draft"
         )
+      else
+        draft_id =
+          anonymous_checklist_ids[@template.id.to_s]
 
-        checklist.save(validate: false)
+        user.checklists.find_by(
+          id: draft_id,
+          checklist_template: @template,
+          status: "draft"
+        )
+      end
 
-        checklist
+    # =========================
+    # EXPIRA DRAFTS ANTIGOS
+    # =========================
+
+    if existing_draft.present? &&
+      existing_draft.updated_at < 2.hours.ago
+
+      existing_draft.destroy
+      existing_draft = nil
+    end
+
+    # =========================
+    # USA DRAFT OU CRIA NOVO
+    # =========================
+
+    @checklist =
+      if existing_draft.present?
+
+        existing_draft
 
       else
 
-        checklist = Checklist.new(
-          checklist_template: @template,
-          status: "draft"
-        )
-
-        checklist.user =
-          User.find_by(email: "anon@system.local")
+        checklist =
+          user.checklists.new(
+            checklist_template: @template,
+            status: "draft"
+          )
 
         checklist.save(validate: false)
+        remember_anonymous_checklist(checklist)
 
         checklist
-
       end
 
-    if @template.photo_only?
+    # =========================
+    # MONTA CAMPOS INICIAIS
+    # =========================
 
-      @checklist.checklist_photos.build
+    prepare_checklist_form
 
-    else
+    # =========================
+    # PLACAS
+    # =========================
 
-      @template.checklist_items.each do |item|
+    @plates =
+      Plate.where(setor: @template.setor)
+  end
 
-        @checklist.checklist_responses.build(
-          checklist_item: item
-        )
+  def edit
+    @checklist = accessible_checklist
+    @template = @checklist.checklist_template
 
-      end
+    prepare_checklist_form
 
-    end
+    @plates =
+      Plate.where(setor: @template.setor)
 
-    @plates = Plate.where(setor: @template.setor)
+    render :new
   end
 
   def create
@@ -70,10 +115,12 @@ class ChecklistsController < ApplicationController
       @checklist = Checklist.new(checklist_params)
       # define user_id como "usuário não registrado"
       # (criaremos um usuário padrão pra isso no passo 3)
-      @checklist.user = User.find_by(email: "anon@system.local")
+      @checklist.user = checklist_user
     end
 
     if @checklist.save
+      remember_anonymous_checklist(@checklist)
+
       redirect_to @checklist, notice: 'Checklist enviado com sucesso.'
     else
       @plates = Plate.where(setor: @template.setor)
@@ -82,7 +129,7 @@ class ChecklistsController < ApplicationController
   end
 
   def update
-    @checklist = Checklist.find(params[:id])
+    @checklist = accessible_checklist
 
     if @checklist.update(checklist_params)
 
@@ -100,6 +147,18 @@ class ChecklistsController < ApplicationController
             status: :unprocessable_entity
 
     end
+  end
+
+  def restart
+    checklist = accessible_checklist
+
+    checklist.destroy
+
+    forget_anonymous_checklist(checklist)
+
+    redirect_to new_checklist_path(
+      template_id: checklist.checklist_template_id
+    )
   end
 
   def show
@@ -156,11 +215,9 @@ class ChecklistsController < ApplicationController
     end
   end
 
-  private
-
   def autosave
     if params[:id].present?
-      @checklist = Checklist.find(params[:id])
+      @checklist = accessible_checklist
       @checklist.update(checklist_params)
 
     else
@@ -169,19 +226,98 @@ class ChecklistsController < ApplicationController
       if user_signed_in?
         @checklist.user = current_user
       else
-        @checklist.user =
-          User.find_by(email: "anon@system.local")
+        @checklist.user = checklist_user
       end
 
       @checklist.status = "draft"
 
       @checklist.save(validate: false)
+      remember_anonymous_checklist(@checklist)
     end
 
     render json: {
       success: true,
       checklist_id: @checklist.id
     }
+  end
+
+  private
+
+  def checklist_user
+    if user_signed_in?
+      current_user
+    else
+      User.find_by!(email: ANONYMOUS_USER_EMAIL)
+    end
+  end
+
+  def accessible_checklist
+    checklist =
+      checklist_user.checklists.find(params[:id])
+
+    return checklist if user_signed_in?
+
+    draft_id =
+      anonymous_checklist_ids[checklist.checklist_template_id.to_s]
+
+    raise ActiveRecord::RecordNotFound unless draft_id.to_i == checklist.id
+
+    checklist
+  end
+
+  def anonymous_checklist_ids
+    session[:anonymous_checklist_ids] ||= {}
+  end
+
+  def remember_anonymous_checklist(checklist)
+    return if user_signed_in?
+
+    checklist_ids =
+      anonymous_checklist_ids
+
+    checklist_ids[checklist.checklist_template_id.to_s] =
+      checklist.id
+
+    session[:anonymous_checklist_ids] =
+      checklist_ids
+  end
+
+  def forget_anonymous_checklist(checklist)
+    return if user_signed_in?
+
+    checklist_ids =
+      anonymous_checklist_ids
+
+    checklist_ids.delete(
+      checklist.checklist_template_id.to_s
+    )
+
+    session[:anonymous_checklist_ids] =
+      checklist_ids
+  end
+
+  def prepare_checklist_form
+    if @template.photo_only?
+
+      if @checklist.checklist_photos.empty?
+        @checklist.checklist_photos.build
+      end
+
+    else
+
+      if @checklist.checklist_responses.empty?
+
+        @template.checklist_items.each do |item|
+
+          @checklist.checklist_responses.build(
+            checklist_item: item
+          )
+
+        end
+
+      end
+
+    end
   end
 
   def set_template

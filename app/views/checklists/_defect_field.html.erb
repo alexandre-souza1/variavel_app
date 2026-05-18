@@ -1,0 +1,48 @@
+<div class="border rounded-4 p-3 bg-light-subtle">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+
+    <h6 class="mb-0 fw-semibold">
+      Defeito
+    </h6>
+
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-danger"
+      data-action="photo-checklist#removeDefect">
+
+      Remover
+
+    </button>
+
+  </div>
+
+  <%= f.hidden_field :_destroy,
+        value: false %>
+
+  <div class="mb-3">
+
+    <%= f.label :location,
+          "Local do defeito",
+          class: "form-label fw-semibold" %>
+
+    <%= f.text_field :location,
+          class: "form-control",
+          placeholder: "Ex: Porta esquerda" %>
+
+  </div>
+
+  <div>
+
+    <%= f.label :description,
+          "Descrição",
+          class: "form-label fw-semibold" %>
+
+    <%= f.text_area :description,
+          rows: 3,
+          class: "form-control",
+          placeholder: "Descreva o defeito encontrado" %>
+
+  </div>
+
+</div>

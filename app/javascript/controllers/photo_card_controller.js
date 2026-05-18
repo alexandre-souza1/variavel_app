@@ -8,11 +8,15 @@ export default class extends Controller {
     "video",
     "canvas",
     "input",
-    "captureButton"
+    "captureButton",
+    "pickButton",
+    "replaceActions",
+    "destroyInput"
   ]
 
   connect() {
     this.toggleDescription()
+    this.syncPhotoActions()
   }
 
   preview(event) {
@@ -25,6 +29,8 @@ export default class extends Controller {
     reader.onload = (e) => {
       this.previewTarget.src = e.target.result
       this.previewTarget.classList.remove("d-none")
+      this.keepPhoto()
+      this.syncPhotoActions()
     }
 
     reader.readAsDataURL(file)
@@ -92,6 +98,8 @@ export default class extends Controller {
         URL.createObjectURL(blob)
 
       this.previewTarget.classList.remove("d-none")
+      this.keepPhoto()
+      this.syncPhotoActions()
 
       const stream =
         this.videoTarget.srcObject
@@ -106,5 +114,37 @@ export default class extends Controller {
 
   openFilePicker() {
     this.inputTarget.click()
+  }
+
+  clearPhoto() {
+    this.inputTarget.value = ""
+
+    if (this.hasDestroyInputTarget) {
+      this.destroyInputTarget.value = "1"
+    }
+
+    this.previewTarget.src = ""
+    this.previewTarget.classList.add("d-none")
+    this.syncPhotoActions()
+  }
+
+  keepPhoto() {
+    if (this.hasDestroyInputTarget) {
+      this.destroyInputTarget.value = "false"
+    }
+  }
+
+  syncPhotoActions() {
+    const hasPhoto =
+      this.previewTarget.src.length > 0 &&
+      !this.previewTarget.classList.contains("d-none")
+
+    if (this.hasPickButtonTarget) {
+      this.pickButtonTarget.classList.toggle("d-none", hasPhoto)
+    }
+
+    if (this.hasReplaceActionsTarget) {
+      this.replaceActionsTarget.classList.toggle("d-none", !hasPhoto)
+    }
   }
 }

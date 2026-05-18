@@ -12,15 +12,15 @@ export default class extends Controller {
     index: Number
   }
 
-  addPhoto() {
+  addPhoto(event) {
     const content =
       this.templateTarget.innerHTML.replaceAll(
         "NEW_RECORD",
         this.indexValue
       )
 
-    this.containerTarget.insertAdjacentHTML(
-      "beforeend",
+    event.target.insertAdjacentHTML(
+      "beforebegin",
       content
     )
 
@@ -28,7 +28,21 @@ export default class extends Controller {
   }
 
   removePhoto(event) {
-    event.target.closest(".card").remove()
+    const card =
+      event.target.closest(".card")
+
+    const destroyInput =
+      card.querySelector('input[name$="[_destroy]"]')
+
+    const idInput =
+      card.querySelector('input[name$="[id]"]')
+
+    if (destroyInput && idInput) {
+      destroyInput.value = "1"
+      card.classList.add("d-none")
+    } else {
+      card.remove()
+    }
   }
 
   previewImage(event) {
@@ -47,13 +61,31 @@ export default class extends Controller {
     reader.readAsDataURL(file)
   }
 
-  addDefect() {
+  addDefect(event) {
     const template = this.defectTemplateTarget.innerHTML
     const content = template.replace(/NEW_DEFECT/g, Date.now())
 
-    this.defectsContainerTarget.insertAdjacentHTML(
-      "beforeend",
+    event.target.insertAdjacentHTML(
+      "beforebegin",
       content
     )
+  }
+
+  removeDefect(event) {
+    const card =
+      event.target.closest(".border")
+
+    const destroyInput =
+      card.querySelector('input[name$="[_destroy]"]')
+
+    const idInput =
+      card.querySelector('input[name$="[id]"]')
+
+    if (destroyInput && idInput) {
+      destroyInput.value = "1"
+      card.classList.add("d-none")
+    } else {
+      card.remove()
+    }
   }
 }

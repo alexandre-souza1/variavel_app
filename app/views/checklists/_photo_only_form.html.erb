@@ -180,15 +180,6 @@
           </small>
         </div>
 
-        <button
-          type="button"
-          class="btn btn-primary btn-lg w-100 w-md-auto"
-          data-action="photo-checklist#addPhoto">
-
-          + Adicionar Foto
-
-        </button>
-
       </div>
 
     </div>
@@ -205,6 +196,15 @@
                 f: photo_form %>
 
         <% end %>
+
+        <button
+          type="button"
+          class="btn btn-primary btn-lg w-100"
+          data-action="photo-checklist#addPhoto">
+
+          + Adicionar Foto
+
+        </button>
 
       </div>
 
@@ -243,15 +243,6 @@
           </small>
         </div>
 
-        <button
-          type="button"
-          class="btn btn-outline-secondary btn-lg"
-          data-action="photo-checklist#addDefect">
-
-          + Adicionar Defeito
-
-        </button>
-
       </div>
 
     </div>
@@ -267,34 +258,8 @@
           <%= f.fields_for :checklist_defects,
                 ChecklistDefect.new do |defect_form| %>
 
-            <div class="border rounded-4 p-3 bg-light-subtle">
-
-              <div class="mb-3">
-
-                <%= defect_form.label :location,
-                      "Local do defeito",
-                      class: "form-label fw-semibold" %>
-
-                <%= defect_form.text_field :location,
-                      class: "form-control",
-                      placeholder: "Ex: Porta esquerda" %>
-
-              </div>
-
-              <div>
-
-                <%= defect_form.label :description,
-                      "Descrição",
-                      class: "form-label fw-semibold" %>
-
-                <%= defect_form.text_area :description,
-                      rows: 3,
-                      class: "form-control",
-                      placeholder: "Descreva o defeito encontrado" %>
-
-              </div>
-
-            </div>
+            <%= render "defect_field",
+                  f: defect_form %>
 
           <% end %>
 
@@ -302,38 +267,21 @@
 
           <%= f.fields_for :checklist_defects do |defect_form| %>
 
-            <div class="border rounded-4 p-3 bg-light-subtle">
-
-              <div class="mb-3">
-
-                <%= defect_form.label :location,
-                      "Local do defeito",
-                      class: "form-label fw-semibold" %>
-
-                <%= defect_form.text_field :location,
-                      class: "form-control",
-                      placeholder: "Ex: Porta esquerda" %>
-
-              </div>
-
-              <div>
-
-                <%= defect_form.label :description,
-                      "Descrição",
-                      class: "form-label fw-semibold" %>
-
-                <%= defect_form.text_area :description,
-                      rows: 3,
-                      class: "form-control",
-                      placeholder: "Descreva o defeito encontrado" %>
-
-              </div>
-
-            </div>
+            <%= render "defect_field",
+                  f: defect_form %>
 
           <% end %>
 
         <% end %>
+
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-lg w-100"
+          data-action="photo-checklist#addDefect">
+
+          + Adicionar Defeito
+
+        </button>
 
       </div>
 
@@ -347,34 +295,8 @@
           ChecklistDefect.new,
           child_index: "NEW_DEFECT" do |defect_form| %>
 
-      <div class="border rounded-4 p-3 bg-light-subtle mb-3">
-
-        <div class="mb-3">
-
-          <%= defect_form.label :location,
-                "Local do defeito",
-                class: "form-label fw-semibold" %>
-
-          <%= defect_form.text_field :location,
-                class: "form-control",
-                placeholder: "Ex: Para-choque traseiro" %>
-
-        </div>
-
-        <div>
-
-          <%= defect_form.label :description,
-                "Descrição",
-                class: "form-label fw-semibold" %>
-
-          <%= defect_form.text_area :description,
-                rows: 3,
-                class: "form-control",
-                placeholder: "Descreva o defeito" %>
-
-        </div>
-
-      </div>
+      <%= render "defect_field",
+            f: defect_form %>
 
     <% end %>
 

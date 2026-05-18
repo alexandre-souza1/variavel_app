@@ -1,6 +1,7 @@
 <div
   class="card shadow-sm mb-4"
-  data-controller="photo-card">
+  data-controller="photo-card"
+  data-photo-card-target="card">
 
   <div class="card-body">
 
@@ -15,6 +16,12 @@
         Remover
       </button>
     </div>
+
+    <%= f.hidden_field :_destroy,
+          value: false,
+          data: {
+            photo_card_target: "destroyInput"
+          } %>
 
     <div class="mb-3">
 
@@ -31,6 +38,7 @@
       <button
         type="button"
         class="btn btn-primary btn-lg w-100"
+        data-photo-card-target="pickButton"
         data-action="photo-card#openFilePicker">
 
         📷 Abrir câmera
@@ -40,9 +48,33 @@
     </div>
 
     <img
-      src=""
-      class="img-fluid rounded d-none mb-3"
+      src="<%= url_for(f.object.photo) if f.object.photo.attached? %>"
+      class="img-fluid rounded mb-3 <%= "d-none" unless f.object.photo.attached? %>"
       data-photo-card-target="preview">
+
+    <div
+      class="d-none d-grid gap-2 mb-3"
+      data-photo-card-target="replaceActions">
+
+      <button
+        type="button"
+        class="btn btn-outline-primary"
+        data-action="photo-card#openFilePicker">
+
+        Trocar foto
+
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        data-action="photo-card#clearPhoto">
+
+        Limpar seleção
+
+      </button>
+
+    </div>
 
     <%= f.label :kind, "Tipo da Foto" %>
 

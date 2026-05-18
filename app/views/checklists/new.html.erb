@@ -1,7 +1,7 @@
 <h1><%= @template.name %></h1>
 
 <%= form_with model: @checklist, local: true, data: {
-  controller: "checklist-validation autosave", turbo: false,
+  controller: "checklist-validation autosave before-leave", turbo: false,
       action: "submit->checklist-validation#validate" } do |f| %>
   <%= f.hidden_field :checklist_template_id %>
   <%= hidden_field_tag :autosave_id,

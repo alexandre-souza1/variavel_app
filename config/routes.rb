@@ -39,14 +39,16 @@ Rails.application.routes.draw do
   resources :downloads
 
   resources :checklists do
+    patch :autosave, on: :collection
+
     collection do
       get :historic
-      post :autosave
     end
 
     member do
       get :download_photos
       get :export_excel
+      post :restart
     end
   end
   resources :fuel_consumptions, only: [:index, :new, :create]
