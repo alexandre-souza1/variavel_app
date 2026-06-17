@@ -1,8 +1,11 @@
 class TasksController < ApplicationController
+  before_action :authenticate_user!
+  before_action :set_task, only: [:show, :update, :move, :toggle_complete]
 
   def create
-    @bucket = Bucket.find(params[:bucket_id])
+    @bucket = accessible_buckets.find(params[:bucket_id])
     @task = @bucket.tasks.build(task_params)
+    @task.label_ids &= @bucket.action_plan.label_ids
     @task.creator = current_user
     @task.position = @bucket.tasks.count
 
@@ -14,13 +17,10 @@ class TasksController < ApplicationController
   end
 
   def show
-    @task = Task.find(params[:id])
     render partial: "tasks/modal", locals: { task: @task }
   end
 
   def update
-    @task = Task.find(params[:id])
-
     if @task.update(task_params)
       redirect_to action_plan_path(@task.bucket.action_plan)
     else
@@ -29,13 +29,14 @@ class TasksController < ApplicationController
   end
 
   def move
-    @task = Task.find(params[:id])
-
     new_bucket_id = params[:bucket_id]
     new_position = params[:position].to_i
 
     if new_bucket_id.present? && new_bucket_id.to_i != @task.bucket_id
-      @task.update!(bucket_id: new_bucket_id)
+      new_bucket = accessible_buckets.find(new_bucket_id)
+      head :forbidden and return unless new_bucket.action_plan_id == @task.bucket.action_plan_id
+
+      @task.update!(bucket: new_bucket)
     end
 
     @task.insert_at(new_position + 1)
@@ -44,8 +45,6 @@ class TasksController < ApplicationController
   end
 
   def toggle_complete
-    @task = Task.find(params[:id])
-
     new_status = !@task.completed
 
     @task.update!(
@@ -63,12 +62,38 @@ class TasksController < ApplicationController
 
   private
 
+  def set_task
+    @task = accessible_tasks.find(params[:id])
+  end
+
+  def accessible_action_plans
+    return ActionPlan.all if current_user.admin?
+
+    ActionPlan
+      .left_joins(buckets: { tasks: :task_assignments })
+      .where(
+        "action_plans.user_id = :user_id
+         OR tasks.creator_id = :user_id
+         OR task_assignments.user_id = :user_id",
+        user_id: current_user.id
+      )
+      .distinct
+  end
+
+  def accessible_buckets
+    Bucket.where(action_plan_id: accessible_action_plans.select(:id))
+  end
+
+  def accessible_tasks
+    Task.where(bucket_id: accessible_buckets.select(:id))
+  end
+
   def task_params
     params.require(:task).permit(
       :title, :description,
       :start_at, :due_at,
       :comment, :assignee_id,
-      :recurrence, :completed, :bucket_id,
+      :recurrence, :completed,
       label_ids: [], user_ids: [],
       tasklist_attributes: [
         :id, :title, :_destroy,
@@ -77,6 +102,7 @@ class TasksController < ApplicationController
     ).tap do |whitelisted|
       whitelisted[:label_ids] = whitelisted[:label_ids]&.reject(&:blank?) || []
       whitelisted[:user_ids]  = whitelisted[:user_ids]&.reject(&:blank?) || []
+      whitelisted[:label_ids] &= @task.bucket.action_plan.label_ids if @task&.persisted?
     end
   end
 

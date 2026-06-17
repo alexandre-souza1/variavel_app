@@ -1,5 +1,7 @@
 # app/controllers/admin/budget_categories_controller.rb
 class Admin::BudgetCategoriesController < ApplicationController
+  before_action :authenticate_user!
+  before_action :require_admin!
   before_action :set_budget_category, only: [:edit, :update, :destroy, :expenses]
 
   def index

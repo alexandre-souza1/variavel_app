@@ -1,4 +1,5 @@
 class InvoicesController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_invoice, only: %i[ show edit update destroy ]
   before_action :set_purchasers, only: [:new, :edit, :create, :update]
 
@@ -90,8 +91,6 @@ class InvoicesController < ApplicationController
 
     invoices_scope = Invoice.joins(:invoice_numbers).distinct
 
-    invoice_ids = invoices_scope.pluck(:id).uniq
-
     # aplica filtro por cost center se houver
     if params[:cost_center_id].present?
       invoices_scope = invoices_scope.where(invoice_numbers: { cost_center_id: params[:cost_center_id] })
@@ -106,6 +105,8 @@ class InvoicesController < ApplicationController
     elsif @year
       invoices_scope = invoices_scope.where("EXTRACT(YEAR FROM date_issued) = ?", @year)
     end
+
+    invoice_ids = invoices_scope.pluck(:id).uniq
 
     # 🔹 Cards de resumo
     @total_spent = Invoice.where(id: invoice_ids).sum(:total)

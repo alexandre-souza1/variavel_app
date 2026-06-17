@@ -9,7 +9,6 @@ one:
   position: 1
   bucket: one
   creator: one
-  assignee: one
 
 two:
   title: MyString
@@ -20,4 +19,3 @@ two:
   position: 1
   bucket: two
   creator: two
-  assignee: two

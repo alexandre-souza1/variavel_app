@@ -1,4 +1,6 @@
 class TaskImportsController < ApplicationController
+  before_action :authenticate_user!
+
   def new
     # Só renderiza a tela de upload
   end

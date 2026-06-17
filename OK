@@ -1,0 +1,630 @@
+[1mdiff --git a/app/controllers/action_plans_controller.rb b/app/controllers/action_plans_controller.rb[m
+[1mindex b3c6878..3939a2e 100644[m
+[1m--- a/app/controllers/action_plans_controller.rb[m
+[1m+++ b/app/controllers/action_plans_controller.rb[m
+[36m@@ -1,8 +1,10 @@[m
+ class ActionPlansController < ApplicationController[m
+[32m+[m[32m  before_action :authenticate_user![m
+   before_action :set_action_plan, only: [:show][m
+[32m+[m[32m  before_action :set_owned_action_plan, only: [:edit, :update, :destroy][m
+ [m
+   def index[m
+[31m-    @action_plans = ActionPlan.all[m
+[32m+[m[32m    @action_plans = accessible_action_plans[m
+ [m
+     if params[:query].present?[m
+       q = "%#{params[:query]}%"[m
+[36m@@ -43,14 +45,11 @@[m [mclass ActionPlansController < ApplicationController[m
+   end[m
+ [m
+   def edit[m
+[31m-    @action_plan = current_user.action_plans.find(params[:id])[m
+     @buckets = @action_plan.buckets[m
+     @bucket = Bucket.new[m
+   end[m
+ [m
+   def update[m
+[31m-    @action_plan = current_user.action_plans.find(params[:id])[m
+[31m-[m
+     if @action_plan.update(action_plan_params)[m
+       redirect_to @action_plan, notice: "Plano atualizado com sucesso"[m
+     else[m
+[36m@@ -59,24 +58,41 @@[m [mclass ActionPlansController < ApplicationController[m
+   end[m
+ [m
+   def destroy[m
+[31m-    @action_plan = ActionPlan.find(params[:id])[m
+[31m-[m
+[31m-    if @action_plan.user == current_user[m
+[31m-      @action_plan.destroy[m
+[31m-      redirect_to action_plans_path, notice: "Plano excluído com sucesso"[m
+[31m-    else[m
+[31m-      redirect_to action_plans_path, alert: "Você não tem permissão para excluir este plano"[m
+[31m-    end[m
+[32m+[m[32m    @action_plan.destroy[m
+[32m+[m[32m    redirect_to action_plans_path, notice: "Plano excluído com sucesso"[m
+   end[m
+ [m
+   private[m
+ [m
+   def set_action_plan[m
+[31m-    @action_plan = ActionPlan[m
+[32m+[m[32m    @action_plan = accessible_action_plans[m
+       .includes(buckets: :tasks)[m
+       .find(params[:id])[m
+   end[m
+ [m
+[32m+[m[32m  def set_owned_action_plan[m
+[32m+[m[32m    @action_plan =[m
+[32m+[m[32m      if current_user.admin?[m
+[32m+[m[32m        ActionPlan.find(params[:id])[m
+[32m+[m[32m      else[m
+[32m+[m[32m        current_user.action_plans.find(params[:id])[m
+[32m+[m[32m      end[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  def accessible_action_plans[m
+[32m+[m[32m    return ActionPlan.all if current_user.admin?[m
+[32m+[m
+[32m+[m[32m    ActionPlan[m
+[32m+[m[32m      .left_joins(buckets: { tasks: :task_assignments })[m
+[32m+[m[32m      .where([m
+[32m+[m[32m        "action_plans.user_id = :user_id[m
+[32m+[m[32m         OR tasks.creator_id = :user_id[m
+[32m+[m[32m         OR task_assignments.user_id = :user_id",[m
+[32m+[m[32m        user_id: current_user.id[m
+[32m+[m[32m      )[m
+[32m+[m[32m      .distinct[m
+[32m+[m[32m  end[m
+[32m+[m
+   def action_plan_params[m
+     params.require(:action_plan).permit(:name, :description)[m
+   end[m
+[1mdiff --git a/app/controllers/admin/budget_categories_controller.rb b/app/controllers/admin/budget_categories_controller.rb[m
+[1mindex 3c658f2..d302a0d 100644[m
+[1m--- a/app/controllers/admin/budget_categories_controller.rb[m
+[1m+++ b/app/controllers/admin/budget_categories_controller.rb[m
+[36m@@ -1,5 +1,7 @@[m
+ # app/controllers/admin/budget_categories_controller.rb[m
+ class Admin::BudgetCategoriesController < ApplicationController[m
+[32m+[m[32m  before_action :authenticate_user![m
+[32m+[m[32m  before_action :require_admin![m
+   before_action :set_budget_category, only: [:edit, :update, :destroy, :expenses][m
+ [m
+   def index[m
+[1mdiff --git a/app/controllers/admin/cost_centers_controller.rb b/app/controllers/admin/cost_centers_controller.rb[m
+[1mindex c83aef4..a163e94 100644[m
+[1m--- a/app/controllers/admin/cost_centers_controller.rb[m
+[1m+++ b/app/controllers/admin/cost_centers_controller.rb[m
+[36m@@ -1,5 +1,7 @@[m
+ # app/controllers/admin/cost_centers_controller.rb[m
+ class Admin::CostCentersController < ApplicationController[m
+[32m+[m[32m  before_action :authenticate_user![m
+[32m+[m[32m  before_action :require_admin![m
+   before_action :set_cost_center, only: [:edit, :update, :destroy][m
+ [m
+   def index[m
+[1mdiff --git a/app/controllers/application_controller.rb b/app/controllers/application_controller.rb[m
+[1mindex ffbeb27..0d5714b 100644[m
+[1m--- a/app/controllers/application_controller.rb[m
+[1m+++ b/app/controllers/application_controller.rb[m
+[36m@@ -4,7 +4,17 @@[m [mclass ApplicationController < ActionController::Base[m
+   protected[m
+ [m
+   def configure_permitted_parameters[m
+[31m-    devise_parameter_sanitizer.permit(:sign_up, keys: [:role, :photo])[m
+[31m-    devise_parameter_sanitizer.permit(:account_update, keys: [:role, :photo])[m
+[32m+[m[32m    devise_parameter_sanitizer.permit(:sign_up, keys: [:photo])[m
+[32m+[m[32m    devise_parameter_sanitizer.permit(:account_update, keys: [:photo])[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  def require_admin![m
+[32m+[m[32m    redirect_to root_path, alert: "Acesso restrito a administradores" unless current_user&.admin?[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  def require_admin_or_supervisor![m
+[32m+[m[32m    return if current_user&.admin? || current_user&.supervisor?[m
+[32m+[m
+[32m+[m[32m    redirect_to root_path, alert: "Acesso negado"[m
+   end[m
+ end[m
+[1mdiff --git a/app/controllers/buckets_controller.rb b/app/controllers/buckets_controller.rb[m
+[1mindex 42566e9..d6906ed 100644[m
+[1m--- a/app/controllers/buckets_controller.rb[m
+[1m+++ b/app/controllers/buckets_controller.rb[m
+[36m@@ -1,6 +1,8 @@[m
+ class BucketsController < ApplicationController[m
+[32m+[m[32m  before_action :authenticate_user![m
+[32m+[m
+   def create[m
+[31m-    @action_plan = ActionPlan.find(params[:action_plan_id])[m
+[32m+[m[32m    @action_plan = editable_action_plans.find(params[:action_plan_id])[m
+ [m
+     @bucket = @action_plan.buckets.build(bucket_params)[m
+     @bucket.position = @action_plan.buckets.count[m
+[36m@@ -13,7 +15,7 @@[m [mclass BucketsController < ApplicationController[m
+   end[m
+ [m
+   def update[m
+[31m-    @bucket = Bucket.find(params[:id])[m
+[32m+[m[32m    @bucket = editable_buckets.find(params[:id])[m
+ [m
+     if @bucket.update(bucket_params)[m
+       head :ok[m
+[36m@@ -23,7 +25,7 @@[m [mclass BucketsController < ApplicationController[m
+   end[m
+ [m
+   def destroy[m
+[31m-    @bucket = Bucket.find(params[:id])[m
+[32m+[m[32m    @bucket = editable_buckets.find(params[:id])[m
+     action_plan = @bucket.action_plan[m
+ [m
+     @bucket.destroy[m
+[36m@@ -32,7 +34,7 @@[m [mclass BucketsController < ApplicationController[m
+   end[m
+ [m
+   def done_tasks[m
+[31m-    bucket = Bucket.find(params[:id])[m
+[32m+[m[32m    bucket = accessible_buckets.find(params[:id])[m
+     @tasks = bucket.tasks[m
+     .where(completed: true)[m
+     .order(completed_at: :desc, due_at: :desc)[m
+[36m@@ -46,6 +48,34 @@[m [mclass BucketsController < ApplicationController[m
+ [m
+ private[m
+ [m
+[32m+[m[32m  def accessible_action_plans[m
+[32m+[m[32m    return ActionPlan.all if current_user.admin?[m
+[32m+[m
+[32m+[m[32m    ActionPlan[m
+[32m+[m[32m      .left_joins(buckets: { tasks: :task_assignments })[m
+[32m+[m[32m      .where([m
+[32m+[m[32m        "action_plans.user_id = :user_id[m
+[32m+[m[32m         OR tasks.creator_id = :user_id[m
+[32m+[m[32m         OR task_assignments.user_id = :user_id",[m
+[32m+[m[32m        user_id: current_user.id[m
+[32m+[m[32m      )[m
+[32m+[m[32m      .distinct[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  def editable_action_plans[m
+[32m+[m[32m    return ActionPlan.all if current_user.admin?[m
+[32m+[m
+[32m+[m[32m    current_user.action_plans[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  def accessible_buckets[m
+[32m+[m[32m    Bucket.where(action_plan_id: accessible_action_plans.select(:id))[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  def editable_buckets[m
+[32m+[m[32m    Bucket.where(action_plan_id: editable_action_plans.select(:id))[m
+[32m+[m[32m  end[m
+[32m+[m
+   def bucket_params[m
+     params.require(:bucket).permit(:name)[m
+   end[m
+[1mdiff --git a/app/controllers/checklists_controller.rb b/app/controllers/checklists_controller.rb[m
+[1mindex 5733ff7..569fa8a 100644[m
+[1m--- a/app/controllers/checklists_controller.rb[m
+[1m+++ b/app/controllers/checklists_controller.rb[m
+[36m@@ -10,7 +10,12 @@[m [mclass ChecklistsController < ApplicationController[m
+   end[m
+ [m
+   def historic[m
+[31m-    @checklists = Checklist.includes(:checklist_template)[m
+[32m+[m[32m    @checklists =[m
+[32m+[m[32m      if current_user.admin? || current_user.supervisor?[m
+[32m+[m[32m        Checklist.includes(:checklist_template)[m
+[32m+[m[32m      else[m
+[32m+[m[32m        current_user.checklists.includes(:checklist_template)[m
+[32m+[m[32m      end[m
+   end[m
+ [m
+   def new[m
+[36m@@ -162,8 +167,9 @@[m [mclass ChecklistsController < ApplicationController[m
+   end[m
+ [m
+   def show[m
+[31m-      @checklist = Checklist.find(params[:id])[m
+[31m-        respond_to do |format|[m
+[32m+[m[32m    @checklist = accessible_checklist[m
+[32m+[m
+[32m+[m[32m    respond_to do |format|[m
+       format.html[m
+       format.pdf do[m
+         pdf = ChecklistPdf.new(@checklist)[m
+[36m@@ -178,7 +184,7 @@[m [mclass ChecklistsController < ApplicationController[m
+   require "zip"[m
+ [m
+   def download_photos[m
+[31m-    @checklist = Checklist.find(params[:id])[m
+[32m+[m[32m    @checklist = accessible_checklist[m
+ [m
+     compressed_filestream = Zip::OutputStream.write_buffer do |zos|[m
+ [m
+[36m@@ -204,7 +210,7 @@[m [mclass ChecklistsController < ApplicationController[m
+   end[m
+ [m
+   def export_excel[m
+[31m-    @checklist = Checklist.find(params[:id])[m
+[32m+[m[32m    @checklist = accessible_checklist[m
+ [m
+     respond_to do |format|[m
+       format.xlsx do[m
+[36m@@ -252,8 +258,11 @@[m [mclass ChecklistsController < ApplicationController[m
+   end[m
+ [m
+   def accessible_checklist[m
+[31m-    checklist =[m
+[31m-      checklist_user.checklists.find(params[:id])[m
+[32m+[m[32m    if user_signed_in? && (current_user.admin? || current_user.supervisor?)[m
+[32m+[m[32m      return Checklist.find(params[:id])[m
+[32m+[m[32m    end[m
+[32m+[m
+[32m+[m[32m    checklist = checklist_user.checklists.find(params[:id])[m
+ [m
+     return checklist if user_signed_in?[m
+ [m
+[1mdiff --git a/app/controllers/comments_controller.rb b/app/controllers/comments_controller.rb[m
+[1mindex 542053a..65572c7 100644[m
+[1m--- a/app/controllers/comments_controller.rb[m
+[1m+++ b/app/controllers/comments_controller.rb[m
+[36m@@ -1,6 +1,8 @@[m
+ class CommentsController < ApplicationController[m
+[32m+[m[32m  before_action :authenticate_user![m
+[32m+[m
+   def create[m
+[31m-    @task = Task.find(params[:task_id])[m
+[32m+[m[32m    @task = accessible_tasks.find(params[:task_id])[m
+     @comment = @task.comments.new(comment_params)[m
+     @comment.user = current_user[m
+ [m
+[36m@@ -13,7 +15,25 @@[m [mclass CommentsController < ApplicationController[m
+ [m
+   private[m
+ [m
+[32m+[m[32m  def accessible_action_plans[m
+[32m+[m[32m    return ActionPlan.all if current_user.admin?[m
+[32m+[m
+[32m+[m[32m    ActionPlan[m
+[32m+[m[32m      .left_joins(buckets: { tasks: :task_assignments })[m
+[32m+[m[32m      .where([m
+[32m+[m[32m        "action_plans.user_id = :user_id[m
+[32m+[m[32m         OR tasks.creator_id = :user_id[m
+[32m+[m[32m         OR task_assignments.user_id = :user_id",[m
+[32m+[m[32m        user_id: current_user.id[m
+[32m+[m[32m      )[m
+[32m+[m[32m      .distinct[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  def accessible_tasks[m
+[32m+[m[32m    Task.joins(:bucket).where(buckets: { action_plan_id: accessible_action_plans.select(:id) })[m
+[32m+[m[32m  end[m
+[32m+[m
+   def comment_params[m
+     params.require(:comment).permit(:content)[m
+   end[m
+[31m-end[m
+\ No newline at end of file[m
+[32m+[m[32mend[m
+[1mdiff --git a/app/controllers/downloads_controller.rb b/app/controllers/downloads_controller.rb[m
+[1mindex 0049b6a..81bdab2 100644[m
+[1m--- a/app/controllers/downloads_controller.rb[m
+[1m+++ b/app/controllers/downloads_controller.rb[m
+[36m@@ -1,4 +1,5 @@[m
+ class DownloadsController < ApplicationController[m
+[32m+[m[32m  before_action :authenticate_user![m
+   before_action :set_download, only: [:edit, :update, :destroy][m
+ [m
+   def index[m
+[1mdiff --git a/app/controllers/invoices_controller.rb b/app/controllers/invoices_controller.rb[m
+[1mindex 991c12e..3a5e46e 100644[m
+[1m--- a/app/controllers/invoices_controller.rb[m
+[1m+++ b/app/controllers/invoices_controller.rb[m
+[36m@@ -1,4 +1,5 @@[m
+ class InvoicesController < ApplicationController[m
+[32m+[m[32m  before_action :authenticate_user![m
+   before_action :set_invoice, only: %i[ show edit update destroy ][m
+   before_action :set_purchasers, only: [:new, :edit, :create, :update][m
+ [m
+[36m@@ -90,8 +91,6 @@[m [mclass InvoicesController < ApplicationController[m
+ [m
+     invoices_scope = Invoice.joins(:invoice_numbers).distinct[m
+ [m
+[31m-    invoice_ids = invoices_scope.pluck(:id).uniq[m
+[31m-[m
+     # aplica filtro por cost center se houver[m
+     if params[:cost_center_id].present?[m
+       invoices_scope = invoices_scope.where(invoice_numbers: { cost_center_id: params[:cost_center_id] })[m
+[36m@@ -107,6 +106,8 @@[m [mclass InvoicesController < ApplicationController[m
+       invoices_scope = invoices_scope.where("EXTRACT(YEAR FROM date_issued) = ?", @year)[m
+     end[m
+ [m
+[32m+[m[32m    invoice_ids = invoices_scope.pluck(:id).uniq[m
+[32m+[m
+     # 🔹 Cards de resumo[m
+     @total_spent = Invoice.where(id: invoice_ids).sum(:total)[m
+     @invoices_count = invoice_ids.count[m
+[1mdiff --git a/app/controllers/labels_controller.rb b/app/controllers/labels_controller.rb[m
+[1mindex 662075e..f752664 100644[m
+[1m--- a/app/controllers/labels_controller.rb[m
+[1m+++ b/app/controllers/labels_controller.rb[m
+[36m@@ -1,8 +1,10 @@[m
+ class LabelsController < ApplicationController[m
+[32m+[m[32m  before_action :authenticate_user![m
+[32m+[m
+   def create[m
+     @label = Label.new(label_params)[m
+ [m
+[31m-    unless ActionPlan.exists?(label_params[:action_plan_id])[m
+[32m+[m[32m    unless editable_action_plans.exists?(label_params[:action_plan_id])[m
+       return render json: { errors: ["Action plan inválido"] }, status: :unprocessable_entity[m
+     end[m
+ [m
+[36m@@ -15,7 +17,13 @@[m [mclass LabelsController < ApplicationController[m
+ [m
+   private[m
+ [m
+[32m+[m[32m  def editable_action_plans[m
+[32m+[m[32m    return ActionPlan.all if current_user.admin?[m
+[32m+[m
+[32m+[m[32m    current_user.action_plans[m
+[32m+[m[32m  end[m
+[32m+[m
+   def label_params[m
+     params.require(:label).permit(:name, :color, :action_plan_id)[m
+   end[m
+[31m-end[m
+\ No newline at end of file[m
+[32m+[m[32mend[m
+[1mdiff --git a/app/controllers/task_imports_controller.rb b/app/controllers/task_imports_controller.rb[m
+[1mindex 80ccbba..4cd25f9 100644[m
+[1m--- a/app/controllers/task_imports_controller.rb[m
+[1m+++ b/app/controllers/task_imports_controller.rb[m
+[36m@@ -1,4 +1,6 @@[m
+ class TaskImportsController < ApplicationController[m
+[32m+[m[32m  before_action :authenticate_user![m
+[32m+[m
+   def new[m
+     # Só renderiza a tela de upload[m
+   end[m
+[36m@@ -14,4 +16,4 @@[m [mclass TaskImportsController < ApplicationController[m
+     redirect_to action_plans_path, notice: "Importação realizada com sucesso! 🚀"[m
+     [m
+   end[m
+[31m-end[m
+\ No newline at end of file[m
+[32m+[m[32mend[m
+[1mdiff --git a/app/controllers/tasklists_controller.rb b/app/controllers/tasklists_controller.rb[m
+[1mindex 1637a2f..6fcf0d2 100644[m
+[1m--- a/app/controllers/tasklists_controller.rb[m
+[1m+++ b/app/controllers/tasklists_controller.rb[m
+[36m@@ -1,4 +1,5 @@[m
+ class TasklistsController < ApplicationController[m
+[32m+[m[32m  before_action :authenticate_user![m
+   before_action :set_task[m
+   before_action :set_tasklist, only: [:destroy, :update][m
+ [m
+[36m@@ -40,7 +41,25 @@[m [mclass TasklistsController < ApplicationController[m
+   private[m
+ [m
+   def set_task[m
+[31m-    @task = Task.find(params[:task_id])[m
+[32m+[m[32m    @task = accessible_tasks.find(params[:task_id])[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  def accessible_action_plans[m
+[32m+[m[32m    return ActionPlan.all if current_user.admin?[m
+[32m+[m
+[32m+[m[32m    ActionPlan[m
+[32m+[m[32m      .left_joins(buckets: { tasks: :task_assignments })[m
+[32m+[m[32m      .where([m
+[32m+[m[32m        "action_plans.user_id = :user_id[m
+[32m+[m[32m         OR tasks.creator_id = :user_id[m
+[32m+[m[32m         OR task_assignments.user_id = :user_id",[m
+[32m+[m[32m        user_id: current_user.id[m
+[32m+[m[32m      )[m
+[32m+[m[32m      .distinct[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  def accessible_tasks[m
+[32m+[m[32m    Task.joins(:bucket).where(buckets: { action_plan_id: accessible_action_plans.select(:id) })[m
+   end[m
+ [m
+   def set_tasklist[m
+[1mdiff --git a/app/controllers/tasks_controller.rb b/app/controllers/tasks_controller.rb[m
+[1mindex e099e4e..fe3c1ce 100644[m
+[1m--- a/app/controllers/tasks_controller.rb[m
+[1m+++ b/app/controllers/tasks_controller.rb[m
+[36m@@ -1,8 +1,11 @@[m
+ class TasksController < ApplicationController[m
+[32m+[m[32m  before_action :authenticate_user![m
+[32m+[m[32m  before_action :set_task, only: [:show, :update, :move, :toggle_complete][m
+ [m
+   def create[m
+[31m-    @bucket = Bucket.find(params[:bucket_id])[m
+[32m+[m[32m    @bucket = accessible_buckets.find(params[:bucket_id])[m
+     @task = @bucket.tasks.build(task_params)[m
+[32m+[m[32m    @task.label_ids &= @bucket.action_plan.label_ids[m
+     @task.creator = current_user[m
+     @task.position = @bucket.tasks.count[m
+ [m
+[36m@@ -14,13 +17,10 @@[m [mclass TasksController < ApplicationController[m
+   end[m
+ [m
+   def show[m
+[31m-    @task = Task.find(params[:id])[m
+     render partial: "tasks/modal", locals: { task: @task }[m
+   end[m
+ [m
+   def update[m
+[31m-    @task = Task.find(params[:id])[m
+[31m-[m
+     if @task.update(task_params)[m
+       redirect_to action_plan_path(@task.bucket.action_plan)[m
+     else[m
+[36m@@ -29,13 +29,14 @@[m [mclass TasksController < ApplicationController[m
+   end[m
+ [m
+   def move[m
+[31m-    @task = Task.find(params[:id])[m
+[31m-[m
+     new_bucket_id = params[:bucket_id][m
+     new_position = params[:position].to_i[m
+ [m
+     if new_bucket_id.present? && new_bucket_id.to_i != @task.bucket_id[m
+[31m-      @task.update!(bucket_id: new_bucket_id)[m
+[32m+[m[32m      new_bucket = accessible_buckets.find(new_bucket_id)[m
+[32m+[m[32m      head :forbidden and return unless new_bucket.action_plan_id == @task.bucket.action_plan_id[m
+[32m+[m
+[32m+[m[32m      @task.update!(bucket: new_bucket)[m
+     end[m
+ [m
+     @task.insert_at(new_position + 1)[m
+[36m@@ -44,8 +45,6 @@[m [mclass TasksController < ApplicationController[m
+   end[m
+ [m
+   def toggle_complete[m
+[31m-    @task = Task.find(params[:id])[m
+[31m-[m
+     new_status = !@task.completed[m
+ [m
+     @task.update!([m
+[36m@@ -63,12 +62,38 @@[m [mclass TasksController < ApplicationController[m
+ [m
+   private[m
+ [m
+[32m+[m[32m  def set_task[m
+[32m+[m[32m    @task = accessible_tasks.find(params[:id])[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  def accessible_action_plans[m
+[32m+[m[32m    return ActionPlan.all if current_user.admin?[m
+[32m+[m
+[32m+[m[32m    ActionPlan[m
+[32m+[m[32m      .left_joins(buckets: { tasks: :task_assignments })[m
+[32m+[m[32m      .where([m
+[32m+[m[32m        "action_plans.user_id = :user_id[m
+[32m+[m[32m         OR tasks.creator_id = :user_id[m
+[32m+[m[32m         OR task_assignments.user_id = :user_id",[m
+[32m+[m[32m        user_id: current_user.id[m
+[32m+[m[32m      )[m
+[32m+[m[32m      .distinct[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  def accessible_buckets[m
+[32m+[m[32m    Bucket.where(action_plan_id: accessible_action_plans.select(:id))[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  def accessible_tasks[m
+[32m+[m[32m    Task.where(bucket_id: accessible_buckets.select(:id))[m
+[32m+[m[32m  end[m
+[32m+[m
+   def task_params[m
+     params.require(:task).permit([m
+       :title, :description,[m
+       :start_at, :due_at,[m
+       :comment, :assignee_id,[m
+[31m-      :recurrence, :completed, :bucket_id,[m
+[32m+[m[32m      :recurrence, :completed,[m
+       label_ids: [], user_ids: [],[m
+       tasklist_attributes: [[m
+         :id, :title, :_destroy,[m
+[36m@@ -77,6 +102,7 @@[m [mclass TasksController < ApplicationController[m
+     ).tap do |whitelisted|[m
+       whitelisted[:label_ids] = whitelisted[:label_ids]&.reject(&:blank?) || [][m
+       whitelisted[:user_ids]  = whitelisted[:user_ids]&.reject(&:blank?) || [][m
+[32m+[m[32m      whitelisted[:label_ids] &= @task.bucket.action_plan.label_ids if @task&.persisted?[m
+     end[m
+   end[m
+ [m
+[1mdiff --git a/app/controllers/wms_tasks_controller.rb b/app/controllers/wms_tasks_controller.rb[m
+[1mindex 712ca11..473115d 100644[m
+[1m--- a/app/controllers/wms_tasks_controller.rb[m
+[1m+++ b/app/controllers/wms_tasks_controller.rb[m
+[36m@@ -1,4 +1,7 @@[m
+ class WmsTasksController < ApplicationController[m
+[32m+[m[32m  before_action :authenticate_user![m
+[32m+[m[32m  before_action :require_admin!, only: [:delete_all][m
+[32m+[m
+   def index[m
+     all_tasks = WmsTask.includes(:operator).order(created_at: :desc)[m
+ [m
+[1mdiff --git a/config/routes.rb b/config/routes.rb[m
+[1mindex dfd0f91..9641fd6 100644[m
+[1m--- a/config/routes.rb[m
+[1m+++ b/config/routes.rb[m
+[36m@@ -82,9 +82,7 @@[m [mRails.application.routes.draw do[m
+ [m
+         resources :comments, only: [:create][m
+ [m
+[31m-        resource :tasklist, only: [:create, :destroy] do[m
+[31m-          resources :tasklist_items, only: [:update, :destroy, :create][m
+[31m-        end[m
+[32m+[m[32m        resource :tasklist, only: [:create, :destroy][m
+       end[m
+     end[m
+   end[m
+[1mdiff --git a/test/fixtures/az_mapas.yml b/test/fixtures/az_mapas.yml[m
+[1mindex 284596c..caa7700 100644[m
+[1m--- a/test/fixtures/az_mapas.yml[m
+[1m+++ b/test/fixtures/az_mapas.yml[m
+[36m@@ -2,14 +2,16 @@[m
+ [m
+ one:[m
+   data: 2025-06-26[m
+[31m-  turno: 1[m
+[32m+[m[32m  turno:[m
+[32m+[m[32m    - 1[m
+   tipo: 1[m
+   resultado: 1.5[m
+   atingiu_meta: false[m
+ [m
+ two:[m
+   data: 2025-06-26[m
+[31m-  turno: 1[m
+[32m+[m[32m  turno:[m
+[32m+[m[32m    - 1[m
+   tipo: 1[m
+   resultado: 1.5[m
+   atingiu_meta: false[m
+[1mdiff --git a/test/fixtures/tasks.yml b/test/fixtures/tasks.yml[m
+[1mindex a8d23ce..b668141 100644[m
+[1m--- a/test/fixtures/tasks.yml[m
+[1m+++ b/test/fixtures/tasks.yml[m
+[36m@@ -9,7 +9,6 @@[m [mone:[m
+   position: 1[m
+   bucket: one[m
+   creator: one[m
+[31m-  assignee: one[m
+ [m
+ two:[m
+   title: MyString[m
+[36m@@ -20,4 +19,3 @@[m [mtwo:[m
+   position: 1[m
+   bucket: two[m
+   creator: two[m
+[31m-  assignee: two[m
+[1mdiff --git a/test/fixtures/users.yml b/test/fixtures/users.yml[m
+[1mindex d7a3329..17990c2 100644[m
+[1m--- a/test/fixtures/users.yml[m
+[1m+++ b/test/fixtures/users.yml[m
+[36m@@ -4,8 +4,13 @@[m
+ # model remove the "{}" from the fixture names and add the columns immediately[m
+ # below each fixture, per the syntax in the comments below[m
+ #[m
+[31m-one: {}[m
+[31m-# column: value[m
+[31m-#[m
+[31m-two: {}[m
+[32m+[m[32mone:[m
+[32m+[m[32m  email: user_one@example.com[m
+[32m+[m[32m  encrypted_password: <%= Devise::Encryptor.digest(User, "password") %>[m
+[32m+[m[32m  role: 0[m
+[32m+[m
+[32m+[m[32mtwo:[m
+[32m+[m[32m  email: user_two@example.com[m
+[32m+[m[32m  encrypted_password: <%= Devise::Encryptor.digest(User, "password") %>[m
+[32m+[m[32m  role: 0[m
+ # column: value[m

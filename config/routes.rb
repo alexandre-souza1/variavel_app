@@ -82,9 +82,7 @@ Rails.application.routes.draw do
 
         resources :comments, only: [:create]
 
-        resource :tasklist, only: [:create, :destroy] do
-          resources :tasklist_items, only: [:update, :destroy, :create]
-        end
+        resource :tasklist, only: [:create, :destroy]
       end
     end
   end

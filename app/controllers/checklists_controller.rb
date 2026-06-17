@@ -10,7 +10,12 @@ class ChecklistsController < ApplicationController
   end
 
   def historic
-    @checklists = Checklist.includes(:checklist_template)
+    @checklists =
+      if current_user.admin? || current_user.supervisor?
+        Checklist.includes(:checklist_template)
+      else
+        current_user.checklists.includes(:checklist_template)
+      end
   end
 
   def new
@@ -162,8 +167,9 @@ class ChecklistsController < ApplicationController
   end
 
   def show
-      @checklist = Checklist.find(params[:id])
-        respond_to do |format|
+    @checklist = accessible_checklist
+
+    respond_to do |format|
       format.html
       format.pdf do
         pdf = ChecklistPdf.new(@checklist)
@@ -178,7 +184,7 @@ class ChecklistsController < ApplicationController
   require "zip"
 
   def download_photos
-    @checklist = Checklist.find(params[:id])
+    @checklist = accessible_checklist
 
     compressed_filestream = Zip::OutputStream.write_buffer do |zos|
 
@@ -204,7 +210,7 @@ class ChecklistsController < ApplicationController
   end
 
   def export_excel
-    @checklist = Checklist.find(params[:id])
+    @checklist = accessible_checklist
 
     respond_to do |format|
       format.xlsx do
@@ -252,8 +258,11 @@ class ChecklistsController < ApplicationController
   end
 
   def accessible_checklist
-    checklist =
-      checklist_user.checklists.find(params[:id])
+    if user_signed_in? && (current_user.admin? || current_user.supervisor?)
+      return Checklist.find(params[:id])
+    end
+
+    checklist = checklist_user.checklists.find(params[:id])
 
     return checklist if user_signed_in?
 

@@ -1,6 +1,8 @@
 class BucketsController < ApplicationController
+  before_action :authenticate_user!
+
   def create
-    @action_plan = ActionPlan.find(params[:action_plan_id])
+    @action_plan = editable_action_plans.find(params[:action_plan_id])
 
     @bucket = @action_plan.buckets.build(bucket_params)
     @bucket.position = @action_plan.buckets.count
@@ -13,7 +15,7 @@ class BucketsController < ApplicationController
   end
 
   def update
-    @bucket = Bucket.find(params[:id])
+    @bucket = editable_buckets.find(params[:id])
 
     if @bucket.update(bucket_params)
       head :ok
@@ -23,7 +25,7 @@ class BucketsController < ApplicationController
   end
 
   def destroy
-    @bucket = Bucket.find(params[:id])
+    @bucket = editable_buckets.find(params[:id])
     action_plan = @bucket.action_plan
 
     @bucket.destroy
@@ -32,7 +34,7 @@ class BucketsController < ApplicationController
   end
 
   def done_tasks
-    bucket = Bucket.find(params[:id])
+    bucket = accessible_buckets.find(params[:id])
     @tasks = bucket.tasks
     .where(completed: true)
     .order(completed_at: :desc, due_at: :desc)
@@ -45,6 +47,34 @@ class BucketsController < ApplicationController
   end
 
 private
+
+  def accessible_action_plans
+    return ActionPlan.all if current_user.admin?
+
+    ActionPlan
+      .left_joins(buckets: { tasks: :task_assignments })
+      .where(
+        "action_plans.user_id = :user_id
+         OR tasks.creator_id = :user_id
+         OR task_assignments.user_id = :user_id",
+        user_id: current_user.id
+      )
+      .distinct
+  end
+
+  def editable_action_plans
+    return ActionPlan.all if current_user.admin?
+
+    current_user.action_plans
+  end
+
+  def accessible_buckets
+    Bucket.where(action_plan_id: accessible_action_plans.select(:id))
+  end
+
+  def editable_buckets
+    Bucket.where(action_plan_id: editable_action_plans.select(:id))
+  end
 
   def bucket_params
     params.require(:bucket).permit(:name)

@@ -1,5 +1,7 @@
 # app/controllers/admin/cost_centers_controller.rb
 class Admin::CostCentersController < ApplicationController
+  before_action :authenticate_user!
+  before_action :require_admin!
   before_action :set_cost_center, only: [:edit, :update, :destroy]
 
   def index

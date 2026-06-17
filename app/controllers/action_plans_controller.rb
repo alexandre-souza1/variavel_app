@@ -1,8 +1,10 @@
 class ActionPlansController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_action_plan, only: [:show]
+  before_action :set_owned_action_plan, only: [:edit, :update, :destroy]
 
   def index
-    @action_plans = ActionPlan.all
+    @action_plans = accessible_action_plans
 
     if params[:query].present?
       q = "%#{params[:query]}%"
@@ -43,14 +45,11 @@ class ActionPlansController < ApplicationController
   end
 
   def edit
-    @action_plan = current_user.action_plans.find(params[:id])
     @buckets = @action_plan.buckets
     @bucket = Bucket.new
   end
 
   def update
-    @action_plan = current_user.action_plans.find(params[:id])
-
     if @action_plan.update(action_plan_params)
       redirect_to @action_plan, notice: "Plano atualizado com sucesso"
     else
@@ -59,22 +58,39 @@ class ActionPlansController < ApplicationController
   end
 
   def destroy
-    @action_plan = ActionPlan.find(params[:id])
-
-    if @action_plan.user == current_user
-      @action_plan.destroy
-      redirect_to action_plans_path, notice: "Plano excluído com sucesso"
-    else
-      redirect_to action_plans_path, alert: "Você não tem permissão para excluir este plano"
-    end
+    @action_plan.destroy
+    redirect_to action_plans_path, notice: "Plano excluído com sucesso"
   end
 
   private
 
   def set_action_plan
-    @action_plan = ActionPlan
+    @action_plan = accessible_action_plans
       .includes(buckets: :tasks)
       .find(params[:id])
+  end
+
+  def set_owned_action_plan
+    @action_plan =
+      if current_user.admin?
+        ActionPlan.find(params[:id])
+      else
+        current_user.action_plans.find(params[:id])
+      end
+  end
+
+  def accessible_action_plans
+    return ActionPlan.all if current_user.admin?
+
+    ActionPlan
+      .left_joins(buckets: { tasks: :task_assignments })
+      .where(
+        "action_plans.user_id = :user_id
+         OR tasks.creator_id = :user_id
+         OR task_assignments.user_id = :user_id",
+        user_id: current_user.id
+      )
+      .distinct
   end
 
   def action_plan_params

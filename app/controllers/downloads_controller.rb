@@ -1,4 +1,5 @@
 class DownloadsController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_download, only: [:edit, :update, :destroy]
 
   def index

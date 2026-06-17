@@ -1,4 +1,7 @@
 class WmsTasksController < ApplicationController
+  before_action :authenticate_user!
+  before_action :require_admin!, only: [:delete_all]
+
   def index
     all_tasks = WmsTask.includes(:operator).order(created_at: :desc)
 

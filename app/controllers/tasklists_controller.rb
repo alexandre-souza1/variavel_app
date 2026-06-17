@@ -1,4 +1,5 @@
 class TasklistsController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_task
   before_action :set_tasklist, only: [:destroy, :update]
 
@@ -40,7 +41,25 @@ class TasklistsController < ApplicationController
   private
 
   def set_task
-    @task = Task.find(params[:task_id])
+    @task = accessible_tasks.find(params[:task_id])
+  end
+
+  def accessible_action_plans
+    return ActionPlan.all if current_user.admin?
+
+    ActionPlan
+      .left_joins(buckets: { tasks: :task_assignments })
+      .where(
+        "action_plans.user_id = :user_id
+         OR tasks.creator_id = :user_id
+         OR task_assignments.user_id = :user_id",
+        user_id: current_user.id
+      )
+      .distinct
+  end
+
+  def accessible_tasks
+    Task.joins(:bucket).where(buckets: { action_plan_id: accessible_action_plans.select(:id) })
   end
 
   def set_tasklist
