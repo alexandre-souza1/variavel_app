@@ -30,18 +30,18 @@ module ApplicationHelper
   end
 
   def category_icon(budget_category)
-  # Mapeia ícones baseados no setor ou nome da categoria
-  icons = {
-    'combustivel' => 'gas-pump',
-    'manutencao' => 'tools',
-    'pecas' => 'cog',
-    'seguro' => 'shield-alt',
-    'outros' => 'tag'
-  }
+    # Mapeia ícones baseados no setor ou nome da categoria
+    icons = {
+      'combustivel' => 'gas-pump',
+      'manutencao' => 'tools',
+      'pecas' => 'cog',
+      'seguro' => 'shield-alt',
+      'outros' => 'tag'
+    }
 
-  # Tenta pelo setor primeiro, depois pelo nome
-  icon_key = budget_category.sector.downcase
-  icons[icon_key] || 'tag'
+    # Tenta pelo setor primeiro, depois pelo nome
+    icon_key = budget_category.sector.downcase
+    icons[icon_key] || 'tag'
   end
 
   def field_with_errors(form, field, &block)
@@ -50,6 +50,38 @@ module ApplicationHelper
       if form.object.errors[field].any?
         concat content_tag(:div, form.object.errors[field].first, class: "text-danger mt-1")
       end
+    end
+  end
+
+  def user_avatar(user, size = 40)
+
+    return content_tag(:div,
+      '<i class="bi bi-person-fill text-secondary"></i>'.html_safe,
+      class: "d-flex align-items-center justify-content-center rounded-circle shadow-sm border border-2 border-white bg-light",
+      style: "width: #{size}px; height: #{size}px;"
+    ) unless user.photo.attached?
+
+
+    if user.photo.blob.service_name == "cloudinary"
+
+      cl_image_tag(
+        user.photo.key,
+        width: size,
+        height: size,
+        crop: :fill,
+        gravity: :face,
+        class: "rounded-circle shadow-sm border border-2 border-white",
+        alt: "Avatar"
+      )
+
+    else
+
+      image_tag(
+        user.photo.variant(resize_to_limit: [size, size]),
+        class: "rounded-circle shadow-sm border border-2 border-white",
+        alt: "Avatar"
+      )
+
     end
   end
 end

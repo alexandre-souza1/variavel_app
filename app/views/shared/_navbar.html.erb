@@ -93,13 +93,7 @@
           <li class="nav-item dropdown">
             <button class="nav-link" id="navbarDropdown" type="button" data-bs-toggle="dropdown" style="border: none; background: none;">
             <% if current_user.photo.attached? %>
-              <%= cl_image_tag current_user.photo.key,
-                width: 40,
-                height: 40,
-                crop: :fill,
-                gravity: :face,
-                class: "rounded-circle shadow-sm border border-2 border-white",
-                alt: "Avatar" %>
+              <%= user_avatar(current_user, 40) %>
             <% else %>
               <div class="d-flex align-items-center justify-content-center rounded-circle shadow-sm border border-2 border-white bg-light"
                   style="width: 40px; height: 40px;">
