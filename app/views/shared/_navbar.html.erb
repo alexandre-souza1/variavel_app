@@ -1,4 +1,4 @@
-<div class="navbar navbar-expand-lg shadow-sm sticky-top" style="background-color:#3f8efc;">
+<div class="navbar navbar-expand-lg shadow-sm sticky-top app-navbar" data-controller="theme">
   <div class="container-fluid">
     <!-- Logo -->
     <%= link_to root_path, class: "navbar-brand d-flex align-items-center" do %>
@@ -159,6 +159,27 @@
               <% end %>
               <div class="dropdown-divider"></div>
 
+              <h6 class="dropdown-header text-uppercase small text-muted">Aparência</h6>
+              <div class="px-3 pb-2">
+                <div class="btn-group w-100" role="group" aria-label="Selecionar tema">
+                  <button type="button"
+                          class="btn btn-sm btn-outline-secondary"
+                          data-theme-target="button"
+                          data-theme-value-param="light"
+                          data-action="theme#set">
+                    <i class="bi bi-sun me-1"></i> Claro
+                  </button>
+                  <button type="button"
+                          class="btn btn-sm btn-outline-secondary"
+                          data-theme-target="button"
+                          data-theme-value-param="dark"
+                          data-action="theme#set">
+                    <i class="bi bi-moon-stars me-1"></i> Escuro
+                  </button>
+                </div>
+              </div>
+              <div class="dropdown-divider"></div>
+
               <%= link_to edit_user_registration_path, class: "dropdown-item" do %>
                 <i class="bi bi-person-circle me-2"></i> Editar cadastro
               <% end %>
@@ -169,7 +190,30 @@
           </li>
         </ul>
       <% else %>
-        <%= link_to "Login", new_user_session_path, class: "btn btn-outline-dark" %>
+        <div class="d-flex align-items-center gap-2" data-controller="theme">
+          <div class="dropdown">
+            <button class="btn btn-sm dropdown-toggle app-navbar-action" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-circle-half me-1"></i> Tema
+            </button>
+            <div class="dropdown-menu dropdown-menu-end shadow">
+              <button type="button"
+                      class="dropdown-item"
+                      data-theme-target="button"
+                      data-theme-value-param="light"
+                      data-action="theme#set">
+                <i class="bi bi-sun me-2"></i> Claro
+              </button>
+              <button type="button"
+                      class="dropdown-item"
+                      data-theme-target="button"
+                      data-theme-value-param="dark"
+                      data-action="theme#set">
+                <i class="bi bi-moon-stars me-2"></i> Escuro
+              </button>
+            </div>
+          </div>
+          <%= link_to "Login", new_user_session_path, class: "btn app-navbar-action" %>
+        </div>
       <% end %>
     </div>
   </div>

@@ -75,3 +75,141 @@
   aspect-ratio: 16 / 9;
   object-fit: cover;
 }
+
+[data-bs-theme="dark"] {
+  color-scheme: dark;
+
+  body {
+    background: #0f172a;
+    color: #e5e7eb;
+  }
+
+  main {
+    background:
+      radial-gradient(circle at top left, rgba(63, 142, 252, 0.12), transparent 32rem),
+      #0f172a;
+  }
+
+  .card,
+  .modal-content,
+  .dropdown-menu,
+  .list-group-item,
+  .accordion-item,
+  .offcanvas {
+    background-color: #111827;
+    border-color: #273449;
+    color: #e5e7eb;
+  }
+
+  .card-header,
+  .card-footer,
+  .modal-header,
+  .modal-footer,
+  .bg-light {
+    background-color: #172033 !important;
+    border-color: #273449 !important;
+    color: #e5e7eb !important;
+  }
+
+  .dropdown-item,
+  .nav-link,
+  .navbar-brand,
+  .form-label,
+  .form-check-label {
+    color: #e5e7eb;
+  }
+
+  .dropdown-item:hover,
+  .dropdown-item:focus {
+    background-color: #243047;
+    color: #ffffff;
+  }
+
+  .text-muted {
+    color: #9ca3af !important;
+  }
+
+  .text-dark {
+    color: #e5e7eb !important;
+  }
+
+  .border,
+  .border-top,
+  .border-bottom,
+  .border-start,
+  .border-end {
+    border-color: #273449 !important;
+  }
+
+  .form-control,
+  .form-select,
+  .ts-control,
+  .ts-dropdown,
+  .page-link {
+    background-color: #0b1220 !important;
+    border-color: #334155 !important;
+    color: #e5e7eb !important;
+  }
+
+  .form-control::placeholder {
+    color: #94a3b8;
+  }
+
+  .table {
+    --bs-table-bg: #111827;
+    --bs-table-color: #e5e7eb;
+    --bs-table-border-color: #273449;
+    --bs-table-striped-bg: #172033;
+    --bs-table-striped-color: #e5e7eb;
+    --bs-table-hover-bg: #1f2a3d;
+    --bs-table-hover-color: #ffffff;
+  }
+
+  .table-light {
+    --bs-table-bg: #1f2937;
+    --bs-table-color: #f9fafb;
+    --bs-table-border-color: #374151;
+  }
+
+  .btn-light {
+    --bs-btn-bg: #1f2937;
+    --bs-btn-border-color: #334155;
+    --bs-btn-color: #e5e7eb;
+    --bs-btn-hover-bg: #273449;
+    --bs-btn-hover-border-color: #3b4a63;
+    --bs-btn-hover-color: #ffffff;
+  }
+
+  .task-card {
+    background: #111827;
+    border-color: #273449;
+    border-left-color: #60a5fa;
+    color: #e5e7eb;
+
+    &:hover {
+      background: #1f2937;
+    }
+  }
+
+  .task-title {
+    color: #f9fafb;
+  }
+
+  .task-desc,
+  .task-footer {
+    color: #a5b4c7;
+  }
+
+  .comments-box {
+    background: #0b1220;
+  }
+
+  .comment-bubble {
+    background: #172033;
+    color: #e5e7eb;
+  }
+
+  .ticker-container {
+    background: #020617;
+  }
+}

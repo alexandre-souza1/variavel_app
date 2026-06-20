@@ -1,6 +1,6 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-expand-lg app-admin-nav mb-4">
   <div class="container">
-    <%= link_to 'Workstation Fin', invoices_path, class: 'navbar-brand' %>
+    <%= link_to 'Workstation Fin', invoices_path, class: 'navbar-brand fw-semibold' %>
 
     <div class="navbar-nav gap-2">
 
@@ -18,10 +18,10 @@
 
       <!-- Outros links da barra -->
       <%= link_to 'Consulta Lançamentos', invoices_path, class: 'nav-link' %>
-      <%= link_to dashboard_invoices_path, class: "btn btn-primary" do %>
+      <%= link_to dashboard_invoices_path, class: "btn btn-primary btn-sm" do %>
        <i class="bi bi-bar-chart-fill"></i> Dashboard
       <% end %>
-      <%= link_to new_invoice_path, class: "btn btn-success" do %>
+      <%= link_to new_invoice_path, class: "btn btn-success btn-sm" do %>
        <i class="bi bi-plus-circle-dotted"></i> Novo Lançamento
       <% end %>
     </div>

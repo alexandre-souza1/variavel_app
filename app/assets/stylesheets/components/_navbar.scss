@@ -1,3 +1,57 @@
+.app-navbar {
+  background: #3f8efc;
+}
+
+.app-navbar .navbar-brand,
+.app-navbar .nav-link {
+  color: #172033;
+}
+
+.app-navbar .navbar-brand:hover,
+.app-navbar .navbar-brand:focus,
+.app-navbar .nav-link:hover,
+.app-navbar .nav-link:focus {
+  color: #0b1220;
+}
+
+.app-navbar .navbar-toggler {
+  border-color: rgba(23, 32, 51, 0.35);
+}
+
+.app-navbar .navbar-toggler-icon {
+  background-image: var(--bs-navbar-toggler-icon-bg);
+  filter: invert(0);
+}
+
+.app-navbar .app-navbar-action {
+  --bs-btn-color: #172033;
+  --bs-btn-border-color: #172033;
+  --bs-btn-hover-bg: #172033;
+  --bs-btn-hover-border-color: #172033;
+  --bs-btn-hover-color: #ffffff;
+}
+
+.app-admin-nav {
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+
+  .navbar-brand {
+    color: #1d4ed8;
+  }
+
+  .nav-link {
+    color: #334155;
+  }
+
+  .nav-link:hover,
+  .nav-link:focus,
+  .navbar-brand:hover,
+  .navbar-brand:focus {
+    color: #0f172a;
+  }
+}
+
 .navbar-lewagon {
   justify-content: space-between;
   background: #0d6efd;
@@ -20,4 +74,58 @@
 .navbar-lewagon .navbar-brand .name-logo {
   width: 110px;
   height: 60px;
+}
+
+[data-bs-theme="dark"] .app-navbar {
+  background: #111827;
+}
+
+[data-bs-theme="dark"] .app-navbar .navbar-brand,
+[data-bs-theme="dark"] .app-navbar .nav-link {
+  color: #f9fafb;
+}
+
+[data-bs-theme="dark"] .app-navbar .navbar-brand:hover,
+[data-bs-theme="dark"] .app-navbar .navbar-brand:focus,
+[data-bs-theme="dark"] .app-navbar .nav-link:hover,
+[data-bs-theme="dark"] .app-navbar .nav-link:focus {
+  color: #ffffff;
+}
+
+[data-bs-theme="dark"] .app-navbar .navbar-toggler {
+  border-color: rgba(249, 250, 251, 0.35);
+}
+
+[data-bs-theme="dark"] .app-navbar .navbar-toggler-icon {
+  filter: invert(1) grayscale(1);
+}
+
+[data-bs-theme="dark"] .app-navbar .app-navbar-action {
+  --bs-btn-color: #f9fafb;
+  --bs-btn-border-color: #f9fafb;
+  --bs-btn-hover-bg: #f9fafb;
+  --bs-btn-hover-border-color: #f9fafb;
+  --bs-btn-hover-color: #111827;
+}
+
+[data-bs-theme="dark"] .app-admin-nav {
+  background: rgba(17, 24, 39, 0.86);
+  border-top: 1px solid rgba(96, 165, 250, 0.16);
+  border-bottom: 1px solid rgba(96, 165, 250, 0.2);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+
+  .navbar-brand {
+    color: #93c5fd;
+  }
+
+  .nav-link {
+    color: #cbd5e1;
+  }
+
+  .nav-link:hover,
+  .nav-link:focus,
+  .navbar-brand:hover,
+  .navbar-brand:focus {
+    color: #ffffff;
+  }
 }

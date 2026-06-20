@@ -6,8 +6,8 @@
       <!-- Botão Distribuição Urbana -->
       <div
         class="card-category-index"
-        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://criciumanoticias.com/wp-content/uploads/2018/11/Aprovada.jpg);"
-        onclick="window.location='<%= consultas_new_path %>'">
+        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(<%= asset_path('truckcommon.jpg') %>);"
+        onclick="window.location=<%= consultas_new_path.to_json %>">
         Distribuição Urbana
       </div>
 
@@ -15,7 +15,7 @@
       <div
         class="card-category-index"
         style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://logweb.com.br/wp-content/uploads/2021/05/Grupo-Imediato-e-Ambev.jpeg);"
-        onclick="window.location='<%= az_consultas_new_path %>'">
+        onclick="window.location=<%= az_consultas_new_path.to_json %>">
         Armazém
       </div>
     </div>

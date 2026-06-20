@@ -150,6 +150,12 @@
 
       <div class="card-body">
         <div class="table-responsive">
+          <% unless params[:periodo_mes].present? %>
+            <div class="alert alert-warning m-3">
+              Selecione um mês e ano para visualizar os mapas.
+            </div>
+          <% end %>
+
           <table class="table table-bordered table-hover align-middle">
             <thead class="table-primary text-center">
               <tr>
@@ -174,12 +180,12 @@
               </tr>
             </thead>
             <tbody>
-              <% # Totais %>
+              <%# Totais %>
               <% total_cx_real = total_valor_cx = total_pdv_real = total_valor_pdv = total_recarga = total_valor_rec = total_valor_mp = total_mapas = 0 %>
 
               <% quantidade_mapas = @mapas.size %>  <!-- 'mapas' deve ser o nome da variável que contém os mapas -->
 
-              <% # Calculando o percentual de devolução %>
+              <%# Calculando o percentual de devolução %>
               <% total_pdv_real = @mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.pdv_real.to_f } %>
               <% total_pdv_total = @mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.pdv_total.to_f } %>
               <% quantidade_devolucoes =  total_pdv_total.to_f - total_pdv_real.to_f %>
@@ -256,10 +262,6 @@
                     <td><%= number_to_currency(valor_mp, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                   </tr>
                 <% end %>
-              <% else %>
-                <div class="alert alert-warning">
-                  Selecione um mês e ano para visualizar os mapas.
-                </div>
               <% end %>
             </tbody>
           </table>
@@ -321,7 +323,7 @@
                   </tr>
                   <tr class="fw-bold">
                     <td>Total Mapas</td>
-                    <td><%= total_mapas%></td>
+                    <td><%= total_mapas %></td>
                     <td></td>
                     <td><%= number_to_currency(total_valor_mp  += bonus_devolucao, unit: "R$ ", separator: ",", delimiter: ".") %></td>
                   </tr>

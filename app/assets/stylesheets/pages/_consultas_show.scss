@@ -131,3 +131,120 @@
     }
   }
 }
+
+html[data-bs-theme="dark"] {
+  .driver-report-container {
+    background:
+      linear-gradient(180deg, rgba(37, 99, 235, 0.08), transparent 18rem),
+      #0f172a !important;
+    color: #e5e7eb;
+
+    .container,
+    .row,
+    .col-md-4,
+    .col-md-6,
+    .col-md-8 {
+      background-color: transparent !important;
+    }
+
+    > .container:first-child {
+      color: #f8fafc;
+    }
+
+    .card {
+      background-color: #111827 !important;
+      border: 1px solid #273449 !important;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22) !important;
+      color: #e5e7eb;
+    }
+
+    .card-body {
+      background-color: transparent !important;
+      color: #e5e7eb;
+    }
+
+    .card-header.bg-light {
+      background-color: #172033 !important;
+      color: #f8fafc !important;
+    }
+
+    .table-responsive {
+      box-shadow: none;
+      border: 1px solid #273449;
+      background: #111827 !important;
+    }
+
+    .table {
+      --bs-table-bg: #111827;
+      --bs-table-color: #e5e7eb;
+      --bs-table-border-color: #2f3c52;
+      --bs-table-hover-bg: #1f2937;
+      --bs-table-hover-color: #ffffff;
+      background-color: #111827 !important;
+      color: #e5e7eb !important;
+    }
+
+    .table th,
+    .table td {
+      background-color: transparent;
+      color: inherit;
+    }
+
+    .table-primary {
+      --bs-table-bg: #1e3a5f;
+      --bs-table-color: #eff6ff;
+      --bs-table-border-color: #31547d;
+    }
+
+    .table-success {
+      --bs-table-bg: #123524;
+      --bs-table-color: #bbf7d0;
+      --bs-table-border-color: #1f5a3d;
+    }
+
+    .table-danger {
+      --bs-table-bg: #451a1a;
+      --bs-table-color: #fecaca;
+      --bs-table-border-color: #7f1d1d;
+    }
+
+    .total-card {
+      background-color: #12213a;
+      border-left-color: #60a5fa;
+
+      strong {
+        color: #93c5fd;
+      }
+    }
+
+    .parameters-card .list-group-item {
+      background-color: transparent;
+    }
+
+    .list-group,
+    .list-group-flush,
+    .list-group-item {
+      background-color: transparent !important;
+      color: #e5e7eb !important;
+      border-color: #273449 !important;
+    }
+
+    .alert-warning {
+      background-color: #3b2f12;
+      border-color: #b7791f;
+      color: #fde68a;
+    }
+
+    .alert-danger {
+      background-color: #3f1515;
+      border-color: #991b1b;
+      color: #fecaca;
+    }
+
+    .alert-success {
+      background-color: #123524;
+      border-color: #166534;
+      color: #bbf7d0;
+    }
+  }
+}

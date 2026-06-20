@@ -1,5 +1,7 @@
 /* SCSS - Media Queries encapsuladas nos seletores corretos */
 .card-category-index {
+  cursor: pointer;
+  transition: transform 0.2s ease;
   background-size: cover;
   background-position: center;
   height: 180px;
@@ -18,6 +20,10 @@
     height: 200px;
     font-size: 28px;
   }
+}
+
+.card-category-index:hover {
+  transform: scale(1.03);
 }
 
 .cards-index {
