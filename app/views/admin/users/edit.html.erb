@@ -41,7 +41,7 @@
         <% if @user.photo.attached? %>
           <div class="mt-3 d-flex align-items-center gap-3">
             <p class="mb-0">Foto atual:</p>
-            <%= image_tag @user.photo.variant(resize_to_limit: [150, 150]), class: "rounded-circle border" %>
+            <%= image_tag @user.photo.variant(resize_to_limit: [150, 150]), alt: (@user.name.presence || "Foto de perfil"), class: "rounded-circle border" %>
             <%= f.check_box :remove_photo, {}, "1", "0" %>
             <%= f.label :remove_photo, "Remover foto", class: "mb-0" %>
           </div>
