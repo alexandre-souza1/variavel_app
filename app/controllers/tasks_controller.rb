@@ -100,9 +100,17 @@ class TasksController < ApplicationController
         tasklist_items_attributes: [:id, :content, :completed, :_destroy]
       ]
     ).tap do |whitelisted|
+
       whitelisted[:label_ids] = whitelisted[:label_ids]&.reject(&:blank?) || []
       whitelisted[:user_ids]  = whitelisted[:user_ids]&.reject(&:blank?) || []
-      whitelisted[:label_ids] &= @task.bucket.action_plan.label_ids if @task&.persisted?
+
+      whitelisted[:label_ids] = whitelisted[:label_ids].map(&:to_i)
+      whitelisted[:user_ids]  = whitelisted[:user_ids].map(&:to_i)
+
+      if @task&.persisted?
+        whitelisted[:label_ids] &= @task.bucket.action_plan.label_ids
+      end
+
     end
   end
 
