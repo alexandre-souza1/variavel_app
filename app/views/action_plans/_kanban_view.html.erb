@@ -3,182 +3,262 @@
      data-controller="drag-scroll">
 
   <% buckets.each do |bucket| %>
-      <div id="bucket_<%= bucket.id %>" class="col-12 col-md-4 col-lg-3">
-        <div class="card bg-light mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
 
-              <div data-controller="bucket-edit" data-bucket-id="<%= bucket.id %>" class="flex-grow-1">
+    <div id="bucket_<%= bucket.id %>" class="col-12 col-md-4 col-lg-3">
 
-                  <!-- Título -->
-                  <span data-bucket-edit-target="title"
-                      data-action="click->bucket-edit#edit"
-                      style="cursor: pointer;">
-                  <%= bucket.name %>
-                  </span>
+      <div class="card bg-light mb-3">
 
-                  <!-- Input oculto -->
-                  <input type="text"
-                      value="<%= bucket.name %>"
-                      data-bucket-edit-target="input"
-                      data-action="blur->bucket-edit#save keydown->bucket-edit#enter"
-                      class="form-control form-control-sm d-none"
-                      autocomplete="off">
+        <div class="card-header d-flex justify-content-between align-items-center">
 
-              </div>
+          <div data-controller="bucket-edit" data-bucket-id="<%= bucket.id %>" class="flex-grow-1">
 
-              <%= link_to action_plan_bucket_path(action_plan, bucket),
+            <span data-bucket-edit-target="title"
+                  data-action="click->bucket-edit#edit"
+                  style="cursor: pointer;">
+              <%= bucket.name %>
+            </span>
+
+            <input type="text"
+                   value="<%= bucket.name %>"
+                   data-bucket-edit-target="input"
+                   data-action="blur->bucket-edit#save keydown->bucket-edit#enter"
+                   class="form-control form-control-sm d-none"
+                   autocomplete="off">
+
+          </div>
+
+
+          <%= link_to action_plan_bucket_path(action_plan, bucket),
+              data: {
+                turbo_method: :delete,
+                turbo_confirm: "Tem certeza?"
+              },
+              class: "btn btn-sm" do %>
+
+            <i class="bi bi-x-lg text-danger"></i>
+
+          <% end %>
+
+        </div>
+
+
+        <div class="card-footer" data-controller="new-task">
+
+          <button
+            class="btn btn-sm btn-outline-primary w-100"
+            data-action="click->new-task#toggle"
+            data-new-task-target="button">
+            + Adicionar tarefa
+          </button>
+
+
+          <div class="collapse mt-2" data-new-task-target="wrapper">
+
+            <div class="task-card mb-2 p-2 shadow-sm">
+
+              <%= form_with model: [action_plan, bucket, Task.new],
                   data: {
-                    turbo_method: :delete,
-                    turbo_confirm: "Tem certeza?"
-                  },
-                  class: "btn btn-sm" do %>
+                    action: "turbo:submit-end->new-task#afterSubmit",
+                    new_task_target: "form"
+                  } do |f| %>
 
-                <i class="bi bi-x-lg text-danger"></i>
 
-              <% end %>
-            </div>
+                <%= f.text_field :title,
+                    placeholder: "Nome da tarefa...",
+                    class: "form-control mb-2",
+                    data: { new_task_target: "title" },
+                    required: true %>
 
-            <div class="card-footer" data-controller="new-task">
 
-              <!-- BOTÃO -->
-              <button
-                class="btn btn-sm btn-outline-primary w-100"
-                data-action="click->new-task#toggle"
-                data-new-task-target="button"
-              >
-                + Adicionar tarefa
-              </button>
+                <div data-controller="toggle-field" class="mb-2">
 
-              <%# CARD FORM NEW TASK %>
-              <div class="collapse mt-2" data-new-task-target="wrapper">
-                <div class="task-card mb-2 p-2 shadow-sm">
+                  <button
+                    type="button"
+                    class="btn btn-light text-dark btn-sm w-100 align-items-start d-flex gap-1"
+                    data-action="click->toggle-field#toggle">
+                    📅 Definir data
+                  </button>
 
-                  <%= form_with model: [action_plan, bucket, Task.new],
-                    data: {action: "turbo:submit-end->new-task#afterSubmit", new_task_target: "form"} do |f| %>
 
-                    <!-- Título -->
-                    <%= f.text_field :title,
-                      placeholder: "Nome da tarefa...",
-                      class: "form-control mb-2",
-                      data: { new_task_target: "title" },
-                      required: true %>
+                  <div class="mt-2 d-none" data-toggle-field-target="field">
 
-                    <!-- DATA -->
-                    <div data-controller="toggle-field" class="mb-2">
-                      <button
-                        type="button"
-                        class="btn btn-light text-dark btn-sm w-100 align-items-start d-flex gap-1"
-                        data-action="click->toggle-field#toggle"
-                        data-toggle-field-target="button"
-                      >
-                        📅 Definir data
-                      </button>
+                    <%= f.date_field :due_at,
+                        class: "form-control",
+                        data: {
+                          action: "change->toggle-field#updateDate"
+                        } %>
 
-                      <div class="mt-2 d-none" data-toggle-field-target="field">
-                        <%= f.date_field :due_at,
-                          class: "form-control",
-                          data: { action: "change->toggle-field#updateDate" } %>
-                      </div>
-                    </div>
+                  </div>
 
-                    <!-- RESPONSÁVEIS -->
-                    <div data-controller="toggle-field" class="mb-2">
-                      <button
-                        type="button"
-                        class="btn btn-light text-dark btn-sm w-100 align-items-start d-flex gap-1"
-                        data-action="click->toggle-field#toggle"
-                        data-toggle-field-target="button"
-                      >
-                        👤 Atribuir responsável
-                      </button>
-
-                      <div class="mt-2 d-none" data-toggle-field-target="field">
-                        <%= f.collection_select :user_ids,
-                          User.all,
-                          :id,
-                          :name,
-                          {},
-                          {
-                            class: "form-select",
-                            multiple: true,
-                            data: {
-                              controller: "tom-select-users",
-                              action: "change->toggle-field#updateUsers"
-                            }
-                          } %>
-                      </div>
-                    </div>
-
-                    <!-- Ações -->
-                    <div class="d-flex justify-content-between gap-1">
-                      <button class="btn btn-primary col-10">Salvar</button>
-                      <button
-                        type="button"
-                        class="btn btn-outline-secondary col-1 align-items-center d-flex justify-content-center"
-                        data-action="click->new-task#cancel"
-                      >
-                        <i class="bi bi-x"></i>
-                      </button>
-                    </div>
-
-                  <% end %>
                 </div>
-              </div>
-            </div>
 
-            <%# CARD BODY %>
-            <div
-            class="card-body"
-            data-sortable-bucket-id-value="<%= bucket.id %>"
-            data-bucket-id="<%= bucket.id %>"
-            style="min-height: 300px;"
-            >
 
-            <% open_tasks = bucket.tasks.where(completed: false).order(:position) %>
-            <% done_tasks = bucket.tasks.where(completed: true).order(:position) %>
+                <div data-controller="toggle-field" class="mb-2">
 
-            <%# OPEN TASKS %>
-            <div
-              id="open-tasks-<%= bucket.id %>"
-              class="mb-3"
-              data-controller="sortable"
-              data-toggle-done-target="openList"
-            >
-              <% open_tasks.each do |task| %>
-                <%= render "tasks/task", task: task %>
+                  <button
+                    type="button"
+                    class="btn btn-light text-dark btn-sm w-100 align-items-start d-flex gap-1"
+                    data-action="click->toggle-field#toggle">
+                    👤 Atribuir responsável
+                  </button>
+
+
+                  <div class="mt-2 d-none" data-toggle-field-target="field">
+
+                    <%= f.collection_select :user_ids,
+                        User.all,
+                        :id,
+                        :name,
+                        {},
+                        {
+                          class:"form-select",
+                          multiple:true,
+                          data:{
+                            controller:"tom-select-users"
+                          }
+                        } %>
+
+                  </div>
+
+                </div>
+
+
+                <div class="d-flex justify-content-between gap-1">
+
+                  <button class="btn btn-primary col-10">
+                    Salvar
+                  </button>
+
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary col-1 align-items-center d-flex justify-content-center"
+                    data-action="click->new-task#cancel">
+
+                    <i class="bi bi-x"></i>
+
+                  </button>
+
+                </div>
+
+
               <% end %>
+
             </div>
 
-            <%# DONE TASKS %>
-            <div class="mt-3">
+          </div>
 
-              <div data-controller="toggle-done">
+        </div>
 
-                <div
-                  class="d-flex justify-content-between align-items-center mt-3 mb-2"
-                  style="cursor: pointer;"
-                  data-action="click->toggle-done#toggle"
-                >
-                <small id="done-count-<%= bucket.id %>" class="text-muted" data-toggle-done-target="count">
+
+        <div class="card-body"
+             data-sortable-bucket-id-value="<%= bucket.id %>"
+             data-bucket-id="<%= bucket.id %>"
+             style="min-height:300px;">
+
+
+          <% open_tasks = bucket.tasks.where(completed:false).order(:position) %>
+          <% done_tasks = bucket.tasks.where(completed:true).order(:position) %>
+
+
+          <div id="open-tasks-<%= bucket.id %>"
+               class="mb-3"
+               data-controller="sortable">
+
+            <% open_tasks.each do |task| %>
+              <%= render "tasks/task", task: task %>
+            <% end %>
+
+          </div>
+
+
+          <div class="mt-3">
+
+            <div data-controller="toggle-done">
+
+
+              <div class="d-flex justify-content-between align-items-center mt-3 mb-2"
+                   style="cursor:pointer;"
+                   data-action="click->toggle-done#toggle">
+
+
+                <small id="done-count-<%= bucket.id %>"
+                       class="text-muted">
+
                   ✔️ Tarefas concluídas (<%= done_tasks.count %>)
+
                 </small>
 
-                  <span data-toggle-done-target="icon">▼</span>
-                </div>
 
-                <div
-                  id="done-tasks-<%= bucket.id %>"
-                  class="d-none"
-                  data-toggle-done-target="list"
-                  data-loaded="false"
-                ></div>
+                <span>
+                  ▼
+                </span>
+
 
               </div>
-            </div>
+
+
+              <div id="done-tasks-<%= bucket.id %>"
+                   class="d-none">
+              </div>
+
 
             </div>
+
+          </div>
+
+
         </div>
+
+
       </div>
+
+    </div>
+
+
   <% end %>
+
+
+  <!-- NOVO BUCKET -->
+  <div class="col-12 col-md-4 col-lg-3">
+
+    <div class="h-100 d-flex align-items-start">
+
+      <div class="border border-2 border-dashed rounded p-3 w-100"
+          style="min-height:120px;">
+
+        <%= form_with model: [action_plan, Bucket.new] do |f| %>
+
+          <div class="text-center text-muted mb-3">
+            <i class="bi bi-plus-lg fs-4"></i>
+
+            <div class="mt-2">
+              Novo bucket
+            </div>
+          </div>
+
+
+          <div class="input-group">
+
+            <%= f.text_field :name,
+                placeholder: "Nome...",
+                class: "form-control form-control-sm" %>
+
+
+            <button class="btn btn-primary btn-sm">
+              Criar
+            </button>
+
+          </div>
+
+
+        <% end %>
+
+      </div>
+
+    </div>
+
+  </div>
+
 
 </div>

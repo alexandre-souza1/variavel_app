@@ -35,18 +35,28 @@
         class: "btn btn-outline-primary #{params[:view] == 'list' ? 'active' : ''}" %>
   </div>
 
-  <div class="mb-3">
-  <%= form_with model: [@action_plan, Bucket.new], local: true do |f| %>
-      <div class="input-group">
-      <%= f.text_field :name, placeholder: "Novo bucket...", class: "form-control" %>
-      <button class="btn btn-primary">Criar</button>
-      </div>
-  <% end %>
-  </div>
-
   <% if params[:view] == "list" %>
     <%= render "list_view", buckets: @buckets, action_plan: @action_plan %>
   <% else %>
-    <%= render "kanban_view", buckets: @buckets, action_plan: @action_plan %>
+    <div data-controller="kanban-scroll">
+
+      <!-- SCROLL TOP -->
+      <div
+        data-kanban-scroll-target="top"
+        class="kanban-scroll-top"
+      >
+        <div data-kanban-scroll-target="spacer"></div>
+      </div>
+
+      <!-- KANBAN -->
+      <div
+        data-kanban-scroll-target="bottom"
+        class="kanban-scroll-bottom"
+      >
+        <div class="border rounded p-1 my-1">
+          <%= render "kanban_view", buckets: @buckets, action_plan: @action_plan %>
+        </div>
+      </div>
+    </div>
   <% end %>
 </div>
