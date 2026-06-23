@@ -35,12 +35,15 @@
                         data-tom-select-action-plan-id-value="<%= task.bucket.action_plan.id %>">
 
                   <% task.bucket.action_plan.labels.each do |label| %>
-                    <option
-                      value="<%= label.id %>"
-                      data-color="<%= label.color %>"
-                      <%= "selected" if task.labels.include?(label) %>>
-                      <%= label.name %>
-                    </option>
+                    <% if task.labels.include?(label) %>
+                      <option value="<%= label.id %>" data-color="<%= label.color %>" selected>
+                        <%= label.name %>
+                      </option>
+                    <% else %>
+                      <option value="<%= label.id %>" data-color="<%= label.color %>">
+                        <%= label.name %>
+                      </option>
+                    <% end %>
                   <% end %>
                 </select>
               </div>

@@ -11,8 +11,7 @@ export default class extends Controller {
     if (!this.hasListTarget) return
 
     const list = this.listTarget
-    const bucketElement = this.element.closest("[data-bucket-id]")
-    const bucketId = bucketElement.dataset.bucketId
+    const bucketId = this.element.dataset.bucketId
     const kanban = document.querySelector("[id^='kanban-']")
     const actionPlanId = kanban.id.replace("kanban-", "")
 
