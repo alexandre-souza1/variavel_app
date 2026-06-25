@@ -50,6 +50,7 @@ class ActionPlansController < ApplicationController
 
     @calendar_tasks = @my_tasks.where.not(due_at: nil)
     @today_tasks = @my_tasks.where(due_at: Date.current.all_day)
+    @overdue_tasks = @my_tasks.where("due_at < ?", Time.current)
 
     @calendar_start_date =
       if params[:start_date].present?

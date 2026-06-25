@@ -42,16 +42,27 @@
         </div>
       </div>
     </div>
+
     <div class="col-md-3">
-      <div class="card shadow-sm">
+
+      <div class="card shadow-sm"
+          style="cursor: pointer;"
+          data-bs-toggle="modal"
+          data-bs-target="#overdueTasksModal">
+
         <div class="card-body">
           <h6 class="text-muted">Atrasadas</h6>
+
           <h2 class="text-danger">
-            <%= @my_tasks.where("due_at < ?", Time.current).count %>
+            <%= @overdue_tasks.count %>
           </h2>
+
         </div>
+
       </div>
+
     </div>
+
     <div class="col-md-3">
       <div class="card shadow-sm">
         <div class="card-body">
@@ -200,5 +211,5 @@
     <%= render "delete_modal", plan: plan %>
   <% end %>
   <%= render "todaytasks_modal", today_tasks: @today_tasks %>
-
+  <%= render "overdue_tasks_modal", overdue_tasks: @overdue_tasks %>
 </div>
