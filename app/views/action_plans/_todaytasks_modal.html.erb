@@ -1,0 +1,65 @@
+<div class="modal fade" id="todayTasksModal" tabindex="-1">
+
+  <div class="modal-dialog modal-lg">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">
+          📅 Tarefas para hoje
+        </h5>
+
+        <button class="btn-close"
+                data-bs-dismiss="modal">
+        </button>
+      </div>
+
+
+      <div class="modal-body">
+
+        <% if today_tasks.any? %>
+
+          <% today_tasks.each do |task| %>
+
+            <div class="border-bottom py-2">
+
+              <div class="fw-bold">
+                <%= task.title %>
+              </div>
+
+              <small class="text-muted">
+                Plano:
+                <%= task.bucket.action_plan.name %>
+              </small>
+
+              <div>
+                <span class="badge bg-info">
+                  <%= task.users.map(&:name).join(", ") %>
+                </span>
+              </div>
+
+              <% if task.due_at %>
+                <div class="small mt-1">
+                  📅 <%= l(task.due_at, format: :short) %>
+                </div>
+              <% end %>
+
+            </div>
+
+          <% end %>
+
+        <% else %>
+
+          <p class="text-muted mb-0">
+            Nenhuma tarefa vence hoje 🎉
+          </p>
+
+        <% end %>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

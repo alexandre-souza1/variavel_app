@@ -1,64 +1,204 @@
-<div class="container">
+<div class="container-fluid">
+
+  <!-- HEADER -->
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <div class="d-flex align-items-center">
-      <i class="fas fa-tasks me-2"></i>
-      <h2>Planos de Ação</h2>
+    <div>
+      <h2>
+        <i class="fas fa-home me-2"></i>
+        Meu Painel
+      </h2>
+      <p class="text-muted mb-0">
+        Acompanhamento das suas tarefas e planos
+      </p>
     </div>
+
     <div class="d-flex gap-2">
-      <%= link_to "Novo Plano", new_action_plan_path, class: "btn btn-primary" %>
+      <button class="btn btn-outline-primary"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#plansOffcanvas">
+        <i class="fas fa-layer-group me-1"></i>
+        Meus Planos
+      </button>
+
+      <%= link_to new_action_plan_path, class: "btn btn-primary" do %>
+        <i class="fas fa-plus me-1"></i>
+        Novo Plano
+      <% end %>
+
       <%= link_to new_task_import_path, class: "btn btn-outline-primary" do %>
-        <i class="fas fa-file-import me-1"></i> Importar Tasks
-        <% end %>
-      <%= link_to root_path, class: "btn btn-outline-secondary" do %>
-        <i class="fas fa-arrow-left me-1"></i> Voltar
+        <i class="fas fa-file-import me-1"></i>
+        Importar Tasks
       <% end %>
     </div>
   </div>
 
-  <div class="card mb-4">
-    <div class="card-body">
-      <%= form_with url: action_plans_path, method: :get, local: true do %>
-        <div class="input-group">
-          <span class="input-group-text">
-            <i class="bi bi-search"></i>
-          </span>
-
-          <%= text_field_tag :query,
-              params[:query],
-              placeholder: "Buscar planos, tasks ou responsáveis...",
-              class: "form-control" %>
-
-          <button class="btn btn-primary">Buscar</button>
-
-          <%= link_to "Limpar", action_plans_path, class: "btn btn-outline-secondary" %>
+  <!-- RESUMO -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted">Tarefas abertas</h6>
+          <h2><%= @my_tasks.count %></h2>
         </div>
-      <% end %>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted">Atrasadas</h6>
+          <h2 class="text-danger">
+            <%= @my_tasks.where("due_at < ?", Time.current).count %>
+          </h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted">Planos</h6>
+          <h2><%= @action_plans.count %></h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+
+      <div class="card shadow-sm"
+          style="cursor: pointer;"
+          data-bs-toggle="modal"
+          data-bs-target="#todayTasksModal">
+
+        <div class="card-body">
+          <h6 class="text-muted">
+            Tarefas para hoje
+          </h6>
+
+          <h2>
+            <%= @today_tasks.count %>
+          </h2>
+
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="row">
-    <% @action_plans.each do |plan| %>
-      <div class="col-md-4">
-        <div class="card mb-3 shadow-sm">
-          <div class="card-body">
-            <h5><%= plan.name %></h5>
-            <p><%= plan.description %></p>
+  <!-- CALENDÁRIO + PRÓXIMAS AÇÕES (mesma altura) -->
+  <div class="row align-items-stretch">
 
-            <%= link_to "Abrir", action_plan_path(plan), class: "btn btn-outline-primary btn-sm" %>
-            <% if plan.user == current_user %>
-            <%= link_to "Editar", edit_action_plan_path(plan), class: "btn btn-outline-secondary btn-sm" %>
-            <button type="button"
-                    class="btn btn-outline-danger btn-sm"
-                    data-bs-toggle="modal"
-                    data-bs-target="#deleteModal-<%= plan.id %>">
-              Excluir
-            </button>
+    <!-- CALENDÁRIO -->
+    <div class="col-lg-7 d-flex">
+      <div class="card shadow-sm w-100 d-flex flex-column">
+        <div class="card-header">📅 Prazos das minhas tarefas</div>
+        <div class="card-body flex-grow-1 p-2 overflow-y-auto">
+          <% if @calendar_tasks.any? %>
+            <%= month_calendar(events: @calendar_tasks, attribute: :due_at, start_date: @calendar_start_date) do |date, tasks| %>
+              <div class="fw-bold"><%= date.day %></div>
+              <% if tasks.any? %>
+                <!-- Lista de tarefas do dia: no máximo 2, com badge para o restante -->
+                <div class="task-list mt-1" style="max-height: 50px; overflow-y: auto; font-size: 0.65rem; line-height: 1.2; max-width: 100%; overflow-x: hidden;">
+                  <% tasks.first(2).each do |task| %>
+                    <div class="task-item" style="max-width: 100%;">
+                      <a href="#" <%# herb:disable html-anchor-require-href %>
+                        class="text-decoration-none d-block text-truncate"
+                        style="max-width: 100%;"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal-day-<%= date %>">
+
+                        <%= task.title %>
+
+                      </a>
+                    </div>
+                  <% end %>
+                </div>
+                <!-- Se houver mais de 2 tarefas, exibe badge clicável -->
+                <% if tasks.size > 2 %>
+                  <span class="badge bg-secondary mt-1" style="cursor: pointer; font-size: 0.65rem;"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal-day-<%= date %>">
+                    +<%= tasks.size - 2 %>
+                  </span>
+                <% end %>
+              <% end %>
+              <%= render "calendar_modal",
+                        date: date,
+                        tasks: tasks %>
+
+            <% end %>
+          <% else %>
+            <p class="text-muted mb-0">Nenhuma tarefa com prazo definido.</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRÓXIMAS AÇÕES -->
+    <div class="col-lg-5 d-flex">
+      <div class="card shadow-sm w-100 d-flex flex-column">
+        <div class="card-header">🚀 Próximas ações</div>
+        <div class="card-body p-0 overflow-y-auto" style="height: 350px;">
+          <div class="list-group list-group-flush">
+            <% @my_tasks.limit(10).each do |task| %>
+              <div class="list-group-item">
+                <div class="fw-bold text-truncate" style="max-width: 100%;"><%= task.title %></div>
+                <small class="text-muted">Plano: <%= task.bucket.action_plan.name %></small>
+                <small>Responsáveis: <%= task.users.map(&:name).join(", ") %></small>
+                <% if task.due_at %>
+                  <div class="small mt-1">📅 <%= l(task.due_at, format: :short) %></div>
+                <% end %>
+              </div>
+            <% end %>
+            <% if @my_tasks.empty? %>
+              <div class="p-3 text-muted">Nenhuma tarefa pendente 🎉</div>
             <% end %>
           </div>
         </div>
       </div>
+    </div>
 
-        <%= render "delete_modal", plan: plan %>
-    <% end %>
   </div>
+
+  <!-- MEUS PLANOS -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="plansOffcanvas">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">Meus Planos</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+
+    <div class="offcanvas-body">
+      <% @action_plans.each do |plan| %>
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+
+            <h6><%= plan.name %></h6>
+
+            <p class="text-muted small">
+              <%= plan.description&.truncate(80) %>
+            </p>
+
+            <div class="d-flex gap-2 flex-wrap">
+              <%= link_to "Abrir", action_plan_path(plan),
+                          class: "btn btn-sm btn-primary" %>
+
+              <% if plan.user == current_user %>
+                <%= link_to "Editar", edit_action_plan_path(plan),
+                            class: "btn btn-sm btn-outline-secondary" %>
+
+                <button class="btn btn-sm btn-outline-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteModal-<%= plan.id %>">
+                  Excluir
+                </button>
+              <% end %>
+            </div>
+
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <% @action_plans.each do |plan| %>
+    <%= render "delete_modal", plan: plan %>
+  <% end %>
+  <%= render "todaytasks_modal", today_tasks: @today_tasks %>
+
 </div>

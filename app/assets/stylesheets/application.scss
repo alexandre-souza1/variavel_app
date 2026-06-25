@@ -24,7 +24,7 @@
 // Your CSS partials (componentes e páginas)
 @import "components/index"; // Encaminha os componentes
 @import "pages/index"; // Encaminha as páginas
-
+@import "simple_calendar";
 
 /* Container do ticker */
 .ticker-container {
@@ -232,3 +232,65 @@
 .kanban-scroll-bottom::-webkit-scrollbar {
   height: 6px;
 }
+
+
+  .simple-calendar table {
+    table-layout: fixed;
+    width: 100%;
+  }
+  .simple-calendar td, .simple-calendar th {
+    overflow: hidden;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 0;
+  }
+  .simple-calendar .day {
+    padding: 5px;
+    vertical-align: top;
+  }
+  .simple-calendar .calendar-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .simple-calendar .calendar-heading .calendar-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+  .simple-calendar .calendar-heading a {
+    padding: 4px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    border: 1px solid #dee2e6;
+    margin: 0 2px;
+  }
+  .simple-calendar .calendar-heading a:hover {
+    background: #f8f9fa;
+  }
+  .task-item a {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .task-list {
+    max-width: 100%;
+    overflow-x: hidden;
+    max-height: 350px;
+  }
+  .task-list::-webkit-scrollbar,
+  .card-body::-webkit-scrollbar {
+    width: 5px;
+  }
+  .task-list::-webkit-scrollbar-thumb,
+  .card-body::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+  }
+  .badge[data-bs-toggle="modal"]:hover {
+    background-color: #6c757d;
+    opacity: 0.8;
+  }

@@ -4,10 +4,16 @@ class ActionPlansController < ApplicationController
   before_action :set_owned_action_plan, only: [:edit, :update, :destroy]
 
   def index
+
+    # Planos que o usuário pode acessar
     @action_plans = accessible_action_plans
 
+
+    # Busca continua funcionando
     if params[:query].present?
+
       q = "%#{params[:query]}%"
+
 
       @action_plans = @action_plans
         .left_joins(buckets: :tasks)
@@ -20,9 +26,38 @@ class ActionPlansController < ApplicationController
           q: q
         )
         .distinct
+
     end
 
-    @action_plans = @action_plans.includes(buckets: { tasks: :users })
+
+
+    # mantém carregamento eficiente
+    @action_plans = @action_plans
+      .includes(buckets: { tasks: :users })
+
+
+
+    # -------------------------
+    # DASHBOARD PESSOAL
+    # -------------------------
+
+
+    @my_tasks = Task
+      .joins(:task_assignments)
+      .where(task_assignments: { user_id: current_user.id })
+      .where(completed: false)
+      .order(Arel.sql("CASE WHEN due_at IS NULL THEN 1 ELSE 0 END, due_at ASC"))
+
+    @calendar_tasks = @my_tasks.where.not(due_at: nil)
+    @today_tasks = @my_tasks.where(due_at: Date.current.all_day)
+
+    @calendar_start_date =
+      if params[:start_date].present?
+        Date.parse(params[:start_date]) rescue Date.today
+      else
+        Date.today
+      end
+
   end
 
   def show

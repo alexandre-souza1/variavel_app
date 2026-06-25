@@ -91,4 +91,13 @@ class Task < ApplicationRecord
       locals: { task: task }
     )
   end
+
+  def start_time
+    due_at&.to_date
+  end
+
+
+  def end_time
+    due_at&.to_date
+  end
 end

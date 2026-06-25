@@ -59,3 +59,7 @@ pt:
       long: "%d de %B de %Y às %H:%M"
     am: "am"
     pm: "pm"
+  simple_calendar:
+    previous: "Anterior"
+    next: "Próximo"
+    today: "Hoje"
