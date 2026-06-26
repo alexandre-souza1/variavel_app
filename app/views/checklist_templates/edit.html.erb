@@ -23,11 +23,17 @@
         <%= f.label :kilometer_required, "Exigir quilometragem", class: "form-check-label" %>
       </div>
 
-      <div class="form-check mb-3">
+      <div class="form-check mb-2">
         <%= f.check_box :photo_only, class: "form-check-input" %>
         <%= f.label :photo_only,
               "Checklist apenas de fotos",
               class: "form-check-label" %>
+      </div>
+
+      <div class="form-check mb-2">
+        <%= f.check_box :five_s_az,
+            class:"form-check-input" %>
+        <%= f.label :five_s_az, "Checklist 5S AZ Empilhadeira", class:"form-check-label" %>
       </div>
 
       <div class="form-check mb-2">

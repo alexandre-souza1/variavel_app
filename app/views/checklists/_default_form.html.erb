@@ -1,15 +1,15 @@
   <div class="list-group" data-controller="response">
 
-    <% if @template.plate_required? && (@template.setor == "ARMAZEM" || @template.setor == "ROTA") %>
+    <% if template.plate_required? && (template.setor == "ARMAZEM" || template.setor == "ROTA") %>
       <%= field_with_errors(f, :plate_id) do %>
         <%= f.label :plate_id, "Selecione a Placa" %>
-        <%= f.collection_select :plate_id, @plates, :id, :placa,
+        <%= f.collection_select :plate_id, template.plates, :id, :placa,
               { prompt: "Escolha uma placa" },
               class: "form-select",
               data: { checklist_validation_target: "required" } %>
       <% end %>
 
-    <% elsif @template.plate_required? && @template.setor == "TRANSFERÊNCIA" %>
+    <% elsif template.plate_required? && template.setor == "TRANSFERÊNCIA" %>
       <%= field_with_errors(f, :placa_manual) do %>
         <%= f.label :placa_manual, "Digite a placa" %>
         <%= f.text_field :placa_manual,
@@ -19,7 +19,7 @@
       <% end %>
     <% end %>
 
-    <% if @template.kilometer_required? %>
+    <% if template.kilometer_required? %>
       <%= field_with_errors(f, :kilometer) do %>
         <%= f.label :kilometer, "Digite a quilometragem" %>
         <%= f.text_field :kilometer,
@@ -28,20 +28,20 @@
       <% end %>
     <% end %>
 
-    <% if @template.gas_state_required? %>
+    <% if template.gas_state_required? %>
       <%= field_with_errors(f, :gas_state) do %>
         <%= f.label :gas_state, "Nível de combustível" %>
         <%= f.select :gas_state,
           options_for_select([["Cheio", "full"], ["3/4", "three_quarters"],
                               ["1/2", "half"], ["1/4", "quarter"], ["Vazio", "empty"]],
-                              @checklist.gas_state),
+                              checklist.gas_state),
           { prompt: "Selecione o nível de combustível" },
           class: "form-select",
           data: { checklist_validation_target: "required" } %>
       <% end %>
     <% end %>
 
-    <% if @template.vehicle_model_required? %>
+    <% if template.vehicle_model_required? %>
       <%= field_with_errors(f, :vehicle_model) do %>
         <%= f.label :vehicle_model, "Modelo do veículo" %>
         <%= f.text_field :vehicle_model,
@@ -50,7 +50,7 @@
       <% end %>
     <% end %>
 
-    <% if @template.responsavel_required? %>
+    <% if template.responsavel_required? %>
       <%= field_with_errors(f, :responsavel) do %>
         <%= f.label :responsavel, "Responsável" %>
         <%= f.text_field :responsavel,
@@ -59,7 +59,7 @@
       <% end %>
     <% end %>
 
-    <% if @template.origin_required? %>
+    <% if template.origin_required? %>
       <%= field_with_errors(f, :origin) do %>
         <%= f.label :origin, "Origem" %>
         <%= f.text_field :origin,
@@ -152,7 +152,7 @@
 
   </div>
 
-  <% if @template.photos_required? %>
+  <% if template.photos_required? %>
     <h4 class="mt-4">Fotos do Caminhão</h4>
 
     <div class="row">

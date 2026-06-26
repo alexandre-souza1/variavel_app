@@ -306,13 +306,49 @@ class ChecklistsController < ApplicationController
   end
 
   def prepare_checklist_form
-    if @template.photo_only?
 
-      if @checklist.checklist_photos.empty?
-        @checklist.checklist_photos.build
+    if @template.photo_only? || @template.five_s_az?
+
+
+    if @template.five_s_az?
+
+
+      required_kinds = [
+        "horimetro",
+        "interna",
+        "oleo",
+        "agua",
+        "limpeza"
+      ]
+
+
+      required_kinds.each do |kind|
+
+        unless @checklist.checklist_photos.exists?(kind: kind)
+
+          @checklist.checklist_photos.build(
+            kind: kind
+          )
+
+        end
+
       end
 
+
+    elsif @template.photo_only?
+
+
+      if @checklist.checklist_photos.empty?
+
+        @checklist.checklist_photos.build
+
+      end
+
+    end
+
+
     else
+
 
       if @checklist.checklist_responses.empty?
 
@@ -326,7 +362,9 @@ class ChecklistsController < ApplicationController
 
       end
 
+
     end
+
   end
 
   def set_template
@@ -349,6 +387,7 @@ class ChecklistsController < ApplicationController
       :photo_back,
       :photo_right_trailer,
       :photo_right_truck,
+      :observation,
       checklist_photos_attributes: [
         :id,
         :photo,

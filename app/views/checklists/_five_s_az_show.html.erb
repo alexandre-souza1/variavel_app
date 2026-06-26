@@ -1,0 +1,197 @@
+<div class="bg-light min-vh-100">
+
+  <div class="container py-4">
+
+
+    <div class="card shadow-lg border-0 rounded-4">
+
+
+      <div class="card-header bg-primary text-white rounded-top-4">
+
+        <h1 class="h4 mb-0 fw-bold">
+
+          <i class="fas fa-truck me-2"></i>
+
+          Checklist 5S AZ - Empilhadeira
+
+        </h1>
+
+      </div>
+
+
+      <div class="card-body p-4">
+
+
+        <!-- INFORMAÇÕES -->
+
+        <div class="card shadow-sm border-0 mb-4">
+
+
+          <div class="card-header bg-white">
+
+            <h5 class="fw-bold mb-0">
+              Informações
+            </h5>
+
+          </div>
+
+
+          <div class="card-body">
+
+
+            <% if checklist.plate.present? %>
+
+              <p>
+                <strong>Placa:</strong>
+                <%= checklist.plate.placa %>
+              </p>
+
+            <% end %>
+
+
+            <% if checklist.kilometer.present? %>
+
+              <p>
+                <strong>Horímetro:</strong>
+                <%= checklist.kilometer %>
+              </p>
+
+            <% end %>
+
+
+            <% if checklist.responsavel.present? %>
+
+              <p>
+                <strong>Responsável:</strong>
+                <%= checklist.responsavel %>
+              </p>
+
+            <% end %>
+
+
+            <% if checklist.observation.present? %>
+
+              <div class="alert alert-info">
+
+                <strong>Observações:</strong><br>
+
+                <%= checklist.observation %>
+
+              </div>
+
+            <% end %>
+
+
+          </div>
+
+
+        </div>
+
+
+        <!-- FOTOS 5S -->
+
+
+        <div class="card shadow-sm border-0">
+
+
+          <div class="card-header bg-white">
+
+
+            <h5 class="fw-bold mb-0">
+
+              Evidências fotográficas
+
+            </h5>
+
+
+          </div>
+
+
+          <div class="card-body">
+
+
+            <div class="row g-4">
+
+
+              <%
+              labels = {
+                "horimetro" => "Horímetro",
+                "interna" => "Parte interna",
+                "oleo" => "Vareta de óleo",
+                "agua" => "Reservatório de água",
+                "limpeza" => "Após limpeza"
+              }
+              %>
+
+
+              <% checklist.checklist_photos.each do |photo| %>
+
+
+                <div class="col-md-6">
+
+
+                  <div class="card border shadow-sm h-100">
+
+
+                    <div class="card-body">
+
+
+                      <h6 class="fw-bold mb-3">
+
+                        <%= labels[photo.kind] %>
+
+                      </h6>
+
+
+                      <% if photo.photo.attached? %>
+
+
+                        <%= image_tag photo.photo,
+
+                            class:"img-fluid rounded-3" %>
+
+
+                      <% else %>
+
+
+                        <div class="text-muted">
+
+                          Sem foto
+
+                        </div>
+
+
+                      <% end %>
+
+
+                    </div>
+
+
+                  </div>
+
+
+                </div>
+
+
+              <% end %>
+
+
+            </div>
+
+
+          </div>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+</div>

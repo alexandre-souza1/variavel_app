@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_16_152621) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_26_192921) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -163,6 +163,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_16_152621) do
     t.boolean "origin_required"
     t.boolean "photos_required"
     t.boolean "photo_only", default: false
+    t.boolean "five_s_az"
   end
 
   create_table "checklists", force: :cascade do |t|
@@ -178,6 +179,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_16_152621) do
     t.float "kilometer"
     t.string "origin"
     t.string "status", default: "draft"
+    t.text "observation"
     t.index ["checklist_template_id"], name: "index_checklists_on_checklist_template_id"
     t.index ["plate_id"], name: "index_checklists_on_plate_id"
     t.index ["user_id"], name: "index_checklists_on_user_id"

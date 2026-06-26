@@ -8,12 +8,6 @@ class ChecklistTemplatesController < ApplicationController
 
   def new
     @template = ChecklistTemplate.new
-
-    if @template.photo_only?
-      3.times do
-        @checklist.checklist_photos.build
-      end
-    end
   end
 
   def create
@@ -64,6 +58,8 @@ class ChecklistTemplatesController < ApplicationController
       :gas_state_required,
       :origin_required,
       :photo_only,
+      :five_s_az,
+      :observation,
       :vehicle_model_required,
       :responsavel_required,
       :photos_required,

@@ -10,6 +10,8 @@
 
   <% if @template.photo_only? %>
     <%= render "photo_only_form", template: @template, checklist: @checklist, plates: @plates, f: f %>
+  <% elsif @template.five_s_az? %>
+    <%= render "five_s_az_form", template: @template, checklist: @checklist, plates: @plates, f: f %>
   <% else %>
     <%= render "default_form", f: f %>
   <% end %>

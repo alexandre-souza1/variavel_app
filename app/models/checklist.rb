@@ -30,6 +30,8 @@ class Checklist < ApplicationRecord
   validate :validate_origin_presence_if_required
   validate :validate_photos_presence_if_required,
   on: :final_submit
+  validate :validate_five_s_photos,
+  on: :final_submit
 
 
   validate :validate_photos_are_images
@@ -128,5 +130,38 @@ class Checklist < ApplicationRecord
         errors.add(photo_attr, "Deve ser anexada (#{label})")
       end
     end
+  end
+
+  def validate_five_s_photos
+    return unless checklist_template&.five_s_az?
+
+
+    required = [
+      "horimetro",
+      "interna",
+      "oleo",
+      "agua",
+      "limpeza"
+    ]
+
+
+    required.each do |kind|
+
+      photo =
+        checklist_photos.find do |p|
+          p.kind == kind &&
+          p.photo.attached?
+        end
+
+
+      unless photo
+        errors.add(
+          :base,
+          "Foto obrigatória: #{kind}"
+        )
+      end
+
+    end
+
   end
 end

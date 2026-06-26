@@ -6,7 +6,12 @@ class ChecklistPhoto < ApplicationRecord
 
   enum :kind, {
     standard: "standard",
-    defect: "defect"
+    defect: "defect",
+    horimetro: "horimetro",
+    interna: "interna",
+    oleo: "oleo",
+    agua: "agua",
+    limpeza: "limpeza"
   }
 
   validates :photo, presence: true

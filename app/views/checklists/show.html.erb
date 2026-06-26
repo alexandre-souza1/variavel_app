@@ -1,5 +1,20 @@
 <% if @checklist.checklist_template.photo_only? %>
-  <%= render "photo_only_show", template: @template, checklist: @checklist, plates: @plates %>
+
+  <%= render "photo_only_show",
+      template: @template,
+      checklist: @checklist,
+      plates: @plates %>
+
+
+<% elsif @checklist.checklist_template.five_s_az? %>
+
+  <%= render "five_s_az_show",
+      template: @template,
+      checklist: @checklist %>
+
+
 <% else %>
+
   <%= render "default_show" %>
+
 <% end %>

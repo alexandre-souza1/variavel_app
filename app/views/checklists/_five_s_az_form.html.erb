@@ -1,0 +1,213 @@
+<div class="bg-light min-vh-100"
+     data-controller="five-s-checklist">
+
+  <div class="container py-3">
+
+    <div class="card shadow rounded-4">
+
+
+      <div class="card-header bg-primary text-white">
+
+        <h5 class="mb-0 fw-bold">
+          Checklist 5S AZ
+        </h5>
+
+      </div>
+
+
+      <div class="card-body p-4">
+
+
+        <!-- ETAPA 1 -->
+
+        <div data-five-s-checklist-target="step">
+
+
+          <h4 class="fw-bold">
+            Informações
+          </h4>
+
+
+          <% if template.plate_required? %>
+
+            <%= f.label :plate_id,
+                "Placa",
+                class: "form-label fw-bold" %>
+
+
+            <%= f.collection_select :plate_id,
+                plates,
+                :id,
+                :placa,
+                { prompt: "Selecione" },
+                class: "form-select form-select-lg mb-3" %>
+
+
+          <% end %>
+
+
+          <% if template.kilometer_required? %>
+
+            <%= f.label :kilometer,
+                "Horímetro",
+                class: "form-label fw-bold" %>
+
+
+            <%= f.text_field :kilometer,
+                class: "form-control form-control-lg mb-3" %>
+
+
+          <% end %>
+
+
+          <% if template.responsavel_required? %>
+
+            <%= f.label :responsavel,
+                "Responsável",
+                class: "form-label fw-bold" %>
+
+
+            <%= f.text_field :responsavel,
+                class: "form-control form-control-lg" %>
+
+
+          <% end %>
+
+
+        </div>
+
+
+        <%
+          photos = {
+            "horimetro" => "Horímetro",
+            "interna" => "Parte interna",
+            "oleo" => "Vareta de óleo",
+            "agua" => "Reservatório de água",
+            "limpeza" => "Após limpeza"
+          }
+        %>
+
+
+        <% checklist.checklist_photos.each do |photo| %>
+
+
+          <div
+            data-five-s-checklist-target="step"
+            class="d-none">
+
+
+            <h3 class="fw-bold text-center">
+
+              <%= photos[photo.kind] %>
+
+            </h3>
+
+
+            <p class="text-muted text-center">
+
+              Tire uma foto mostrando claramente o item
+
+            </p>
+
+
+            <%= f.fields_for :checklist_photos, photo do |photo_form| %>
+
+
+              <%= photo_form.hidden_field :id %>
+
+              <%= photo_form.hidden_field :kind %>
+
+
+              <div class="text-center my-4">
+
+                <i class="fas fa-camera fa-4x text-primary"></i>
+
+              </div>
+
+
+              <%= photo_form.file_field :photo,
+                  class: "form-control form-control-lg",
+                  accept: "image/*",
+                  capture: "environment",
+                  required: true %>
+
+
+            <% end %>
+
+
+          </div>
+
+
+        <% end %>
+
+
+        <!-- OBSERVAÇÃO -->
+
+
+        <div
+          data-five-s-checklist-target="step"
+          class="d-none">
+
+
+          <h3 class="fw-bold">
+            Observações
+          </h3>
+
+
+          <%= f.text_area :observation,
+              rows: 6,
+              class: "form-control form-control-lg",
+              placeholder: "Digite alguma observação..." %>
+
+
+        </div>
+
+
+        <!-- NAVEGAÇÃO -->
+        <div class="d-flex justify-content-between mt-4">
+
+
+        <button
+          type="button"
+          class="btn btn-outline-danger btn-lg"
+          data-action="click->five-s-checklist#cancel">
+
+          Cancelar
+
+        </button>
+
+
+          <div>
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-lg me-2"
+              data-action="five-s-checklist#back">
+
+              Voltar
+
+            </button>
+
+
+            <button
+              type="button"
+              class="btn btn-primary btn-lg"
+              data-five-s-checklist-target="nextButton"
+              data-action="five-s-checklist#next">
+
+              Próximo
+
+            </button>
+
+
+            <%= f.submit "Enviar Checklist",
+                class:"btn btn-success btn-lg d-none",
+                data:{
+                  five_s_checklist_target:"submitButton"
+                } %>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
