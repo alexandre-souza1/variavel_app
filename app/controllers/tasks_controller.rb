@@ -21,10 +21,12 @@ class TasksController < ApplicationController
   end
 
   def update
-    if @task.update(task_params)
-      redirect_to action_plan_path(@task.bucket.action_plan)
-    else
-      redirect_to action_plan_path(@task.bucket.action_plan), alert: "Erro ao atualizar"
+    @task = Task.find(params[:id])
+    @task.update(task_params)
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to action_plan_path(@task.bucket.action_plan) }
     end
   end
 

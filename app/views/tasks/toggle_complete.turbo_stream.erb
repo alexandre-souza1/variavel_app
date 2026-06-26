@@ -39,3 +39,28 @@
 <%= turbo_stream.update "flash-container" do %>
   <%= render "shared/flashes", notice: @flash_container %>
 <% end %>
+
+<%= turbo_stream.update "task-status-button" do %>
+
+  <%= button_to toggle_complete_action_plan_bucket_task_path(
+        @task.bucket.action_plan,
+        @task.bucket,
+        @task
+      ),
+      method: :patch,
+      data: {
+        turbo_stream: true
+      },
+      class: "btn btn-sm #{@task.completed ? 'btn-success' : 'btn-outline-success'}" do %>
+
+    <% if @task.completed %>
+      <i class="bi bi-check-circle-fill"></i>
+      Concluída
+    <% else %>
+      <i class="bi bi-circle"></i>
+      Concluir
+    <% end %>
+
+  <% end %>
+
+<% end %>
