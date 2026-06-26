@@ -11,7 +11,7 @@
 
       <small class="text-muted">
         Checklist realizado em
-        <%= l(@checklist.created_at, format: :long) %>
+        <%= l(checklist.created_at, format: :long) %>
       </small>
     </div>
 
@@ -19,7 +19,7 @@
 
       <div class="row g-3">
 
-        <% if @checklist.plate.present? %>
+        <% if checklist.plate.present? %>
 
           <div class="col-12 col-md-6">
 
@@ -30,14 +30,14 @@
               </small>
 
               <div class="fw-semibold fs-5">
-                <%= @checklist.plate.placa %>
+                <%= checklist.plate.placa %>
               </div>
 
             </div>
 
           </div>
 
-        <% elsif @checklist.placa_manual.present? %>
+        <% elsif checklist.placa_manual.present? %>
 
           <div class="col-12 col-md-6">
 
@@ -48,7 +48,7 @@
               </small>
 
               <div class="fw-semibold fs-5">
-                <%= @checklist.placa_manual %>
+                <%= checklist.placa_manual %>
               </div>
 
             </div>
@@ -57,7 +57,7 @@
 
         <% end %>
 
-        <% if @checklist.vehicle_model.present? %>
+        <% if checklist.vehicle_model.present? %>
 
           <div class="col-12 col-md-6">
 
@@ -68,7 +68,7 @@
               </small>
 
               <div class="fw-semibold">
-                <%= @checklist.vehicle_model %>
+                <%= checklist.vehicle_model %>
               </div>
 
             </div>
@@ -77,7 +77,7 @@
 
         <% end %>
 
-        <% if @checklist.kilometer.present? %>
+        <% if checklist.kilometer.present? %>
 
           <div class="col-12 col-md-6">
 
@@ -88,7 +88,7 @@
               </small>
 
               <div class="fw-semibold">
-                <%= number_with_delimiter(@checklist.kilometer, delimiter: ".") %> km
+                <%= number_with_delimiter(checklist.kilometer, delimiter: ".") %> km
               </div>
 
             </div>
@@ -97,7 +97,7 @@
 
         <% end %>
 
-        <% if @checklist.responsavel.present? %>
+        <% if checklist.responsavel.present? %>
 
           <div class="col-12 col-md-6">
 
@@ -108,7 +108,7 @@
               </small>
 
               <div class="fw-semibold">
-                <%= @checklist.responsavel %>
+                <%= checklist.responsavel %>
               </div>
 
             </div>
@@ -117,7 +117,7 @@
 
         <% end %>
 
-        <% if @checklist.origin.present? %>
+        <% if checklist.origin.present? %>
 
           <div class="col-12 col-md-6">
 
@@ -128,7 +128,7 @@
               </small>
 
               <div class="fw-semibold">
-                <%= @checklist.origin %>
+                <%= checklist.origin %>
               </div>
 
             </div>
@@ -158,7 +158,7 @@
           </h5>
 
           <small class="text-muted">
-            <%= @checklist.checklist_photos.count %> foto(s)
+            <%= checklist.checklist_photos.count %> foto(s)
           </small>
 
         </div>
@@ -169,11 +169,11 @@
 
     <div class="card-body">
 
-      <% if @checklist.checklist_photos.any? %>
+      <% if checklist.checklist_photos.any? %>
 
         <div class="row g-4">
 
-          <% @checklist.checklist_photos.each do |photo| %>
+          <% checklist.checklist_photos.each do |photo| %>
 
             <div class="col-12 col-md-6">
 
@@ -264,7 +264,7 @@
         </h5>
 
         <small class="text-muted">
-          <%= @checklist.checklist_defects.count %> defeito(s)
+          <%= checklist.checklist_defects.count %> defeito(s)
         </small>
 
       </div>
@@ -273,11 +273,11 @@
 
     <div class="card-body">
 
-      <% if @checklist.checklist_defects.any? %>
+      <% if checklist.checklist_defects.any? %>
 
         <div class="row g-4">
 
-          <% @checklist.checklist_defects.each do |defect| %>
+          <% checklist.checklist_defects.each do |defect| %>
 
             <div class="col-12 col-md-6">
 
@@ -358,15 +358,15 @@
           class: "btn btn-secondary btn-lg shadow-sm px-4" %>
 
     <%= link_to "Baixar Fotos",
-          download_photos_checklist_path(@checklist),
-          class: "btn btn-dark btn-lg shadow-sm px-4" %>      
+          download_photos_checklist_path(checklist),
+          class: "btn btn-dark btn-lg shadow-sm px-4" %>
 
     <%= link_to "Exportar Excel",
-          export_excel_checklist_path(@checklist, format: :xlsx),
-          class: "btn btn-success btn-lg shadow-sm px-4" %>      
+          export_excel_checklist_path(checklist, format: :xlsx),
+          class: "btn btn-success btn-lg shadow-sm px-4" %>
 
     <%= link_to "Baixar PDF",
-          checklist_path(@checklist, format: :pdf),
+          checklist_path(checklist, format: :pdf),
           class: "btn btn-primary btn-lg shadow-sm px-4" %>
 
   </div>

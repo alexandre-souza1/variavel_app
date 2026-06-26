@@ -14,14 +14,27 @@
             <p class="card-text text-muted">
               Criado em: <%= l(template.created_at, format: :short) %>
             </p>
-            <div class="mt-auto d-flex justify-content-between">
+            <div class="mt-auto d-flex justify-content-end gap-1">
               <%= link_to "Adicionar Respostas", checklist_template_path(template), class: "btn btn-sm btn-outline-primary" %>
+              <% if current_user.admin? %>
               <%= link_to "Editar", edit_checklist_template_path(template), class: "btn btn-sm btn-outline-primary" %>
+
+                <button class="btn btn-sm btn-outline-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteModal-<%= template.id %>">
+
+                  Excluir
+
+                </button>
+
+                <%= render "delete_modal", template: template %>
+
+              <% end %>
             </div>
           </div>
         </div>
       </div>
     <% end %>
   </div>
-  <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100" %>
+  <%= link_to "Voltar", checklists_path, class: "btn btn-primary shadow-sm p-3 w-100" %>
 </div>

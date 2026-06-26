@@ -1,6 +1,6 @@
 class ChecklistTemplatesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_template, only: [:show, :edit, :update]
+  before_action :set_template, only: [:show, :edit, :update, :destroy]
 
   def index
     @templates = ChecklistTemplate.all
@@ -39,6 +39,14 @@ class ChecklistTemplatesController < ApplicationController
       redirect_to checklist_template_path(@template), notice: "Template atualizado com sucesso."
     else
       render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    if @template.destroy
+      redirect_to checklist_templates_path, notice: "Template excluído com sucesso."
+    else
+      redirect_to checklist_templates_path, alert: @template.errors.full_messages.to_sentence
     end
   end
 

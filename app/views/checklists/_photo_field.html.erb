@@ -48,9 +48,9 @@
     </div>
 
     <img
-      src="<%= url_for(f.object.photo) if f.object.photo.attached? %>"
+      src="<%= url_for(f.object.photo) if f.object.photo.attached? %>" <%# herb:disable erb-prefer-image-tag-helper %>
       class="img-fluid rounded mb-3 <%= "d-none" unless f.object.photo.attached? %>"
-      data-photo-card-target="preview">
+      data-photo-card-target="preview" alt="">
 
     <div
       class="d-none d-grid gap-2 mb-3"

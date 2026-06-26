@@ -9,7 +9,7 @@
       id: "autosave_id" %>
 
   <% if @template.photo_only? %>
-    <%= render "photo_only_form", f: f %>
+    <%= render "photo_only_form", template: @template, checklist: @checklist, plates: @plates, f: f %>
   <% else %>
     <%= render "default_form", f: f %>
   <% end %>

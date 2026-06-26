@@ -1,5 +1,5 @@
 <% if @checklist.checklist_template.photo_only? %>
-  <%= render "photo_only_show" %>
+  <%= render "photo_only_show", template: @template, checklist: @checklist, plates: @plates %>
 <% else %>
   <%= render "default_show" %>
 <% end %>

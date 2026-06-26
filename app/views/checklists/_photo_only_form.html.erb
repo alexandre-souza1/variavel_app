@@ -1,16 +1,16 @@
 <div
   class="container-fluid px-2 px-md-3"
   data-controller="photo-checklist"
-  data-photo-checklist-index-value="<%= @checklist.checklist_photos.size %>">
+  data-photo-checklist-index-value="<%= checklist.checklist_photos.size %>">
 
   <!-- CAMPOS GERAIS -->
 
   <div class="card shadow-sm border-0 mb-3">
     <div class="card-body">
 
-      <% if @template.plate_required? &&
-            (@template.setor == "ARMAZEM" ||
-             @template.setor == "ROTA") %>
+      <% if template.plate_required? &&
+            (template.setor == "ARMAZEM" ||
+             template.setor == "ROTA") %>
 
         <div class="mb-3">
 
@@ -19,7 +19,7 @@
                 class: "form-label fw-semibold" %>
 
           <%= f.collection_select :plate_id,
-                @plates,
+                plates,
                 :id,
                 :placa,
                 { prompt: "Escolha uma placa" },
@@ -27,8 +27,8 @@
 
         </div>
 
-      <% elsif @template.plate_required? &&
-                @template.setor == "TRANSFERÊNCIA" %>
+      <% elsif template.plate_required? &&
+                template.setor == "TRANSFERÊNCIA" %>
 
         <div class="mb-3">
 
@@ -44,7 +44,7 @@
 
       <% end %>
 
-      <% if @template.kilometer_required? %>
+      <% if template.kilometer_required? %>
 
         <div class="mb-3">
 
@@ -61,7 +61,7 @@
 
       <% end %>
 
-      <% if @template.vehicle_model_required? %>
+      <% if template.vehicle_model_required? %>
 
         <div class="mb-3">
 
@@ -77,7 +77,7 @@
 
       <% end %>
 
-      <% if @template.responsavel_required? %>
+      <% if template.responsavel_required? %>
 
         <div class="mb-0">
 
@@ -98,7 +98,7 @@
 
   <!-- FOTOS 360 -->
 
-  <% if @template.photos_required? %>
+  <% if template.photos_required? %>
 
     <div class="card shadow-sm border-0 mb-4">
 
@@ -253,7 +253,7 @@
         class="d-flex flex-column gap-3"
         data-photo-checklist-target="defectsContainer">
 
-        <% if @checklist.checklist_defects.empty? %>
+        <% if checklist.checklist_defects.empty? %>
 
           <%= f.fields_for :checklist_defects,
                 ChecklistDefect.new do |defect_form| %>

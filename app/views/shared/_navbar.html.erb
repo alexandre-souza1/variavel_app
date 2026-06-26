@@ -16,16 +16,6 @@
       <ul class="navbar-nav me-auto">
         <% if user_signed_in? %>
           <% if current_user.admin? || current_user.supervisor? %>
-            <li class="nav-item">
-              <%= link_to "Importar 2ART", mapas_path, class: "nav-link" %>
-            </li>
-            <li class="nav-item">
-              <%= link_to "Importar Parâmetros", import_parametro_calculos_path, class: "nav-link" %>
-            </li>
-            <li class="nav-item">
-              <%= link_to "Importar WMS", new_import_wms_tasks_path, class: "nav-link" %>
-            </li>
-
             <!-- Dropdown DU -->
             <li class="nav-item dropdown">
               <button class="nav-link dropdown-toggle" id="duDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -50,6 +40,11 @@
                 <li>
                   <%= link_to fuel_consumptions_path, class: "dropdown-item" do %>
                     <i class="bi bi-fuel-pump me-2"></i> Consumo de Combustível
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to mapas_path, class: "dropdown-item" do %>
+                    <i class="bi bi-download me-2"></i> Importar 2Art
                   <% end %>
                 </li>
               </ul>
@@ -79,6 +74,11 @@
                 <li>
                   <%= link_to wms_tasks_path, class: "dropdown-item" do %>
                     <i class="bi bi-bar-chart-line me-2"></i> Resultados WMS
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to new_import_wms_tasks_path, class: "dropdown-item" do %>
+                    <i class="bi bi-download me-2"></i> Importar WMS
                   <% end %>
                 </li>
               </ul>
@@ -116,28 +116,18 @@
                 <%= link_to root_path, class: "dropdown-item" do %>
                   <i class="bi bi-kanban me-2"></i> Workstation RV
                 <% end %>
+                <%= link_to checklists_path, class: "dropdown-item fw-bold text-primary d-flex justify-content-between align-items-center" do %>
+                  <i class="bi bi-ui-checks me-2"></i> Formulários
+                  <span class="badge bg-success">New</span>
+                <% end %>
                 <div class="dropdown-divider"></div>
               <% end %>
-
-              <h6 class="dropdown-header text-uppercase small text-muted">Formulários</h6>
-              <%= link_to checklists_path, class: "dropdown-item" do %>
-                <i class="bi bi-ui-checks me-2"></i> Formulários
-              <% end %>
-              <% if current_user.admin? %>
-                <%= link_to checklist_templates_path, class: "dropdown-item" do %>
-                  <i class="bi bi-list-check me-2"></i> Tipos de Formulários
-                <% end %>
-              <% end %>
-              <%= link_to autonomies_path, class: "dropdown-item" do %>
-                <i class="bi bi-clipboard-data me-2"></i> Relatórios de formulários
-              <% end %>
-              <div class="dropdown-divider"></div>
 
               <h6 class="dropdown-header text-uppercase small text-muted">Geral</h6>
               <%= link_to downloads_path, class: "dropdown-item" do %>
                 <i class="bi bi-book me-2"></i> Padrões e LUP's
               <% end %>
-              <%= link_to autonomies_path, class: "dropdown-item" do %>
+              <%= link_to autonomies_path, class: "dropdown-item text-decoration-line-through text-muted" do %>
                 <i class="bi bi-truck me-2"></i> Autonomia de Frota
               <% end %>
               <%= link_to parametro_calculos_path, class: "dropdown-item" do %>
@@ -146,6 +136,9 @@
               <% if current_user.admin? %>
                 <%= link_to plates_path, class: "dropdown-item" do %>
                   <i class="bi bi-car-front me-2"></i> Placas Cadastradas
+                <% end %>
+                <%= link_to import_parametro_calculos_path, class: "dropdown-item" do %>
+                  <i class="bi bi-download me-2"></i> Importar Parâmetros
                 <% end %>
                 <%= link_to admin_users_path, class: "dropdown-item" do %>
                   <i class="bi bi-person-lines-fill me-2"></i> Usuários
