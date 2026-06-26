@@ -2,9 +2,11 @@
   <div class="card shadow-sm">
     <div class="card-body">
       <h4 class="mb-3">
-        <i class="fas fa-file-import me-2"></i> Importar Tasks
+        <i class="fas fa-file-import me-2"></i> Importação de plano do teams
       </h4>
-
+        <p class="text-muted">A importação de planos do Teams permite que você carregue seus planos de ação diretamente do Microsoft Teams.<br>
+          Arquivos devem estar no formato <code class="fw-bold text-success">.xlsx</code> e seguir o modelo fornecido pela extração de tarefas do Teams para garantir que os dados sejam importados corretamente.
+        </p>
       <%= form_with url: task_imports_path, local: true, multipart: true do %>
         <div class="mb-3">
           <label class="form-label">Arquivo (.xlsx)</label>
