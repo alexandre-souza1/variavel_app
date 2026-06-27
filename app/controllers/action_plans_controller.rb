@@ -62,8 +62,12 @@ class ActionPlansController < ApplicationController
   end
 
   def show
-    @buckets = @action_plan.buckets
-    @buckets = @action_plan.buckets.order(:name)
+    @buckets = @action_plan
+      .buckets
+      .includes(tasks: :users)
+      .order(:name)
+
+    @task_to_open = Task.find_by(id: params[:task_id])
   end
 
   def new

@@ -1,4 +1,6 @@
-<div class="container-fluid">
+<div class="container-fluid"
+     data-controller="open-task"
+     data-open-task-task-id-value="<%= @task_to_open&.id %>">
   <%= turbo_stream_from "tasks_action_plan_#{@action_plan.id}" %>
   <div class="d-flex justify-content-between align-items-center mb-4">
 

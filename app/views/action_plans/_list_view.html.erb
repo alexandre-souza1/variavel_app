@@ -1,46 +1,252 @@
-<div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-  <table class="table table-hover">
-    <thead>
+<div class="table-responsive"
+     style="max-height: 500px; overflow-y: auto;">
+
+  <table class="table table-hover align-middle">
+
+
+    <thead class="table-light">
+
       <tr>
+        <th>Status</th>
         <th>Tarefa</th>
-        <th>Descrição</th>
         <th>Bucket</th>
+        <th>Responsáveis</th>
+        <th>Prazo</th>
         <th>Labels</th>
-        <th>Ações</th>
+        <th></th>
       </tr>
+
     </thead>
+
+
     <tbody>
+
+
       <% buckets.each do |bucket| %>
+
+
         <% bucket.tasks.each do |task| %>
+
+
+          <% overdue = task.due_at.present? &&
+                       task.due_at < Time.current &&
+                       !task.completed %>
+
+
           <tr
+
             data-controller="task-modal"
+
             data-action="click->task-modal#open"
+
             data-task-id="<%= task.id %>"
+
             data-plan-id="<%= action_plan.id %>"
-            style="cursor: pointer;"
+
+            style="cursor:pointer;"
+
           >
-            <td style="max-width: 200px;"><strong class="text-truncate d-block"><%= task.title %></strong></td>
-            <td class="text-truncate" style="max-width: 200px;"><%= task.description %></td>
-            <td><span class="badge bg-secondary"><%= bucket.name %></span></td>
+
+
+            <!-- STATUS -->
+
             <td>
-              <% task.labels.each do |label| %>
-                <span class="badge" style="background-color: <%= label.color %>;"><%= label.name %></span>
+
+              <% if task.completed %>
+
+                <span class="badge bg-success">
+                  <i class="bi bi-check-circle"></i>
+                  Concluída
+                </span>
+
+
+              <% else %>
+
+                <span class="badge bg-primary">
+                  <i class="bi bi-circle"></i>
+                  Aberta
+                </span>
+
               <% end %>
+
             </td>
+
+
+            <!-- TAREFA -->
+
+            <td style="max-width:250px;">
+
+              <strong class="text-truncate d-block">
+
+                <%= task.title %>
+
+              </strong>
+
+
+              <% if task.description.present? %>
+
+                <small class="text-muted text-truncate d-block">
+
+                  <%= task.description %>
+
+                </small>
+
+              <% end %>
+
+
+            </td>
+
+
+            <!-- BUCKET -->
+
             <td>
-              <button
-              class="btn btn-sm btn-outline-primary"
-              data-controller="task-modal"
-              data-action="click->task-modal#open"
-              data-task-id="<%= task.id %>"
-              data-plan-id="<%= action_plan.id %>"
-              >
-              Editar
-              </button>
+
+              <span class="badge bg-secondary">
+
+                <%= bucket.name %>
+
+              </span>
+
             </td>
+
+
+            <!-- USUÁRIOS -->
+
+            <td>
+
+              <% task.users.limit(3).each do |user| %>
+
+                <span class="badge bg-light text-dark border">
+
+                  <i class="bi bi-person"></i>
+
+                  <%= user.name.split.first %>
+
+                </span>
+
+              <% end %>
+
+
+              <% if task.users.count > 3 %>
+
+                <span class="badge bg-light text-dark border">
+
+                  +<%= task.users.count - 3 %>
+
+                </span>
+
+              <% end %>
+
+
+            </td>
+
+
+            <!-- DATA -->
+
+            <td>
+
+
+              <% if task.due_at.present? %>
+
+
+                <span class="<%= overdue ? 'text-danger fw-bold' : '' %>">
+
+
+                  <% if overdue %>
+
+                    <i class="bi bi-alarm"></i>
+
+                  <% else %>
+
+                    <i class="bi bi-calendar"></i>
+
+                  <% end %>
+
+
+                  <%= l(task.due_at.to_date, format: :short) %>
+
+
+                </span>
+
+
+              <% else %>
+
+                <span class="text-muted">
+
+                  Sem prazo
+
+                </span>
+
+
+              <% end %>
+
+
+            </td>
+
+
+            <!-- LABELS -->
+
+            <td>
+
+
+              <% task.labels.each do |label| %>
+
+
+                <span class="badge"
+                      style="background-color:<%= label.color %>">
+
+
+                  <%= label.name %>
+
+
+                </span>
+
+
+              <% end %>
+
+
+            </td>
+
+
+            <!-- AÇÃO -->
+
+            <td>
+
+
+              <button
+
+                class="btn btn-sm btn-outline-primary"
+
+                data-controller="task-modal"
+
+                data-action="click->task-modal#open click->stop"
+
+                data-task-id="<%= task.id %>"
+
+                data-plan-id="<%= action_plan.id %>"
+
+              >
+
+                <i class="bi bi-pencil"></i>
+
+              </button>
+
+
+            </td>
+
+
           </tr>
+
+
         <% end %>
+
+
       <% end %>
+
+
     </tbody>
+
+
   </table>
+
 </div>

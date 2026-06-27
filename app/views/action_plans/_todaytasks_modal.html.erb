@@ -21,29 +21,55 @@
 
           <% today_tasks.each do |task| %>
 
-            <div class="border-bottom py-2">
-
-              <div class="fw-bold">
-                <%= task.title %>
-              </div>
-
-              <small class="text-muted">
-                Plano:
-                <%= task.bucket.action_plan.name %>
-              </small>
+            <div class="border-bottom py-2 d-flex justify-content-between align-items-start">
 
               <div>
-                <span class="badge bg-info">
-                  <%= task.users.map(&:name).join(", ") %>
-                </span>
+
+                <div class="fw-bold">
+                  <%= task.title %>
+                </div>
+
+                <small class="text-muted">
+                  Bucket:
+                  <%= task.bucket.name %>
+                </small>
+                <br>
+                <small class="text-muted">
+                  Plano:
+                  <%= task.bucket.action_plan.name %>
+                </small>
+
+                <% if task.due_at %>
+                  <div class="small mt-1">
+                    📅 <%= l(task.due_at, format: :short) %>
+                  </div>
+                <% end %>
+
+                <div class="mt-1">
+                  <% task.users.each do |user| %>
+                    <span class="badge bg-secondary text-dark me-1">
+                      <%= user.name.split.first %>
+                    </span>
+                  <% end %>
+                </div>
+
               </div>
 
-              <% if task.due_at %>
-                <div class="small mt-1">
-                  📅 <%= l(task.due_at, format: :short) %>
-                </div>
-              <% end %>
 
+              <div class="ms-3">
+
+              <%= link_to action_plan_path(
+                    task.bucket.action_plan,
+                    task_id: task.id
+                  ),
+                  class: "btn btn-sm btn-outline-primary" do %>
+
+                  <i class="fas fa-arrow-right me-1"></i>
+                  Abrir tarefa no plano
+
+                <% end %>
+
+              </div>
             </div>
 
           <% end %>

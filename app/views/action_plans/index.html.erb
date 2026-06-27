@@ -32,8 +32,11 @@
     <div class="col-md-3">
       <div class="card shadow-sm">
         <div class="card-body">
-          <h6 class="text-muted">Tarefas abertas</h6>
-          <h2><%= @my_tasks.count %></h2>
+          <h6 class="text-muted">
+            <i class="bi bi-list-task me-1"></i>
+            Tarefas abertas
+          </h6>
+          <h2 class="mb-0"><%= @my_tasks.count %></h2>
         </div>
       </div>
     </div>
@@ -46,9 +49,12 @@
           data-bs-target="#overdueTasksModal">
 
         <div class="card-body">
-          <h6 class="text-muted">Atrasadas</h6>
+          <h6 class="text-muted">
+            <i class="bi bi-alarm me-1"></i>
+            Atrasadas
+          </h6>
 
-          <h2 class="text-danger">
+          <h2 class="text-danger mb-0">
             <%= @overdue_tasks.count %>
           </h2>
 
@@ -61,8 +67,11 @@
     <div class="col-md-3">
       <div class="card shadow-sm">
         <div class="card-body">
-          <h6 class="text-muted">Planos</h6>
-          <h2><%= @action_plans.count %></h2>
+          <h6 class="text-muted">
+            <i class="bi bi-kanban me-1"></i>
+            Planos
+          </h6>
+          <h2 class="mb-0"><%= @action_plans.count %></h2>
         </div>
       </div>
     </div>
@@ -75,10 +84,11 @@
 
         <div class="card-body">
           <h6 class="text-muted">
+            <i class="bi bi-calendar-check me-1"></i>
             Tarefas para hoje
           </h6>
 
-          <h2>
+          <h2 class="mb-0">
             <%= @today_tasks.count %>
           </h2>
 
@@ -146,7 +156,6 @@
               <div class="list-group-item">
                 <div class="fw-bold text-truncate" style="max-width: 100%;"><%= task.title %></div>
                 <small class="text-muted">Plano: <%= task.bucket.action_plan.name %></small>
-                <small>Responsáveis: <%= task.users.map(&:name).join(", ") %></small>
                 <% if task.due_at %>
                   <div class="small mt-1">📅 <%= l(task.due_at, format: :short) %></div>
                 <% end %>

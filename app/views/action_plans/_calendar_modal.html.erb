@@ -28,6 +28,11 @@
             </div>
 
             <small class="text-muted">
+              Bucket:
+              <%= task.bucket.name %>
+            </small>
+            <br>
+            <small class="text-muted">
               Plano:
               <%= task.bucket.action_plan.name %>
             </small>
@@ -45,11 +50,14 @@
 
           <div class="ms-3">
 
-            <%= link_to action_plan_path(task.bucket.action_plan),
-                        class: "btn btn-sm btn-outline-primary" do %>
+          <%= link_to action_plan_path(
+                task.bucket.action_plan,
+                task_id: task.id
+              ),
+              class: "btn btn-sm btn-outline-primary" do %>
 
               <i class="fas fa-arrow-right me-1"></i>
-              Abrir plano
+              Abrir tarefa no plano
 
             <% end %>
 
