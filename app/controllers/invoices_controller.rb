@@ -210,6 +210,53 @@ class InvoicesController < ApplicationController
     last_month = invoices_scope.where('date_issued >= ? AND date_issued < ?',
                                       1.month.ago.beginning_of_month, Date.today.beginning_of_month).sum(:total)
     @monthly_variation = last_month > 0 ? ((current_month - last_month) / last_month * 100).round(2) : 0
+
+
+    # 📈 Evolução mensal por categoria (com filtro opcional)
+    chart_year = Date.current.year
+    category_filter = params[:category_id].presence
+
+    base_query = Invoice.joins(:budget_category)
+                        .where(date_issued: Date.new(chart_year, 1, 1)..Date.new(chart_year, 12, 31))
+
+    if category_filter
+      base_query = base_query.where(budget_categories: { id: category_filter })
+    end
+
+    raw_data = base_query.group(
+      "budget_categories.id",
+      "budget_categories.name",
+      "EXTRACT(MONTH FROM date_issued)"
+    ).sum(:total)
+
+    months = %w[Jan Fev Mar Abr Mai Jun Jul Ago Set Out Nov Dez]
+    grouped = {}
+
+    raw_data.each do |(category_id, category_name, month), total|
+      grouped[category_name] ||= Array.new(12, 0)
+      grouped[category_name][month.to_i - 1] = total.to_f
+    end
+
+    @category_line_chart = grouped.map do |category_name, values|
+      {
+        name: category_name.titleize,
+        data: months.zip(values).to_h
+      }
+    end
+
+    # Para popular o dropdown, você pode usar a lista de categorias já existente
+    @all_categories = BudgetCategory.all.order(:name)
+
+    respond_to do |format|
+      format.html # página completa
+      format.js   # ainda pode existir, mas não usaremos
+      format.turbo_stream do
+        # Renderiza apenas o partial do gráfico
+        render partial: "category_line_chart", locals: { category_line_chart: @category_line_chart }
+      end
+      # Ou simplesmente responda com HTML para o fetch
+      format.html { render partial: "category_line_chart", locals: { category_line_chart: @category_line_chart } } if request.headers["Accept"] == "text/html"
+    end
   end
 
 

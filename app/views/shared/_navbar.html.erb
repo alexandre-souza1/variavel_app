@@ -106,7 +106,7 @@
 
               <% if current_user.admin? || current_user.supervisor? %>
                 <h6 class="dropdown-header text-uppercase small text-muted">Módulos</h6>
-                <%= link_to invoices_path, class: "dropdown-item" do %>
+                <%= link_to dashboard_invoices_path, class: "dropdown-item" do %>
                   <i class="bi bi-cash-coin me-2"></i> Workstation Fin
                 <% end %>
                 <%= link_to action_plans_path, class: "dropdown-item fw-bold text-primary" do %>

@@ -70,6 +70,43 @@
   </div>
 </div>
 
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">
+          <i class="fas fa-chart-line me-2"></i>
+          Evolução Mensal por Categoria (<%= Date.current.year %>)
+        </h6>
+        <%= form_with url: dashboard_invoices_path, method: :get, local: true, class: "d-flex gap-2" do %>
+          <%= select_tag :category_id,
+                options_from_collection_for_select(@all_categories, :id, :name, params[:category_id]),
+                include_blank: "Todas as categorias",
+                class: "form-select form-select-sm w-auto",
+                onchange: "this.form.submit()" %>
+          <!-- Repassa os filtros existentes -->
+          <%= hidden_field_tag :month, params[:month] if params[:month].present? %>
+          <%= hidden_field_tag :year, params[:year] if params[:year].present? %>
+          <%= hidden_field_tag :cost_center_id, params[:cost_center_id] if params[:cost_center_id].present? %>
+        <% end %>
+      </div>
+      <div class="card-body">
+        <%= line_chart @category_line_chart,
+              height: "400px",
+              curve: false,
+              points: true,
+              prefix: "R$ ",
+              thousands: ".",
+              decimal: ",",
+              round: 2,
+              legend: "bottom",
+              xtitle: "Meses",
+              ytitle: "Valor gasto (R$)" %>
+      </div>
+    </div>
+  </div>
+</div>
+
 
   <!-- Gastos por Categoria do Período -->
   <div class="row mb-4">
