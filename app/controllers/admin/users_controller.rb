@@ -18,7 +18,10 @@ class Admin::UsersController < ApplicationController
     if @user.save
       redirect_to admin_users_path, notice: "Usuário criado com sucesso."
     else
-      render :new
+      Rails.logger.debug @user.errors.full_messages
+      Rails.logger.debug @user.errors.to_hash
+
+      render :new, status: :unprocessable_entity
     end
   end
 

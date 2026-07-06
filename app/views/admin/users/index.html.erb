@@ -1,81 +1,249 @@
 <div class="container py-4">
-  <!-- Card Principal -->
-  <div class="card shadow-lg rounded-4 border-0">
-    <!-- Cabeçalho do Card -->
+
+  <div class="card shadow-lg border-0 rounded-4">
+
+    <!-- Cabeçalho -->
     <div class="card-header bg-primary text-white rounded-top-4 py-3">
-      <div class="d-flex justify-content-between align-items-center">
-        <h1 class="h4 mb-0 fw-bold">
-          <i class="fas fa-users-cog me-2"></i>Gerenciamento de Usuários
-        </h1>
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+        <div>
+          <h1 class="h4 fw-bold mb-1">
+            <i class="fas fa-users-cog me-2"></i>
+            Gerenciamento de Usuários
+          </h1>
+
+          <small class="text-white-50">
+            Cadastre, edite e gerencie os acessos ao sistema.
+          </small>
+        </div>
+
+        <%= link_to new_admin_user_path, class: "btn btn-light fw-semibold shadow-sm" do %>
+          <i class="fas fa-user-plus me-2"></i>
+          Novo Usuário
+        <% end %>
+
       </div>
     </div>
 
-    <!-- Corpo do Card -->
+    <!-- Corpo -->
     <div class="card-body p-4">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle">
-          <thead class="table-light">
-            <tr>
-              <th class="fw-semibold">ID</th>
-              <th class="fw-semibold">Nome</th>
-              <th class="fw-semibold">Email</th>
-              <th class="fw-semibold">Perfil</th>
-              <th class="fw-semibold text-end">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @users.each do |user| %>
-              <tr>
-                <td class="text-muted"><%= user.id %></td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center">
-                      <i class="fas fa-user text-primary"></i>
-                    </div>
-                    <%= user.name %>
-                  </div>
-                </td>
-                <td><%= user.email %></td>
-                <td>
-                  <span class="badge <%= case user.role
-                                       when 'admin' then 'bg-danger'
-                                       when 'manager' then 'bg-warning text-dark'
-                                       when 'editor' then 'bg-info'
-                                       else 'bg-secondary'
-                                       end %> rounded-pill">
-                    <%= user.role.humanize %>
-                  </span>
-                </td>
-                <td class="text-end">
-                  <div class="btn-group btn-group-sm" role="group">
-                    <%= link_to edit_admin_user_path(user), class: "btn btn-outline-primary" do %>
-                      <i class="fas fa-edit"></i> Editar
-                    <% end %>
-                    <% unless user == current_user %>
-                      <%= link_to admin_user_path(user),
-                          method: :delete,
-                          data: { confirm: "Tem certeza que deseja excluir este usuário?" },
-                          class: "btn btn-outline-danger" do %>
-                        <i class="fas fa-trash-alt"></i> Excluir
-                      <% end %>
-                    <% end %>
-                  </div>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
+
+      <!-- Cards Resumo -->
+      <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <small class="text-muted">
+                Total de usuários
+              </small>
+
+              <h2 class="fw-bold mb-0">
+                <%= User.count %>
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <small class="text-muted">
+                Administradores
+              </small>
+
+              <h2 class="fw-bold text-danger mb-0">
+                <%= User.admin.count %>
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <small class="text-muted">
+                Supervisores
+              </small>
+
+              <h2 class="fw-bold text-warning mb-0">
+                <%= User.supervisor.count %>
+              </h2>
+            </div>
+          </div>
+        </div>
+
       </div>
+
+      <!-- Tabela -->
+      <div class="table-responsive">
+
+        <table class="table table-hover align-middle">
+
+          <thead class="table">
+
+            <tr>
+              <th style="width: 40%;">Usuário</th>
+              <th>Email</th>
+              <th>Perfil</th>
+              <th class="text-end">Ações</th>
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <% @users.each do |user| %>
+
+              <tr>
+
+                <td>
+
+                  <div class="d-flex align-items-center">
+
+                    <% if user.photo.attached? %>
+
+                      <%= image_tag user.photo,
+                          class: "rounded-circle me-3 border",
+                          style: "width:48px;height:48px;object-fit:cover;",
+                          alt: user.name %>
+
+                    <% else %>
+
+                      <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
+                           style="width:48px;height:48px;">
+                        <i class="fas fa-user"></i>
+                      </div>
+
+                    <% end %>
+
+                    <div>
+
+                      <div class="fw-semibold">
+
+                        <%= user.name %>
+
+                        <% if user == current_user %>
+                          <span class="badge bg-success ms-2">
+                            Você
+                          </span>
+                        <% end %>
+
+                      </div>
+
+                      <small class="text-muted">
+                        ID #<%= user.id %>
+                      </small>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+                <td>
+                  <%= user.email %>
+                </td>
+
+                <td>
+
+                  <span class="badge rounded-pill px-3 py-2
+                    <%= case user.role
+                        when "admin"
+                          "bg-danger"
+                        when "supervisor"
+                          "bg-warning text-dark"
+                        when "driver"
+                          "bg-success"
+                        when "operator"
+                          "bg-info"
+                        else
+                          "bg-secondary"
+                        end %>">
+
+                    <i class="fas
+                      <%= case user.role
+                          when "admin"
+                            "fa-user-shield"
+                          when "supervisor"
+                            "fa-user-tie"
+                          when "driver"
+                            "fa-truck"
+                          when "operator"
+                            "fa-warehouse"
+                          else
+                            "fa-user"
+                          end %> me-1"></i>
+
+                    <%= user.role.humanize %>
+
+                  </span>
+
+                </td>
+
+                <td class="text-end">
+
+                  <div class="btn-group">
+
+                    <%= link_to edit_admin_user_path(user),
+                        class: "btn btn-outline-primary btn-sm" do %>
+
+                      <i class="fas fa-edit me-1"></i>
+                      Editar
+
+                    <% end %>
+
+                    <% unless user == current_user %>
+
+                      <%= link_to admin_user_path(user),
+                          data: {
+                            turbo_method: :delete,
+                            turbo_confirm: "Tem certeza que deseja excluir este usuário?"
+                          },
+                          class: "btn btn-outline-danger btn-sm" do %>
+
+                        <i class="fas fa-trash-alt me-1"></i>
+                        Excluir
+
+                      <% end %>
+
+                    <% end %>
+
+                  </div>
+
+                </td>
+
+              </tr>
+
+            <% end %>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
     </div>
 
-    <!-- Rodapé do Card -->
+    <!-- Rodapé -->
     <div class="card-footer bg-light rounded-bottom-4 py-3">
-      <div class="d-flex justify-content-between align-items-center">
+
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+
         <small class="text-muted">
-          Total de usuários: <span class="fw-bold"><%= @users.count %></span>
+          Exibindo
+          <strong><%= @users.size %></strong>
+          usuários cadastrados.
         </small>
-        <%= paginate @users if @users.respond_to?(:total_pages) %>
+
+        <% if @users.respond_to?(:total_pages) %>
+          <%= paginate @users %>
+        <% end %>
+
       </div>
+
     </div>
+
   </div>
+
 </div>

@@ -126,8 +126,8 @@
                         data-category-details-id-value="<%= category_data[:category].id %>">
                       <div class="card-body text-center">
                         <div class="mb-2">
-                          <span class="badge bg-<%= category_color(category_data[:category]) %> p-2">
-                            <i class="fas fa-<%= category_icon(category_data[:category]) %> fa-lg"></i>
+                          <span class="badge bg-<%= category_color(category_data[:category]) %> p-2"> <%# herb:disable erb-no-interpolated-class-names %>
+                            <i class="fas fa-<%= category_icon(category_data[:category]) %> fa-lg"></i> <%# herb:disable erb-no-interpolated-class-names %>
                           </span>
                         </div>
                         <h6 class="card-title text-truncate"><%= category_data[:category].name.titleize %></h6>
@@ -286,7 +286,7 @@
             </td>
             <td><%= l(invoice.date_issued, format: :short) %></td>
             <td>
-              <span class="badge bg-<%= category_color(invoice.budget_category) %>">
+              <span class="badge bg-<%= category_color(invoice.budget_category) %>"> <%# herb:disable erb-no-interpolated-class-names %>
                 <%= invoice.budget_category.name.titleize %>
               </span>
             </td>
