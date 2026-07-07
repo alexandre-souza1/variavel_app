@@ -214,6 +214,15 @@ class InvoicesController < ApplicationController
       .group('cost_centers.name')
       .count(:total)
 
+    @total_per_cost_center = period_scope
+      .where(date_issued: start_date..end_date)
+      .joins(:budget_category)
+      .where(budget_categories: { name: "Manutenção de Caminhão" })
+      .joins(invoice_numbers: :cost_center)
+      .group('cost_centers.name')
+      .distinct
+      .sum('invoices.total')   # soma o total de cada invoice (uma vez)
+
     @monthly_totals = period_scope
       .group("DATE_TRUNC('month', date_issued)")
       .sum(:total)
