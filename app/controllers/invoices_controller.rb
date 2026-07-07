@@ -83,59 +83,80 @@ class InvoicesController < ApplicationController
     @available_purchasers = User.all.order(:name)
   end
 
-  def dashboard
+def dashboard
+  # ------------------------------------------------------------
+  # 1. Parâmetros de filtro
+  # ------------------------------------------------------------
+  @month = params[:month].presence&.to_i
+  @year  = params[:year].presence&.to_i
+  @cost_center_id = params[:cost_center_id].presence
 
-    # 🔹 pega filtros (se existirem)
-    @month = params[:month].presence&.to_i
-    @year  = params[:year].presence&.to_i
+  # ------------------------------------------------------------
+  # 2. Escopo base: todas as invoices com seus números e centro de custo
+  #    (respeita apenas o filtro de cost_center_id, se presente)
+  # ------------------------------------------------------------
+  base_scope = Invoice.joins(:invoice_numbers).distinct
+  base_scope = base_scope.where(invoice_numbers: { cost_center_id: @cost_center_id }) if @cost_center_id.present?
 
-    invoices_scope = Invoice.joins(:invoice_numbers).distinct
+  # ------------------------------------------------------------
+  # 3. Escopo do período selecionado (mês/ano ou apenas ano)
+  #    - Usado para gráficos e cards que dependem do filtro de data.
+  # ------------------------------------------------------------
+  period_scope = base_scope
+  if @month && @year
+    period_scope = period_scope.where(
+      "EXTRACT(MONTH FROM date_issued) = ? AND EXTRACT(YEAR FROM date_issued) = ?",
+      @month, @year
+    )
+  elsif @year
+    period_scope = period_scope.where("EXTRACT(YEAR FROM date_issued) = ?", @year)
+  end
 
-    # aplica filtro por cost center se houver
-    if params[:cost_center_id].present?
-      invoices_scope = invoices_scope.where(invoice_numbers: { cost_center_id: params[:cost_center_id] })
-    end
+  # ------------------------------------------------------------
+  # 4. Escopos para janelas fixas: ano atual e mês (condicional)
+  #    - Ano atual: sempre de 01/01 até hoje.
+  #    - Mês: se houver filtro, usa o mês filtrado; senão, o mês atual.
+  #    - Ambos respeitam o filtro de centro de custo.
+  # ------------------------------------------------------------
+  year_scope = base_scope.where(date_issued: Date.current.beginning_of_year..Date.current)
 
-    # 🔹 aplica filtros de período
-    if @month && @year
-      invoices_scope = invoices_scope.where(
-        "EXTRACT(MONTH FROM date_issued) = ? AND EXTRACT(YEAR FROM date_issued) = ?",
-        @month, @year
-      )
-    elsif @year
-      invoices_scope = invoices_scope.where("EXTRACT(YEAR FROM date_issued) = ?", @year)
-    end
+  if @month && @year
+    month_start = Date.new(@year, @month, 1)
+    month_end   = month_start.end_of_month
+  else
+    month_start = Date.current.beginning_of_month
+    month_end   = Date.current.end_of_month
+  end
+  month_scope = base_scope.where(date_issued: month_start..month_end)
 
-    invoice_ids = invoices_scope.pluck(:id).uniq
+  # ------------------------------------------------------------
+  # 5. Cards de resumo
+  # ------------------------------------------------------------
+  @total_spent        = year_scope.sum(:total)
+  @invoices_count     = year_scope.count
+  @suppliers_count    = period_scope.select(:supplier_id).distinct.count
+  @current_month_total = month_scope.sum(:total)
+  @current_month_count = month_scope.count
 
-    # 🔹 Cards de resumo
-    @total_spent = Invoice.where(id: invoice_ids).sum(:total)
-    @invoices_count = invoice_ids.count
-    @suppliers_count = Invoice.where(id: invoice_ids).select(:supplier_id).distinct.count
-    @current_month_total = Invoice.where(id: invoice_ids)
-      .where("date_issued >= ?", Date.today.beginning_of_month)
-      .sum(:total)
+  # ------------------------------------------------------------
+  # 6. Período para exibição e filtros de data (usado nos gráficos)
+  # ------------------------------------------------------------
+  if @month && @year
+    start_date = Date.new(@year, @month, 1)
+    end_date   = start_date.end_of_month
+    @period_display = "#{I18n.t('date.month_names')[@month]} de #{@year}"
+    @has_period_filter = true
+  else
+    start_date = nil
+    end_date   = nil
+    @period_display = "Mês de Ano"
+    @has_period_filter = false
+  end
 
-    @current_month_count = Invoice.where(id: invoice_ids)
-      .where("date_issued >= ?", Date.today.beginning_of_month)
-      .count
-
-    # 🔹 Gastos por categoria do período filtrado (CORRIGIDO)
-    if @month && @year
-      # Se tem filtro de mês/ano específico, usa esse período
-      start_date = Date.new(@year, @month, 1)
-      end_date = start_date.end_of_month
-      @period_display = "#{I18n.t('date.month_names')[@month]}/#{@year}"
-      @has_period_filter = true
-    else
-      # Se não tem filtro, mostra mensagem para selecionar
-      start_date = nil
-      end_date = nil
-      @period_display = "Mês/Ano"
-      @has_period_filter = false
-    end
-
-  @current_month_categories = Invoice.where(id: invoice_ids)
+  # ------------------------------------------------------------
+  # 7. Gastos por categoria no período selecionado
+  # ------------------------------------------------------------
+  @current_month_categories = period_scope
     .where(date_issued: start_date..end_date)
     .joins(:budget_category)
     .group('budget_categories.id', 'budget_categories.name', 'budget_categories.sector')
@@ -159,105 +180,132 @@ class InvoicesController < ApplicationController
     end
     .sort_by { |cat| -cat[:total] }
 
-    # Também precisamos atualizar o total do período para calcular as porcentagens
-    @period_total = invoices_scope.where(date_issued: start_date..end_date).sum(:total)
+  @period_total = period_scope.where(date_issued: start_date..end_date).sum(:total)
 
-    # média dos últimos 6 meses no escopo filtrado
-    monthly_totals_hash = Invoice.where(id: invoice_ids)
-      .group("DATE_TRUNC('month', date_issued)")
-      .sum(:total)
-    @monthly_average = monthly_totals_hash.values.last(6).sum / [monthly_totals_hash.values.last(6).size, 1].max
+  # ------------------------------------------------------------
+  # 8. Média dos últimos 6 meses (usando base_scope, sem filtro de período)
+  # ------------------------------------------------------------
+  monthly_totals_hash = base_scope
+    .group("DATE_TRUNC('month', date_issued)")
+    .sum(:total)
 
-    # 🔹 Gráficos
-    @spent_per_category = Invoice.where(id: invoice_ids)
-              .where(date_issued: start_date..end_date)
-              .joins(:budget_category)
-              .group('budget_categories.name')
-              .sum(:total)
-              .transform_values { |value| value.to_f.round(2) }
+  last_six = monthly_totals_hash.values.last(6)
+  @monthly_average = last_six.sum / [last_six.size, 1].max
 
+  # ------------------------------------------------------------
+  # 9. Gráficos do período selecionado
+  # ------------------------------------------------------------
+  @spent_per_category = period_scope
+    .where(date_issued: start_date..end_date)
+    .joins(:budget_category)
+    .group('budget_categories.name')
+    .sum(:total)
+    .transform_values { |value| value.to_f.round(2) }
 
-    @count_per_cost_center = Invoice.where(id: invoice_ids)
-                                      .where(date_issued: start_date..end_date)
-                                      .joins(:budget_category)
-                                      .where(budget_categories: { name: "Manutenção de Caminhão" })
-                                      .joins(invoice_numbers: :cost_center)
-                                      .group('cost_centers.name')
-                                      .count(:total)
+  @count_per_cost_center = period_scope
+    .where(date_issued: start_date..end_date)
+    .joins(:budget_category)
+    .where(budget_categories: { name: "Manutenção de Caminhão" })
+    .joins(invoice_numbers: :cost_center)
+    .group('cost_centers.name')
+    .count(:total)
 
-    @monthly_totals = invoices_scope.group("DATE_TRUNC('month', date_issued)").sum(:total)
+  @monthly_totals = period_scope
+    .group("DATE_TRUNC('month', date_issued)")
+    .sum(:total)
 
-    # 🔹 Top fornecedores (mantém filtro e exclui abastecimento)
-    @top_suppliers = Supplier.joins(invoices: :budget_category)
-                            .merge(invoices_scope)
-                            .where.not(budget_categories: { name: "Abastecimento" })
-                            .select('suppliers.*, COUNT(invoices.id) as invoices_count, SUM(invoices.total) as total_amount')
-                            .group('suppliers.id')
-                            .order('total_amount DESC')
-                            .limit(5)
+  # ------------------------------------------------------------
+  # 10. Top fornecedores (período selecionado, exclui Abastecimento)
+  # ------------------------------------------------------------
+  @top_suppliers = Supplier
+    .joins(invoices: :budget_category)
+    .merge(period_scope)
+    .where.not(budget_categories: { name: "Abastecimento" })
+    .select('suppliers.*, COUNT(invoices.id) as invoices_count, SUM(invoices.total) as total_amount')
+    .group('suppliers.id')
+    .order('total_amount DESC')
+    .limit(5)
 
-    # 🔹 Alertas
-    @recent_invoices = invoices_scope.where('date_issued >= ?', 7.days.ago)
-    @high_value_invoices = invoices_scope.where('total > ?', 10_000)
-    @total_invoices_count = invoices_scope.count
-    @latest_invoices = invoices_scope
-      .includes(:supplier, :budget_category, invoice_numbers: :cost_center)
-      .order(date_issued: :desc)
-      .limit(10)
+  # ------------------------------------------------------------
+  # 11. Alertas (baseados no escopo base, sem filtro de período)
+  # ------------------------------------------------------------
+  @recent_invoices      = base_scope.where('date_issued >= ?', 7.days.ago)
+  @high_value_invoices  = base_scope.where('total > ?', 10_000)
+  @total_invoices_count = base_scope.count
+  @latest_invoices      = base_scope
+    .includes(:supplier, :budget_category, invoice_numbers: :cost_center)
+    .order(date_issued: :desc)
+    .limit(10)
 
-    # 🔹 Variação mensal (baseada no escopo filtrado)
-    current_month = invoices_scope.where('date_issued >= ?', Date.today.beginning_of_month).sum(:total)
-    last_month = invoices_scope.where('date_issued >= ? AND date_issued < ?',
-                                      1.month.ago.beginning_of_month, Date.today.beginning_of_month).sum(:total)
-    @monthly_variation = last_month > 0 ? ((current_month - last_month) / last_month * 100).round(2) : 0
+  # ------------------------------------------------------------
+  # 12. Variação mensal (baseada no escopo base, sem filtro de período)
+  # ------------------------------------------------------------
+  current_month = base_scope.where('date_issued >= ?', Date.current.beginning_of_month).sum(:total)
+  last_month    = base_scope.where(
+    'date_issued >= ? AND date_issued < ?',
+    1.month.ago.beginning_of_month,
+    Date.current.beginning_of_month
+  ).sum(:total)
 
-
-    # 📈 Evolução mensal por categoria (com filtro opcional)
-    chart_year = Date.current.year
-    category_filter = params[:category_id].presence
-
-    base_query = Invoice.joins(:budget_category)
-                        .where(date_issued: Date.new(chart_year, 1, 1)..Date.new(chart_year, 12, 31))
-
-    if category_filter
-      base_query = base_query.where(budget_categories: { id: category_filter })
-    end
-
-    raw_data = base_query.group(
-      "budget_categories.id",
-      "budget_categories.name",
-      "EXTRACT(MONTH FROM date_issued)"
-    ).sum(:total)
-
-    months = %w[Jan Fev Mar Abr Mai Jun Jul Ago Set Out Nov Dez]
-    grouped = {}
-
-    raw_data.each do |(category_id, category_name, month), total|
-      grouped[category_name] ||= Array.new(12, 0)
-      grouped[category_name][month.to_i - 1] = total.to_f
-    end
-
-    @category_line_chart = grouped.map do |category_name, values|
-      {
-        name: category_name.titleize,
-        data: months.zip(values).to_h
-      }
-    end
-
-    # Para popular o dropdown, você pode usar a lista de categorias já existente
-    @all_categories = BudgetCategory.all.order(:name)
-
-    respond_to do |format|
-      format.html # página completa
-      format.js   # ainda pode existir, mas não usaremos
-      format.turbo_stream do
-        # Renderiza apenas o partial do gráfico
-        render partial: "category_line_chart", locals: { category_line_chart: @category_line_chart }
-      end
-      # Ou simplesmente responda com HTML para o fetch
-      format.html { render partial: "category_line_chart", locals: { category_line_chart: @category_line_chart } } if request.headers["Accept"] == "text/html"
-    end
+  @monthly_variation = if last_month > 0
+    ((current_month - last_month) / last_month * 100).round(2)
+  else
+    0
   end
+
+  # ------------------------------------------------------------
+  # 13. Gráfico de evolução mensal por categoria (ano corrente)
+  #     - Agora respeita o filtro de centro de custo.
+  # ------------------------------------------------------------
+  chart_year = Date.current.year
+  category_filter = params[:category_id].presence
+
+  chart_scope = Invoice.joins(:budget_category)
+                       .where(date_issued: Date.new(chart_year, 1, 1)..Date.new(chart_year, 12, 31))
+
+  if @cost_center_id.present?
+    chart_scope = chart_scope.joins(:invoice_numbers)
+                             .where(invoice_numbers: { cost_center_id: @cost_center_id })
+                             .distinct
+  end
+
+  chart_scope = chart_scope.where(budget_categories: { id: category_filter }) if category_filter
+
+  raw_data = chart_scope.group(
+    "budget_categories.id",
+    "budget_categories.name",
+    "EXTRACT(MONTH FROM date_issued)"
+  ).sum(:total)
+
+  months = %w[Jan Fev Mar Abr Mai Jun Jul Ago Set Out Nov Dez]
+  grouped = {}
+
+  raw_data.each do |(category_id, category_name, month), total|
+    grouped[category_name] ||= Array.new(12, 0)
+    grouped[category_name][month.to_i - 1] = total.to_f
+  end
+
+  @category_line_chart = grouped.map do |category_name, values|
+    {
+      name: category_name.titleize,
+      data: months.zip(values).to_h
+    }
+  end
+
+  @all_categories = BudgetCategory.all.order(:name)
+
+  # ------------------------------------------------------------
+  # 14. Resposta
+  # ------------------------------------------------------------
+  respond_to do |format|
+    format.html
+    format.js
+    format.turbo_stream do
+      render partial: "category_line_chart", locals: { category_line_chart: @category_line_chart }
+    end
+    format.html { render partial: "category_line_chart", locals: { category_line_chart: @category_line_chart } } if request.headers["Accept"] == "text/html"
+  end
+end
 
 
   # POST /invoices or /invoices.json

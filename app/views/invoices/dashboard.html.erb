@@ -25,46 +25,56 @@
 
 <!-- Cards de Resumo -->
 <div class="row mb-4">
-  <div class="col-md-3">
-    <div class="card bg-primary text-white shadow-sm">
-      <div class="card-body text-center">
-        <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
-        <h5>Total Geral</h5>
-        <p class="fs-4 fw-bold">R$ <%= number_to_currency(@total_spent, unit: "", separator: ",", delimiter: ".") %></p>
-        <small><%= @invoices_count %> notas fiscais</small>
+  <!-- Primeiro conjunto: Total Ano e Média Mensal -->
+  <div class="col-md-6">
+    <div class="text-muted small mx-2">Resumo Anual</div>
+    <div class="d-flex gap-2 border rounded p-2">
+      <div class="flex-fill">
+        <div class="card bg-primary text-white shadow-sm h-100">
+          <div class="card-body text-center">
+            <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+            <h5>Total Ano (YTD)</h5>
+            <p class="fs-4 fw-bold">R$ <%= number_to_currency(@total_spent, unit: "", separator: ",", delimiter: ".") %></p>
+            <small><%= @invoices_count %> notas fiscais</small>
+          </div>
+        </div>
+      </div>
+      <div class="flex-fill">
+        <div class="card bg-warning text-white shadow-sm h-100">
+          <div class="card-body text-center">
+            <i class="fas fa-chart-line fa-2x mb-2"></i>
+            <h5>Média Mensal</h5>
+            <p class="fs-4 fw-bold">R$ <%= number_to_currency(@monthly_average, unit: "", separator: ",", delimiter: ".") %></p>
+            <small>média dos últimos 6 meses</small>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="col-md-3">
-    <div class="card bg-success text-white shadow-sm">
-      <div class="card-body text-center">
-        <i class="fas fa-calendar-day fa-2x mb-2"></i>
-        <h5>Este Mês</h5>
-        <p class="fs-4 fw-bold">R$ <%= number_to_currency(@current_month_total, unit: "", separator: ",", delimiter: ".") %></p>
-        <small><%= @current_month_count %> notas este mês</small>
+  <!-- Segundo conjunto: Mês selecionado e Fornecedores -->
+  <div class="col-md-6">
+    <div class="text-muted small mx-2">Período Atual</div>
+    <div class="d-flex gap-2 border rounded p-2">
+      <div class="flex-fill">
+        <div class="card bg-success text-white shadow-sm h-100">
+          <div class="card-body text-center">
+            <i class="fas fa-calendar-day fa-2x mb-2"></i>
+            <h5><%= @has_period_filter ? @period_display : "Este Mês" %></h5>
+            <p class="fs-4 fw-bold">R$ <%= number_to_currency(@current_month_total, unit: "", separator: ",", delimiter: ".") %></p>
+            <small><%= @current_month_count %> notas <%= @has_period_filter ? "em #{@period_display}" : "este mês" %></small>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card bg-info text-white shadow-sm">
-      <div class="card-body text-center">
-        <i class="fas fa-building fa-2x mb-2"></i>
-        <h5>Fornecedores</h5>
-        <p class="fs-4 fw-bold"><%= @suppliers_count %></p>
-        <small>ativos</small>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card bg-warning text-white shadow-sm">
-      <div class="card-body text-center">
-        <i class="fas fa-chart-line fa-2x mb-2"></i>
-        <h5>Média Mensal</h5>
-        <p class="fs-4 fw-bold">R$ <%= number_to_currency(@monthly_average, unit: "", separator: ",", delimiter: ".") %></p>
-        <small>média dos últimos 6 meses</small>
+      <div class="flex-fill">
+        <div class="card bg-info text-white shadow-sm h-100">
+          <div class="card-body text-center">
+            <i class="fas fa-building fa-2x mb-2"></i>
+            <h5>Fornecedores</h5>
+            <p class="fs-4 fw-bold"><%= @suppliers_count %></p>
+            <small>ativos</small>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -291,12 +301,20 @@
               </span>
             </td>
             <td>
-              <% invoice.invoice_numbers.each do |num| %>
-                <% if num.cost_center.present? %>
+              <% centers = invoice.invoice_numbers.map { |num| num.cost_center&.name }.compact.uniq %>
+              <% if centers.any? %>
+                <% centers.first(1).each do |center| %>
                   <span class="badge bg-secondary d-block mb-1">
-                    <%= num.cost_center.name.upcase %>
+                    <%= center.upcase %>
                   </span>
                 <% end %>
+                <% if centers.count > 1 %>
+                  <span class="badge bg-secondary d-block mb-1" style="cursor: pointer;" data-bs-toggle="tooltip" title="<%= centers[1..-1].join(', ').upcase %>">
+                    +<%= centers.count - 2 %> outros
+                  </span>
+                <% end %>
+              <% else %>
+                <span class="text-muted">—</span>
               <% end %>
             </td>
             <td class="fw-bold text-success">
