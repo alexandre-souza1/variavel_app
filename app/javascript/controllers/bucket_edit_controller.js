@@ -12,8 +12,9 @@ export default class extends Controller {
   async save() {
     const value = this.inputTarget.value
     const bucketId = this.element.dataset.bucketId
+    const actionPlanId = this.element.dataset.actionPlanId
 
-    await fetch(`/buckets/${bucketId}`, {
+    await fetch(`/action_plans/${actionPlanId}/buckets/${bucketId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
