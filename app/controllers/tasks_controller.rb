@@ -5,14 +5,27 @@ class TasksController < ApplicationController
   def create
     @bucket = accessible_buckets.find(params[:bucket_id])
     @task = @bucket.tasks.build(task_params)
+
     @task.label_ids &= @bucket.action_plan.label_ids
     @task.creator = current_user
-    @task.position = @bucket.tasks.count
+
+    # Desloca todas as tarefas para baixo
+    @bucket.tasks.update_all("position = position + 1")
+    @task.position = 0
 
     if @task.save
-      redirect_to action_plan_path(@bucket.action_plan)
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to action_plan_path(@bucket.action_plan) }
+      end
     else
-      redirect_to action_plan_path(@bucket.action_plan), alert: @task.errors.full_messages.to_sentence
+      respond_to do |format|
+        format.turbo_stream
+        format.html do
+          redirect_to action_plan_path(@bucket.action_plan),
+                      alert: @task.errors.full_messages.to_sentence
+        end
+      end
     end
   end
 
