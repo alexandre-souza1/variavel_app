@@ -75,6 +75,7 @@
                   <button
                     type="button"
                     class="btn btn-light text-dark btn-sm w-100 align-items-start d-flex gap-1"
+                    data-toggle-field-target="button"
                     data-action="click->toggle-field#toggle">
                     📅 Definir data
                   </button>
@@ -98,6 +99,7 @@
                   <button
                     type="button"
                     class="btn btn-light text-dark btn-sm w-100 align-items-start d-flex gap-1"
+                    data-toggle-field-target="button"
                     data-action="click->toggle-field#toggle">
                     👤 Atribuir responsável
                   </button>
@@ -114,7 +116,8 @@
                           class:"form-select",
                           multiple:true,
                           data:{
-                            controller:"tom-select-users"
+                            controller:"tom-select-users",
+                            action: "change->toggle-field#updateUsers"
                           }
                         } %>
 
