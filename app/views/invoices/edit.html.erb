@@ -75,7 +75,8 @@
 
                 <input class="form-control" placeholder="Número da NF"
                       type="text"
-                      name="invoice[invoice_numbers_attributes][NEW_RECORD][number]">
+                      name="invoice[invoice_numbers_attributes][NEW_RECORD][number]"
+                      autocomplete="off">
 
                 <select class="form-select"
                         name="invoice[invoice_numbers_attributes][NEW_RECORD][cost_center_id]">
@@ -98,7 +99,7 @@
               </div>
             </template>
 
-            <%= link_to "#", class: "btn btn-sm btn-outline-primary", data: { action: "click->invoice-numbers#add" } do %>
+            <%= link_to "#", class: "btn btn-sm btn-outline-primary", data: { action: "click->invoice-numbers#add" } do %> <%# herb:disable html-anchor-require-href %>
               <i class="bi bi-plus-circle"></i> Adicionar NF
             <% end %>
           </div>
@@ -170,6 +171,7 @@
 
     <div class="d-flex justify-content-between mt-4">
       <%= link_to "Voltar para Notas Fiscais", invoices_path, class: "btn btn-primary shadow-sm p-3" %>
+      <%= link_to "Voltar para Dashboard", dashboard_invoices_path, class: "btn btn-primary shadow-sm p-3" %>
       <%= button_to "Excluir esta Nota Fiscal", @invoice, method: :delete,
           data: { turbo_confirm: "Tem certeza que deseja excluir esta nota fiscal?" },
           class: "btn btn-danger shadow-sm p-3" %>
