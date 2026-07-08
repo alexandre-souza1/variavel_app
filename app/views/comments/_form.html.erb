@@ -10,6 +10,8 @@
   <%= f.text_area :content,
         class: "form-control mb-2",
         rows: 2,
+        required: true,
+        minlength: 1,
         placeholder: "Escreva um comentário..." %>
 
   <%= f.submit "Comentar", class: "btn btn-sm btn-primary w-100" %>

@@ -9,7 +9,7 @@ class CommentsController < ApplicationController
     if @comment.save
       head :ok
     else
-      redirect_to action_plan_task_path(params[:action_plan_id], @task), alert: "Erro ao comentar"
+      head :unprocessable_entity
     end
   end
 
