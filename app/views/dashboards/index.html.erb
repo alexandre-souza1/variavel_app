@@ -108,7 +108,20 @@
       <div class="card border-0 shadow-sm h-100">
         <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
           <h5 class="mb-0"><i class="fas fa-chart-line text-primary me-2"></i> Evolução dos Custos</h5>
-          <span class="badge bg-primary"><%= @total_invoices %> faturas</span>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary"><%= @total_invoices %> faturas</span>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="categoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <%= @selected_category_id.present? ? @categories.find { |c| c.id == @selected_category_id }&.name : "Todas" %>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="categoryDropdown">
+                <li><%= link_to "Todas", dashboard_path, class: "dropdown-item" %></li>
+                <% @categories.each do |category| %>
+                  <li><%= link_to category.name, dashboard_path(category_id: category.id), class: "dropdown-item" %></li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
         </div>
         <div class="card-body">
           <% if @monthly_costs.present? %>
@@ -122,7 +135,7 @@
                     scales: { y: { beginAtZero: true } }
                   } %>
           <% else %>
-            <p class="text-muted text-center py-4">Nenhum dado de custo disponível.</p>
+            <p class="text-muted text-center py-4">Nenhum dado de custo disponível para esta categoria.</p>
           <% end %>
         </div>
       </div>

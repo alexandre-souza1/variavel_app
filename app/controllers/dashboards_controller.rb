@@ -17,15 +17,12 @@ class DashboardsController < ApplicationController
                           .limit(5)
 
     # ------------------------------------------------------------
-    # 2. Custos – agora usando date_issued (igual ao InvoicesController)
+    # 2. Custos – com filtro por categoria (dropdown)
     # ------------------------------------------------------------
     # Período: mês atual
     month_start = Date.current.beginning_of_month
     month_end   = Date.current.end_of_month
     month_scope = Invoice.where(date_issued: month_start..month_end)
-
-    # Ano atual (até hoje)
-    year_scope = Invoice.where(date_issued: Date.current.beginning_of_year..Date.current)
 
     # Cards
     @current_month_cost = month_scope.sum(:total)
@@ -38,15 +35,37 @@ class DashboardsController < ApplicationController
       .sum(:total)
       .transform_values { |v| v.to_f.round(2) }
 
-    # Evolução mensal (últimos 12 meses) – para o gráfico de colunas
+    # ------------------------------------------------------------
+    # Filtro por categoria para o gráfico de evolução
+    # ------------------------------------------------------------
+    @selected_category_id = params[:category_id].to_i if params[:category_id].present?
+
+    # Evolução mensal (últimos 12 meses)
     monthly_totals = Invoice
       .where(date_issued: 11.months.ago.beginning_of_month..Date.current.end_of_month)
+
+    # Aplica filtro por categoria se selecionado
+    if @selected_category_id.present?
+      monthly_totals = monthly_totals.where(budget_category_id: @selected_category_id)
+    end
+
+    monthly_totals = monthly_totals
       .group("DATE_TRUNC('month', date_issued)")
       .sum(:total)
 
-    @monthly_costs = monthly_totals.map do |month, total|
-      { month: month.strftime("%b %Y"), cost: total.to_f }
-    end
+    # Ordena do mês mais antigo para o mais recente e formata para o Chartkick
+    @monthly_costs = monthly_totals
+      .sort_by { |month, _| month }
+      .map { |month, total| [month.strftime("%b %Y"), total.to_f] }
+
+    # ------------------------------------------------------------
+    # Lista de categorias para o dropdown (apenas as que têm invoices)
+    # ------------------------------------------------------------
+    @categories = BudgetCategory
+      .joins(:invoices)
+      .where(invoices: { date_issued: 11.months.ago.beginning_of_month..Date.current.end_of_month })
+      .distinct
+      .order(:name)
 
     # ------------------------------------------------------------
     # 3. Métricas de frotas ROTA
