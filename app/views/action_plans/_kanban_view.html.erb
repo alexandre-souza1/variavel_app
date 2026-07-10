@@ -14,10 +14,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
 
           <div data-controller="bucket-edit" data-bucket-id="<%= bucket.id %>" data-action-plan-id="<%= action_plan.id %>" class="flex-grow-1">
-            <div class="drag-handle bg-danger text-white p-2"
-                style="cursor: grab;">
-              <i class="bi bi-grip-vertical"></i>
-            </div>
+              <i class="bi bi-grip-vertical drag-handle" style="cursor: grab;"></i>
             <span data-bucket-edit-target="title"
                   data-action="click->bucket-edit#edit"
                   style="cursor: pointer;">
