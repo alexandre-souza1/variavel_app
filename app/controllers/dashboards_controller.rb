@@ -3,84 +3,101 @@ class DashboardsController < ApplicationController
   before_action :set_mes_ano, only: [:index, :placas_por_setor]
 
   def index
-    # Tarefas pendentes
+    # ------------------------------------------------------------
+    # 1. Tarefas
+    # ------------------------------------------------------------
     @pending_tasks = Task.includes(bucket: :action_plan)
                          .where(completed: [false, nil])
+                         .where(assignee_id: current_user.id)
 
-    # Tarefas com vencimento próximo (hoje + 2 dias)
     @tasks_due_soon = Task.where(completed: [false, nil])
                           .where("due_at <= ?", 2.days.from_now.end_of_day)
+                          .where(assignee_id: current_user.id)
                           .order(due_at: :asc)
                           .limit(5)
 
-    # Custos do mês atual
-    @current_month_cost = Invoice
-      .where(date: Date.current.beginning_of_month..Date.current.end_of_month)
-      .sum(:total)
+    # ------------------------------------------------------------
+    # 2. Custos – agora usando date_issued (igual ao InvoicesController)
+    # ------------------------------------------------------------
+    # Período: mês atual
+    month_start = Date.current.beginning_of_month
+    month_end   = Date.current.end_of_month
+    month_scope = Invoice.where(date_issued: month_start..month_end)
 
-    # Total de faturas no mês
-    @total_invoices = Invoice
-      .where(date: Date.current.beginning_of_month..Date.current.end_of_month)
-      .count
+    # Ano atual (até hoje)
+    year_scope = Invoice.where(date_issued: Date.current.beginning_of_year..Date.current)
 
-    # ---------- Gastos por categoria (gráfico donut) ----------
-    @expenses_by_category = Invoice
-      .where(date: Date.current.beginning_of_month..Date.current.end_of_month)
+    # Cards
+    @current_month_cost = month_scope.sum(:total)
+    @total_invoices     = month_scope.count
+
+    # Gastos por categoria (gráfico donut) – mês atual
+    @expenses_by_category = month_scope
       .joins(:budget_category)
       .group('budget_categories.name')
       .sum(:total)
+      .transform_values { |v| v.to_f.round(2) }
 
-    # ---------- Métricas apenas para frotas ROTA ----------
+    # Evolução mensal (últimos 12 meses) – para o gráfico de colunas
+    monthly_totals = Invoice
+      .where(date_issued: 11.months.ago.beginning_of_month..Date.current.end_of_month)
+      .group("DATE_TRUNC('month', date_issued)")
+      .sum(:total)
+
+    @monthly_costs = monthly_totals.map do |month, total|
+      { month: month.strftime("%b %Y"), cost: total.to_f }
+    end
+
+    # ------------------------------------------------------------
+    # 3. Métricas de frotas ROTA
+    # ------------------------------------------------------------
     @total_vehicles = Plate.where(setor: "ROTA").count
-
-    # Veículos por tipo (apenas ROTA)
     @vehicles_by_type = Plate.where(setor: "ROTA").group(:tipo).count
-
-    # Veículos que NÃO rodaram no mês (apenas ROTA)
     @vehicles_not_used_this_month = vehicles_not_used_in_month(@mes, @ano, "ROTA")
 
-    # Dados para gráfico de custos mensais (últimos 12 meses)
-    @monthly_costs = monthly_costs_chart_data
+    # ------------------------------------------------------------
+    # 4. Último mapa (baseado no campo 'data' – string DDMMYYYY)
+    # ------------------------------------------------------------
+    @last_map_date = nil
+    last_map = Mapa.where.not(data: [nil, ""])
+                   .order(created_at: :desc)
+                   .first
 
-    # (Opcional) Últimas atividades
-    @recent_activities = recent_activities
-
-    # ---------- Último mapa enviado (baseado no campo 'data') ----------
-    @last_map = Mapa.where.not(data: [nil, ""])
-                    .order(created_at: :desc)
-                    .first
-
-    if @last_map.present?
-      data_str = @last_map.data.to_s.gsub(/\D/, "")
+    if last_map.present?
+      data_str = last_map.data.to_s.gsub(/\D/, "")
       begin
         case data_str.length
         when 8
-          day = data_str[0,2].to_i
+          day   = data_str[0,2].to_i
           month = data_str[2,2].to_i
-          year = data_str[4,4].to_i
-          @last_map_date = Date.new(year, month, day) rescue nil
+          year  = data_str[4,4].to_i
+          @last_map_date = Date.new(year, month, day)
         when 7
-          day = data_str[0,1].to_i
+          day   = data_str[0,1].to_i
           month = data_str[1,2].to_i
-          year = data_str[3,4].to_i
-          @last_map_date = Date.new(year, month, day) rescue nil
+          year  = data_str[3,4].to_i
+          @last_map_date = Date.new(year, month, day)
         else
           @last_map_date = nil
         end
       rescue
         @last_map_date = nil
       end
-    else
-      @last_map_date = nil
     end
 
-    # Outros dados que você já tinha
-    @plates_count = Plate.where(setor: "ROTA").count
-    @drivers_count = Driver.count
-    @checklists_today = Checklist.where(created_at: Date.current.all_day).count
+    # ------------------------------------------------------------
+    # 5. Outros dados
+    # ------------------------------------------------------------
+    @recent_activities = recent_activities
+    @plates_count      = Plate.where(setor: "ROTA").count
+    @drivers_count     = Driver.count
+    @checklists_today  = Checklist.where(created_at: Date.current.all_day).count
     @stress_tests_count = StressTestImport.count
   end
 
+  # ------------------------------------------------------------
+  # 6. Ações e métodos privados (mantidos iguais)
+  # ------------------------------------------------------------
   def placas_por_setor
     @setor = "ROTA"
     @placa = params[:placa]
@@ -160,19 +177,6 @@ class DashboardsController < ApplicationController
     end
 
     Plate.where(placa: not_used)
-  end
-
-  def monthly_costs_chart_data
-    invoices_by_month = Invoice
-      .where(date: 11.months.ago.beginning_of_month..Date.current.end_of_month)
-      .group("DATE_TRUNC('month', date)")
-      .sum(:total)
-
-    invoices_by_month.map do |month, total|
-      { month: month.strftime("%b %Y"), cost: total.to_f }
-    end
-  rescue
-    []
   end
 
   def recent_activities
