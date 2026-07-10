@@ -32,7 +32,7 @@ export default class extends Controller {
   // =============================
   mouseDown(e) {
     // ignora clique em elementos interativos
-    if (e.target.closest("input, textarea, select, button, a, .task-card")) return
+    if (e.target.closest("input, textarea, select, button, a, .task-card, .drag-handle")) return
 
     this.isDown = true
     this.isDragging = false
