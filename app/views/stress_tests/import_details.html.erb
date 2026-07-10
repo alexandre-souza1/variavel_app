@@ -1,0 +1,190 @@
+<div class="container-fluid mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+      <h2>
+        <i class="fas fa-list me-2"></i>
+        Eventos Importados
+      </h2>
+
+      <p class="text-muted mb-0">
+        Importação #<%= @import.id %>
+        realizada em
+        <%= l(@import.imported_at || @import.created_at,
+              format: :short) %>
+      </p>
+    </div>
+
+
+    <%= link_to imports_stress_tests_path,
+          class: "btn btn-secondary" do %>
+
+      <i class="fas fa-arrow-left me-2"></i>
+      Voltar
+
+    <% end %>
+
+  </div>
+
+
+  <div class="row mb-4">
+
+    <div class="col-md-4">
+
+      <div class="card shadow-sm border-0">
+
+        <div class="card-body text-center">
+
+          <h6 class="text-muted">
+            Usuário
+          </h6>
+
+          <h5>
+            <%= @import.user.name || @import.user.email %>
+          </h5>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+      <div class="card shadow-sm border-0">
+
+        <div class="card-body text-center">
+
+          <h6 class="text-muted">
+            Total Eventos
+          </h6>
+
+          <h3>
+            <%= @events.count %>
+          </h3>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+      <div class="card shadow-sm border-0">
+
+        <div class="card-body text-center">
+
+          <h6 class="text-muted">
+            Data Importação
+          </h6>
+
+          <h5>
+            <%= l(@import.created_at,
+                  format: :short) %>
+          </h5>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="card shadow-sm border-0">
+
+    <div class="card-body">
+
+
+      <div class="table-responsive">
+
+        <table class="table table-hover align-middle">
+
+
+          <thead class="table-light">
+
+            <tr>
+
+              <th>Placa</th>
+              <th>Mapa</th>
+              <th>Fase</th>
+              <th>Data Operação</th>
+              <th>Hora</th>
+              <th>Motorista</th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+
+            <% @events.each do |event| %>
+
+              <tr>
+
+                <td>
+                  <strong>
+                    <%= event.placa %>
+                  </strong>
+                </td>
+                <td>
+                  <%= event.mapa %>
+                </td>
+                <td>
+                  <span class="badge bg-primary">
+                    <%= event.fase %>
+                  </span>
+                </td>
+                <td>
+                  <%= event.operation_date&.strftime("%d/%m/%Y") %>
+                </td>
+                <td>
+                  <%= event.operation_time&.strftime("%H:%M") %>
+                </td>
+                <td>
+                  <%= event.motorista %>
+                </
+
+              </tr>
+
+
+            <% end %>
+
+
+            <% if @events.empty? %>
+
+              <tr>
+
+                <td colspan="7"
+                    class="text-center text-muted py-4">
+
+                  Nenhum evento encontrado.
+
+                </td>
+
+              </tr>
+
+            <% end %>
+
+
+          </tbody>
+
+
+        </table>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+
+</div>

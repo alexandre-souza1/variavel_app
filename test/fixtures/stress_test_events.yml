@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  stress_test_import: one
+  plate: one
+  placa: MyString
+  mapa: MyString
+  fase: MyString
+  operation_date: 2026-07-09
+  operation_time: 2026-07-09 12:20:26
+  motorista: MyString
+  destino: MyString
+
+two:
+  stress_test_import: two
+  plate: two
+  placa: MyString
+  mapa: MyString
+  fase: MyString
+  operation_date: 2026-07-09
+  operation_time: 2026-07-09 12:20:26
+  motorista: MyString
+  destino: MyString

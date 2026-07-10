@@ -8,7 +8,7 @@
         </p>
         <div class="d-flex gap-2 flex-wrap">
           <%= link_to "Abrir", action_plan_path(plan), class: "btn btn-sm btn-primary" %>
-          <% if plan.user == current_user %>
+          <% if plan.user == current_user or current_user.admin? %>
             <%= link_to "Editar", edit_action_plan_path(plan), class: "btn btn-sm btn-outline-secondary" %>
             <button class="btn btn-sm btn-outline-danger"
                     data-bs-toggle="modal"

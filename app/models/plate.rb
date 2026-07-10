@@ -2,6 +2,7 @@ require "csv"
 class Plate < ApplicationRecord
   validates :placa, presence: true, uniqueness: true
   has_many :checklists
+  has_many :stress_test_events, dependent: :nullify
 
   # Se quiser validar opções específicas
   SETORES = %w[ARMAZEM ROTA]

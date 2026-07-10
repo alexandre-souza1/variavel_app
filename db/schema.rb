@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_06_26_192921) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_09_152533) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -344,6 +344,30 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_26_192921) do
     t.index ["label"], name: "index_remuneration_periods_on_label", unique: true
   end
 
+  create_table "stress_test_events", force: :cascade do |t|
+    t.bigint "plate_id"
+    t.string "placa"
+    t.string "mapa"
+    t.string "fase"
+    t.date "operation_date"
+    t.time "operation_time"
+    t.string "motorista"
+    t.string "destino"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "stress_test_import_id", null: false
+    t.index ["plate_id"], name: "index_stress_test_events_on_plate_id"
+    t.index ["stress_test_import_id"], name: "index_stress_test_events_on_stress_test_import_id"
+  end
+
+  create_table "stress_test_imports", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.datetime "imported_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_stress_test_imports_on_user_id"
+  end
+
   create_table "suppliers", force: :cascade do |t|
     t.string "name"
     t.string "cnpj"
@@ -480,6 +504,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_26_192921) do
   add_foreign_key "labels", "action_plans"
   add_foreign_key "remuneration_category_values", "budget_categories"
   add_foreign_key "remuneration_category_values", "vehicle_remunerations"
+  add_foreign_key "stress_test_events", "plates"
+  add_foreign_key "stress_test_events", "stress_test_imports"
+  add_foreign_key "stress_test_imports", "users"
   add_foreign_key "task_assignments", "tasks"
   add_foreign_key "task_assignments", "users"
   add_foreign_key "task_labels", "labels"

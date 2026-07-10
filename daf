@@ -1,0 +1,20 @@
+                                            Table "public.stress_test_events"
+     Column     |              Type              | Collation | Nullable |                    Default                     
+----------------+--------------------------------+-----------+----------+------------------------------------------------
+ id             | bigint                         |           | not null | nextval('stress_test_events_id_seq'::regclass)
+ plate_id       | bigint                         |           | not null | 
+ placa          | character varying              |           |          | 
+ mapa           | character varying              |           |          | 
+ fase           | character varying              |           |          | 
+ operation_date | date                           |           |          | 
+ operation_time | time without time zone         |           |          | 
+ motorista      | character varying              |           |          | 
+ destino        | character varying              |           |          | 
+ created_at     | timestamp(6) without time zone |           | not null | 
+ updated_at     | timestamp(6) without time zone |           | not null | 
+Indexes:
+    "stress_test_events_pkey" PRIMARY KEY, btree (id)
+    "index_stress_test_events_on_plate_id" btree (plate_id)
+Foreign-key constraints:
+    "fk_rails_98fe0e2a1f" FOREIGN KEY (plate_id) REFERENCES plates(id)
+

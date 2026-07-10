@@ -27,18 +27,18 @@
 
           </div>
 
+          <% if current_user.admin? or action_plan.user == current_user %>
+            <%= link_to action_plan_bucket_path(action_plan, bucket),
+                data: {
+                  turbo_method: :delete,
+                  turbo_confirm: "Tem certeza?"
+                },
+                class: "btn btn-sm" do %>
 
-          <%= link_to action_plan_bucket_path(action_plan, bucket),
-              data: {
-                turbo_method: :delete,
-                turbo_confirm: "Tem certeza?"
-              },
-              class: "btn btn-sm" do %>
+              <i class="bi bi-x-lg text-danger"></i>
 
-            <i class="bi bi-x-lg text-danger"></i>
-
+            <% end %>
           <% end %>
-
         </div>
 
 

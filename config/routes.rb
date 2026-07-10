@@ -57,6 +57,18 @@ Rails.application.routes.draw do
     resources :checklist_items, only: [:new, :create, :edit, :update, :destroy]
   end
 
+  resources :stress_tests, only: [:index] do
+    collection do
+      get :import, action: :import_page
+      post :import
+      get :imports
+    end
+
+    member do
+      get :import_details
+    end
+  end
+
   resources :autonomies do
     collection do
       get :dashboard
