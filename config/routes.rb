@@ -9,7 +9,8 @@ Rails.application.routes.draw do
   get 'checklist_templates/new'
   get 'checklist_templates/create'
   get 'checklist_templates/show'
-
+  get 'dashboard/placas_por_setor', to: 'dashboards#placas_por_setor', as: 'placas_por_setor'
+  get 'dashboard', to: 'dashboards#index', as: 'dashboard'
   mount ActionCable.server => '/cable'
 
   resources :az_ajudantes
@@ -82,7 +83,7 @@ Rails.application.routes.draw do
 
   resources :action_plans do
     patch :sort_buckets, on: :member
-    
+
     resources :buckets do
       member do
         get :done_tasks

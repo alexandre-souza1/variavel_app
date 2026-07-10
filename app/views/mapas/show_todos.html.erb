@@ -78,6 +78,7 @@
             <select data-mapas-filter-target="ano" data-action="change->mapas-filter#filter" class="form-control">
               <option value="">Todos os Anos</option>
               <option value="2025">2025</option>
+              <option value="2026">2026</option>
             </select>
           </div>
         </div>
@@ -104,6 +105,7 @@
                   <th>PDV Total</th>
                   <th>PDV Real</th>
                   <th>Recarga</th>
+                  <th>Placa</th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -129,6 +131,7 @@
                     <td><%= mapa.pdv_total %></td>
                     <td><%= mapa.pdv_real %></td>
                     <td><%= mapa.recarga %></td>
+                    <td><%= mapa.plate %></td>
                     <td class="text-end">
                       <div class="btn-group btn-group-sm" role="group">
                         <%= link_to 'Editar', edit_mapa_path(mapa), class: 'btn btn-outline-primary' %>

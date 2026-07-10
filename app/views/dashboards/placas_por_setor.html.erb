@@ -1,0 +1,111 @@
+<div class="container mt-4">
+  <h1 class="mb-4"><i class="bi bi-speedometer2"></i> Teste de Estresse – Placas por Setor</h1>
+
+  <!-- Filtros -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <%= form_with url: placas_por_setor_path, method: :get, local: true, class: "row g-3" do |f| %>
+        <div class="col-md-4">
+          <%= f.label :placa, "Placa" %>
+            <%= f.select :placa,
+              options_for_select(
+                [["Todas", ""]] + Plate.where(setor: "ROTA").order(:placa).pluck(:placa),
+                params[:placa]
+              ),
+              {},
+              class: "form-select" %>
+        </div>
+        <div class="col-md-3">
+          <%= f.label :mes, "Mês" %>
+          <%= f.select :mes, options_for_select((1..12).map { |m| [I18n.t("date.month_names")[m], m] }, params[:mes] || Date.current.month), {}, class: "form-select" %>
+        </div>
+        <div class="col-md-3">
+          <%= f.label :ano, "Ano" %>
+          <%= f.select :ano, options_for_select((Date.current.year-2..Date.current.year+1).to_a, params[:ano] || Date.current.year), {}, class: "form-select" %>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <%= f.submit "Filtrar", class: "btn btn-primary w-100" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Resumo por setor -->
+  <div class="row mb-4">
+    <% @status_por_setor.each do |setor, status| %>
+      <div class="col-md-3 mb-3">
+        <div class="card <%= status[:completo] ? 'border-success' : 'border-danger' %>">
+          <div class="card-body text-center">
+            <h5 class="card-title"><%= setor %></h5>
+            <p class="card-text">
+              <%= status[:rodaram] %> / <%= status[:total] %> placas rodaram
+            </p>
+            <% if status[:completo] %>
+              <span class="badge bg-success">Setor completo ✓</span>
+            <% else %>
+              <span class="badge bg-danger"><%= status[:total] - status[:rodaram] %> placa(s) ociosa(s)</span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Tabela de placas -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">Detalhamento diário</h5>
+    </div>
+    <div class="card-body table-responsive">
+      <table class="table table-bordered table-hover table-sm">
+        <thead class="table-light">
+          <tr>
+            <th>Setor</th>
+            <th>Placa</th>
+            <th>Perfil</th>
+            <th>Tipo</th>
+            <th>Dias rodados</th>
+            <% @dias_do_mes.each do |dia| %>
+              <th class="text-center"><%= dia %></th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% @placas.each do |placa_obj| %>
+            <%
+            dias_rodados =
+              PlateUtils
+                .equivalentes(placa_obj.placa)
+                .flat_map { |placa| @dias_rodados[placa] || [] }
+                .uniq
+            %>
+            <tr>
+              <td><%= placa_obj.setor %></td>
+              <td><strong><%= placa_obj.placa %></strong></td>
+              <td><%= placa_obj.perfil %></td>
+              <td><%= placa_obj.tipo %></td>
+              <td>
+                <span class="badge bg-<%= dias_rodados.any? ? 'success' : 'danger' %>">
+                  <%= dias_rodados.size %> dia(s)
+                </span>
+              </td>
+              <% @dias_do_mes.each do |dia| %>
+                <td class="text-center">
+                  <% if dias_rodados.include?(dia) %>
+                    <span class="badge bg-success rounded-circle" style="width: 24px; height: 24px; display: inline-block;">✓</span>
+                  <% else %>
+                    <span class="badge bg-light text-muted rounded-circle" style="width: 24px; height: 24px; display: inline-block;">-</span>
+                  <% end %>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <%= link_to "Voltar", mapas_path, class: "btn btn-secondary" %>
+  </div>
+</div>

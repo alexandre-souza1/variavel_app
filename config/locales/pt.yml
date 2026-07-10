@@ -57,6 +57,7 @@ pt:
       default: "%d/%m/%Y %H:%M"
       short: "%d/%m/%Y %H:%M"
       long: "%d de %B de %Y às %H:%M"
+      time: "%H:%M"
     am: "am"
     pm: "pm"
   simple_calendar:

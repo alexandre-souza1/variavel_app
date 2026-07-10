@@ -1,0 +1,301 @@
+<div class="container-fluid py-4">
+  <!-- Cabeçalho -->
+  <div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+      <h1 class="display-5 fw-bold mb-1">Gestão de Frotas - ROTA</h1>
+      <p class="text-muted fs-5">
+        <i class="fas fa-calendar-alt me-2"></i>
+        <%= l(Date.current, format: :long) %>
+        &nbsp;|&nbsp; Bem-vindo(a), <strong><%= current_user&.name || "Usuário" %></strong>
+      </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+      <%= link_to dashboard_invoices_path, class: "btn btn-outline-primary me-2" do %>
+        <i class="fas fa-file-invoice"></i> Faturas
+      <% end %>
+      <%= link_to action_plans_path, class: "btn btn-outline-warning" do %>
+        <i class="fas fa-tasks"></i> Ações
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Cards de Resumo (KPI) - apenas frotas ROTA -->
+  <div class="row mb-4 g-3">
+    <div class="col-md-3 col-sm-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3 bg-primary bg-opacity-10 p-3 rounded-circle">
+            <i class="fas fa-truck fa-2x text-primary"></i>
+          </div>
+          <div>
+            <h6 class="text-muted mb-1">Total de Veículos</h6>
+            <h3 class="fw-bold mb-0"><%= @total_vehicles %></h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3 bg-success bg-opacity-10 p-3 rounded-circle">
+            <i class="fas fa-tags fa-2x text-success"></i>
+          </div>
+          <div>
+            <h6 class="text-muted mb-1">Tipos de Veículo</h6>
+            <h3 class="fw-bold mb-0"><%= @vehicles_by_type.keys.size %></h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3 bg-warning bg-opacity-10 p-3 rounded-circle">
+            <i class="fas fa-calendar-times fa-2x text-warning"></i>
+          </div>
+          <div>
+            <h6 class="text-muted mb-1">Parados no Mês</h6>
+            <h3 class="fw-bold mb-0"><%= @vehicles_not_used_this_month&.count || 0 %></h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3 bg-danger bg-opacity-10 p-3 rounded-circle">
+            <i class="fas fa-clock fa-2x text-danger"></i>
+          </div>
+          <div>
+            <h6 class="text-muted mb-1">Tarefas Pendentes</h6>
+            <h3 class="fw-bold mb-0"><%= @pending_tasks&.count || 0 %></h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Linha com dois gráficos -->
+  <div class="row mb-4 g-3">
+    <!-- Gráfico de custos mensais (evolução) -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="fas fa-chart-line text-primary me-2"></i> Evolução dos Custos</h5>
+          <span class="badge bg-primary"><%= @total_invoices %> faturas</span>
+        </div>
+        <div class="card-body">
+          <% if @monthly_costs.present? %>
+            <%= column_chart @monthly_costs,
+                  colors: ["#3b82f6"],
+                  suffix: " R$",
+                  thousands: ".",
+                  decimal: ",",
+                  library: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                  } %>
+          <% else %>
+            <p class="text-muted text-center py-4">Nenhum dado de custo disponível.</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico de gastos por categoria (donut) -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0">
+          <h5 class="mb-0"><i class="fas fa-chart-pie text-success me-2"></i> Gastos por Categoria (Mês)</h5>
+        </div>
+        <div class="card-body d-flex flex-column justify-content-center">
+          <% if @expenses_by_category.present? %>
+            <%= pie_chart @expenses_by_category,
+                  donut: true,
+                  colors: ["#3b82f6", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6", "#ec4899"],
+                  library: {
+                    plugins: {
+                      legend: { position: 'bottom' },
+                      tooltip: {
+                        callbacks: {
+                          label: function(context) {
+                            var label = context.label || '';
+                            var value = context.parsed || 0;
+                            return label + ': R$ ' + value.toFixed(2).replace('.', ',');
+                          }
+                        }
+                      }
+                    }
+                  } %>
+          <% else %>
+            <p class="text-muted text-center py-4">Nenhuma despesa registrada neste mês.</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cards de informações específicas -->
+  <div class="row g-3 mb-4">
+    <!-- Card: Veículos que não rodaram no mês (limitado a 10) -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="fas fa-pause-circle text-danger me-2"></i> Veículos sem Movimentação no Mês</h5>
+              <% if @last_map_date.present? %>
+                <% days_ago = (Date.current - @last_map_date).to_i %>
+                <% if days_ago == 0 %>
+                  <span class="badge bg-success">
+                    <i class="fas fa-sync-alt me-1"></i> Dados atualizados hoje
+                  </span>
+                <% elsif days_ago <= 2 %>
+                  <span class="badge bg-warning text-dark">
+                    <i class="fas fa-clock me-1"></i> Última atualização: há <%= days_ago %> dia(s)
+                  </span>
+                <% else %>
+                  <span class="badge bg-danger">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Último mapa: <%= l(@last_map_date, format: :short) %>
+                  </span>
+                <% end %>
+              <% else %>
+                <span class="badge bg-secondary">
+                  <i class="fas fa-times me-1"></i> Nenhum mapa encontrado
+                </span>
+              <% end %>
+          <span class="badge bg-danger"><%= @vehicles_not_used_this_month&.count || 0 %></span>
+        </div>
+        <div class="card-body">
+          <% vehicles = @vehicles_not_used_this_month.take(10) %>
+          <% if vehicles.present? %>
+            <ul class="list-group list-group-flush">
+              <% vehicles.each do |vehicle| %>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span>
+                    <strong><%= vehicle.placa %></strong>
+                  </span>
+                  <span class="badge bg-secondary"><%= vehicle.perfil || "Sem setor" %></span>
+                </li>
+              <% end %>
+            </ul>
+            <% if @vehicles_not_used_this_month.count > 10 %>
+              <p class="text-muted small mt-2">Exibindo 10 de <%= @vehicles_not_used_this_month.count %></p>
+            <% end %>
+            <div class="mt-3 text-center">
+              <%= link_to "Ver todos os veículos", placas_por_setor_path, class: "btn btn-outline-danger btn-sm" %>
+            </div>
+          <% else %>
+            <p class="text-success text-center py-3">
+              <i class="fas fa-check-circle me-2"></i> Todos os veículos ROTA já rodaram este mês!
+            </p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card: Resumo de Custos e Tarefas (com vencimento) -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0">
+          <h5 class="mb-0"><i class="fas fa-info-circle text-secondary me-2"></i> Resumo Rápido</h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Custo do mês -->
+            <div class="col-sm-6">
+              <div class="p-3 bg-light rounded-3 h-100 d-flex flex-column">
+                <span class="text-muted small">Custo Total do Mês</span>
+                <span class="fs-3 fw-bold text-success">
+                  R$ <%= number_with_precision(@current_month_cost || 0, precision: 2, delimiter: ".") %>
+                </span>
+                <%= link_to "Ver detalhes", dashboard_invoices_path, class: "btn btn-sm btn-success mt-2" %>
+              </div>
+            </div>
+            <!-- Tarefas com vencimento próximo -->
+            <div class="col-sm-6">
+              <div class="p-3 bg-light rounded-3 h-100 d-flex flex-column">
+                <span class="text-muted small">Vencendo em breve</span>
+                <% if @tasks_due_soon.present? %>
+                  <ul class="list-unstyled mb-0">
+                    <% @tasks_due_soon.limit(3).each do |task| %>
+                      <li class="mb-1">
+                        <i class="fas fa-exclamation-circle text-warning me-1" style="font-size: 8px;"></i>
+                        <%= link_to truncate(task.title, length: 20), action_plan_path(task.bucket.action_plan), class: "text-decoration-none" %>
+                        <br><small class="text-muted"><%= l(task.due_at.to_date, format: :short) if task.due_at %></small>
+                      </li>
+                    <% end %>
+                  </ul>
+                  <%= link_to "Ver todas", action_plans_path, class: "btn btn-sm btn-warning mt-2" %>
+                <% else %>
+                  <p class="text-muted mb-0">Nenhuma tarefa próxima do vencimento.</p>
+                <% end %>
+              </div>
+            </div>
+          </div>
+          <!-- Últimas atividades (opcional) -->
+          <% if @recent_activities.present? %>
+            <hr class="my-3">
+            <h6 class="text-muted"><i class="fas fa-history me-1"></i> Últimas Atividades</h6>
+            <ul class="list-unstyled small">
+              <% @recent_activities.each do |activity| %>
+                <li><%= activity %></li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Links de Acesso Rápido (rodapé) -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h6 class="mb-3"><i class="fas fa-rocket me-2"></i> Acesso Rápido</h6>
+          <div class="d-flex flex-wrap gap-2">
+            <%= link_to placas_por_setor_path, class: "btn btn-outline-primary" do %>
+              <i class="fas fa-list me-1"></i> Placas por Setor
+            <% end %>
+            <%= link_to dashboard_invoices_path, class: "btn btn-outline-success" do %>
+              <i class="fas fa-file-invoice-dollar me-1"></i> Faturas
+            <% end %>
+            <%= link_to action_plans_path, class: "btn btn-outline-warning" do %>
+              <i class="fas fa-clipboard-list me-1"></i> Planos de Ação
+            <% end %>
+            <%= link_to new_plate_path, class: "btn btn-outline-secondary" do %>
+              <i class="fas fa-plus me-1"></i> Novo Veículo
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Estilos adicionais -->
+<style>
+  .card {
+    border-radius: 1rem;
+    transition: transform 0.2s ease-in-out;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+  }
+  .card-header {
+    border-radius: 1rem 1rem 0 0 !important;
+  }
+  .bg-opacity-10 {
+    --bs-bg-opacity: 0.1;
+  }
+  .list-group-item {
+    border-color: rgba(0,0,0,0.05);
+  }
+  .badge {
+    font-weight: 500;
+  }
+  @media (max-width: 768px) {
+    .col-lg-6 {
+      margin-bottom: 1rem;
+    }
+  }
+</style>

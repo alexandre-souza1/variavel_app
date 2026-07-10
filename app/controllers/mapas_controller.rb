@@ -169,7 +169,7 @@ class MapasController < ApplicationController
           pdv_total: row["QtEntregasCarreg(RV)"].to_s.gsub(",", ".").to_f,
           pdv_real: row["QtEntregasEntreg(RV)"].to_s.gsub(",", ".").to_f,
           recarga: row["Recarga"],
-
+          plate: row["Placa"].strip.presence,
           matric_motorista: row["MatricMotorista"].to_s.strip.presence,
           matric_ajudante: row["MatricAjud1"].to_s.strip.presence,
           matric_ajudante_2: row["MatricAjud2"].to_s.strip.presence
