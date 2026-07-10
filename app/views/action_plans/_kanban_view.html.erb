@@ -1,17 +1,20 @@
 <div id="kanban-<%= action_plan.id %>"
      class="row flex-nowrap overflow-auto"
-     data-controller="drag-scroll">
+     data-controller="bucket-sortable"
+     data-bucket-sortable-action-plan-id-value="<%= action_plan.id %>">
 
   <% buckets.each do |bucket| %>
 
-    <div id="bucket_<%= bucket.id %>" class="col-12 col-md-4 col-lg-3">
+    <div id="bucket_<%= bucket.id %>"
+     class="kanban-column col-12 col-md-4 col-lg-3"
+     data-bucket-id="<%= bucket.id %>">
 
       <div class="card bg-light mb-3">
 
         <div class="card-header d-flex justify-content-between align-items-center">
 
           <div data-controller="bucket-edit" data-bucket-id="<%= bucket.id %>" data-action-plan-id="<%= action_plan.id %>" class="flex-grow-1">
-
+            <i class="bi bi-grip-vertical drag-handle"></i>
             <span data-bucket-edit-target="title"
                   data-action="click->bucket-edit#edit"
                   style="cursor: pointer;">

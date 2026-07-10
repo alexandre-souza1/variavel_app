@@ -81,6 +81,8 @@ Rails.application.routes.draw do
   resources :task_imports, only: [:new, :create]
 
   resources :action_plans do
+    patch :sort_buckets, on: :member
+    
     resources :buckets do
       member do
         get :done_tasks

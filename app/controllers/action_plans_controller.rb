@@ -65,7 +65,7 @@ class ActionPlansController < ApplicationController
     @buckets = @action_plan
       .buckets
       .includes(tasks: :users)
-      .order(:name)
+      .order(:position)
 
     @task_to_open = Task.find_by(id: params[:task_id])
   end
@@ -100,6 +100,20 @@ class ActionPlansController < ApplicationController
   def destroy
     @action_plan.destroy
     redirect_to action_plans_path, notice: "Plano excluído com sucesso"
+  end
+
+  def sort_buckets
+    @action_plan = current_user.admin? ?
+      ActionPlan.find(params[:id]) :
+      current_user.action_plans.find(params[:id])
+
+    params[:bucket_ids].each_with_index do |id, index|
+      @action_plan.buckets
+                .where(id: id)
+                .update_all(position: index)
+    end
+
+    head :ok
   end
 
   private
