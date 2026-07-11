@@ -85,7 +85,7 @@
               <td><%= placa_obj.perfil %></td>
               <td><%= placa_obj.tipo %></td>
               <td>
-                <span class="badge bg-<%= dias_rodados.any? ? 'success' : 'danger' %>">
+                <span class="badge bg-<%= dias_rodados.any? ? 'success' : 'danger' %>"> <%# herb:disable erb-no-interpolated-class-names %>
                   <%= dias_rodados.size %> dia(s)
                 </span>
               </td>

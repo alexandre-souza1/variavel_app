@@ -1,6 +1,13 @@
 class PlatesController < ApplicationController
   def index
     @plates = Plate.all
+
+    @plates = @plates.where("placa ILIKE ?", "%#{params[:placa]}%") if params[:placa].present?
+    @plates = @plates.where(setor: params[:setor]) if params[:setor].present?
+    @plates = @plates.where(tipo: params[:tipo]) if params[:tipo].present?
+    @plates = @plates.where(perfil: params[:perfil]) if params[:perfil].present?
+
+    @plates = @plates.order(:placa)
   end
 
   def new

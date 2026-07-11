@@ -8,32 +8,6 @@
         <%= l(Date.current, format: :long) %>
         &nbsp;|&nbsp; Bem-vindo(a), <strong><%= current_user&.name || "Usuário" %></strong>
       </p>
-      <!-- Indicador de atualização dos mapas -->
-      <div class="mt-1">
-        <% if @last_map_date.present? %>
-          <% days_ago = (Date.current - @last_map_date).to_i %>
-          <% if days_ago == 0 %>
-            <span class="badge bg-success">
-              <i class="fas fa-sync-alt me-1"></i> Dados atualizados hoje
-            </span>
-          <% elsif days_ago <= 2 %>
-            <span class="badge bg-warning text-dark">
-              <i class="fas fa-clock me-1"></i> Última atualização: há <%= days_ago %> dia(s)
-            </span>
-          <% else %>
-            <span class="badge bg-danger">
-              <i class="fas fa-exclamation-triangle me-1"></i> Último mapa: <%= l(@last_map_date, format: :short) %>
-            </span>
-          <% end %>
-          <span class="text-muted ms-2 small">
-            <i class="far fa-clock me-1"></i> <%= @last_map_date.strftime("%H:%M") %>
-          </span>
-        <% else %>
-          <span class="badge bg-secondary">
-            <i class="fas fa-times me-1"></i> Nenhum mapa encontrado
-          </span>
-        <% end %>
-      </div>
     </div>
     <div class="col-md-4 text-md-end">
       <%= link_to dashboard_invoices_path, class: "btn btn-outline-primary me-2" do %>
@@ -48,7 +22,7 @@
   <!-- Cards de Resumo (KPI) -->
   <div class="row mb-4 g-3">
     <div class="col-md-3 col-sm-6">
-      <div class="card border-0 shadow-sm h-100">
+      <div class="card border-0 shadow-lg rounded-4 h-100">
         <div class="card-body d-flex align-items-center">
           <div class="me-3 bg-primary bg-opacity-10 p-3 rounded-circle">
             <i class="fas fa-truck fa-2x text-primary"></i>
@@ -61,7 +35,7 @@
       </div>
     </div>
     <div class="col-md-3 col-sm-6">
-      <div class="card border-0 shadow-sm h-100">
+      <div class="card border-0 shadow-lg rounded-4 h-100">
         <div class="card-body d-flex align-items-center">
           <div class="me-3 bg-success bg-opacity-10 p-3 rounded-circle">
             <i class="fas fa-tags fa-2x text-success"></i>
@@ -74,7 +48,7 @@
       </div>
     </div>
     <div class="col-md-3 col-sm-6">
-      <div class="card border-0 shadow-sm h-100">
+      <div class="card border-0 shadow-lg rounded-4 h-100">
         <div class="card-body d-flex align-items-center">
           <div class="me-3 bg-warning bg-opacity-10 p-3 rounded-circle">
             <i class="fas fa-calendar-times fa-2x text-warning"></i>
@@ -87,7 +61,7 @@
       </div>
     </div>
     <div class="col-md-3 col-sm-6">
-      <div class="card border-0 shadow-sm h-100">
+      <div class="card border-0 shadow-lg rounded-4 h-100">
         <div class="card-body d-flex align-items-center">
           <div class="me-3 bg-danger bg-opacity-10 p-3 rounded-circle">
             <i class="fas fa-clock fa-2x text-danger"></i>
@@ -105,8 +79,8 @@
   <div class="row mb-4 g-3">
     <!-- Gráfico de custos mensais (evolução) -->
     <div class="col-lg-6">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+      <div class="card border-0 shadow-lg rounded-4 h-100">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
           <h5 class="mb-0"><i class="fas fa-chart-line text-primary me-2"></i> Evolução dos Custos</h5>
           <div class="d-flex align-items-center gap-2">
             <span class="badge bg-primary"><%= @total_invoices %> faturas</span>
@@ -143,8 +117,8 @@
 
     <!-- Gráfico de gastos por categoria (donut) -->
     <div class="col-lg-6">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-header bg-white border-0">
+      <div class="card border-0 shadow-lg rounded-4 h-100">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
           <h5 class="mb-0"><i class="fas fa-chart-pie text-success me-2"></i> Gastos por Categoria (Mês)</h5>
         </div>
         <div class="card-body d-flex flex-column justify-content-center">
@@ -169,9 +143,32 @@
   <div class="row g-3 mb-4">
     <!-- Card: Veículos que não rodaram no mês (limitado a 10) -->
     <div class="col-lg-6">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+      <div class="card border-0 shadow-lg rounded-4 h-100">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
           <h5 class="mb-0"><i class="fas fa-pause-circle text-danger me-2"></i> Veículos sem Movimentação no Mês</h5>
+          <!-- Indicador de atualização dos mapas -->
+          <div class="mt-1">
+            <% if @last_map_date.present? %>
+              <% days_ago = (Date.current - @last_map_date).to_i %>
+              <% if days_ago == 0 %>
+                <span class="badge bg-success">
+                  <i class="fas fa-sync-alt me-1"></i> Dados atualizados hoje
+                </span>
+              <% elsif days_ago <= 2 %>
+                <span class="badge bg-warning text-dark">
+                  <i class="fas fa-clock me-1"></i> Última atualização: há <%= days_ago %> dia(s)
+                </span>
+              <% else %>
+                <span class="badge bg-danger">
+                  <i class="fas fa-exclamation-triangle me-1"></i> Último mapa: <%= l(@last_map_date, format: :short) %>
+                </span>
+              <% end %>
+            <% else %>
+              <span class="badge bg-secondary">
+                <i class="fas fa-times me-1"></i> Nenhum mapa encontrado
+              </span>
+            <% end %>
+          </div>
           <span class="badge bg-danger"><%= @vehicles_not_used_this_month&.count || 0 %></span>
         </div>
         <div class="card-body">
@@ -205,8 +202,8 @@
 
     <!-- Card: Resumo de Custos e Tarefas (com vencimento) -->
     <div class="col-lg-6">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-header bg-white border-0">
+      <div class="card border-0 shadow-lg rounded-4 h-100">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
           <h5 class="mb-0"><i class="fas fa-info-circle text-secondary me-2"></i> Resumo Rápido</h5>
         </div>
         <div class="card-body">
@@ -260,7 +257,7 @@
   <!-- Links de Acesso Rápido -->
   <div class="row">
     <div class="col-12">
-      <div class="card border-0 shadow-sm">
+      <div class="card border-0 shadow-lg rounded-4">
         <div class="card-body">
           <h6 class="mb-3"><i class="fas fa-rocket me-2"></i> Acesso Rápido</h6>
           <div class="d-flex flex-wrap gap-2">
@@ -282,31 +279,3 @@
     </div>
   </div>
 </div>
-
-<!-- Estilos adicionais -->
-<style>
-  .card {
-    border-radius: 1rem;
-    transition: transform 0.2s ease-in-out;
-  }
-  .card:hover {
-    transform: translateY(-4px);
-  }
-  .card-header {
-    border-radius: 1rem 1rem 0 0 !important;
-  }
-  .bg-opacity-10 {
-    --bs-bg-opacity: 0.1;
-  }
-  .list-group-item {
-    border-color: rgba(0,0,0,0.05);
-  }
-  .badge {
-    font-weight: 500;
-  }
-  @media (max-width: 768px) {
-    .col-lg-6 {
-      margin-bottom: 1rem;
-    }
-  }
-</style>

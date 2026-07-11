@@ -151,8 +151,11 @@ class DashboardsController < ApplicationController
   private
 
   def set_mes_ano
-    @mes = params[:mes].to_i.presence || Date.current.month
-    @ano = params[:ano].to_i.presence || Date.current.year
+    @mes = params[:mes].presence&.to_i || Date.current.month
+    @ano = params[:ano].presence&.to_i || Date.current.year
+
+    @mes = Date.current.month unless (1..12).cover?(@mes)
+    @ano = Date.current.year if @ano <= 0
   end
 
   def dias_rodados_por_placa(mes, ano)

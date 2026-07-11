@@ -1,84 +1,313 @@
-<div class="driver-report-container">
-  <div class="container p-3">
-    <div class="row align-items-center">
-      <div class="col-md-8">
-        <h1 class="mb-0"><i class="bi bi-card-list"> </i>Placas Cadastradas</h1>
-      </div>
-      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
-        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+<div class="container py-4">
+
+  <!-- Cabeçalho -->
+  <div class="card border-0 shadow-lg mb-4">
+    <div class="card-header bg-primary text-white py-3">
+      <div class="d-flex justify-content-between align-items-center">
+
+        <h3 class="mb-0 fw-bold">
+          <i class="bi bi-truck-front-fill me-2"></i>
+          Placas Cadastradas
+        </h3>
+
+        <%= link_to new_plate_path, class: "btn btn-light" do %>
+          <i class="bi bi-plus-circle-fill me-1"></i>
+          Nova Placa
+        <% end %>
+
       </div>
     </div>
   </div>
 
-  <div class="container">
-    <div class="card shadow-sm rounded mb-4">
-      <div class="card-body">
-        <div class="row align-items-center">
-          <div class="col-md-6">
-            <h2 class="mb-1">
-              <i class="bi bi-truck"></i>
-              Total de Placas: <%= @plates.size %>
-            </h2>
+  <!-- Cards Resumo -->
+  <div class="row mb-4">
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body d-flex align-items-center">
+
+          <div class="display-5 text-primary me-3">
+            <i class="bi bi-truck"></i>
           </div>
-          <div class="col-md-6 text-md-end">
-            <%= link_to "Nova Placa", new_plate_path, class: "btn btn-primary" %>
+
+          <div>
+            <small class="text-muted">Total de Placas</small>
+            <h3 class="fw-bold mb-0"><%= @plates.count %></h3>
           </div>
+
         </div>
       </div>
     </div>
 
-    <!-- Tabela de Placas -->
-    <div class="card shadow-sm rounded mb-4">
-      <div class="card-header bg-light border-bottom">
-        <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Detalhes das Placas</h5>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body d-flex align-items-center">
+
+          <div class="display-5 text-success me-3">
+            <i class="bi bi-building"></i>
+          </div>
+
+          <div>
+            <small class="text-muted">Armazém</small>
+            <h3 class="fw-bold mb-0">
+              <%= @plates.count { |p| p.setor == "ARMAZEM" } %>
+            </h3>
+          </div>
+
+        </div>
       </div>
-      <div class="card-body">
-        <!-- Formulário de Importação -->
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <%= form_with url: import_plates_path, local: true, html: { multipart: true, class: "row g-3" } do |form| %>
-              <div class="col-auto">
-                <%= form.file_field :file, class: "form-control" %>
-              </div>
-              <div class="col-auto">
-                <%= form.submit "Importar CSV", class: "btn btn-secondary" %>
-              </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body d-flex align-items-center">
+
+          <div class="display-5 text-info me-3">
+            <i class="bi bi-sign-turn-right-fill"></i>
+          </div>
+
+          <div>
+            <small class="text-muted">Rota</small>
+            <h3 class="fw-bold mb-0">
+              <%= @plates.count { |p| p.setor == "ROTA" } %>
+            </h3>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Card Principal -->
+  <div class="card border-0 shadow-lg">
+
+    <div class="card-body">
+
+      <!-- Filtros -->
+      <%= form_with url: plates_path, method: :get, local: true do %>
+
+        <div class="row g-3 align-items-end mb-4">
+
+          <div class="col-lg-3">
+
+            <%= label_tag :placa, "Buscar Placa", class: "form-label fw-semibold" %>
+
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-search"></i>
+              </span>
+
+              <%= text_field_tag :placa,
+                    params[:placa],
+                    class: "form-control",
+                    placeholder: "ABC1D23" %>
+            </div>
+
+          </div>
+
+          <div class="col-lg-2">
+
+            <%= label_tag :setor, "Setor", class: "form-label fw-semibold" %>
+
+            <%= select_tag :setor,
+                  options_for_select([
+                    ["Todos",""],
+                    ["Armazém","ARMAZEM"],
+                    ["Rota","ROTA"]
+                  ], params[:setor]),
+                  class: "form-select" %>
+
+          </div>
+
+          <div class="col-lg-2">
+
+            <%= label_tag :tipo, "Tipo", class: "form-label fw-semibold" %>
+
+            <%= select_tag :tipo,
+                  options_for_select([
+                    ["Todos",""],
+                    "Empilhadeira",
+                    "Paleteira",
+                    "Máquina de Limpeza",
+                    "Caminhão",
+                    "Van"
+                  ], params[:tipo]),
+                  class: "form-select" %>
+
+          </div>
+
+          <div class="col-lg-2">
+
+            <%= label_tag :perfil, "Perfil", class: "form-label fw-semibold" %>
+
+            <%= select_tag :perfil,
+                  options_for_select([
+                    ["Todos",""],
+                    "GLP",
+                    "Sem Balança",
+                    "VUC",
+                    "TOCO",
+                    "TRUCK",
+                    "BITRUCK",
+                    "VAN"
+                  ], params[:perfil]),
+                  class: "form-select" %>
+
+          </div>
+
+          <div class="col-lg-3 d-flex gap-2">
+
+            <%= submit_tag "Filtrar",
+                  class: "btn btn-primary flex-fill" %>
+
+            <%= link_to plates_path,
+                  class: "btn btn-outline-secondary" do %>
+              <i class="bi bi-arrow-clockwise"></i>
             <% end %>
+
           </div>
+
         </div>
 
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-light">
-              <tr>
-                <th>Placa</th>
-                <th>Setor</th>
-                <th>Perfil</th>
-                <th>Tipo</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% @plates.each do |plate| %>
-                <tr>
-                  <td><%= plate.placa %></td>
-                  <td><%= plate.setor %></td>
-                  <td><%= plate.perfil %></td>
-                  <td><%= plate.tipo %></td>
-                  <td class="text-end">
-                    <div class="btn-group btn-group-sm" role="group">
-                      <%= link_to 'Editar', edit_plate_path(plate), class: 'btn btn-outline-primary' %>
-                      <%= link_to 'Excluir', plate_path(plate), data: { turbo_method: :delete, turbo_confirm: 'Tem certeza?' }, class: 'btn btn-outline-danger' %>
-                    </div>
-                  </td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
-        </div>
+      <% end %>
 
-        <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
+      <hr>
+
+      <!-- Importação -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <%= form_with url: import_plates_path,
+              local: true,
+              html: {
+                multipart: true,
+                class: "d-flex gap-2"
+              } do |form| %>
+
+          <%= form.file_field :file,
+                class: "form-control" %>
+
+          <%= form.submit "Importar CSV",
+                class: "btn btn-outline-primary" %>
+
+        <% end %>
+
       </div>
+
+      <!-- Tabela -->
+      <div class="table-responsive">
+
+        <table class="table table-hover align-middle">
+
+          <thead class="table-light">
+
+            <tr>
+
+              <th>Placa</th>
+              <th>Setor</th>
+              <th>Perfil</th>
+              <th>Tipo</th>
+              <th class="text-center">Ações</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <% @plates.each do |plate| %>
+
+              <tr>
+
+                <td class="fw-semibold">
+                  <%= plate.placa %>
+                </td>
+
+                <td>
+
+                  <% if plate.setor == "ARMAZEM" %>
+
+                    <span class="badge bg-success">
+                      Armazém
+                    </span>
+
+                  <% else %>
+
+                    <span class="badge bg-info">
+                      Rota
+                    </span>
+
+                  <% end %>
+
+                </td>
+
+                <td>
+                  <%= plate.perfil.presence || "-" %>
+                </td>
+
+                <td>
+
+                  <span class="badge bg-secondary">
+                    <%= plate.tipo %>
+                  </span>
+
+                </td>
+
+                <td class="text-center">
+
+                  <div class="btn-group">
+
+                    <%= link_to edit_plate_path(plate),
+                          class: "btn btn-sm btn-outline-primary" do %>
+
+                      <i class="bi bi-pencil-square"></i>
+
+                    <% end %>
+
+                    <%= link_to plate_path(plate),
+                          data: {
+                            turbo_method: :delete,
+                            turbo_confirm: "Tem certeza?"
+                          },
+                          class: "btn btn-sm btn-outline-danger" do %>
+
+                      <i class="bi bi-trash-fill"></i>
+
+                    <% end %>
+
+                  </div>
+
+                </td>
+
+              </tr>
+
+            <% end %>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
     </div>
+
+    <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+
+      <small class="text-muted">
+        Exibindo <strong><%= @plates.count %></strong> placas.
+      </small>
+
+      <%= link_to root_path,
+            class: "btn btn-outline-secondary" do %>
+
+        <i class="bi bi-arrow-left me-1"></i>
+
+        Voltar
+
+      <% end %>
+
+    </div>
+
   </div>
+
 </div>

@@ -1,75 +1,215 @@
-  <!-- Card Principal -->
-<div class="card shadow-lg rounded-4 border-0">
-  <!-- Cabeçalho do Card -->
-  <div class="card-header bg-primary text-white rounded-top-4 py-3">
-    <div class="d-flex justify-content-between align-items-center">
-      <h1 class="h4 mb-0 fw-bold">
-        <i class="fas fa-user-plus me-2"></i>Criar Novo Usuário
-      </h1>
-      <%= link_to "Voltar", admin_users_path, class: "btn btn-light btn-sm" %>
-    </div>
-  </div>
+<div class="container py-4">
 
-  <!-- Corpo do Card -->
-  <div class="card-body p-4">
-    <%= form_with(model: [:admin, @user], local: true, html: { multipart: true }) do |f| %>
-      <% if @user.errors.any? %>
-        <div class="alert alert-danger">
-          <h5 class="fw-bold">Ocorreram erros:</h5>
-          <ul class="mb-0">
-            <% @user.errors.full_messages.each do |msg| %>
-              <li><%= msg %></li>
+  <div class="row justify-content-center">
+
+    <div class="col-xl-8">
+
+      <div class="card border-0 shadow-lg">
+
+        <!-- Cabeçalho -->
+        <div class="card-header bg-primary text-white py-3">
+
+          <div class="d-flex justify-content-between align-items-center">
+
+            <h3 class="mb-0 fw-bold">
+              <i class="bi bi-person-plus-fill me-2"></i>
+              Criar Novo Usuário
+            </h3>
+
+            <%= link_to admin_users_path,
+                class: "btn btn-light" do %>
+
+              <i class="bi bi-arrow-left"></i>
+              Voltar
+
             <% end %>
-          </ul>
-        </div>
-      <% end %>
 
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <%= f.label :name, class: "form-label fw-semibold" %>
-          <%= f.text_field :name, class: "form-control" %>
-        </div>
-        <div class="col-md-6">
-          <%= f.label :email, class: "form-label fw-semibold" %>
-          <%= f.email_field :email, class: "form-control" %>
-        </div>
-      </div>
-
-      <% if current_user.admin? %>
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <%= f.label :role, class: "form-label fw-semibold" %>
-            <%= f.select :role, User.roles.keys.map { |r| [r.titleize, r] }, {}, class: "form-select" %>
           </div>
-        </div>
-      <% end %>
 
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <%= f.label :password, class: "form-label fw-semibold" %>
-          <%= f.password_field :password, class: "form-control" %>
         </div>
-        <div class="col-md-6">
-          <%= f.label :password_confirmation, class: "form-label fw-semibold" %>
-          <%= f.password_field :password_confirmation, class: "form-control" %>
+
+        <!-- Corpo -->
+        <div class="card-body p-5">
+
+          <% if @user.errors.any? %>
+            <div class="alert alert-danger">
+
+              <h6 class="fw-bold">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                Não foi possível criar o usuário.
+              </h6>
+
+              <ul class="mb-0">
+                <% @user.errors.full_messages.each do |msg| %>
+                  <li><%= msg %></li>
+                <% end %>
+              </ul>
+
+            </div>
+          <% end %>
+
+          <%= form_with(model: [:admin, @user], local: true, html: { multipart: true }) do |f| %>
+
+            <!-- Informações -->
+
+            <h5 class="fw-bold mb-4">
+              <i class="bi bi-person-vcard-fill me-2"></i>
+              Informações do Usuário
+            </h5>
+
+            <div class="row">
+
+              <div class="col-md-6 mb-4">
+
+                <%= f.label :name, "Nome", class: "form-label fw-semibold" %>
+
+                <div class="input-group">
+
+                  <span class="input-group-text">
+                    <i class="bi bi-person-fill"></i>
+                  </span>
+
+                  <%= f.text_field :name,
+                      class: "form-control",
+                      placeholder: "Nome completo" %>
+
+                </div>
+
+              </div>
+
+              <div class="col-md-6 mb-4">
+
+                <%= f.label :email, "E-mail", class: "form-label fw-semibold" %>
+
+                <div class="input-group">
+
+                  <span class="input-group-text">
+                    <i class="bi bi-envelope-fill"></i>
+                  </span>
+
+                  <%= f.email_field :email,
+                      class: "form-control",
+                      placeholder: "usuario@email.com" %>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <% if current_user.admin? %>
+
+              <div class="mb-4">
+
+                <%= f.label :role, "Perfil", class: "form-label fw-semibold" %>
+
+                <div class="input-group">
+
+                  <span class="input-group-text">
+                    <i class="bi bi-person-badge-fill"></i>
+                  </span>
+
+                  <%= f.select :role,
+                      User.roles.keys.map { |r| [r.titleize, r] },
+                      {},
+                      class: "form-select" %>
+
+                </div>
+
+              </div>
+
+            <% end %>
+
+            <!-- Segurança -->
+
+            <div class="bg-light rounded-3 p-4 mt-5">
+
+              <h5 class="fw-bold mb-4">
+                <i class="bi bi-key-fill me-2"></i>
+                Credenciais de Acesso
+              </h5>
+
+              <div class="row">
+
+                <div class="col-md-6 mb-3">
+
+                  <%= f.label :password, "Senha", class: "form-label fw-semibold" %>
+
+                  <div class="input-group">
+
+                    <span class="input-group-text">
+                      <i class="bi bi-lock-fill"></i>
+                    </span>
+
+                    <%= f.password_field :password,
+                        class: "form-control" %>
+
+                  </div>
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                  <%= f.label :password_confirmation,
+                      "Confirmar senha",
+                      class: "form-label fw-semibold" %>
+
+                  <div class="input-group">
+
+                    <span class="input-group-text">
+                      <i class="bi bi-shield-lock-fill"></i>
+                    </span>
+
+                    <%= f.password_field :password_confirmation,
+                        class: "form-control" %>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Foto -->
+
+            <div class="mt-5">
+
+              <h5 class="fw-bold mb-4">
+                <i class="bi bi-camera-fill me-2"></i>
+                Foto de Perfil
+              </h5>
+
+              <%= f.file_field :photo,
+                  class: "form-control" %>
+
+            </div>
+
+            <!-- Botões -->
+
+            <div class="d-flex justify-content-end gap-2 mt-5">
+
+              <%= link_to admin_users_path,
+                  class: "btn btn-outline-secondary" do %>
+
+                <i class="bi bi-x-circle"></i>
+                Cancelar
+
+              <% end %>
+
+              <%= f.submit "Criar Usuário",
+                  class: "btn btn-success px-4" %>
+
+            </div>
+
+          <% end %>
+
         </div>
+
       </div>
 
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <%= f.label :photo, class: "form-label fw-semibold" %>
-          <%= f.file_field :photo, class: "form-control" %>
-        </div>
-      </div>
+    </div>
 
-      <div class="d-flex justify-content-end">
-        <%= f.submit "Criar Usuário", class: "btn btn-primary" %>
-      </div>
-    <% end %>
   </div>
 
-  <!-- Rodapé do Card -->
-  <div class="card-footer bg-light rounded-bottom-4 py-3">
-    <small class="text-muted">Preencha os dados para criar um novo usuário.</small>
-  </div>
 </div>

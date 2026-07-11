@@ -7,7 +7,7 @@ class Plate < ApplicationRecord
   # Se quiser validar opções específicas
   SETORES = %w[ARMAZEM ROTA]
   TIPOS = ['Empilhadeira', 'Paleteira', 'Máquina de Limpeza', 'Caminhão', 'Van']
-  PERFIS = ['GLP', 'Sem Balança', 'VUC', 'TOCO', 'TRUCK', 'BITRUCK', 'VAN', nil]
+  PERFIS = ['GLP', 'Sem Balança', 'VUC', 'TOCO', 'TRUCK', 'BITRUCK', 'VAN']
 
   validates :setor, inclusion: { in: SETORES }
   validates :tipo, inclusion: { in: TIPOS }
