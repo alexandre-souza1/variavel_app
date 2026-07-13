@@ -1,5 +1,6 @@
 class BucketsController < ApplicationController
   before_action :authenticate_user!
+  before_action :block_mechanical!, only: [:create, :destroy]
 
   def create
     @action_plan = editable_action_plans.find(params[:action_plan_id])
@@ -74,6 +75,15 @@ private
 
   def editable_buckets
     Bucket.where(action_plan_id: editable_action_plans.select(:id))
+  end
+
+  def block_mechanical!
+    return unless current_user.mechanical?
+
+    redirect_back(
+      fallback_location: root_path,
+      alert: "Você não possui permissão para realizar esta ação."
+    )
   end
 
   def bucket_params

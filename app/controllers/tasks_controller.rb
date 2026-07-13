@@ -1,6 +1,7 @@
 class TasksController < ApplicationController
   before_action :authenticate_user!
   before_action :set_task, only: [:show, :update, :move, :toggle_complete]
+  before_action :block_mechanical!, only: [:create]
 
   def create
     @bucket = accessible_buckets.find(params[:bucket_id])
@@ -101,6 +102,15 @@ class TasksController < ApplicationController
 
   def accessible_tasks
     Task.where(bucket_id: accessible_buckets.select(:id))
+  end
+
+  def block_mechanical!
+    return unless current_user.mechanical?
+
+    redirect_back(
+      fallback_location: root_path,
+      alert: "Você não possui permissão para realizar esta ação."
+    )
   end
 
   def task_params

@@ -109,10 +109,6 @@
                 <%= link_to dashboard_invoices_path, class: "dropdown-item" do %>
                   <i class="bi bi-cash-coin me-2"></i> Workstation Fin
                 <% end %>
-                <%= link_to action_plans_path, class: "dropdown-item fw-bold text-primary" do %>
-                  <i class="bi bi-list-task me-2"></i> Workstation ToDo
-                  <span class="badge bg-success">New</span>
-                <% end %>
                 <%= link_to dashboard_path, class: "dropdown-item fw-bold text-primary" do %>
                   <i class="bi bi-truck me-2"></i> Workstation Fleet
                   <span class="badge bg-success">New</span>
@@ -124,8 +120,16 @@
                   <i class="bi bi-ui-checks me-2"></i> Formulários
                   <span class="badge bg-success">New</span>
                 <% end %>
-                <div class="dropdown-divider"></div>
               <% end %>
+              <% if current_user.admin? || current_user.supervisor? || current_user.mechanical? %>
+              <h6 class="dropdown-header text-uppercase small text-muted">Módulos</h6>
+                <%= link_to action_plans_path, class: "dropdown-item fw-bold text-primary" do %>
+                  <i class="bi bi-list-task me-2"></i> Workstation ToDo
+                  <span class="badge bg-success">New</span>
+                <% end %>
+              <% end %>
+              <div class="dropdown-divider"></div>
+
 
               <h6 class="dropdown-header text-uppercase small text-muted">Geral</h6>
               <%= link_to downloads_path, class: "dropdown-item" do %>

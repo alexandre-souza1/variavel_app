@@ -25,7 +25,11 @@
       <% buckets.each do |bucket| %>
 
 
-        <% bucket.tasks.each do |task| %>
+        <% bucket.tasks
+        .visible_for(current_user)
+        .includes(:users, :labels)
+        .order(:position)
+        .each do |task| %>
 
 
           <% overdue = task.due_at.present? &&

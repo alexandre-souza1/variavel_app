@@ -44,7 +44,7 @@
           <% end %>
         </div>
 
-
+        <% unless current_user.mechanical? %>
         <div class="card-footer" data-controller="new-task">
 
           <button
@@ -155,6 +155,7 @@
           </div>
 
         </div>
+        <% end %>
 
 
         <div class="card-body"
@@ -163,8 +164,8 @@
              style="min-height:300px;">
 
 
-          <% open_tasks = bucket.tasks.where(completed:false).order(:position) %>
-          <% done_tasks = bucket.tasks.where(completed:true).order(:position) %>
+          <% open_tasks = bucket.tasks.visible_for(current_user).where(completed: false).order(:position) %>
+          <% done_tasks = bucket.tasks.visible_for(current_user).where(completed: true).order(:position) %>
 
 
           <div id="open-tasks-<%= bucket.id %>"
@@ -228,45 +229,46 @@
 
 
   <!-- NOVO BUCKET -->
-  <div class="col-12 col-md-4 col-lg-3">
+  <% unless current_user.mechanical? %>
+    <div class="col-12 col-md-4 col-lg-3">
 
-    <div class="h-100 d-flex align-items-start">
+      <div class="h-100 d-flex align-items-start">
 
-      <div class="border border-2 border-dashed rounded p-3 w-100"
-          style="min-height:120px;">
+        <div class="border border-2 border-dashed rounded p-3 w-100"
+            style="min-height:120px;">
 
-        <%= form_with model: [action_plan, Bucket.new] do |f| %>
+          <%= form_with model: [action_plan, Bucket.new] do |f| %>
 
-          <div class="text-center text-muted mb-3">
-            <i class="bi bi-plus-lg fs-4"></i>
+            <div class="text-center text-muted mb-3">
+              <i class="bi bi-plus-lg fs-4"></i>
 
-            <div class="mt-2">
-              Novo bucket
+              <div class="mt-2">
+                Novo bucket
+              </div>
             </div>
-          </div>
 
 
-          <div class="input-group">
+            <div class="input-group">
 
-            <%= f.text_field :name,
-                placeholder: "Nome...",
-                class: "form-control form-control-sm" %>
-
-
-            <button class="btn btn-primary btn-sm">
-              Criar
-            </button>
-
-          </div>
+              <%= f.text_field :name,
+                  placeholder: "Nome...",
+                  class: "form-control form-control-sm" %>
 
 
-        <% end %>
+              <button class="btn btn-primary btn-sm">
+                Criar
+              </button>
+
+            </div>
+
+
+          <% end %>
+
+        </div>
 
       </div>
 
     </div>
-
-  </div>
-
+  <% end %>
 
 </div>

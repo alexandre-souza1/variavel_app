@@ -11,6 +11,16 @@ class Task < ApplicationRecord
   has_many :labels, through: :task_labels
   include ActionView::RecordIdentifier
 
+  scope :visible_for, ->(user) do
+    if user.mechanical?
+      joins(:users)
+        .where(users: { id: user.id })
+        .distinct
+    else
+      all
+    end
+  end
+
   after_initialize do
     self.completed = false if self.completed.nil?
     self.start_at ||= Time.current
