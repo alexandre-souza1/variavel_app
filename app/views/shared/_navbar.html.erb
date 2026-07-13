@@ -124,7 +124,7 @@
                   <i class="bi bi-ui-checks me-2"></i> Formulários
                 <% end %>
               <% end %>
-              <% if current_user.admin? || current_user.supervisor? || current_user.mechanical? %>
+              <% if current_user.mechanical? %>
               <h6 class="dropdown-header text-uppercase small text-muted">Módulos</h6>
                 <%= link_to action_plans_path, class: "dropdown-item fw-bold text-primary" do %>
                   <i class="bi bi-list-task me-2"></i> Workstation ToDo
