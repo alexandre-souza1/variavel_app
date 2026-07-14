@@ -1,6 +1,6 @@
 class MapasController < ApplicationController
   before_action :authenticate_user!
-  before_action :only_admin, only: [:destroy_all, :delete_by_month, :bulk_delete]
+  before_action :only_admin, only: [:destroy_all, :bulk_delete]
   before_action :admin_or_supervisor, only: [:destroy, :edit, :update]
   before_action :everyone_can_access, only: [:index, :import, :show_todos]
 
@@ -46,14 +46,17 @@ class MapasController < ApplicationController
   def show_todos
     @mapas = Mapa.order(data: :desc)
 
+    # Agrupa por mês/ano usando o método data_formatada
+    @mapas_por_mes = @mapas
+                      .group_by { |m| [m.data_formatada.year, m.data_formatada.month] if m.data_formatada }
+                      .compact
+                      .sort_by { |(ano, mes), _| [ano, mes] }
+                      .reverse
+                      .to_h
+
+    # Cálculo do período (datas mín/máx)
     datas_validas = @mapas.map do |mapa|
-      if mapa.data.present? && mapa.data.match?(/^\d{8}$/)
-        begin
-          Date.strptime(mapa.data, "%d%m%Y")
-        rescue
-          nil
-        end
-      end
+      mapa.data_formatada
     end.compact
 
     @data_inicio = datas_validas.min
@@ -78,40 +81,6 @@ class MapasController < ApplicationController
       redirect_to mapas_todos_path, notice: 'Mapas selecionados foram apagados com sucesso.'
     else
       redirect_to mapas_todos_path, alert: 'Nenhum mapa foi selecionado.'
-    end
-  end
-
-  def delete_by_month
-    month = params[:month]
-    if month.present?
-      count = 0
-
-      Mapa.find_each do |mapa|
-        if mapa.data.present?
-          # Remove caracteres não numéricos
-          digits = mapa.data.gsub(/\D/, '')
-
-          # Determina as posições do mês baseado no tamanho
-          month_positions = case digits.length
-                              when 8 then 2..3  # Formato ddMMyyyy
-                              when 7 then 1..2  # Formato dMMyyyy
-                              when 6 then 1..1  # Formato dMyyyy
-                              else next
-                            end
-
-          # Extrai o mês e formata com 2 dígitos
-          extracted_month = digits[month_positions].rjust(2, '0')
-
-          if extracted_month == month
-            mapa.destroy
-            count += 1
-          end
-        end
-      end
-
-      redirect_to mapas_todos_path, notice: "#{count} mapas do mês #{month} foram apagados."
-    else
-      redirect_to mapas_todos_path, alert: 'Nenhum mês foi selecionado.'
     end
   end
 

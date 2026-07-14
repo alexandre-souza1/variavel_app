@@ -4,6 +4,7 @@ pt:
       default: "%d/%m/%Y"
       short: "%d/%m/%Y"
       long: "%d de %B de %Y"
+      mes_ano: "%B/%Y"
     month_names:
       -
       - Janeiro

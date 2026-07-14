@@ -1,44 +1,70 @@
+// app/javascript/controllers/delete_maps_controller.js
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["selectAll", "mapaCheckbox", "deleteSelectedBtn",
-                   "monthSelect", "deleteByMonthBtn"]
+  static targets = ["selectAll", "mapaCheckbox", "deleteSelectedBtn", "counter"]
 
   connect() {
-    console.log("Delete Maps Controller connected!")
-    this.updateDeleteButtonsState()
+    this.updateCounters() // Inicializa
   }
 
-  toggleAll() {
-    const allChecked = this.selectAllTarget.checked
-    this.mapaCheckboxTargets.forEach(checkbox => {
-      checkbox.checked = allChecked
+  toggleAll(event) {
+    const selectAllCheckbox = event.currentTarget
+    const isChecked = selectAllCheckbox.checked
+    const table = selectAllCheckbox.closest('table')
+    if (!table) return
+
+    const checkboxes = table.querySelectorAll('[data-delete-maps-target="mapaCheckbox"]')
+    checkboxes.forEach(cb => cb.checked = isChecked)
+
+    this.updateDeleteButton()
+    this.updateCounters()
+  }
+
+  updateSelection(event) {
+    this.updateDeleteButton()
+    this.updateCounters()
+
+    const checkbox = event.currentTarget
+    const table = checkbox.closest('table')
+    if (!table) return
+
+    const selectAll = table.querySelector('[data-delete-maps-target="selectAll"]')
+    if (selectAll) {
+      const allCheckboxes = table.querySelectorAll('[data-delete-maps-target="mapaCheckbox"]')
+      const allChecked = Array.from(allCheckboxes).every(cb => cb.checked)
+      selectAll.checked = allChecked
+    }
+  }
+
+  updateDeleteButton() {
+    const anyChecked = this.mapaCheckboxTargets.some(cb => cb.checked)
+    if (this.hasDeleteSelectedBtnTarget) {
+      this.deleteSelectedBtnTarget.disabled = !anyChecked
+    }
+  }
+
+  updateCounters() {
+    this.counterTargets.forEach(counter => {
+      const folder = counter.closest('.accordion-item')
+      if (!folder) return
+
+      const table = folder.querySelector('table')
+      if (!table) return
+
+      const checkboxes = table.querySelectorAll('[data-delete-maps-target="mapaCheckbox"]')
+      const total = checkboxes.length
+      const checked = Array.from(checkboxes).filter(cb => cb.checked).length
+
+      // Atualiza o texto
+      counter.textContent = `${checked} de ${total} selecionados`
+
+      // Mostra/esconde a badge
+      if (checked > 0) {
+        counter.style.display = 'inline-block' // ou 'inline'
+      } else {
+        counter.style.display = 'none'
+      }
     })
-    this.updateDeleteButtonsState()
-  }
-
-  updateSelection() {
-    this.selectAllTarget.checked = this.allCheckboxesChecked()
-    this.updateDeleteButtonsState()
-  }
-
-  updateMonthSelection() {
-    const monthSelected = this.monthSelectTarget.value !== ""
-    this.deleteByMonthBtnTarget.disabled = !monthSelected
-
-    // Atualiza o parâmetro no formulário
-    const form = this.deleteByMonthBtnTarget.form
-    const baseUrl = form.action.split('?')[0]
-    form.action = `${baseUrl}?month=${this.monthSelectTarget.value}`
-  }
-
-  allCheckboxesChecked() {
-    return this.mapaCheckboxTargets.length > 0 &&
-           this.mapaCheckboxTargets.every(checkbox => checkbox.checked)
-  }
-
-  updateDeleteButtonsState() {
-    const anyChecked = this.mapaCheckboxTargets.some(checkbox => checkbox.checked)
-    this.deleteSelectedBtnTarget.disabled = !anyChecked
   }
 }
