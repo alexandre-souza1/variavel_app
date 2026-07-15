@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import * as bootstrap from "bootstrap"
+import { renderStreamMessage } from "@hotwired/turbo"
 
 export default class extends Controller {
   async open() {
@@ -13,7 +14,12 @@ export default class extends Controller {
 
     const html = await response.text()
 
-    document.getElementById("modal-container").innerHTML = html
+    const container = document.getElementById("modal-container")
+
+    container.innerHTML = html
+
+    // força o Turbo a inicializar elementos novos
+    Turbo.session.connectStreamSource(container)
 
     const modalElement = document.getElementById("taskModal")
     const modal = new bootstrap.Modal(modalElement)

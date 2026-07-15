@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_15_190521) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_15_192838) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -386,6 +386,19 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_15_190521) do
     t.string "zip_code"
   end
 
+  create_table "task_activities", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "task_id", null: false
+    t.bigint "user_id", null: false
+    t.string "activity_type"
+    t.text "old_value"
+    t.text "new_value"
+    t.jsonb "metadata"
+    t.index ["task_id"], name: "index_task_activities_on_task_id"
+    t.index ["user_id"], name: "index_task_activities_on_user_id"
+  end
+
   create_table "task_assignments", force: :cascade do |t|
     t.bigint "task_id", null: false
     t.bigint "user_id", null: false
@@ -508,6 +521,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_15_190521) do
   add_foreign_key "stress_test_events", "plates"
   add_foreign_key "stress_test_events", "stress_test_imports"
   add_foreign_key "stress_test_imports", "users"
+  add_foreign_key "task_activities", "tasks"
+  add_foreign_key "task_activities", "users"
   add_foreign_key "task_assignments", "tasks"
   add_foreign_key "task_assignments", "users"
   add_foreign_key "task_labels", "labels"

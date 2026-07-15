@@ -9,6 +9,7 @@ class Task < ApplicationRecord
   has_many :users, through: :task_assignments
   has_many :task_labels, dependent: :destroy
   has_many :labels, through: :task_labels
+  has_many :task_activities, dependent: :destroy
   include ActionView::RecordIdentifier
 
   scope :visible_for, ->(user) do

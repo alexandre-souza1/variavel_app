@@ -3,9 +3,9 @@ class Comment < ApplicationRecord
   belongs_to :user
 
   after_create_commit -> {
-    broadcast_append_to "comments_task_#{task.id}",
-    target: "comments_task_#{task.id}",
-    partial: "comments/comment",
-    locals: { comment: self }
+    broadcast_append_to "task_feed_#{task.id}",
+      target: "task_feed_#{task.id}",
+      partial: "comments/comment",
+      locals: { comment: self }
   }
 end

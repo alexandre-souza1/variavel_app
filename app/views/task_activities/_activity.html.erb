@@ -1,0 +1,30 @@
+<div class="text-muted small mb-1 text-center" style="font-size: 0.7rem;">
+  <i class="bi bi-clock-history small" style="font-size: 0.7rem;"></i>
+
+  <strong><%= activity.user.name.split.first %></strong>
+
+  <% if activity.completed? %>
+    finalizou a tarefa
+
+  <% elsif activity.reopened? %>
+    reabriu a tarefa
+
+  <% elsif activity.due_date_changed? %>
+    alterou a data de vencimento para
+    <strong>
+      <%= activity.new_value.present? ? l(activity.new_value.to_datetime, format: :dia_mes) : "-" %>
+    </strong>
+
+  <% elsif activity.bucket_changed? %>
+    moveu a tarefa para o bucket
+    <strong><%= activity.new_value %></strong>
+
+  <% elsif activity.assignee_added? %>
+    adicionou <strong><%= activity.new_value %></strong> como responsável pela tarefa
+
+  <% end %>
+
+  <span>
+    • <%= time_ago_in_words(activity.created_at) %> atrás
+  </span>
+</div>

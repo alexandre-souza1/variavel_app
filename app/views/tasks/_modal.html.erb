@@ -192,16 +192,29 @@
 
             <h6>Log e Comentários</h6>
 
-            <%= turbo_stream_from "comments_task_#{task.id}" %>
+            <%= turbo_stream_from "task_feed_#{task.id}" %>
 
             <!-- LISTA DE COMENTÁRIOS -->
-            <div id="comments_task_<%= task.id %>"
-              data-controller="comment-list"
-              class="comments-box"
-              style="max-height: 400px; overflow-y: auto;">
-              <% task.comments.each do |comment| %>
-                <%= render "comments/comment", comment: comment %>
+            <div id="task_feed_<%= task.id %>"
+                data-controller="comment-list"
+                class="comments-box"
+                style="max-height: 400px; overflow-y: auto;">
+
+              <% activities = (
+                task.comments.to_a +
+                task.task_activities.where.not(activity_type: :title_changed).to_a
+              ).sort_by(&:created_at) %>
+
+              <% activities.each do |activity| %>
+
+                <% if activity.is_a?(Comment) %>
+                  <%= render "comments/comment", comment: activity %>
+                <% else %>
+                  <%= render "task_activities/activity", activity: activity %>
+                <% end %>
+
               <% end %>
+
             </div>
 
             <hr>

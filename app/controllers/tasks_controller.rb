@@ -15,6 +15,12 @@ class TasksController < ApplicationController
     @task.position = 0
 
     if @task.save
+
+      TaskActivityService.log(
+        task: @task,
+        user: current_user,
+        activity_type: :created
+      )
       respond_to do |format|
         format.turbo_stream
         format.html { redirect_to action_plan_path(@bucket.action_plan) }
@@ -36,7 +42,55 @@ class TasksController < ApplicationController
 
   def update
     @task = Task.find(params[:id])
-    @task.update(task_params)
+
+    old_due_at = @task.due_at
+    old_bucket = @task.bucket
+    old_users = @task.user_ids.sort
+
+
+    if @task.update(task_params)
+
+      if old_due_at != @task.due_at
+        TaskActivityService.log(
+          task: @task,
+          user: current_user,
+          activity_type: :due_date_changed,
+          old_value: old_due_at,
+          new_value: @task.due_at
+        )
+      end
+
+      if old_bucket.id != @task.bucket_id
+        TaskActivityService.log(
+          task: @task,
+          user: current_user,
+          activity_type: :bucket_changed,
+          old_value: old_bucket.name,
+          new_value: @task.bucket.name
+        )
+      end
+
+      added_users = @task.user_ids - old_users
+
+      if added_users.any?
+        added_users.each do |user_id|
+
+          added_user = User.find(user_id)
+
+          TaskActivityService.log(
+            task: @task,
+            user: current_user,
+            activity_type: :assignee_added,
+            new_value: added_user.name,
+            metadata: {
+            user_id: added_user.id
+            }
+          )
+
+        end
+      end
+    end
+
 
     respond_to do |format|
       format.turbo_stream
@@ -52,7 +106,16 @@ class TasksController < ApplicationController
       new_bucket = accessible_buckets.find(new_bucket_id)
       head :forbidden and return unless new_bucket.action_plan_id == @task.bucket.action_plan_id
 
+      old_bucket = @task.bucket
       @task.update!(bucket: new_bucket)
+
+      TaskActivityService.log(
+        task: @task,
+        user: current_user,
+        activity_type: :bucket_changed,
+        old_value: old_bucket.name,
+        new_value: new_bucket.name
+      )
     end
 
     @task.insert_at(new_position + 1)
@@ -66,6 +129,12 @@ class TasksController < ApplicationController
     @task.update!(
       completed: new_status,
       completed_at: new_status ? Time.current : nil
+    )
+
+    TaskActivityService.log(
+      task: @task,
+      user: current_user,
+      activity_type: new_status ? :completed : :reopened
     )
 
     @flash_container = new_status ? "Tarefa concluída" : "Tarefa reaberta"
@@ -115,7 +184,7 @@ class TasksController < ApplicationController
 
   def task_params
     params.require(:task).permit(
-      :title, :description,
+      :title, :description, :bucket_id,
       :start_at, :due_at,
       :comment, :assignee_id,
       :recurrence, :completed,
