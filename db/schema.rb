@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_10_172541) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_15_190521) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -493,7 +493,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_10_172541) do
   add_foreign_key "checklist_responses", "checklist_items"
   add_foreign_key "checklist_responses", "checklists"
   add_foreign_key "checklists", "checklist_templates"
-  add_foreign_key "checklists", "plates"
+  add_foreign_key "checklists", "plates", on_delete: :nullify
   add_foreign_key "checklists", "users"
   add_foreign_key "comments", "tasks"
   add_foreign_key "comments", "users"
