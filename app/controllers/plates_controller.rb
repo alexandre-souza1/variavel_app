@@ -36,6 +36,12 @@ class PlatesController < ApplicationController
     end
   end
 
+  def destroy
+    @plate = Plate.find(params[:id])
+    @plate.destroy
+    redirect_to plates_path, notice: "Placa removida com sucesso"
+  end
+
   def import
     if params[:file].present?
       Plate.import(params[:file])

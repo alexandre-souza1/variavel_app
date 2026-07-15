@@ -98,3 +98,21 @@
 .labels-field .ts-dropdown-content {
   padding: 4px;
 }
+
+.completed-task {
+  background: #f8f9fa;
+  opacity: .7;
+}
+
+.completed-task td {
+  color: var(--bs-secondary-color);
+}
+
+.completed-task td strong {
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.completed-task:hover {
+  opacity: .95;
+}

@@ -77,32 +77,30 @@ class DashboardsController < ApplicationController
     # ------------------------------------------------------------
     # 4. Último mapa (baseado no campo 'data' – string DDMMYYYY)
     # ------------------------------------------------------------
-    @last_map_date = nil
-    last_map = Mapa.where.not(data: [nil, ""])
-                   .order(created_at: :desc)
-                   .first
+    @last_map_date = Mapa
+      .where.not(data: [nil, ""])
+      .pluck(:data)
+      .filter_map do |data|
+        numeros = data.to_s.gsub(/\D/, "")
 
-    if last_map.present?
-      data_str = last_map.data.to_s.gsub(/\D/, "")
-      begin
-        case data_str.length
-        when 8
-          day   = data_str[0,2].to_i
-          month = data_str[2,2].to_i
-          year  = data_str[4,4].to_i
-          @last_map_date = Date.new(year, month, day)
-        when 7
-          day   = data_str[0,1].to_i
-          month = data_str[1,2].to_i
-          year  = data_str[3,4].to_i
-          @last_map_date = Date.new(year, month, day)
-        else
-          @last_map_date = nil
+        begin
+          case numeros.length
+          when 8
+            Date.strptime(numeros, "%d%m%Y")
+          when 7
+            Date.new(
+              numeros[3,4].to_i,
+              numeros[1,2].to_i,
+              numeros[0,1].to_i
+            )
+          else
+            nil
+          end
+        rescue
+          nil
         end
-      rescue
-        @last_map_date = nil
       end
-    end
+      .max
 
     # ------------------------------------------------------------
     # 5. Outros dados
