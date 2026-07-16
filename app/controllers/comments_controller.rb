@@ -7,6 +7,7 @@ class CommentsController < ApplicationController
     @comment.user = current_user
 
     if @comment.save
+      @task.broadcast_task_update
       head :ok
     else
       head :unprocessable_entity

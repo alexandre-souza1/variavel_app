@@ -165,7 +165,9 @@
 
 
           <% open_tasks = bucket.tasks.visible_for(current_user).where(completed: false).order(:position) %>
-          <% done_tasks = bucket.tasks.visible_for(current_user).where(completed: true).order(:position) %>
+          <% done_tasks_count = bucket.tasks.visible_for(current_user)
+                                 .where(completed: true)
+                                 .count %>
 
 
           <div id="open-tasks-<%= bucket.id %>"
@@ -193,7 +195,7 @@
                 <small id="done-count-<%= bucket.id %>"
                        class="text-muted">
 
-                  ✔️ Tarefas concluídas (<%= done_tasks.count %>)
+                  ✔️ Tarefas concluídas (<%= done_tasks_count %>)
 
                 </small>
 

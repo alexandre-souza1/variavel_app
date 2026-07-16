@@ -32,8 +32,9 @@ class ActionPlansController < ApplicationController
 
 
     # mantém carregamento eficiente
-    @action_plans = @action_plans
-      .includes(buckets: { tasks: :users })
+    # Ordena apenas os planos.
+    # Não há necessidade de carregar buckets/tasks na index.
+    @action_plans = @action_plans.order(:name)
 
 
 
@@ -44,6 +45,7 @@ class ActionPlansController < ApplicationController
 
     @my_tasks = Task
       .joins(:task_assignments)
+      .includes(bucket: :action_plan)
       .where(task_assignments: { user_id: current_user.id })
       .where(completed: false)
       .order(Arel.sql("CASE WHEN due_at IS NULL THEN 1 ELSE 0 END, due_at ASC"))

@@ -66,7 +66,7 @@
     <!-- DIREITA -->
     <div class="task-icons d-flex align-items-center gap-2">
 
-      <% if task.comments.any? %>
+      <% if task.comments.exists? %>
         <small class="task-icon"><i class="bi bi-chat-dots-fill"></i></small>
       <% end %>
 
@@ -75,17 +75,17 @@
           <i class="bi bi-arrow-repeat"></i>
         </small>
       <% end %>
-
+      <% users = task.users.to_a %>
       <div class="avatar-group">
-        <% task.users.limit(3).each do |user| %>
+        <% users.first(3).each do |user| %>
           <div class="avatar-circle-sm">
             <%= user.name.first.upcase %>
           </div>
         <% end %>
 
-        <% if task.users.count > 3 %>
+         <% if users.size > 3 %>
           <div class="avatar-circle-sm extra">
-            +<%= task.users.count - 3 %>
+            +<<%= users.size - 3 %>
           </div>
         <% end %>
       </div>
