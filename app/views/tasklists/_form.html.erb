@@ -1,6 +1,10 @@
 <%# locals: (task:, f:) %>
 
-<div class="mt-4 mb-3" data-controller="task-checklist">
+<div class="mt-4 mb-3"
+     data-controller="task-checklist"
+     data-task-checklist-action-plan-id-value="<%= task.bucket.action_plan.id %>"
+     data-task-checklist-bucket-id-value="<%= task.bucket.id %>"
+     data-task-checklist-task-id-value="<%= task.id %>">
   <div class="d-flex justify-content-between align-items-center mb-2">
     <h6 class="mb-0">Lista de verificação</h6>
     <div>
@@ -16,22 +20,13 @@
   <div class="border rounded p-2 bg-light">
     <%= f.fields_for :tasklist, task.tasklist || task.build_tasklist do |tasklist_form| %>
       <%= tasklist_form.hidden_field :id %>
-      <div data-task-checklist-target="itemsContainer">
+      <div data-task-checklist-target="itemsContainer" id="tasklist-items-<%= task.id %>">
         <% task.tasklist&.tasklist_items&.each do |item| %>
-          <%= tasklist_form.fields_for :tasklist_items, item do |item_form| %>
-            <div class="task-checklist-item mb-2 d-flex align-items-center gap-2">
-              <%= item_form.check_box :completed, class: "form-check-input" %>
-              <%= item_form.text_field :content, class: "form-control form-control-sm flex-grow-1", placeholder: "Item" %>
-              <%= item_form.hidden_field :id %>
-              <%= item_form.hidden_field :_destroy, value: false %>
-              <button type="button" class="btn btn-sm btn-link text-danger" data-action="click->task-checklist#removeItem">
-                <i class="bi bi-trash"></i>
-              </button>
-            </div>
-          <% end %>
+          <%= render "tasklist_items/item", item: item, task: task %>
         <% end %>
       </div>
 
+      <!-- Template mantido como fallback para adição local (caso a requisição falhe) -->
       <template data-task-checklist-target="itemTemplate">
         <div class="task-checklist-item mb-2 d-flex align-items-center gap-2">
           <input type="hidden" name="task[tasklist_attributes][tasklist_items_attributes][NEW_RECORD][id]" value="">

@@ -1,0 +1,10 @@
+<%# locals: (item:, task:) %>
+<div class="task-checklist-item mb-2 d-flex align-items-center gap-2" data-task-checklist-target="item">
+  <input type="checkbox" name="task[tasklist_attributes][tasklist_items_attributes][<%= item.id %>][completed]" value="1" class="form-check-input" <%= "checked" if item.completed %>>
+  <input type="hidden" name="task[tasklist_attributes][tasklist_items_attributes][<%= item.id %>][id]" value="<%= item.id %>">
+  <input type="hidden" name="task[tasklist_attributes][tasklist_items_attributes][<%= item.id %>][_destroy]" value="false">
+  <input type="text" name="task[tasklist_attributes][tasklist_items_attributes][<%= item.id %>][content]" value="<%= item.content %>" class="form-control form-control-sm flex-grow-1" placeholder="Item" autocomplete="off">
+  <button type="button" class="btn btn-sm btn-link text-danger" data-action="click->task-checklist#removeItem">
+    <i class="bi bi-trash"></i>
+  </button>
+</div>

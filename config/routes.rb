@@ -96,8 +96,10 @@ Rails.application.routes.draw do
         end
 
         resources :comments, only: [:create]
-
         resource :tasklist, only: [:create, :destroy]
+
+        # 👇 ADICIONE ESTA LINHA
+        resources :tasklist_items, only: [:create]
       end
     end
   end
