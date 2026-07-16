@@ -1,0 +1,46 @@
+<%# locals: (task:, f:) %>
+
+<div class="mt-4 mb-3" data-controller="task-checklist">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h6 class="mb-0">Lista de verificação</h6>
+    <div>
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-action="click->task-checklist#addItem">
+        + Adicionar item
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-danger" data-action="click->task-checklist#clearAllItems">
+        Limpar checklist
+      </button>
+    </div>
+  </div>
+
+  <div class="border rounded p-2 bg-light">
+    <%= f.fields_for :tasklist, task.tasklist || task.build_tasklist do |tasklist_form| %>
+      <%= tasklist_form.hidden_field :id %>
+      <div data-task-checklist-target="itemsContainer">
+        <% task.tasklist&.tasklist_items&.each do |item| %>
+          <%= tasklist_form.fields_for :tasklist_items, item do |item_form| %>
+            <div class="task-checklist-item mb-2 d-flex align-items-center gap-2">
+              <%= item_form.check_box :completed, class: "form-check-input" %>
+              <%= item_form.text_field :content, class: "form-control form-control-sm flex-grow-1", placeholder: "Item" %>
+              <%= item_form.hidden_field :id %>
+              <%= item_form.hidden_field :_destroy, value: false %>
+              <button type="button" class="btn btn-sm btn-link text-danger" data-action="click->task-checklist#removeItem">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <template data-task-checklist-target="itemTemplate">
+        <div class="task-checklist-item mb-2 d-flex align-items-center gap-2">
+          <input type="hidden" name="task[tasklist_attributes][tasklist_items_attributes][NEW_RECORD][id]" value="">
+          <input type="hidden" name="task[tasklist_attributes][tasklist_items_attributes][NEW_RECORD][_destroy]" value="false">
+          <input type="checkbox" name="task[tasklist_attributes][tasklist_items_attributes][NEW_RECORD][completed]" value="1" class="form-check-input">
+          <input type="text" name="task[tasklist_attributes][tasklist_items_attributes][NEW_RECORD][content]" class="form-control form-control-sm flex-grow-1" placeholder="Novo item" autocomplete="off">
+          <button type="button" class="btn btn-sm btn-link text-danger" data-action="click->task-checklist#removeItem">🗑</button>
+        </div>
+      </template>
+    <% end %>
+  </div>
+</div>
