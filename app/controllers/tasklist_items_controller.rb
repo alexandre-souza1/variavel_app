@@ -7,6 +7,7 @@ class TasklistItemsController < ApplicationController
     @item = @tasklist.tasklist_items.build(content: "Novo item", completed: false)
 
     if @item.save
+      @task.broadcast_task_update
       respond_to do |format|
         format.turbo_stream do
           render turbo_stream: turbo_stream.append(

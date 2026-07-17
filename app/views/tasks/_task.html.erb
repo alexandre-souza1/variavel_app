@@ -66,6 +66,10 @@
     <!-- DIREITA -->
     <div class="task-icons d-flex align-items-center gap-2">
 
+      <% if task.tasklist.tasklist_items.exists? %>
+        <small class="task-icon"><i class="bi bi-list-check"></i></small>
+      <% end %>
+
       <% if task.comments.exists? %>
         <small class="task-icon"><i class="bi bi-chat-dots-fill"></i></small>
       <% end %>
