@@ -4,7 +4,7 @@ class FleetAvailabilitiesController < ApplicationController
   before_action :require_admin!, only: :destroy
 
   def index
-    @fleet_availabilities = current_user.fleet_availabilities.recent
+    @fleet_availabilities = FleetAvailability.all
   end
 
   def new
@@ -92,9 +92,7 @@ class FleetAvailabilitiesController < ApplicationController
   private
 
   def set_fleet_availability
-    @fleet_availability = current_user
-                            .fleet_availabilities
-                            .find(params[:id])
+    @fleet_availability = FleetAvailability.find(params[:id])
   end
 
   def fleet_availability_params
