@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_15_192838) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_20_190852) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -223,6 +223,42 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_15_192838) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "autonomy", default: false, null: false
+  end
+
+  create_table "fleet_availabilities", force: :cascade do |t|
+    t.date "date", null: false
+    t.integer "agreed_quantity", default: 0, null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "date"], name: "idx_fleet_availability_user_date", unique: true
+  end
+
+  create_table "fleet_availability_changes", force: :cascade do |t|
+    t.bigint "fleet_availability_item_id", null: false
+    t.bigint "user_id", null: false
+    t.integer "from_status"
+    t.integer "to_status"
+    t.string "reason"
+    t.text "observation"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["fleet_availability_item_id"], name: "index_fleet_availability_changes_on_fleet_availability_item_id"
+    t.index ["user_id"], name: "index_fleet_availability_changes_on_user_id"
+  end
+
+  create_table "fleet_availability_items", force: :cascade do |t|
+    t.bigint "fleet_availability_id", null: false
+    t.bigint "plate_id", null: false
+    t.integer "status", default: 0, null: false
+    t.integer "position", default: 0, null: false
+    t.string "reason"
+    t.text "observation"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["fleet_availability_id", "plate_id"], name: "idx_fleet_availability_item", unique: true
+    t.index ["fleet_availability_id"], name: "index_fleet_availability_items_on_fleet_availability_id"
+    t.index ["plate_id"], name: "index_fleet_availability_items_on_plate_id"
   end
 
   create_table "fuel_consumptions", force: :cascade do |t|
@@ -510,6 +546,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_15_192838) do
   add_foreign_key "checklists", "users"
   add_foreign_key "comments", "tasks"
   add_foreign_key "comments", "users"
+  add_foreign_key "fleet_availabilities", "users"
+  add_foreign_key "fleet_availability_changes", "fleet_availability_items"
+  add_foreign_key "fleet_availability_changes", "users"
+  add_foreign_key "fleet_availability_items", "fleet_availabilities"
+  add_foreign_key "fleet_availability_items", "plates"
   add_foreign_key "invoice_numbers", "cost_centers"
   add_foreign_key "invoice_numbers", "invoices"
   add_foreign_key "invoices", "budget_categories"

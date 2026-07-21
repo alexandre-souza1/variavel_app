@@ -3,6 +3,8 @@ class Plate < ApplicationRecord
   validates :placa, presence: true, uniqueness: true
   has_many :checklists
   has_many :stress_test_events, dependent: :nullify
+  has_many :fleet_availability_items, dependent: :destroy
+  has_many :fleet_availabilities, through: :fleet_availability_items
 
   # Se quiser validar opções específicas
   SETORES = %w[ARMAZEM ROTA]
@@ -12,6 +14,8 @@ class Plate < ApplicationRecord
   validates :setor, inclusion: { in: SETORES }
   validates :tipo, inclusion: { in: TIPOS }
   validates :perfil, inclusion: { in: PERFIS }, allow_nil: true
+
+  scope :ordered, -> { order(:placa) }
 
   def self.import(file)
     csv_text = file.read.force_encoding("ISO-8859-1").encode("UTF-8")

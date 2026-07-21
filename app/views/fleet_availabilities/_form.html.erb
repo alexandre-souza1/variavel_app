@@ -1,0 +1,80 @@
+<%= form_with model: @fleet_availability,
+              class: "card shadow-sm border-0" do |f| %>
+
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">
+      Disponibilidade da Frota
+    </h5>
+  </div>
+
+  <div class="card-body">
+
+    <% if @fleet_availability.errors.any? %>
+
+      <div class="alert alert-danger">
+
+        <h6 class="mb-2">
+          Não foi possível salvar:
+        </h6>
+
+        <ul class="mb-0">
+
+          <% @fleet_availability.errors.full_messages.each do |message| %>
+
+            <li><%= message %></li>
+
+          <% end %>
+
+        </ul>
+
+      </div>
+
+    <% end %>
+
+    <div class="row">
+
+      <div class="col-md-6 mb-3">
+
+        <%= f.label :date,
+                    "Data",
+                    class: "form-label" %>
+
+        <%= f.date_field :date,
+                         class: "form-control",
+                         required: true %>
+
+      </div>
+
+      <div class="col-md-6 mb-3">
+
+        <%= f.label :agreed_quantity,
+                    "Quantidade Pactuada",
+                    class: "form-label" %>
+
+        <%= f.number_field :agreed_quantity,
+                           class: "form-control",
+                           min: 0,
+                           required: true %>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="card-footer d-flex justify-content-between">
+
+    <%= link_to fleet_availabilities_path,
+                class: "btn btn-outline-secondary" do %>
+
+      <i class="bi bi-arrow-left"></i>
+      Voltar
+
+    <% end %>
+
+    <%= f.submit "Salvar",
+                 class: "btn btn-primary" %>
+
+  </div>
+
+<% end %>

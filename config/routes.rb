@@ -81,6 +81,11 @@ Rails.application.routes.draw do
 
   resources :task_imports, only: [:new, :create]
 
+  resources :fleet_availabilities do
+    resources :fleet_availability_items,
+              only: [:update]
+  end
+
   resources :action_plans do
     patch :sort_buckets, on: :member
 

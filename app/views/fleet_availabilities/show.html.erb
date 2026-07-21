@@ -1,0 +1,246 @@
+<div class="container-fluid py-4"
+     data-controller="fleet-availability"
+     data-availability-id="<%= @fleet_availability.id %>">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+      <h2 class="fw-bold mb-1">
+        Disponibilidade da Frota
+      </h2>
+
+      <div class="text-muted">
+        <i class="bi bi-calendar-event"></i>
+        <%= l(@fleet_availability.date) %>
+      </div>
+    </div>
+
+    <div class="text-end">
+
+      <div class="fw-semibold">
+        Cobertura
+      </div>
+
+      <div class="display-6 fw-bold">
+        <%= @fleet_availability.coverage_percentage %>%
+      </div>
+
+      <small class="text-muted">
+        <%= @fleet_availability.available_count %> /
+        <%= @fleet_availability.agreed_quantity %>
+      </small>
+
+    </div>
+
+  </div>
+
+  <div class="row g-3">
+
+    <div class="col-lg-4">
+
+      <div class="card shadow-sm h-100">
+
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+
+          <span>
+            Disponíveis
+          </span>
+
+          <span class="badge bg-light text-success">
+            <%= @fleet_availability.available_count %>
+          </span>
+
+        </div>
+
+        <div class="card-body sortable-list"
+             id="available-list">
+
+          <% @items.select(&:available?).each do |item| %>
+
+            <%= render "fleet_availability_items/item",
+                       item: item %>
+
+          <% end %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+      <div class="card shadow-sm h-100">
+
+        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+
+          <span>
+            Aptas para troca
+          </span>
+
+          <span class="badge bg-dark">
+            <%= @fleet_availability.exchange_count %>
+          </span>
+
+        </div>
+
+        <div class="card-body sortable-list"
+             id="exchange-list">
+
+          <% @items.select(&:exchange?).each do |item| %>
+
+            <%= render "fleet_availability_items/item",
+                       item: item %>
+
+          <% end %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+      <div class="card shadow-sm h-100">
+
+        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+
+          <span>
+            Indisponíveis
+          </span>
+
+          <span class="badge bg-light text-danger">
+            <%= @fleet_availability.unavailable_count %>
+          </span>
+
+        </div>
+
+        <div class="card-body sortable-list"
+             id="unavailable-list">
+
+          <% @items.select(&:unavailable?).each do |item| %>
+
+            <%= render "fleet_availability_items/item",
+                       item: item %>
+
+          <% end %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="mt-4">
+
+    <%= link_to fleet_availabilities_path,
+                class: "btn btn-outline-secondary" do %>
+
+      <i class="bi bi-arrow-left"></i>
+      Voltar
+
+    <% end %>
+
+  </div>
+
+</div>
+
+
+<div class="modal fade"
+     id="unavailableModal"
+     tabindex="-1">
+
+  <div class="modal-dialog">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h5 class="modal-title">
+          Motivo da indisponibilidade
+        </h5>
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="modal">
+        </button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <div class="mb-3">
+
+          <label class="form-label">
+            Motivo
+          </label>
+
+          <select id="unavailableReason"
+                  class="form-select">
+
+            <option value="maintenance">
+              Manutenção
+            </option>
+
+            <option value="breakdown">
+              Quebra
+            </option>
+
+            <option value="accident">
+              Acidente
+            </option>
+
+            <option value="document">
+              Documentação
+            </option>
+
+            <option value="other">
+              Outro
+            </option>
+
+          </select>
+
+        </div>
+
+        <div>
+
+          <label class="form-label">
+            Observação
+          </label>
+
+          <textarea id="unavailableObservation"
+                    rows="4"
+                    class="form-control"></textarea>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal">
+
+          Cancelar
+
+        </button>
+
+        <button type="button"
+                id="confirmUnavailable"
+                class="btn btn-danger">
+
+          Confirmar
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

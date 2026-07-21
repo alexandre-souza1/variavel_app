@@ -12,6 +12,7 @@ class User < ApplicationRecord
   has_many :task_assignments
   has_many :tasks, through: :task_assignments
   has_many :stress_test_imports, dependent: :destroy
+  has_many :fleet_availabilities, dependent: :destroy
 
   scope :active, -> { where.not(confirmed_at: nil) }
 
