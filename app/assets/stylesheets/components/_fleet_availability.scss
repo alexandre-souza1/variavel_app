@@ -117,26 +117,102 @@
     overflow-y: auto;
     background: var(--bs-secondary-bg);
 
-    // Disponibilidade: altura ajustada
     &--availability {
-      min-height: 10rem;
-      max-height: 28rem;
+      min-height: 42rem;
+      max-height: 42rem;
     }
 
-    // Indisponíveis (vai ser substituído pelo grid, mas mantido como fallback)
     &--unavailable {
-      min-height: 10rem;
-      max-height: 28rem;
+      min-height: 13rem;
+      max-height: 13rem;
     }
 
-    // Depósito e indisponíveis (grid 3 colunas)
+    &--unavailable-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-content: start;
+      gap: 0.55rem;
+      min-height: 13rem;
+      max-height: 13rem;
+
+      .fleet-plate-item {
+        display: block;
+
+        .fleet-plate-item__line {
+          display: none !important;
+        }
+
+        .fleet-plate-card {
+          display: grid;
+          min-height: 4.9rem;
+          padding: 0.45rem 0.3rem;
+          place-items: center;
+          border: 2px solid rgba(var(--bs-danger-rgb), 0.35);
+          border-radius: 0.35rem;
+          background: linear-gradient(
+            180deg,
+            var(--bs-body-bg) 0%,
+            var(--bs-tertiary-bg) 100%
+          );
+          text-align: center;
+        }
+
+        .fleet-plate-card__main {
+          display: block;
+          width: 100%;
+        }
+
+        .fleet-plate-card__plate {
+          font-size: clamp(0.72rem, 0.9vw, 0.95rem);
+          line-height: 1;
+          overflow-wrap: anywhere;
+        }
+
+        .fleet-plate-card__meta {
+          display: block;
+          margin-top: 0.2rem;
+          font-size: 0.62rem;
+          line-height: 1.1;
+        }
+
+        .fleet-plate-card__side {
+          display: block;
+          margin-top: 0.25rem;
+          padding-top: 0;
+          border-top: 0;
+        }
+
+        .fleet-plate-card__defect {
+          display: block;
+          margin-top: 0;
+          padding: 0.18rem 0.3rem;
+          border-radius: 0.25rem;
+          background: rgba(var(--bs-danger-rgb), 0.10);
+          color: var(--bs-danger-text-emphasis);
+          font-size: 0.6rem;
+          line-height: 1.2;
+          overflow-wrap: anywhere;
+
+          strong,
+          span {
+            display: inline;
+          }
+
+          span {
+            margin-left: 0.2rem;
+            color: var(--bs-secondary-color);
+          }
+        }
+      }
+    }
+
     &--deposit {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       align-content: start;
       gap: 0.55rem;
-      min-height: 10rem;
-      max-height: 28rem;
+      min-height: 25.75rem;
+      max-height: 25.75rem;
 
       // Itens dentro do grid
       .fleet-plate-item {
@@ -183,41 +259,9 @@
           .fleet-plate-card__details {
             display: none; // esconde detalhes extras
           }
-        }
 
-        // Específico para indisponíveis
-        &--unavailable .fleet-plate-card {
-          border-color: rgba(var(--bs-danger-rgb), 0.35);
-
-          .fleet-plate-card__defect {
-            // Defeito sempre visível, abaixo da meta
-            display: block;
-            margin-top: 0.35rem;
-            padding: 0.2rem 0.3rem;
-            background: rgba(var(--bs-danger-rgb), 0.10);
-            border-radius: 0.25rem;
-            font-size: 0.6rem;
-            line-height: 1.2;
-            color: var(--bs-danger-text-emphasis);
-            max-width: 100%;
-            overflow-wrap: break-word;
-            // Remove qualquer posição absoluta/hover
-            position: static !important;
-            opacity: 1 !important;
-            pointer-events: auto !important;
-            transform: none !important;
-            transition: none !important;
-            width: auto !important;
-
-            strong {
-              display: inline;
-              font-weight: 600;
-            }
-            span {
-              display: inline;
-              color: var(--bs-secondary-color);
-              margin-left: 0.25rem;
-            }
+          .fleet-plate-card__side {
+            display: none;
           }
         }
 
@@ -305,8 +349,7 @@
     }
 
     // Estilo para itens que NÃO estão no grid (availability, etc.)
-    &--availability,
-    &--unavailable {
+    &--availability {
       display: grid;
       grid-template-columns: 2.25rem minmax(0, 1fr);
       align-items: start;
@@ -315,14 +358,13 @@
 
     .fleet-plate-item__line {
       display: none;
-      padding-top: 1rem;
+      padding-top: 0.65rem;
       font-size: 0.88rem;
       font-weight: 600;
       text-align: right;
     }
 
-    &--availability .fleet-plate-item__line,
-    &--unavailable .fleet-plate-item__line {
+    &--availability .fleet-plate-item__line {
       display: block;
     }
 
@@ -342,34 +384,8 @@
       }
     }
 
-    &--availability .fleet-plate-card,
-    &--unavailable .fleet-plate-card {
-      padding: 1rem;
-    }
-
-    &--unavailable .fleet-plate-card {
-      position: relative;
-      border-color: rgba(var(--bs-danger-rgb), 0.35);
-    }
-
-    // Defeito para indisponíveis no layout normal (não grid)
-    &--unavailable .fleet-plate-card__defect {
-      position: absolute;
-      right: 0.75rem;
-      bottom: calc(100% - 0.35rem);
-      z-index: 5;
-      max-width: 18rem;
-      width: calc(100% - 1.5rem);
-      margin-top: 0;
-      opacity: 0;
-      pointer-events: none;
-      transform: translateY(0.35rem);
-      transition: opacity 0.15s ease, transform 0.15s ease;
-    }
-
-    &--unavailable .fleet-plate-card:hover .fleet-plate-card__defect {
-      opacity: 1;
-      transform: translateY(0);
+    &--availability .fleet-plate-card {
+      padding: 0.58rem 0.75rem;
     }
 
     &--ghost {
@@ -381,7 +397,7 @@
   .fleet-plate-card {
     &__main {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
     }
@@ -401,6 +417,23 @@
       margin-top: 0.35rem;
       color: var(--bs-secondary-color);
       font-size: 0.84rem;
+
+      span {
+        min-width: 0;
+      }
+    }
+
+    &__side {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 0.25rem 0.45rem;
+      max-width: 50%;
+      color: var(--bs-secondary-color);
+      font-size: 0.78rem;
+      line-height: 1.15;
+      text-align: right;
 
       span {
         min-width: 0;

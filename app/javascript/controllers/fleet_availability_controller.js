@@ -361,8 +361,9 @@ export default class extends Controller {
 
   setAvailabilityDetails(itemElement) {
     const setor = this.plateSetor(itemElement)
+    const container = this.detailsContainer(itemElement, "fleet-plate-card__side")
 
-    this.detailsContainer(itemElement).innerHTML = `
+    container.innerHTML = `
       <span>
         <i class="bi bi-geo-alt"></i>
         Setor ${this.escapeHtml(setor)}
@@ -372,12 +373,16 @@ export default class extends Controller {
 
 
   setDepositDetails(itemElement) {
-    this.detailsContainer(itemElement).innerHTML = ""
+    const container = this.detailsContainer(itemElement, "fleet-plate-card__side")
+
+    container.innerHTML = ""
   }
 
 
   setUnavailableDetails(itemElement, item) {
-    this.detailsContainer(itemElement).innerHTML = `
+    const container = this.detailsContainer(itemElement, "fleet-plate-card__side")
+
+    container.innerHTML = `
       <div class="fleet-plate-card__defect" data-defect>
         <strong>${this.escapeHtml(item.reason_label)}</strong>
         ${item.observation ? `<span>${this.escapeHtml(item.observation)}</span>` : ""}
@@ -387,19 +392,23 @@ export default class extends Controller {
 
 
   setSpecialRouteDetails(itemElement) {
-    this.detailsContainer(itemElement).innerHTML = ""
+    const container = this.detailsContainer(itemElement, "fleet-plate-card__side")
+
+    container.innerHTML = ""
   }
 
 
-  detailsContainer(itemElement) {
+  detailsContainer(itemElement, className = "") {
     let container = itemElement.querySelector("[data-live-details]")
+
     if (!container) {
       container = document.createElement("div")
       container.dataset.liveDetails = ""
       itemElement.querySelector(".fleet-plate-card").appendChild(container)
     }
-    // Remove a linha que define a classe, ou condicione:
-    // container.className = "fleet-plate-card__details"  // ← remova ou comente
+
+    container.className = className
+
     return container
   }
 
@@ -411,6 +420,7 @@ export default class extends Controller {
 
   refreshBoard() {
     this.refreshAvailabilityRows()
+    this.refreshUnavailableRows()
     this.refreshEmptySlots()
     this.refreshSpecialRoutePlaceholders()
     this.refreshCounts()
@@ -422,6 +432,21 @@ export default class extends Controller {
     const availableList = document.getElementById("available-list")
 
     availableList
+      .querySelectorAll(".sortable-item")
+      .forEach((item, index) => {
+        const label = item.querySelector("[data-line-label]")
+
+        if (label) label.textContent = `${index + 1} -`
+      })
+  }
+
+
+  refreshUnavailableRows() {
+    const unavailableList = document.getElementById("unavailable-list")
+
+    if (!unavailableList) return
+
+    unavailableList
       .querySelectorAll(".sortable-item")
       .forEach((item, index) => {
         const label = item.querySelector("[data-line-label]")

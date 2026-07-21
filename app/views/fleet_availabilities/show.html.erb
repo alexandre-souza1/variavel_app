@@ -22,20 +22,31 @@
       </div>
     </div>
 
-    <div class="fleet-coverage-panel">
+    <div class="d-flex align-items-center gap-3">
+      <%= link_to fleet_availability_path(@fleet_availability, format: :pdf),
+                  class: "btn btn-outline-danger",
+                  target: "_blank",
+                  rel: "noopener" do %>
+        <i class="bi bi-file-earmark-pdf"></i>
+        PDF
+      <% end %>
 
-      <span class="text-muted">
-        Cobertura
-      </span>
+      <div class="fleet-coverage-panel">
 
-      <strong data-coverage-percentage>
-        <%= @fleet_availability.coverage_percentage %>%
-      </strong>
+        <span class="text-muted">
+          Cobertura
+        </span>
 
-      <small data-coverage-ratio>
-        <%= @fleet_availability.available_count %> /
-        <%= @fleet_availability.agreed_quantity %> linhas
-      </small>
+        <strong data-coverage-percentage>
+          <%= @fleet_availability.coverage_percentage %>%
+        </strong>
+
+        <small data-coverage-ratio>
+          <%= @fleet_availability.available_count %> /
+          <%= @fleet_availability.agreed_quantity %> linhas
+        </small>
+
+      </div>
 
     </div>
 
@@ -113,9 +124,8 @@
 
   <div class="row g-3 fleet-board">
 
-    <!-- Coluna ESQUERDA: apenas Disponibilidade -->
     <div class="col-xl-8">
-      <section class="card shadow-sm fleet-board-card fleet-board-card--main h-100">
+      <section class="card shadow-sm h-100 fleet-board-card fleet-board-card--main">
         <div class="card-header fleet-board-card__header">
           <div>
             <span class="fleet-board-card__title">Disponibilidade</span>
@@ -142,9 +152,7 @@
       </section>
     </div>
 
-    <!-- Coluna DIREITA: Indisponíveis + Depósito empilhados -->
     <div class="col-xl-4 d-flex flex-column gap-3">
-      <!-- Indisponíveis -->
       <section class="card shadow-sm fleet-board-card fleet-board-card--danger">
         <div class="card-header fleet-board-card__header">
           <div>
@@ -155,14 +163,12 @@
             <%= unavailable_items.size %>
           </span>
         </div>
-        <div class="card-body fleet-list fleet-list--deposit sortable-list" id="unavailable-list">
+        <div class="card-body fleet-list fleet-list--unavailable-grid sortable-list" id="unavailable-list">
           <% unavailable_items.each do |item| %>
             <%= render "fleet_availability_items/item", item: item, variant: :unavailable %>
           <% end %>
         </div>
       </section>
-
-      <!-- Depósito -->
       <section class="card shadow-sm fleet-board-card flex-grow-1">
         <div class="card-header fleet-board-card__header">
           <div>

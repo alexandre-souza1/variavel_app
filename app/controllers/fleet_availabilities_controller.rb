@@ -65,6 +65,18 @@ class FleetAvailabilitiesController < ApplicationController
               .fleet_availability_items
               .includes(:plate)
               .ordered
+
+    respond_to do |format|
+      format.html
+      format.pdf do
+        pdf = FleetAvailabilityPdf.new(@fleet_availability)
+
+        send_data pdf.render,
+                  filename: "disponibilidade_frota_#{@fleet_availability.date}.pdf",
+                  type: "application/pdf",
+                  disposition: "inline"
+      end
+    end
   end
 
   def destroy
