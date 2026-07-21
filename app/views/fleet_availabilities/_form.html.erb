@@ -60,6 +60,34 @@
 
     </div>
 
+    <div class="border rounded p-3 mt-2">
+      <h6 class="mb-3">
+        Rotas especiais dimensionadas
+      </h6>
+
+      <div class="row g-2">
+        <% FleetAvailability::SPECIAL_ROUTES.each do |route_key, route_label| %>
+          <div class="col-md-4">
+            <div>
+              <%= label_tag "fleet_availability_special_route_#{route_key}",
+                            route_label,
+                            class: "form-label" %>
+
+              <%= number_field_tag "fleet_availability[special_routes][#{route_key}]",
+                                   @fleet_availability.special_route_quantity(route_key),
+                                   id: "fleet_availability_special_route_#{route_key}",
+                                   class: "form-control",
+                                   min: 0 %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <small class="text-muted d-block mt-2">
+        Informe a quantidade de rotas recebidas como dimensionadas na quinzena.
+      </small>
+    </div>
+
   </div>
 
   <div class="card-footer d-flex justify-content-between">

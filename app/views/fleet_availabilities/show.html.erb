@@ -1,8 +1,15 @@
-<div class="container-fluid py-4"
+<% available_items = @items.select(&:available?) %>
+<% deposit_items = @items.select(&:exchange?) %>
+<% unavailable_items = @items.select(&:unavailable?) %>
+<% special_route_items = @items.select(&:special_route?).group_by(&:special_route) %>
+<% availability_slots = [@fleet_availability.agreed_quantity, 0].max %>
+<% empty_slots = [availability_slots - available_items.size, 0].max %>
+
+<div class="container-fluid py-4 fleet-availability-page"
      data-controller="fleet-availability"
      data-availability-id="<%= @fleet_availability.id %>">
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="fleet-availability-header mb-4">
 
     <div>
       <h2 class="fw-bold mb-1">
@@ -15,120 +22,222 @@
       </div>
     </div>
 
-    <div class="text-end">
+    <div class="fleet-coverage-panel">
 
-      <div class="fw-semibold">
+      <span class="text-muted">
         Cobertura
-      </div>
+      </span>
 
-      <div class="display-6 fw-bold">
+      <strong data-coverage-percentage>
         <%= @fleet_availability.coverage_percentage %>%
-      </div>
+      </strong>
 
-      <small class="text-muted">
+      <small data-coverage-ratio>
         <%= @fleet_availability.available_count %> /
-        <%= @fleet_availability.agreed_quantity %>
+        <%= @fleet_availability.agreed_quantity %> linhas
       </small>
 
     </div>
 
   </div>
 
-  <div class="row g-3">
+  <div class="fleet-limit-alert d-none mb-3"
+       data-limit-alert
+       role="alert">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <span data-limit-alert-message>
+      Não é possível adicionar outra placa: a disponibilidade já atingiu o limite pactuado.
+    </span>
+  </div>
 
-    <div class="col-lg-4">
+  <% if @fleet_availability.active_special_routes.any? %>
+    <section class="card shadow-sm fleet-board-card fleet-special-routes mb-3">
 
-      <div class="card shadow-sm h-100">
-
-        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-
-          <span>
-            Disponíveis
+      <div class="card-header fleet-board-card__header">
+        <div>
+          <span class="fleet-board-card__title">
+            Rotas especiais dimensionadas
           </span>
 
-          <span class="badge bg-light text-success">
-            <%= @fleet_availability.available_count %>
+          <small>
+            Roteirize apenas se a rota veio dimensionada na quinzena
+          </small>
+        </div>
+      </div>
+
+      <div class="card-body fleet-special-routes__body">
+        <% @fleet_availability.active_special_routes.each do |route_key, route_quantity| %>
+          <% route_items = special_route_items.fetch(route_key, []) %>
+          <% route_empty_slots = [route_quantity - route_items.size, 0].max %>
+          <% route_label = FleetAvailability::SPECIAL_ROUTES[route_key] %>
+
+          <div class="fleet-special-route-card <%= "fleet-special-route-card--filled" if route_items.any? %>"
+               data-special-route-card="<%= route_key %>">
+            <div class="fleet-special-route-card__header">
+              <strong><%= route_label %></strong>
+
+              <% if route_key == "van" %>
+                <small>Somente placa VAN</small>
+              <% else %>
+                <small>Qualquer carro da rota</small>
+              <% end %>
+
+              <span class="fleet-count-badge"
+                    data-special-route-count="<%= route_key %>">
+                <%= route_items.size %> / <%= route_quantity %>
+              </span>
+            </div>
+
+            <div class="fleet-special-route-list sortable-list"
+                 id="special-route-<%= route_key %>-list"
+                 data-special-route="<%= route_key %>"
+                 data-max-items="<%= route_quantity %>">
+              <% route_items.each do |route_item| %>
+                <%= render "fleet_availability_items/item",
+                           item: route_item,
+                           variant: :special_route %>
+              <% end %>
+
+              <% route_empty_slots.times do %>
+                <div class="fleet-special-route-placeholder">
+                  Arraste uma placa
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+    </section>
+  <% end %>
+
+  <div class="row g-3 fleet-board">
+
+    <div class="col-xl-6">
+
+      <section class="card shadow-sm h-100 fleet-board-card fleet-board-card--main">
+
+        <div class="card-header fleet-board-card__header">
+
+          <div>
+            <span class="fleet-board-card__title">
+              Disponibilidade
+            </span>
+
+            <small>
+              Placas que compõem a operação do dia
+            </small>
+          </div>
+
+          <span class="fleet-count-badge fleet-count-badge--success"
+                data-count="available">
+            <%= available_items.size %> / <%= availability_slots %>
           </span>
 
         </div>
 
-        <div class="card-body sortable-list"
-             id="available-list">
+        <div class="card-body fleet-list fleet-list--availability sortable-list"
+             id="available-list"
+             data-max-items="<%= availability_slots %>"
+             style="--fleet-visible-rows: <%= [availability_slots, 1].max %>;">
 
-          <% @items.select(&:available?).each do |item| %>
-
+          <% available_items.each do |item| %>
             <%= render "fleet_availability_items/item",
-                       item: item %>
+                       item: item,
+                       variant: :availability %>
+          <% end %>
 
+          <% empty_slots.times do |index| %>
+            <div class="fleet-empty-slot">
+              <span>
+                Linha <%= available_items.size + index + 1 %>
+              </span>
+
+              <small>
+                Arraste uma placa do depósito
+              </small>
+            </div>
           <% end %>
 
         </div>
 
-      </div>
+      </section>
 
     </div>
 
-    <div class="col-lg-4">
+    <div class="col-xl-3 col-lg-6">
 
-      <div class="card shadow-sm h-100">
+      <section class="card shadow-sm h-100 fleet-board-card">
 
-        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+        <div class="card-header fleet-board-card__header">
 
-          <span>
-            Aptas para troca
-          </span>
+          <div>
+            <span class="fleet-board-card__title">
+              Depósito de placas
+            </span>
 
-          <span class="badge bg-dark">
-            <%= @fleet_availability.exchange_count %>
+            <small>
+              Ativas e disponíveis para montar a escala
+            </small>
+          </div>
+
+          <span class="fleet-count-badge"
+                data-count="exchange">
+            <%= deposit_items.size %>
           </span>
 
         </div>
 
-        <div class="card-body sortable-list"
+        <div class="card-body fleet-list fleet-list--deposit sortable-list"
              id="exchange-list">
 
-          <% @items.select(&:exchange?).each do |item| %>
-
+          <% deposit_items.each do |item| %>
             <%= render "fleet_availability_items/item",
-                       item: item %>
-
+                       item: item,
+                       variant: :deposit %>
           <% end %>
 
         </div>
 
-      </div>
+      </section>
 
     </div>
 
-    <div class="col-lg-4">
+    <div class="col-xl-3 col-lg-6">
 
-      <div class="card shadow-sm h-100">
+      <section class="card shadow-sm h-100 fleet-board-card fleet-board-card--danger">
 
-        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+        <div class="card-header fleet-board-card__header">
 
-          <span>
-            Indisponíveis
-          </span>
+          <div>
+            <span class="fleet-board-card__title">
+              Indisponíveis
+            </span>
 
-          <span class="badge bg-light text-danger">
-            <%= @fleet_availability.unavailable_count %>
+            <small>
+              Placas com defeito ou bloqueio
+            </small>
+          </div>
+
+          <span class="fleet-count-badge fleet-count-badge--danger"
+                data-count="unavailable">
+            <%= unavailable_items.size %>
           </span>
 
         </div>
 
-        <div class="card-body sortable-list"
+        <div class="card-body fleet-list sortable-list"
              id="unavailable-list">
 
-          <% @items.select(&:unavailable?).each do |item| %>
-
+          <% unavailable_items.each do |item| %>
             <%= render "fleet_availability_items/item",
-                       item: item %>
-
+                       item: item,
+                       variant: :unavailable %>
           <% end %>
 
         </div>
 
-      </div>
+      </section>
 
     </div>
 
@@ -160,7 +269,7 @@
       <div class="modal-header">
 
         <h5 class="modal-title">
-          Motivo da indisponibilidade
+          Defeito da placa
         </h5>
 
         <button type="button"
@@ -175,7 +284,7 @@
         <div class="mb-3">
 
           <label class="form-label">
-            Motivo
+            Defeito
           </label>
 
           <select id="unavailableReason"

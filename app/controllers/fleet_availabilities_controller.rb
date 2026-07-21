@@ -7,8 +7,12 @@ class FleetAvailabilitiesController < ApplicationController
   end
 
   def new
+    date = params[:date].presence || Date.current
+
     @fleet_availability = FleetAvailability.new(
-      date: Date.current
+      date: date,
+      agreed_quantity: FleetAvailability.default_agreed_quantity_for(date),
+      special_routes: FleetAvailability.default_special_routes_for(date)
     )
   end
 
@@ -16,7 +20,8 @@ class FleetAvailabilitiesController < ApplicationController
     @fleet_availability = FleetAvailabilities::Creator.call(
       user: current_user,
       date: fleet_availability_params[:date],
-      agreed_quantity: fleet_availability_params[:agreed_quantity]
+      agreed_quantity: fleet_availability_params[:agreed_quantity],
+      special_routes: fleet_availability_params[:special_routes]
     )
 
     redirect_to @fleet_availability,
@@ -48,7 +53,8 @@ class FleetAvailabilitiesController < ApplicationController
     params.require(:fleet_availability)
           .permit(
             :date,
-            :agreed_quantity
+            :agreed_quantity,
+            special_routes: {}
           )
   end
 end

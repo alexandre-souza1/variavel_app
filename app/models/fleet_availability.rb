@@ -1,4 +1,16 @@
 class FleetAvailability < ApplicationRecord
+  SPECIAL_ROUTES = {
+    "vespertina" => "Vespertina",
+    "van" => "Van",
+    "as" => "AS"
+  }.freeze
+
+  SPECIAL_ROUTE_VEHICLE_TYPES = {
+    "vespertina" => "VESP",
+    "van" => "VAN",
+    "as" => "AS"
+  }.freeze
+
   belongs_to :user
 
   has_many :fleet_availability_items,
@@ -20,6 +32,7 @@ class FleetAvailability < ApplicationRecord
             numericality: {
               greater_than_or_equal_to: 0
             }
+  validate :special_routes_are_valid
 
   def available_count
     fleet_availability_items.available.count
@@ -27,6 +40,10 @@ class FleetAvailability < ApplicationRecord
 
   def exchange_count
     fleet_availability_items.exchange.count
+  end
+
+  def deposit_count
+    exchange_count
   end
 
   def unavailable_count
@@ -37,6 +54,89 @@ class FleetAvailability < ApplicationRecord
     return 0 if agreed_quantity.zero?
 
     ((available_count.to_f / agreed_quantity) * 100).round
+  end
+
+  def self.remuneration_period_for(date)
+    return if date.blank?
+
+    parsed_date = date.to_date
+
+    RemunerationPeriod
+      .where("start_date <= ? AND end_date >= ?", parsed_date, parsed_date)
+      .first
+  end
+
+  def self.default_agreed_quantity_for(date)
+    period = remuneration_period_for(date)
+
+    return 0 unless period
+
+    period.vehicle_remunerations
+          .find_by(vehicle_type: "ROTA")
+          &.fleet_quantity
+          .to_i
+  end
+
+  def self.default_special_routes_for(date)
+    period = remuneration_period_for(date)
+
+    return {} unless period
+
+    SPECIAL_ROUTE_VEHICLE_TYPES.each_with_object({}) do |(route, vehicle_type), routes|
+      quantity = period.vehicle_remunerations
+                       .find_by(vehicle_type: vehicle_type)
+                       &.fleet_quantity
+                       .to_i
+
+      routes[route] = quantity if quantity.positive?
+    end
+  end
+
+  def special_routes=(routes)
+    super(normalize_special_routes(routes))
+  end
+
+  def special_routes
+    normalize_special_routes(super)
+  end
+
+  def active_special_routes
+    special_routes.select { |_route, quantity| quantity.positive? }
+  end
+
+  def special_route_quantity(route)
+    special_routes[route].to_i
+  end
+
+  def special_route_labels
+    active_special_routes.keys.map { |route| SPECIAL_ROUTES[route] }.compact
+  end
+
+  private
+
+  def normalize_special_routes(routes)
+    normalized_routes =
+      case routes
+      when Hash
+        routes.to_h
+      when ->(value) { value.respond_to?(:to_unsafe_h) }
+        routes.to_unsafe_h
+      else
+        Array(routes).reject(&:blank?).index_with(1)
+      end
+
+    SPECIAL_ROUTES.each_key.with_object({}) do |route, normalized|
+      quantity = normalized_routes[route].to_i
+      normalized[route] = quantity if quantity.positive?
+    end
+  end
+
+  def special_routes_are_valid
+    invalid_routes = special_routes.keys - SPECIAL_ROUTES.keys
+
+    return if invalid_routes.empty?
+
+    errors.add(:special_routes, "possui rotas inválidas")
   end
   
 end

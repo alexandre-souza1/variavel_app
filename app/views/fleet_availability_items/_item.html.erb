@@ -1,35 +1,73 @@
-<div
-  id="<%= dom_id(item) %>"
-  class="card mb-2 sortable-item">
-  <div class="card-body d-flex justify-content-between align-items-center">
+<% variant = local_assigns.fetch(:variant, :default).to_sym %>
+<% plate = item.plate %>
+
+<article id="<%= dom_id(item) %>"
+         class="fleet-plate-item fleet-plate-item--<%= variant %> sortable-item"
+         data-status="<%= item.status %>"
+         data-setor="<%= plate.setor.presence || "-" %>"
+         data-van-plate="<%= item.van_plate? %>">
+
+  <span class="fleet-plate-item__line text-muted"
+        data-line-label>
+    <%= item.position.to_i + 1 %> -
+  </span>
+
+  <div class="fleet-plate-card">
+
+  <div class="fleet-plate-card__main">
 
     <div>
-      <strong><%= item.plate.placa %></strong>
-      <br>
-      <small class="text-muted"><%= item.plate.setor %></small>
+      <strong class="fleet-plate-card__plate">
+        <%= plate.placa %>
+      </strong>
+
+      <div class="fleet-plate-card__meta">
+        <% if variant == :deposit || variant == :special_route %>
+          <span><%= plate.perfil.presence || plate.tipo.presence || "Ativa" %></span>
+        <% else %>
+          <span><%= plate.tipo.presence || "Tipo não informado" %></span>
+          <% if plate.perfil.present? %>
+            <span><%= plate.perfil %></span>
+          <% end %>
+        <% end %>
+      </div>
     </div>
 
-    <div>
-      <span class="badge <%= item.status_badge_class %>">
-        <%= item.status_label %>
+  </div>
+
+  <% if variant == :availability %>
+
+    <div class="fleet-plate-card__details"
+         data-live-details>
+      <span>
+        <i class="bi bi-geo-alt"></i>
+        Setor <%= plate.setor.presence || "-" %>
       </span>
     </div>
 
-    <% if item.unavailable? %>
+  <% elsif variant == :unavailable %>
 
-      <div class="mt-2">
-        <small class="text-danger fw-semibold">
-          <%= item.reason.humanize %>
-        </small>
+    <div data-live-details>
+      <div class="fleet-plate-card__defect"
+           data-defect>
+        <strong>
+          <%= item.reason_label %>
+        </strong>
 
         <% if item.observation.present? %>
-          <div class="small text-muted">
+          <span>
             <%= item.observation %>
-          </div>
+          </span>
         <% end %>
       </div>
+    </div>
 
-    <% end %>
+  <% else %>
+
+    <div data-live-details></div>
+
+  <% end %>
 
   </div>
-</div>
+
+</article>

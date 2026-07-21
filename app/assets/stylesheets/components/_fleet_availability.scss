@@ -1,0 +1,426 @@
+.fleet-availability-page {
+  .fleet-availability-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .fleet-coverage-panel {
+    min-width: 10rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    background: var(--bs-body-bg);
+    text-align: right;
+  }
+
+  .fleet-coverage-panel span,
+  .fleet-coverage-panel small {
+    display: block;
+  }
+
+  .fleet-coverage-panel strong {
+    display: block;
+    color: var(--bs-primary);
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .fleet-board-card {
+    border-color: var(--bs-border-color);
+    background: var(--bs-body-bg);
+  }
+
+  .fleet-board-card--main {
+    border-top: 0.25rem solid var(--bs-success);
+  }
+
+  .fleet-board-card--danger {
+    border-top: 0.25rem solid var(--bs-danger);
+  }
+
+  .fleet-board-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: var(--bs-tertiary-bg);
+    border-bottom-color: var(--bs-border-color);
+  }
+
+  .fleet-board-card__title {
+    display: block;
+    color: var(--bs-emphasis-color);
+    font-weight: 700;
+  }
+
+  .fleet-board-card__header small {
+    display: block;
+    color: var(--bs-secondary-color);
+    font-size: 0.78rem;
+    line-height: 1.25;
+  }
+
+  .fleet-count-badge {
+    flex: 0 0 auto;
+    min-width: 2rem;
+    padding: 0.35rem 0.55rem;
+    border-radius: 999px;
+    background: var(--bs-secondary-bg);
+    color: var(--bs-emphasis-color);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .fleet-count-badge--success {
+    background: rgba(var(--bs-success-rgb), 0.16);
+    color: var(--bs-success-text-emphasis);
+  }
+
+  .fleet-count-badge--danger {
+    background: rgba(var(--bs-danger-rgb), 0.16);
+    color: var(--bs-danger-text-emphasis);
+  }
+
+  .fleet-limit-alert {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    border: 1px solid rgba(var(--bs-warning-rgb), 0.35);
+    border-radius: 0.5rem;
+    background: rgba(var(--bs-warning-rgb), 0.14);
+    color: var(--bs-warning-text-emphasis);
+    font-size: 0.88rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(-0.25rem);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+
+  .fleet-limit-alert--visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .fleet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 18rem;
+    max-height: 34rem;
+    overflow-y: auto;
+    background: var(--bs-secondary-bg);
+  }
+
+  .fleet-list--availability {
+    min-height: calc(var(--fleet-visible-rows) * 5.75rem);
+    max-height: calc(var(--fleet-visible-rows) * 6.25rem);
+  }
+
+  .fleet-list--deposit {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-content: start;
+    gap: 0.55rem;
+    min-height: 12rem;
+    max-height: 34rem;
+  }
+
+  .fleet-special-routes {
+    border-top: 0.25rem solid var(--bs-info);
+  }
+
+  .fleet-special-routes__body {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    background: var(--bs-secondary-bg);
+  }
+
+  .fleet-special-route-card {
+    display: grid;
+    grid-template-rows: auto minmax(4.5rem, 1fr);
+    gap: 0.6rem;
+    min-width: 0;
+    padding: 0.75rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    background: var(--bs-body-bg);
+  }
+
+  .fleet-special-route-card__header strong,
+  .fleet-special-route-card__header small {
+    display: block;
+  }
+
+  .fleet-special-route-card__header strong {
+    color: var(--bs-emphasis-color);
+  }
+
+  .fleet-special-route-card__header small {
+    color: var(--bs-secondary-color);
+    font-size: 0.76rem;
+  }
+
+  .fleet-special-route-list {
+    display: grid;
+    align-content: start;
+    gap: 0.5rem;
+    min-height: 4.5rem;
+    padding: 0.5rem;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 0.45rem;
+    background: var(--bs-tertiary-bg);
+  }
+
+  .fleet-special-route-placeholder {
+    display: grid;
+    min-height: 3.4rem;
+    place-items: center;
+    color: var(--bs-secondary-color);
+    font-size: 0.82rem;
+    text-align: center;
+  }
+
+  .fleet-plate-item {
+    display: block;
+    cursor: grab;
+  }
+
+  .fleet-plate-item:active {
+    cursor: grabbing;
+  }
+
+  .fleet-plate-item--availability {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    align-items: start;
+    gap: 0.65rem;
+  }
+
+  .fleet-plate-item__line {
+    display: none;
+    padding-top: 1rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .fleet-plate-item--availability .fleet-plate-item__line {
+    display: block;
+  }
+
+  .fleet-plate-card {
+    min-width: 0;
+    padding: 0.85rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  }
+
+  .fleet-plate-card:hover {
+    border-color: rgba(var(--bs-primary-rgb), 0.45);
+    box-shadow: 0 0.35rem 0.9rem rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+  }
+
+  .fleet-plate-item--availability .fleet-plate-card {
+    padding: 1rem;
+  }
+
+  .fleet-plate-item--deposit .fleet-plate-card {
+    display: grid;
+    min-height: 3.55rem;
+    padding: 0.45rem 0.3rem;
+    place-items: center;
+    border: 2px solid var(--bs-border-color);
+    border-radius: 0.35rem;
+    background: linear-gradient(
+      180deg,
+      var(--bs-body-bg) 0%,
+      var(--bs-tertiary-bg) 100%
+    );
+    text-align: center;
+  }
+
+  .fleet-plate-item--special_route .fleet-plate-card {
+    display: grid;
+    min-height: 3.75rem;
+    padding: 0.55rem 0.4rem;
+    place-items: center;
+    border: 2px solid rgba(var(--bs-info-rgb), 0.45);
+    border-radius: 0.35rem;
+    text-align: center;
+  }
+
+  .fleet-plate-item--special_route .fleet-plate-card__main {
+    display: block;
+  }
+
+  .fleet-plate-item--special_route .fleet-plate-card__plate {
+    font-size: 0.95rem;
+    line-height: 1;
+  }
+
+  .fleet-plate-item--special_route .fleet-plate-card__meta {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.64rem;
+    line-height: 1.1;
+  }
+
+  .fleet-plate-item--deposit .fleet-plate-card__main {
+    display: block;
+    width: 100%;
+  }
+
+  .fleet-plate-item--deposit .fleet-plate-card__plate {
+    font-size: clamp(0.72rem, 0.9vw, 0.95rem);
+    line-height: 1;
+    overflow-wrap: anywhere;
+  }
+
+  .fleet-plate-item--deposit .fleet-plate-card__meta {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.62rem;
+    line-height: 1.1;
+  }
+
+  .fleet-plate-item--deposit .fleet-plate-card__details {
+    display: none;
+  }
+
+  .fleet-plate-item--ghost {
+    opacity: 0.55;
+  }
+
+  .fleet-plate-card__main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .fleet-plate-card__plate {
+    display: block;
+    color: var(--bs-emphasis-color);
+    font-size: 1.08rem;
+    letter-spacing: 0;
+  }
+
+  .fleet-plate-card__meta,
+  .fleet-plate-card__details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    margin-top: 0.35rem;
+    color: var(--bs-secondary-color);
+    font-size: 0.84rem;
+  }
+
+  .fleet-plate-card__meta span,
+  .fleet-plate-card__details span {
+    min-width: 0;
+  }
+
+  .fleet-plate-card__details {
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--bs-border-color);
+  }
+
+  .fleet-plate-card__details--compact {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .fleet-plate-card__defect {
+    display: grid;
+    gap: 0.2rem;
+    margin-top: 0.7rem;
+    padding: 0.65rem;
+    border-radius: 0.45rem;
+    background: rgba(var(--bs-danger-rgb), 0.09);
+    color: var(--bs-danger-text-emphasis);
+    font-size: 0.85rem;
+  }
+
+  .fleet-plate-card__defect span {
+    color: var(--bs-secondary-color);
+  }
+
+  .fleet-empty-slot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 4.5rem;
+    padding: 0.85rem 1rem;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 0.5rem;
+    color: var(--bs-secondary-color);
+    background: rgba(var(--bs-body-bg-rgb), 0.55);
+  }
+
+  .fleet-empty-slot span {
+    color: var(--bs-emphasis-color);
+    font-weight: 600;
+  }
+
+  .fleet-empty-slot small {
+    text-align: right;
+  }
+}
+
+[data-bs-theme="dark"] .fleet-availability-page {
+  .fleet-coverage-panel,
+  .fleet-board-card,
+  .fleet-special-route-card,
+  .fleet-plate-card {
+    background: var(--bs-tertiary-bg);
+  }
+
+  .fleet-board-card__header {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .fleet-list {
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .fleet-plate-card:hover {
+    box-shadow: 0 0.35rem 0.9rem rgba(0, 0, 0, 0.2);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .fleet-availability-page {
+    .fleet-availability-header {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .fleet-coverage-panel {
+      width: 100%;
+      text-align: left;
+    }
+
+    .fleet-list--availability {
+      min-height: 18rem;
+      max-height: 28rem;
+    }
+
+    .fleet-list--deposit {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .fleet-special-routes__body {
+      grid-template-columns: 1fr;
+    }
+  }
+}

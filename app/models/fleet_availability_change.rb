@@ -7,14 +7,16 @@ class FleetAvailabilityChange < ApplicationRecord
   enum :from_status, {
     available: 0,
     exchange: 1,
-    unavailable: 2
+    unavailable: 2,
+    special_route: 3
   }, prefix: true
 
 
   enum :to_status, {
     available: 0,
     exchange: 1,
-    unavailable: 2
+    unavailable: 2,
+    special_route: 3
   }, prefix: true
 
 end

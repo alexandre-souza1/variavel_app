@@ -4,10 +4,11 @@ module FleetAvailabilities
       new(...).call
     end
 
-    def initialize(user:, date:, agreed_quantity:, copy_from: nil)
+    def initialize(user:, date:, agreed_quantity:, special_routes: [], copy_from: nil)
       @user = user
       @date = date
       @agreed_quantity = agreed_quantity
+      @special_routes = special_routes
       @copy_from = copy_from
     end
 
@@ -25,7 +26,8 @@ module FleetAvailabilities
       FleetAvailability.create!(
         user: @user,
         date: @date,
-        agreed_quantity: @agreed_quantity
+        agreed_quantity: @agreed_quantity,
+        special_routes: @special_routes
       )
     end
 
@@ -35,10 +37,17 @@ module FleetAvailabilities
       items = Plate.where(setor: "ROTA")
              .ordered
              .each_with_index.map do |plate, index|
+        status =
+          if index < availability.agreed_quantity
+            FleetAvailabilityItem.statuses[:available]
+          else
+            FleetAvailabilityItem.statuses[:exchange]
+          end
+
         {
           fleet_availability_id: availability.id,
           plate_id: plate.id,
-          status: FleetAvailabilityItem.statuses[:available],
+          status: status,
           position: index,
           created_at: Time.current,
           updated_at: Time.current
