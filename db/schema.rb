@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_21_113000) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_21_114500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -261,6 +261,18 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_21_113000) do
     t.index ["fleet_availability_id", "plate_id"], name: "idx_fleet_availability_item", unique: true
     t.index ["fleet_availability_id"], name: "index_fleet_availability_items_on_fleet_availability_id"
     t.index ["plate_id"], name: "index_fleet_availability_items_on_plate_id"
+  end
+
+  create_table "fleet_dimensioning_standard_plates", force: :cascade do |t|
+    t.bigint "fleet_dimensioning_id", null: false
+    t.bigint "plate_id", null: false
+    t.integer "position", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["fleet_dimensioning_id", "plate_id"], name: "idx_fleet_dimensioning_standard_plate_plate", unique: true
+    t.index ["fleet_dimensioning_id", "position"], name: "idx_fleet_dimensioning_standard_plate_position", unique: true
+    t.index ["fleet_dimensioning_id"], name: "idx_on_fleet_dimensioning_id_02907e8fbc"
+    t.index ["plate_id"], name: "index_fleet_dimensioning_standard_plates_on_plate_id"
   end
 
   create_table "fleet_dimensionings", force: :cascade do |t|
@@ -567,6 +579,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_21_113000) do
   add_foreign_key "fleet_availability_changes", "users"
   add_foreign_key "fleet_availability_items", "fleet_availabilities"
   add_foreign_key "fleet_availability_items", "plates"
+  add_foreign_key "fleet_dimensioning_standard_plates", "fleet_dimensionings"
+  add_foreign_key "fleet_dimensioning_standard_plates", "plates"
   add_foreign_key "invoice_numbers", "cost_centers"
   add_foreign_key "invoice_numbers", "invoices"
   add_foreign_key "invoices", "budget_categories"

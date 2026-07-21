@@ -4,6 +4,10 @@
 <% special_route_items = @items.select(&:special_route?).group_by(&:special_route) %>
 <% availability_slots = [@fleet_availability.agreed_quantity, 0].max %>
 <% empty_slots = [availability_slots - available_items.size, 0].max %>
+<% maintenance_count = unavailable_items.count { |item| item.reason == "maintenance" } %>
+<% maintenance_percentage = @items.any? ? ((maintenance_count.to_f / @items.size) * 100).round : 0 %>
+<% used_items = available_items + @items.select(&:special_route?) %>
+<% used_profile_counts = used_items.each_with_object(Hash.new(0)) { |item, counts| counts[item.plate.perfil.presence || "Sem perfil"] += 1 } %>
 
 <div class="container-fluid py-4 fleet-availability-page"
      data-controller="fleet-availability"
@@ -31,7 +35,7 @@
         PDF
       <% end %>
 
-      <div class="fleet-coverage-panel">
+      <div class="fleet-kpi-panel">
 
         <span class="text-muted">
           Cobertura
@@ -46,6 +50,36 @@
           <%= @fleet_availability.agreed_quantity %> linhas
         </small>
 
+      </div>
+
+      <div class="fleet-kpi-panel fleet-kpi-panel--danger">
+        <span class="text-muted">
+          Manutenção
+        </span>
+
+        <strong data-maintenance-percentage>
+          <%= maintenance_percentage %>%
+        </strong>
+
+        <small data-maintenance-ratio>
+          <%= maintenance_count %> /
+          <%= @items.size %> veículos
+        </small>
+      </div>
+
+      <div class="fleet-profile-panel">
+        <span class="text-muted">
+          Em uso por perfil
+        </span>
+
+        <div data-used-profile-counts>
+          <% %w[VUC TOCO TRUCK BITRUCK].each do |profile| %>
+            <small>
+              <strong><%= profile %></strong>
+              <%= used_profile_counts[profile] %>
+            </small>
+          <% end %>
+        </div>
       </div>
 
     </div>
@@ -138,14 +172,27 @@
         <div class="card-body fleet-list fleet-list--availability sortable-list"
             id="available-list"
             data-max-items="<%= availability_slots %>"
+            data-standard-plates="<%= @standard_plate_by_position.transform_values { |standard_plate| standard_plate.plate.placa }.to_json %>"
             style="--fleet-visible-rows: <%= [availability_slots, 1].max %>;">
           <% available_items.each do |item| %>
-            <%= render "fleet_availability_items/item", item: item, variant: :availability %>
+            <%= render "fleet_availability_items/item",
+                       item: item,
+                       variant: :availability,
+                       standard_plate: @standard_plate_by_position[item.position.to_i]&.plate %>
           <% end %>
           <% empty_slots.times do |index| %>
+            <% position = available_items.size + index %>
+            <% standard_plate = @standard_plate_by_position[position]&.plate %>
             <div class="fleet-empty-slot">
-              <span>Linha <%= available_items.size + index + 1 %></span>
-              <small>Arraste uma placa do depósito</small>
+              <span>Linha <%= position + 1 %></span>
+              <small>
+                <% if standard_plate.present? %>
+                  Placa padrão da posição:
+                  <%= standard_plate.placa %>
+                <% else %>
+                  Placa padrão da posição não definida
+                <% end %>
+              </small>
             </div>
           <% end %>
         </div>

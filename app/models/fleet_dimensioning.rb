@@ -1,4 +1,18 @@
 class FleetDimensioning < ApplicationRecord
+  STANDARD_PLATE_SLOTS = 18
+
+  has_many :fleet_dimensioning_standard_plates,
+           -> { order(:position) },
+           dependent: :destroy,
+           inverse_of: :fleet_dimensioning
+  has_many :standard_plates,
+           through: :fleet_dimensioning_standard_plates,
+           source: :plate
+
+  accepts_nested_attributes_for :fleet_dimensioning_standard_plates,
+                                allow_destroy: true,
+                                reject_if: :new_standard_plate_blank?
+
   validates :label,
             :start_date,
             :end_date,
@@ -33,7 +47,27 @@ class FleetDimensioning < ApplicationRecord
     }.select { |_route, quantity| quantity.positive? }
   end
 
+  def standard_plate_by_position
+    fleet_dimensioning_standard_plates
+      .includes(:plate)
+      .index_by(&:position)
+  end
+
+  def build_standard_plate_slots(quantity = nil)
+    slot_quantity = [quantity || route_quantity.to_i, STANDARD_PLATE_SLOTS].max
+
+    slot_quantity.times do |position|
+      next if fleet_dimensioning_standard_plates.any? { |item| item.position == position }
+
+      fleet_dimensioning_standard_plates.build(position: position)
+    end
+  end
+
   private
+
+  def new_standard_plate_blank?(attributes)
+    attributes["id"].blank? && attributes["plate_id"].blank?
+  end
 
   def start_before_end
     return unless start_date && end_date && start_date > end_date

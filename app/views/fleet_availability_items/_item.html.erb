@@ -1,5 +1,6 @@
 <% variant = local_assigns.fetch(:variant, :default).to_sym %>
 <% plate = item.plate %>
+<% standard_plate = local_assigns[:standard_plate] %>
 
 <article id="<%= dom_id(item) %>"
          class="fleet-plate-item fleet-plate-item--<%= variant %> sortable-item"
@@ -36,8 +37,8 @@
       <div class="fleet-plate-card__side" data-live-details>
         <% if variant == :availability %>
           <span>
-            <i class="bi bi-geo-alt"></i>
-            Setor <%= plate.setor.presence || "-" %>
+            Placa padrão:
+            <%= standard_plate&.placa.presence || "não definida" %>
           </span>
         <% elsif variant == :unavailable %>
           <div class="fleet-plate-card__defect" data-defect>

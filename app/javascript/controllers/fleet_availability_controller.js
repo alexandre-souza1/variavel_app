@@ -360,13 +360,13 @@ export default class extends Controller {
 
 
   setAvailabilityDetails(itemElement) {
-    const setor = this.plateSetor(itemElement)
     const container = this.detailsContainer(itemElement, "fleet-plate-card__side")
+    const position = this.itemIndex(itemElement)
+    const standardPlate = this.standardPlateForPosition(position)
 
     container.innerHTML = `
       <span>
-        <i class="bi bi-geo-alt"></i>
-        Setor ${this.escapeHtml(setor)}
+        Placa padrão: ${this.escapeHtml(standardPlate || "não definida")}
       </span>
     `
   }
@@ -418,6 +418,32 @@ export default class extends Controller {
   }
 
 
+  itemIndex(itemElement) {
+    const list = itemElement.closest(".sortable-list")
+
+    if (!list) return 0
+
+    return Array
+      .from(list.querySelectorAll(".sortable-item"))
+      .indexOf(itemElement)
+  }
+
+
+  standardPlateForPosition(position) {
+    const availableList = document.getElementById("available-list")
+
+    if (!availableList) return null
+
+    try {
+      const standardPlates = JSON.parse(availableList.dataset.standardPlates || "{}")
+
+      return standardPlates[String(position)] || null
+    } catch (_error) {
+      return null
+    }
+  }
+
+
   refreshBoard() {
     this.refreshAvailabilityRows()
     this.refreshUnavailableRows()
@@ -437,6 +463,10 @@ export default class extends Controller {
         const label = item.querySelector("[data-line-label]")
 
         if (label) label.textContent = `${index + 1} -`
+
+        if (item.classList.contains("fleet-plate-item--availability")) {
+          this.setAvailabilityDetails(item)
+        }
       })
   }
 
@@ -475,11 +505,22 @@ export default class extends Controller {
         `
           <div class="fleet-empty-slot">
             <span>Linha ${currentItems + index + 1}</span>
-            <small>Arraste uma placa do depósito</small>
+            <small>${this.emptySlotStandardPlateText(currentItems + index)}</small>
           </div>
         `
       )
     }
+  }
+
+
+  emptySlotStandardPlateText(position) {
+    const standardPlate = this.standardPlateForPosition(position)
+
+    if (standardPlate) {
+      return `Placa padrão da posição: ${this.escapeHtml(standardPlate)}`
+    }
+
+    return "Placa padrão da posição não definida"
   }
 
 

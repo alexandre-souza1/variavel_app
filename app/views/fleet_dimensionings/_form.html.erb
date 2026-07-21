@@ -1,5 +1,8 @@
 <%= form_with model: @fleet_dimensioning,
-              class: "card shadow-sm border-0" do |f| %>
+              class: "card shadow-sm border-0",
+              data: {
+                controller: "fleet-dimensioning-form"
+              } do |f| %>
   <div class="card-header bg-primary text-white">
     <h5 class="mb-0">Dimensionamento da Quinzena</h5>
   </div>
@@ -47,6 +50,10 @@
         <%= f.number_field :route_quantity,
                            class: "form-control",
                            min: 0,
+                           data: {
+                             fleet_dimensioning_form_target: "routeQuantity",
+                             action: "input->fleet-dimensioning-form#syncSlots"
+                           },
                            required: true %>
       </div>
 
@@ -73,6 +80,97 @@
                            min: 0,
                            required: true %>
       </div>
+    </div>
+
+    <div class="border rounded p-3 mt-2">
+      <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+        <div>
+          <h6 class="mb-1">Placas padrão</h6>
+          <small class="text-muted">
+            Defina a placa referência de cada posição da disponibilidade.
+          </small>
+        </div>
+      </div>
+
+      <% selected_plate_ids =
+           @fleet_dimensioning.fleet_dimensioning_standard_plates
+                              .map(&:plate_id)
+                              .compact %>
+      <% selected_by_position =
+           @fleet_dimensioning.fleet_dimensioning_standard_plates
+                              .select { |standard_plate| standard_plate.plate_id.present? }
+                              .index_by(&:position) %>
+      <% rota_plates = Plate.where(setor: "ROTA").ordered %>
+
+      <div class="fleet-dimensioning-board">
+        <section>
+          <h6 class="mb-2">Todas as placas</h6>
+
+          <div class="fleet-dimensioning-plate-list"
+               data-fleet-dimensioning-form-target="sourceList">
+            <% rota_plates.reject { |plate| selected_plate_ids.include?(plate.id) }.each do |plate| %>
+              <div class="fleet-dimensioning-plate"
+                   data-plate-id="<%= plate.id %>"
+                   data-plate-label="<%= plate.placa %>">
+                <strong><%= plate.placa %></strong>
+                <small><%= plate.perfil.presence || plate.tipo.presence || "Ativa" %></small>
+              </div>
+            <% end %>
+          </div>
+        </section>
+
+        <section>
+          <h6 class="mb-2">Posições padrão</h6>
+
+          <div class="fleet-dimensioning-slots">
+            <%= f.fields_for :fleet_dimensioning_standard_plates do |standard_plate_form| %>
+              <% position = standard_plate_form.object.position.to_i %>
+              <% standard_plate = selected_by_position[position] %>
+              <% plate = standard_plate&.plate %>
+
+              <div class="fleet-dimensioning-slot"
+                   data-fleet-dimensioning-form-target="slot"
+                   data-position="<%= position %>">
+                <div class="fleet-dimensioning-slot__header">
+                  Posição <%= position + 1 %>
+                </div>
+
+                <%= standard_plate_form.hidden_field :position %>
+                <%= standard_plate_form.hidden_field :plate_id,
+                                                     value: plate&.id,
+                                                     data: {
+                                                       fleet_dimensioning_form_target: "plateInput"
+                                                     } %>
+                <%= standard_plate_form.hidden_field :_destroy,
+                                                     value: plate.present? ? "0" : "1",
+                                                     data: {
+                                                       fleet_dimensioning_form_target: "destroyInput"
+                                                     } %>
+
+                <div class="fleet-dimensioning-slot__body"
+                     data-fleet-dimensioning-form-target="slotList">
+                  <% if plate.present? %>
+                    <div class="fleet-dimensioning-plate"
+                         data-plate-id="<%= plate.id %>"
+                         data-plate-label="<%= plate.placa %>">
+                      <strong><%= plate.placa %></strong>
+                      <small><%= plate.perfil.presence || plate.tipo.presence || "Ativa" %></small>
+                    </div>
+                  <% else %>
+                    <div class="fleet-dimensioning-placeholder">
+                      Arraste uma placa
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </section>
+      </div>
+
+      <small class="text-muted d-block mt-2">
+        Arraste uma placa para cada posição padrão. Para remover, arraste a placa de volta para a lista da esquerda.
+      </small>
     </div>
   </div>
 
