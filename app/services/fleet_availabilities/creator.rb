@@ -4,12 +4,20 @@ module FleetAvailabilities
       new(...).call
     end
 
-    def initialize(user:, date:, agreed_quantity:, special_routes: [], copy_from: nil)
+    def initialize(
+      user:,
+      date:,
+      agreed_quantity:,
+      special_routes: [],
+      copy_from: nil,
+      copy_previous_day: false
+    )
       @user = user
-      @date = date
-      @agreed_quantity = agreed_quantity
+      @date = date.to_date
+      @agreed_quantity = agreed_quantity.to_i
       @special_routes = special_routes
       @copy_from = copy_from
+      @copy_from ||= previous_day_availability if copy_previous_day
     end
 
     def call
@@ -38,7 +46,7 @@ module FleetAvailabilities
              .ordered
              .each_with_index.map do |plate, index|
         status =
-          if index < availability.agreed_quantity
+          if index < availability.agreed_quantity.to_i
             FleetAvailabilityItem.statuses[:available]
           else
             FleetAvailabilityItem.statuses[:exchange]
@@ -58,7 +66,28 @@ module FleetAvailabilities
     end
 
     def copy_items(availability)
-      # Implementaremos na Sprint 3
+      items = @copy_from
+              .fleet_availability_items
+              .includes(:plate)
+              .map do |item|
+        {
+          fleet_availability_id: availability.id,
+          plate_id: item.plate_id,
+          status: FleetAvailabilityItem.statuses[item.status],
+          position: item.position,
+          reason: item.reason,
+          observation: item.observation,
+          special_route: item.special_route,
+          created_at: Time.current,
+          updated_at: Time.current
+        }
+      end
+
+      FleetAvailabilityItem.insert_all!(items) if items.any?
+    end
+
+    def previous_day_availability
+      @user.fleet_availabilities.find_by(date: @date - 1.day)
     end
   end
 end

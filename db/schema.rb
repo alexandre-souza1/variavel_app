@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_21_104500) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_21_113000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -261,6 +261,20 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_21_104500) do
     t.index ["fleet_availability_id", "plate_id"], name: "idx_fleet_availability_item", unique: true
     t.index ["fleet_availability_id"], name: "index_fleet_availability_items_on_fleet_availability_id"
     t.index ["plate_id"], name: "index_fleet_availability_items_on_plate_id"
+  end
+
+  create_table "fleet_dimensionings", force: :cascade do |t|
+    t.string "label", null: false
+    t.date "start_date", null: false
+    t.date "end_date", null: false
+    t.integer "route_quantity", default: 0, null: false
+    t.integer "van_quantity", default: 0, null: false
+    t.integer "vespertina_quantity", default: 0, null: false
+    t.integer "as_quantity", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["label"], name: "index_fleet_dimensionings_on_label", unique: true
+    t.index ["start_date", "end_date"], name: "index_fleet_dimensionings_on_start_date_and_end_date"
   end
 
   create_table "fuel_consumptions", force: :cascade do |t|

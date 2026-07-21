@@ -104,17 +104,14 @@ export default class extends Controller {
 
 
   openModal() {
+    const modalElement = document.getElementById("unavailableModal")
+    this.modal = bootstrap.Modal.getOrCreateInstance(modalElement)
 
-    const modalElement = document.getElementById(
-      "unavailableModal"
-    )
-
-    this.modal = bootstrap.Modal.getOrCreateInstance(
-      modalElement
-    )
+    // Resetar os campos para valores padrão
+    document.getElementById("unavailableReason").value = "maintenance"
+    document.getElementById("unavailableObservation").value = ""
 
     this.modal.show()
-
   }
 
 
@@ -342,15 +339,21 @@ export default class extends Controller {
 
     if (item.status === "available") {
       itemElement.classList.add("fleet-plate-item--availability")
+      itemElement.removeAttribute("title")
       this.setAvailabilityDetails(itemElement)
     } else if (item.status === "exchange") {
       itemElement.classList.add("fleet-plate-item--deposit")
+      itemElement.removeAttribute("title")
       this.setDepositDetails(itemElement)
     } else if (item.status === "unavailable") {
       itemElement.classList.add("fleet-plate-item--unavailable")
+      itemElement.title = item.observation
+        ? `${item.reason_label} - ${item.observation}`
+        : item.reason_label
       this.setUnavailableDetails(itemElement, item)
     } else if (item.status === "special_route") {
       itemElement.classList.add("fleet-plate-item--special_route")
+      itemElement.removeAttribute("title")
       this.setSpecialRouteDetails(itemElement)
     }
   }
@@ -390,15 +393,13 @@ export default class extends Controller {
 
   detailsContainer(itemElement) {
     let container = itemElement.querySelector("[data-live-details]")
-
     if (!container) {
       container = document.createElement("div")
       container.dataset.liveDetails = ""
       itemElement.querySelector(".fleet-plate-card").appendChild(container)
     }
-
-    container.className = "fleet-plate-card__details"
-
+    // Remove a linha que define a classe, ou condicione:
+    // container.className = "fleet-plate-card__details"  // ← remova ou comente
     return container
   }
 

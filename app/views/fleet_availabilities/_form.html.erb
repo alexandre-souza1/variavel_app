@@ -32,8 +32,7 @@
     <% end %>
 
     <div class="row">
-
-      <div class="col-md-6 mb-3">
+      <div class="col-md-12 mb-3">
 
         <%= f.label :date,
                     "Data",
@@ -41,51 +40,22 @@
 
         <%= f.date_field :date,
                          class: "form-control",
+                         onchange: "window.location.href='#{new_fleet_availability_path}?date=' + this.value",
                          required: true %>
 
       </div>
-
-      <div class="col-md-6 mb-3">
-
-        <%= f.label :agreed_quantity,
-                    "Quantidade Pactuada",
-                    class: "form-label" %>
-
-        <%= f.number_field :agreed_quantity,
-                           class: "form-control",
-                           min: 0,
-                           required: true %>
-
-      </div>
-
     </div>
 
-    <div class="border rounded p-3 mt-2">
-      <h6 class="mb-3">
-        Rotas especiais dimensionadas
-      </h6>
+    <div class="form-check mt-3">
+      <%= check_box_tag "fleet_availability[copy_previous_day]",
+                        "1",
+                        false,
+                        id: "fleet_availability_copy_previous_day",
+                        class: "form-check-input" %>
 
-      <div class="row g-2">
-        <% FleetAvailability::SPECIAL_ROUTES.each do |route_key, route_label| %>
-          <div class="col-md-4">
-            <div>
-              <%= label_tag "fleet_availability_special_route_#{route_key}",
-                            route_label,
-                            class: "form-label" %>
-
-              <%= number_field_tag "fleet_availability[special_routes][#{route_key}]",
-                                   @fleet_availability.special_route_quantity(route_key),
-                                   id: "fleet_availability_special_route_#{route_key}",
-                                   class: "form-control",
-                                   min: 0 %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-
-      <small class="text-muted d-block mt-2">
-        Informe a quantidade de rotas recebidas como dimensionadas na quinzena.
-      </small>
+      <%= label_tag "fleet_availability_copy_previous_day",
+                    "Copiar montagem do dia anterior",
+                    class: "form-check-label" %>
     </div>
 
   </div>
@@ -101,7 +71,8 @@
     <% end %>
 
     <%= f.submit "Salvar",
-                 class: "btn btn-primary" %>
+                 class: "btn btn-primary",
+                 disabled: @dimensioning_period.blank? %>
 
   </div>
 

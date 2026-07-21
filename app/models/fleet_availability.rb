@@ -5,11 +5,7 @@ class FleetAvailability < ApplicationRecord
     "as" => "AS"
   }.freeze
 
-  SPECIAL_ROUTE_VEHICLE_TYPES = {
-    "vespertina" => "VESP",
-    "van" => "VAN",
-    "as" => "AS"
-  }.freeze
+  attr_accessor :copy_previous_day
 
   belongs_to :user
 
@@ -56,40 +52,28 @@ class FleetAvailability < ApplicationRecord
     ((available_count.to_f / agreed_quantity) * 100).round
   end
 
-  def self.remuneration_period_for(date)
-    return if date.blank?
+  def self.dimensioning_period_for(date)
+    FleetDimensioning.for_date(date)
+  end
 
-    parsed_date = date.to_date
+  def self.default_dimensioning_quantity_for(date)
+    dimensioning = dimensioning_period_for(date)
 
-    RemunerationPeriod
-      .where("start_date <= ? AND end_date >= ?", parsed_date, parsed_date)
-      .first
+    return 0 unless dimensioning
+
+    dimensioning.route_quantity.to_i
   end
 
   def self.default_agreed_quantity_for(date)
-    period = remuneration_period_for(date)
-
-    return 0 unless period
-
-    period.vehicle_remunerations
-          .find_by(vehicle_type: "ROTA")
-          &.fleet_quantity
-          .to_i
+    default_dimensioning_quantity_for(date)
   end
 
   def self.default_special_routes_for(date)
-    period = remuneration_period_for(date)
+    dimensioning = dimensioning_period_for(date)
 
-    return {} unless period
+    return {} unless dimensioning
 
-    SPECIAL_ROUTE_VEHICLE_TYPES.each_with_object({}) do |(route, vehicle_type), routes|
-      quantity = period.vehicle_remunerations
-                       .find_by(vehicle_type: vehicle_type)
-                       &.fleet_quantity
-                       .to_i
-
-      routes[route] = quantity if quantity.positive?
-    end
+    dimensioning.special_routes
   end
 
   def special_routes=(routes)

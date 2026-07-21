@@ -113,137 +113,77 @@
 
   <div class="row g-3 fleet-board">
 
-    <div class="col-xl-6">
-
-      <section class="card shadow-sm h-100 fleet-board-card fleet-board-card--main">
-
+    <!-- Coluna ESQUERDA: apenas Disponibilidade -->
+    <div class="col-xl-8">
+      <section class="card shadow-sm fleet-board-card fleet-board-card--main h-100">
         <div class="card-header fleet-board-card__header">
-
           <div>
-            <span class="fleet-board-card__title">
-              Disponibilidade
-            </span>
-
-            <small>
-              Placas que compõem a operação do dia
-            </small>
+            <span class="fleet-board-card__title">Disponibilidade</span>
+            <small>Placas que compõem a operação do dia</small>
           </div>
-
-          <span class="fleet-count-badge fleet-count-badge--success"
-                data-count="available">
+          <span class="fleet-count-badge fleet-count-badge--success" data-count="available">
             <%= available_items.size %> / <%= availability_slots %>
           </span>
-
         </div>
-
         <div class="card-body fleet-list fleet-list--availability sortable-list"
-             id="available-list"
-             data-max-items="<%= availability_slots %>"
-             style="--fleet-visible-rows: <%= [availability_slots, 1].max %>;">
-
+            id="available-list"
+            data-max-items="<%= availability_slots %>"
+            style="--fleet-visible-rows: <%= [availability_slots, 1].max %>;">
           <% available_items.each do |item| %>
-            <%= render "fleet_availability_items/item",
-                       item: item,
-                       variant: :availability %>
+            <%= render "fleet_availability_items/item", item: item, variant: :availability %>
           <% end %>
-
           <% empty_slots.times do |index| %>
             <div class="fleet-empty-slot">
-              <span>
-                Linha <%= available_items.size + index + 1 %>
-              </span>
-
-              <small>
-                Arraste uma placa do depósito
-              </small>
+              <span>Linha <%= available_items.size + index + 1 %></span>
+              <small>Arraste uma placa do depósito</small>
             </div>
           <% end %>
-
         </div>
-
       </section>
-
     </div>
 
-    <div class="col-xl-3 col-lg-6">
-
-      <section class="card shadow-sm h-100 fleet-board-card">
-
+    <!-- Coluna DIREITA: Indisponíveis + Depósito empilhados -->
+    <div class="col-xl-4 d-flex flex-column gap-3">
+      <!-- Indisponíveis -->
+      <section class="card shadow-sm fleet-board-card fleet-board-card--danger">
         <div class="card-header fleet-board-card__header">
-
           <div>
-            <span class="fleet-board-card__title">
-              Depósito de placas
-            </span>
-
-            <small>
-              Ativas e disponíveis para montar a escala
-            </small>
+            <span class="fleet-board-card__title">Indisponíveis</span>
+            <small>Placas com defeito ou bloqueio</small>
           </div>
-
-          <span class="fleet-count-badge"
-                data-count="exchange">
-            <%= deposit_items.size %>
-          </span>
-
-        </div>
-
-        <div class="card-body fleet-list fleet-list--deposit sortable-list"
-             id="exchange-list">
-
-          <% deposit_items.each do |item| %>
-            <%= render "fleet_availability_items/item",
-                       item: item,
-                       variant: :deposit %>
-          <% end %>
-
-        </div>
-
-      </section>
-
-    </div>
-
-    <div class="col-xl-3 col-lg-6">
-
-      <section class="card shadow-sm h-100 fleet-board-card fleet-board-card--danger">
-
-        <div class="card-header fleet-board-card__header">
-
-          <div>
-            <span class="fleet-board-card__title">
-              Indisponíveis
-            </span>
-
-            <small>
-              Placas com defeito ou bloqueio
-            </small>
-          </div>
-
-          <span class="fleet-count-badge fleet-count-badge--danger"
-                data-count="unavailable">
+          <span class="fleet-count-badge fleet-count-badge--danger" data-count="unavailable">
             <%= unavailable_items.size %>
           </span>
-
         </div>
-
-        <div class="card-body fleet-list sortable-list"
-             id="unavailable-list">
-
+        <div class="card-body fleet-list fleet-list--deposit sortable-list" id="unavailable-list">
           <% unavailable_items.each do |item| %>
-            <%= render "fleet_availability_items/item",
-                       item: item,
-                       variant: :unavailable %>
+            <%= render "fleet_availability_items/item", item: item, variant: :unavailable %>
           <% end %>
-
         </div>
-
       </section>
 
+      <!-- Depósito -->
+      <section class="card shadow-sm fleet-board-card flex-grow-1">
+        <div class="card-header fleet-board-card__header">
+          <div>
+            <span class="fleet-board-card__title">Depósito de placas</span>
+            <small>Ativas e disponíveis para montar a escala</small>
+          </div>
+          <span class="fleet-count-badge" data-count="exchange">
+            <%= deposit_items.size %>
+          </span>
+        </div>
+        <div class="card-body fleet-list fleet-list--deposit sortable-list" id="exchange-list">
+          <% deposit_items.each do |item| %>
+            <%= render "fleet_availability_items/item", item: item, variant: :deposit %>
+          <% end %>
+        </div>
+      </section>
     </div>
 
   </div>
 
-  <div class="mt-4">
+  <div class="mt-4 d-flex justify-content-between">
 
     <%= link_to fleet_availabilities_path,
                 class: "btn btn-outline-secondary" do %>
@@ -251,6 +191,20 @@
       <i class="bi bi-arrow-left"></i>
       Voltar
 
+    <% end %>
+
+    <% if current_user.admin? %>
+      <%= button_to @fleet_availability,
+                    method: :delete,
+                    class: "btn btn-outline-danger",
+                    form: {
+                      data: {
+                        turbo_confirm: "Tem certeza que deseja apagar esta disponibilidade?"
+                      }
+                    } do %>
+        <i class="bi bi-trash"></i>
+        Apagar
+      <% end %>
     <% end %>
 
   </div>

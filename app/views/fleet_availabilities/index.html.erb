@@ -14,13 +14,20 @@
 
     </div>
 
-    <%= link_to new_fleet_availability_path,
-                class: "btn btn-primary" do %>
+    <div class="d-flex gap-2">
+      <%= link_to fleet_dimensionings_path,
+                  class: "btn btn-outline-primary" do %>
+        <i class="bi bi-calendar-range"></i>
+        Dimensionamentos
+      <% end %>
 
-      <i class="bi bi-plus-circle"></i>
-      Nova Disponibilidade
+      <%= link_to new_fleet_availability_path,
+                  class: "btn btn-primary" do %>
+        <i class="bi bi-plus-circle"></i>
+        Nova Disponibilidade
+      <% end %>
 
-    <% end %>
+    </div>
 
   </div>
 
@@ -40,7 +47,7 @@
 
                 <th>Data</th>
 
-                <th class="text-center">Pactuado</th>
+                <th class="text-center">Dimensionamento</th>
 
                 <th class="text-center">Disponíveis</th>
 
@@ -110,13 +117,29 @@
 
                   <td class="text-end">
 
-                    <%= link_to availability,
-                                class: "btn btn-sm btn-outline-primary" do %>
+                    <div class="d-flex justify-content-end gap-2">
+                      <%= link_to availability,
+                                  class: "btn btn-sm btn-outline-primary" do %>
 
-                      <i class="bi bi-eye"></i>
-                      Abrir
+                        <i class="bi bi-eye"></i>
+                        Abrir
 
-                    <% end %>
+                      <% end %>
+
+                      <% if current_user.admin? %>
+                        <%= button_to availability,
+                                      method: :delete,
+                                      class: "btn btn-sm btn-outline-danger",
+                                      form: {
+                                        data: {
+                                          turbo_confirm: "Tem certeza que deseja apagar esta disponibilidade?"
+                                        }
+                                      } do %>
+                          <i class="bi bi-trash"></i>
+                          Apagar
+                        <% end %>
+                      <% end %>
+                    </div>
 
                   </td>
 

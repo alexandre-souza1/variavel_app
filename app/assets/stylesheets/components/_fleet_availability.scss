@@ -1,4 +1,5 @@
 .fleet-availability-page {
+  // ─── Cabeçalho ──────────────────────────────────────────────────
   .fleet-availability-header {
     display: flex;
     align-items: center;
@@ -13,53 +14,54 @@
     border-radius: 0.5rem;
     background: var(--bs-body-bg);
     text-align: right;
+
+    span,
+    small {
+      display: block;
+    }
+
+    strong {
+      display: block;
+      color: var(--bs-primary);
+      font-size: 2rem;
+      line-height: 1;
+    }
   }
 
-  .fleet-coverage-panel span,
-  .fleet-coverage-panel small {
-    display: block;
-  }
-
-  .fleet-coverage-panel strong {
-    display: block;
-    color: var(--bs-primary);
-    font-size: 2rem;
-    line-height: 1;
-  }
-
+  // ─── Cards ──────────────────────────────────────────────────────
   .fleet-board-card {
     border-color: var(--bs-border-color);
     background: var(--bs-body-bg);
-  }
 
-  .fleet-board-card--main {
-    border-top: 0.25rem solid var(--bs-success);
-  }
+    &--main {
+      border-top: 0.25rem solid var(--bs-success);
+    }
 
-  .fleet-board-card--danger {
-    border-top: 0.25rem solid var(--bs-danger);
-  }
+    &--danger {
+      border-top: 0.25rem solid var(--bs-danger);
+    }
 
-  .fleet-board-card__header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.75rem;
-    background: var(--bs-tertiary-bg);
-    border-bottom-color: var(--bs-border-color);
-  }
+    &__header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      background: var(--bs-tertiary-bg);
+      border-bottom-color: var(--bs-border-color);
+    }
 
-  .fleet-board-card__title {
-    display: block;
-    color: var(--bs-emphasis-color);
-    font-weight: 700;
-  }
+    &__title {
+      display: block;
+      color: var(--bs-emphasis-color);
+      font-weight: 700;
+    }
 
-  .fleet-board-card__header small {
-    display: block;
-    color: var(--bs-secondary-color);
-    font-size: 0.78rem;
-    line-height: 1.25;
+    &__header small {
+      display: block;
+      color: var(--bs-secondary-color);
+      font-size: 0.78rem;
+      line-height: 1.25;
+    }
   }
 
   .fleet-count-badge {
@@ -72,16 +74,16 @@
     font-size: 0.78rem;
     font-weight: 700;
     text-align: center;
-  }
 
-  .fleet-count-badge--success {
-    background: rgba(var(--bs-success-rgb), 0.16);
-    color: var(--bs-success-text-emphasis);
-  }
+    &--success {
+      background: rgba(var(--bs-success-rgb), 0.16);
+      color: var(--bs-success-text-emphasis);
+    }
 
-  .fleet-count-badge--danger {
-    background: rgba(var(--bs-danger-rgb), 0.16);
-    color: var(--bs-danger-text-emphasis);
+    &--danger {
+      background: rgba(var(--bs-danger-rgb), 0.16);
+      color: var(--bs-danger-text-emphasis);
+    }
   }
 
   .fleet-limit-alert {
@@ -98,46 +100,154 @@
     opacity: 0;
     transform: translateY(-0.25rem);
     transition: opacity 0.18s ease, transform 0.18s ease;
+
+    &--visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  .fleet-limit-alert--visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
+  // ─── Listas ──────────────────────────────────────────────────────
   .fleet-list {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    min-height: 18rem;
-    max-height: 34rem;
+    min-height: 10rem;
+    max-height: 28rem;
     overflow-y: auto;
     background: var(--bs-secondary-bg);
+
+    // Disponibilidade: altura ajustada
+    &--availability {
+      min-height: 10rem;
+      max-height: 28rem;
+    }
+
+    // Indisponíveis (vai ser substituído pelo grid, mas mantido como fallback)
+    &--unavailable {
+      min-height: 10rem;
+      max-height: 28rem;
+    }
+
+    // Depósito e indisponíveis (grid 3 colunas)
+    &--deposit {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-content: start;
+      gap: 0.55rem;
+      min-height: 10rem;
+      max-height: 28rem;
+
+      // Itens dentro do grid
+      .fleet-plate-item {
+        display: block; // anula o grid de duas colunas
+
+        // Esconde o número de linha
+        .fleet-plate-item__line {
+          display: none !important;
+        }
+
+        // Estilo base do card compacto (depósito e indisponíveis)
+        .fleet-plate-card {
+          display: grid;
+          min-height: 3.55rem;
+          padding: 0.45rem 0.3rem;
+          place-items: center;
+          border: 2px solid var(--bs-border-color);
+          border-radius: 0.35rem;
+          background: linear-gradient(
+            180deg,
+            var(--bs-body-bg) 0%,
+            var(--bs-tertiary-bg) 100%
+          );
+          text-align: center;
+
+          .fleet-plate-card__main {
+            display: block;
+            width: 100%;
+          }
+
+          .fleet-plate-card__plate {
+            font-size: clamp(0.72rem, 0.9vw, 0.95rem);
+            line-height: 1;
+            overflow-wrap: anywhere;
+          }
+
+          .fleet-plate-card__meta {
+            display: block;
+            margin-top: 0.2rem;
+            font-size: 0.62rem;
+            line-height: 1.1;
+          }
+
+          .fleet-plate-card__details {
+            display: none; // esconde detalhes extras
+          }
+        }
+
+        // Específico para indisponíveis
+        &--unavailable .fleet-plate-card {
+          border-color: rgba(var(--bs-danger-rgb), 0.35);
+
+          .fleet-plate-card__defect {
+            // Defeito sempre visível, abaixo da meta
+            display: block;
+            margin-top: 0.35rem;
+            padding: 0.2rem 0.3rem;
+            background: rgba(var(--bs-danger-rgb), 0.10);
+            border-radius: 0.25rem;
+            font-size: 0.6rem;
+            line-height: 1.2;
+            color: var(--bs-danger-text-emphasis);
+            max-width: 100%;
+            overflow-wrap: break-word;
+            // Remove qualquer posição absoluta/hover
+            position: static !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            transform: none !important;
+            transition: none !important;
+            width: auto !important;
+
+            strong {
+              display: inline;
+              font-weight: 600;
+            }
+            span {
+              display: inline;
+              color: var(--bs-secondary-color);
+              margin-left: 0.25rem;
+            }
+          }
+        }
+
+        // Específico para special_route (se aparecer no grid)
+        &--special_route .fleet-plate-card {
+          border-color: rgba(var(--bs-info-rgb), 0.45);
+          min-height: 3.75rem;
+          padding: 0.55rem 0.4rem;
+
+          .fleet-plate-card__plate {
+            font-size: 0.95rem;
+          }
+          .fleet-plate-card__meta {
+            font-size: 0.64rem;
+          }
+        }
+      }
+    }
   }
 
-  .fleet-list--availability {
-    min-height: calc(var(--fleet-visible-rows) * 5.75rem);
-    max-height: calc(var(--fleet-visible-rows) * 6.25rem);
-  }
-
-  .fleet-list--deposit {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-content: start;
-    gap: 0.55rem;
-    min-height: 12rem;
-    max-height: 34rem;
-  }
-
+  // ─── Rotas especiais ──────────────────────────────────────────────
   .fleet-special-routes {
     border-top: 0.25rem solid var(--bs-info);
-  }
 
-  .fleet-special-routes__body {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.75rem;
-    background: var(--bs-secondary-bg);
+    &__body {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+      background: var(--bs-secondary-bg);
+    }
   }
 
   .fleet-special-route-card {
@@ -149,20 +259,20 @@
     border: 1px solid var(--bs-border-color);
     border-radius: 0.5rem;
     background: var(--bs-body-bg);
-  }
 
-  .fleet-special-route-card__header strong,
-  .fleet-special-route-card__header small {
-    display: block;
-  }
-
-  .fleet-special-route-card__header strong {
-    color: var(--bs-emphasis-color);
-  }
-
-  .fleet-special-route-card__header small {
-    color: var(--bs-secondary-color);
-    font-size: 0.76rem;
+    &__header {
+      strong,
+      small {
+        display: block;
+      }
+      strong {
+        color: var(--bs-emphasis-color);
+      }
+      small {
+        color: var(--bs-secondary-color);
+        font-size: 0.76rem;
+      }
+    }
   }
 
   .fleet-special-route-list {
@@ -185,175 +295,145 @@
     text-align: center;
   }
 
+  // ─── Itens (fora do grid) ──────────────────────────────────────
   .fleet-plate-item {
     display: block;
     cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+
+    // Estilo para itens que NÃO estão no grid (availability, etc.)
+    &--availability,
+    &--unavailable {
+      display: grid;
+      grid-template-columns: 2.25rem minmax(0, 1fr);
+      align-items: start;
+      gap: 0.65rem;
+    }
+
+    .fleet-plate-item__line {
+      display: none;
+      padding-top: 1rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    &--availability .fleet-plate-item__line,
+    &--unavailable .fleet-plate-item__line {
+      display: block;
+    }
+
+    .fleet-plate-card {
+      min-width: 0;
+      padding: 0.85rem;
+      border: 1px solid var(--bs-border-color);
+      border-radius: 0.5rem;
+      background: var(--bs-body-bg);
+      color: var(--bs-body-color);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+
+      &:hover {
+        border-color: rgba(var(--bs-primary-rgb), 0.45);
+        box-shadow: 0 0.35rem 0.9rem rgba(15, 23, 42, 0.08);
+        transform: translateY(-1px);
+      }
+    }
+
+    &--availability .fleet-plate-card,
+    &--unavailable .fleet-plate-card {
+      padding: 1rem;
+    }
+
+    &--unavailable .fleet-plate-card {
+      position: relative;
+      border-color: rgba(var(--bs-danger-rgb), 0.35);
+    }
+
+    // Defeito para indisponíveis no layout normal (não grid)
+    &--unavailable .fleet-plate-card__defect {
+      position: absolute;
+      right: 0.75rem;
+      bottom: calc(100% - 0.35rem);
+      z-index: 5;
+      max-width: 18rem;
+      width: calc(100% - 1.5rem);
+      margin-top: 0;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(0.35rem);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+
+    &--unavailable .fleet-plate-card:hover .fleet-plate-card__defect {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    &--ghost {
+      opacity: 0.55;
+    }
   }
 
-  .fleet-plate-item:active {
-    cursor: grabbing;
-  }
-
-  .fleet-plate-item--availability {
-    display: grid;
-    grid-template-columns: 2.25rem minmax(0, 1fr);
-    align-items: start;
-    gap: 0.65rem;
-  }
-
-  .fleet-plate-item__line {
-    display: none;
-    padding-top: 1rem;
-    font-size: 0.88rem;
-    font-weight: 600;
-    text-align: right;
-  }
-
-  .fleet-plate-item--availability .fleet-plate-item__line {
-    display: block;
-  }
-
+  // ─── Componentes internos ────────────────────────────────────────
   .fleet-plate-card {
-    min-width: 0;
-    padding: 0.85rem;
-    border: 1px solid var(--bs-border-color);
-    border-radius: 0.5rem;
-    background: var(--bs-body-bg);
-    color: var(--bs-body-color);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    &__main {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    &__plate {
+      display: block;
+      color: var(--bs-emphasis-color);
+      font-size: 1.08rem;
+      letter-spacing: 0;
+    }
+
+    &__meta,
+    &__details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.5rem;
+      margin-top: 0.35rem;
+      color: var(--bs-secondary-color);
+      font-size: 0.84rem;
+
+      span {
+        min-width: 0;
+      }
+    }
+
+    &__details {
+      padding-top: 0.65rem;
+      border-top: 1px solid var(--bs-border-color);
+
+      &--compact {
+        padding-top: 0;
+        border-top: 0;
+      }
+    }
+
+    &__defect {
+      display: grid;
+      gap: 0.2rem;
+      margin-top: 0.7rem;
+      padding: 0.65rem;
+      border-radius: 0.45rem;
+      background: rgba(var(--bs-danger-rgb), 0.09);
+      color: var(--bs-danger-text-emphasis);
+      font-size: 0.85rem;
+
+      span {
+        color: var(--bs-secondary-color);
+      }
+    }
   }
 
-  .fleet-plate-card:hover {
-    border-color: rgba(var(--bs-primary-rgb), 0.45);
-    box-shadow: 0 0.35rem 0.9rem rgba(15, 23, 42, 0.08);
-    transform: translateY(-1px);
-  }
-
-  .fleet-plate-item--availability .fleet-plate-card {
-    padding: 1rem;
-  }
-
-  .fleet-plate-item--deposit .fleet-plate-card {
-    display: grid;
-    min-height: 3.55rem;
-    padding: 0.45rem 0.3rem;
-    place-items: center;
-    border: 2px solid var(--bs-border-color);
-    border-radius: 0.35rem;
-    background: linear-gradient(
-      180deg,
-      var(--bs-body-bg) 0%,
-      var(--bs-tertiary-bg) 100%
-    );
-    text-align: center;
-  }
-
-  .fleet-plate-item--special_route .fleet-plate-card {
-    display: grid;
-    min-height: 3.75rem;
-    padding: 0.55rem 0.4rem;
-    place-items: center;
-    border: 2px solid rgba(var(--bs-info-rgb), 0.45);
-    border-radius: 0.35rem;
-    text-align: center;
-  }
-
-  .fleet-plate-item--special_route .fleet-plate-card__main {
-    display: block;
-  }
-
-  .fleet-plate-item--special_route .fleet-plate-card__plate {
-    font-size: 0.95rem;
-    line-height: 1;
-  }
-
-  .fleet-plate-item--special_route .fleet-plate-card__meta {
-    display: block;
-    margin-top: 0.2rem;
-    font-size: 0.64rem;
-    line-height: 1.1;
-  }
-
-  .fleet-plate-item--deposit .fleet-plate-card__main {
-    display: block;
-    width: 100%;
-  }
-
-  .fleet-plate-item--deposit .fleet-plate-card__plate {
-    font-size: clamp(0.72rem, 0.9vw, 0.95rem);
-    line-height: 1;
-    overflow-wrap: anywhere;
-  }
-
-  .fleet-plate-item--deposit .fleet-plate-card__meta {
-    display: block;
-    margin-top: 0.2rem;
-    font-size: 0.62rem;
-    line-height: 1.1;
-  }
-
-  .fleet-plate-item--deposit .fleet-plate-card__details {
-    display: none;
-  }
-
-  .fleet-plate-item--ghost {
-    opacity: 0.55;
-  }
-
-  .fleet-plate-card__main {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.75rem;
-  }
-
-  .fleet-plate-card__plate {
-    display: block;
-    color: var(--bs-emphasis-color);
-    font-size: 1.08rem;
-    letter-spacing: 0;
-  }
-
-  .fleet-plate-card__meta,
-  .fleet-plate-card__details {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem 0.5rem;
-    margin-top: 0.35rem;
-    color: var(--bs-secondary-color);
-    font-size: 0.84rem;
-  }
-
-  .fleet-plate-card__meta span,
-  .fleet-plate-card__details span {
-    min-width: 0;
-  }
-
-  .fleet-plate-card__details {
-    padding-top: 0.65rem;
-    border-top: 1px solid var(--bs-border-color);
-  }
-
-  .fleet-plate-card__details--compact {
-    padding-top: 0;
-    border-top: 0;
-  }
-
-  .fleet-plate-card__defect {
-    display: grid;
-    gap: 0.2rem;
-    margin-top: 0.7rem;
-    padding: 0.65rem;
-    border-radius: 0.45rem;
-    background: rgba(var(--bs-danger-rgb), 0.09);
-    color: var(--bs-danger-text-emphasis);
-    font-size: 0.85rem;
-  }
-
-  .fleet-plate-card__defect span {
-    color: var(--bs-secondary-color);
-  }
-
+  // ─── Empty slots ──────────────────────────────────────────────────
   .fleet-empty-slot {
     display: flex;
     align-items: center;
@@ -365,18 +445,19 @@
     border-radius: 0.5rem;
     color: var(--bs-secondary-color);
     background: rgba(var(--bs-body-bg-rgb), 0.55);
-  }
 
-  .fleet-empty-slot span {
-    color: var(--bs-emphasis-color);
-    font-weight: 600;
-  }
+    span {
+      color: var(--bs-emphasis-color);
+      font-weight: 600;
+    }
 
-  .fleet-empty-slot small {
-    text-align: right;
+    small {
+      text-align: right;
+    }
   }
 }
 
+// ─── Tema escuro ──────────────────────────────────────────────────
 [data-bs-theme="dark"] .fleet-availability-page {
   .fleet-coverage-panel,
   .fleet-board-card,
@@ -398,6 +479,7 @@
   }
 }
 
+// ─── Responsivo ──────────────────────────────────────────────────
 @media (max-width: 767.98px) {
   .fleet-availability-page {
     .fleet-availability-header {
@@ -417,6 +499,8 @@
 
     .fleet-list--deposit {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      min-height: 18rem;
+      max-height: 28rem;
     }
 
     .fleet-special-routes__body {

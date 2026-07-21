@@ -85,6 +85,7 @@ Rails.application.routes.draw do
     resources :fleet_availability_items,
               only: [:update]
   end
+  resources :fleet_dimensionings, except: :show
 
   resources :action_plans do
     patch :sort_buckets, on: :member

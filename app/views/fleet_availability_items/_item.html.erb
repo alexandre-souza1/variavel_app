@@ -5,68 +5,68 @@
          class="fleet-plate-item fleet-plate-item--<%= variant %> sortable-item"
          data-status="<%= item.status %>"
          data-setor="<%= plate.setor.presence || "-" %>"
-         data-van-plate="<%= item.van_plate? %>">
+         data-van-plate="<%= item.van_plate? %>"
+         title="<%= "#{item.reason_label}#{item.observation.present? ? " - #{item.observation}" : ""}" if variant == :unavailable %>">
 
-  <span class="fleet-plate-item__line text-muted"
-        data-line-label>
-    <%= item.position.to_i + 1 %> -
-  </span>
+  <%# Número da linha: só aparece na disponibilidade %>
+  <% if variant == :availability %>
+    <span class="fleet-plate-item__line text-muted" data-line-label>
+      <%= item.position.to_i + 1 %> -
+    </span>
+  <% end %>
 
   <div class="fleet-plate-card">
 
-  <div class="fleet-plate-card__main">
+    <div class="fleet-plate-card__main">
 
-    <div>
-      <strong class="fleet-plate-card__plate">
-        <%= plate.placa %>
-      </strong>
-
-      <div class="fleet-plate-card__meta">
-        <% if variant == :deposit || variant == :special_route %>
-          <span><%= plate.perfil.presence || plate.tipo.presence || "Ativa" %></span>
-        <% else %>
-          <span><%= plate.tipo.presence || "Tipo não informado" %></span>
-          <% if plate.perfil.present? %>
-            <span><%= plate.perfil %></span>
-          <% end %>
-        <% end %>
-      </div>
-    </div>
-
-  </div>
-
-  <% if variant == :availability %>
-
-    <div class="fleet-plate-card__details"
-         data-live-details>
-      <span>
-        <i class="bi bi-geo-alt"></i>
-        Setor <%= plate.setor.presence || "-" %>
-      </span>
-    </div>
-
-  <% elsif variant == :unavailable %>
-
-    <div data-live-details>
-      <div class="fleet-plate-card__defect"
-           data-defect>
-        <strong>
-          <%= item.reason_label %>
+      <div>
+        <strong class="fleet-plate-card__plate">
+          <%= plate.placa %>
         </strong>
 
-        <% if item.observation.present? %>
-          <span>
-            <%= item.observation %>
-          </span>
-        <% end %>
+        <div class="fleet-plate-card__meta">
+          <% if variant == :deposit || variant == :special_route %>
+            <span><%= plate.perfil.presence || plate.tipo.presence || "Ativa" %></span>
+          <% else %>
+            <span><%= plate.tipo.presence || "Tipo não informado" %></span>
+            <% if plate.perfil.present? %>
+              <span><%= plate.perfil %></span>
+            <% end %>
+          <% end %>
+        </div>
       </div>
+
     </div>
 
-  <% else %>
+    <% if variant == :availability %>
 
-    <div data-live-details></div>
+      <div class="fleet-plate-card__details" data-live-details>
+        <span>
+          <i class="bi bi-geo-alt"></i>
+          Setor <%= plate.setor.presence || "-" %>
+        </span>
+      </div>
 
-  <% end %>
+    <% elsif variant == :unavailable %>
+
+      <div data-live-details>
+        <div class="fleet-plate-card__defect" data-defect>
+          <strong>
+            <%= item.reason_label %>
+          </strong>
+          <% if item.observation.present? %>
+            <span>
+              <%= item.observation %>
+            </span>
+          <% end %>
+        </div>
+      </div>
+
+    <% else %>
+
+      <div data-live-details></div>
+
+    <% end %>
 
   </div>
 

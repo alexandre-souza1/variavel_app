@@ -13,12 +13,36 @@
           </h2>
 
           <p class="text-muted mb-0">
-            Informe a data e a quantidade pactuada. As placas do setor ROTA serão adicionadas automaticamente.
+            Informe a data e use um dimensionamento cadastrado para montar a frota da quinzena.
           </p>
 
         </div>
 
       </div>
+
+      <% if @dimensioning_period.present? %>
+        <div class="alert alert-info">
+          Dimensionamento encontrado:
+          <strong><%= @dimensioning_period.label %></strong>
+          (<%= l(@dimensioning_period.start_date) %> a <%= l(@dimensioning_period.end_date) %>).
+
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            <% { "ROTA" => "Carros", "VAN" => "Vans", "VESP" => "Vespertinas", "AS" => "AS" }.each do |vehicle_type, label| %>
+              <span class="badge bg-primary">
+                <%= label %>:
+                <%= @dimensioning_quantities[vehicle_type].to_i %>
+              </span>
+            <% end %>
+          </div>
+        </div>
+      <% else %>
+        <div class="alert alert-warning">
+          No período informado não há dimensionamento cadastrado ainda.
+          <%= link_to "Cadastrar dimensionamento",
+                      new_fleet_dimensioning_path,
+                      class: "alert-link" %>
+        </div>
+      <% end %>
 
       <%= render "form" %>
 

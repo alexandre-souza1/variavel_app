@@ -1,6 +1,7 @@
 class FleetAvailabilitiesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_fleet_availability, only: :show
+  before_action :set_fleet_availability, only: %i[show destroy]
+  before_action :require_admin!, only: :destroy
 
   def index
     @fleet_availabilities = current_user.fleet_availabilities.recent
@@ -8,26 +9,51 @@ class FleetAvailabilitiesController < ApplicationController
 
   def new
     date = params[:date].presence || Date.current
+    @dimensioning_period = FleetAvailability.dimensioning_period_for(date)
+    @dimensioning_quantities = dimensioning_quantities(@dimensioning_period)
 
     @fleet_availability = FleetAvailability.new(
       date: date,
-      agreed_quantity: FleetAvailability.default_agreed_quantity_for(date),
+      agreed_quantity: FleetAvailability.default_dimensioning_quantity_for(date),
       special_routes: FleetAvailability.default_special_routes_for(date)
     )
   end
 
   def create
+    dimensioning_period = FleetAvailability.dimensioning_period_for(
+      fleet_availability_params[:date]
+    )
+
+    unless dimensioning_period
+      @fleet_availability = FleetAvailability.new(fleet_availability_params)
+      @dimensioning_period = nil
+      @dimensioning_quantities = {}
+
+      flash.now[:alert] =
+        "Não há dimensionamento cadastrado para o período informado."
+
+      render :new, status: :unprocessable_entity
+      return
+    end
+
     @fleet_availability = FleetAvailabilities::Creator.call(
       user: current_user,
       date: fleet_availability_params[:date],
-      agreed_quantity: fleet_availability_params[:agreed_quantity],
-      special_routes: fleet_availability_params[:special_routes]
+      agreed_quantity: dimensioning_period.route_quantity,
+      special_routes: dimensioning_period.special_routes,
+      copy_previous_day: ActiveModel::Type::Boolean.new.cast(
+        fleet_availability_params[:copy_previous_day]
+      )
     )
 
     redirect_to @fleet_availability,
                 notice: "Disponibilidade criada com sucesso."
   rescue ActiveRecord::RecordInvalid => e
     @fleet_availability = FleetAvailability.new(fleet_availability_params)
+    @dimensioning_period = FleetAvailability.dimensioning_period_for(
+      fleet_availability_params[:date]
+    )
+    @dimensioning_quantities = dimensioning_quantities(@dimensioning_period)
 
     flash.now[:alert] = e.record.errors.full_messages.to_sentence
 
@@ -39,6 +65,13 @@ class FleetAvailabilitiesController < ApplicationController
               .fleet_availability_items
               .includes(:plate)
               .ordered
+  end
+
+  def destroy
+    @fleet_availability.destroy
+
+    redirect_to fleet_availabilities_path,
+                notice: "Disponibilidade removida com sucesso."
   end
 
   private
@@ -53,8 +86,23 @@ class FleetAvailabilitiesController < ApplicationController
     params.require(:fleet_availability)
           .permit(
             :date,
-            :agreed_quantity,
-            special_routes: {}
+            :copy_previous_day
           )
+  end
+
+  def dimensioning_quantities(period)
+    return {
+      "ROTA" => 0,
+      "VAN" => 0,
+      "VESP" => 0,
+      "AS" => 0
+    } unless period
+
+    {
+      "ROTA" => period.route_quantity.to_i,
+      "VAN" => period.van_quantity.to_i,
+      "VESP" => period.vespertina_quantity.to_i,
+      "AS" => period.as_quantity.to_i
+    }
   end
 end

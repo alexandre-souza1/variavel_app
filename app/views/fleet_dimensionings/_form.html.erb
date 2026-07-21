@@ -1,0 +1,88 @@
+<%= form_with model: @fleet_dimensioning,
+              class: "card shadow-sm border-0" do |f| %>
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">Dimensionamento da Quinzena</h5>
+  </div>
+
+  <div class="card-body">
+    <% if @fleet_dimensioning.errors.any? %>
+      <div class="alert alert-danger">
+        <h6 class="mb-2">Não foi possível salvar:</h6>
+
+        <ul class="mb-0">
+          <% @fleet_dimensioning.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="mb-3">
+      <%= f.label :label, "Nome", class: "form-label" %>
+      <%= f.text_field :label,
+                       class: "form-control",
+                       placeholder: "Ex: 1a quinzena de julho",
+                       required: true %>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <%= f.label :start_date, "Data inicial", class: "form-label" %>
+        <%= f.date_field :start_date,
+                         class: "form-control",
+                         required: true %>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <%= f.label :end_date, "Data final", class: "form-label" %>
+        <%= f.date_field :end_date,
+                         class: "form-control",
+                         required: true %>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-3 mb-3">
+        <%= f.label :route_quantity, "Carros", class: "form-label" %>
+        <%= f.number_field :route_quantity,
+                           class: "form-control",
+                           min: 0,
+                           required: true %>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <%= f.label :van_quantity, "Vans", class: "form-label" %>
+        <%= f.number_field :van_quantity,
+                           class: "form-control",
+                           min: 0,
+                           required: true %>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <%= f.label :vespertina_quantity, "Vespertinas", class: "form-label" %>
+        <%= f.number_field :vespertina_quantity,
+                           class: "form-control",
+                           min: 0,
+                           required: true %>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <%= f.label :as_quantity, "AS", class: "form-label" %>
+        <%= f.number_field :as_quantity,
+                           class: "form-control",
+                           min: 0,
+                           required: true %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-footer d-flex justify-content-between">
+    <%= link_to fleet_dimensionings_path,
+                class: "btn btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left"></i>
+      Voltar
+    <% end %>
+
+    <%= f.submit "Salvar", class: "btn btn-primary" %>
+  </div>
+<% end %>
