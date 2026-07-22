@@ -60,7 +60,9 @@ class FleetAvailability < ApplicationRecord
   end
 
   def editable_by?(user)
-    user.present? && user == self.user && !locked?
+    return false if user.blank? || locked?
+
+    user == self.user || user.sector_fleet?
   end
 
   def lock_availability!(user)
@@ -212,5 +214,5 @@ class FleetAvailability < ApplicationRecord
 
     errors.add(:special_routes, "possui rotas inválidas")
   end
-  
+
 end
