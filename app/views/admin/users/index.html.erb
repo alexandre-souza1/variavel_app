@@ -84,6 +84,7 @@
 
             <tr>
               <th style="width: 40%;">Usuário</th>
+              <th>Setor</th>
               <th>Email</th>
               <th>Perfil</th>
               <th class="text-end">Ações</th>
@@ -138,6 +139,24 @@
                     </div>
 
                   </div>
+
+                </td>
+
+                <td>
+
+                  <% if user.sector.present? %>
+
+                    <span class="badge bg-secondary-subtle text-dark border px-3 py-2">
+                      <i class="fas fa-building me-1"></i>
+
+                      <%= User::USER_SECTORS.key(user.sector.to_sym) %>
+                    </span>
+
+                  <% else %>
+
+                    <span class="text-muted">-</span>
+
+                  <% end %>
 
                 </td>
 

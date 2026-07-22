@@ -26,7 +26,6 @@ class Admin::UsersController < ApplicationController
   end
 
   def edit
-    @user = User.find(params[:id])
   end
 
   def update
@@ -51,7 +50,6 @@ class Admin::UsersController < ApplicationController
   end
 
   def destroy
-    @user = User.find(params[:id])
     if @user == current_user
       redirect_to admin_users_path, alert: "Você não pode deletar a si mesmo."
     else
@@ -80,9 +78,15 @@ class Admin::UsersController < ApplicationController
 
   def user_params
     permitted = [:email, :name, :photo, :remove_photo]
-    permitted << :role if current_user.admin? # Só permite alterar role se for admin
+
+    if current_user.admin?
+      permitted << :role
+      permitted << :sector
+    end
+
     permitted << :password if password_params_present?
     permitted << :password_confirmation if password_params_present?
+
     params.require(:user).permit(permitted)
   end
 

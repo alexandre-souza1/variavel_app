@@ -141,6 +141,25 @@
 
               </div>
 
+              <div class="mb-4">
+
+                <%= f.label :sector, "Setor", class: "form-label fw-semibold" %>
+
+                <div class="input-group">
+
+                  <span class="input-group-text">
+                    <i class="bi bi-building"></i>
+                  </span>
+
+                  <%= f.select :sector,
+                      User::USER_SECTORS.map { |label, value| [label, value] },
+                      { include_blank: "Selecione um setor" },
+                      class: "form-select" %>
+
+                </div>
+
+              </div>
+
             <% end %>
 
             <hr class="my-5">

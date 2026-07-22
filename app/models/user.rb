@@ -20,6 +20,26 @@ class User < ApplicationRecord
     attachable.variant :thumb, resize_to_limit: [150, 150]
   end
 
+  enum :sector, {
+    fleet: 0,
+    du: 1,
+    warehouse: 2,
+    hr: 3,
+    safety: 4,
+    finance: 5,
+    planning: 6
+  }, prefix: true
+
+  USER_SECTORS = {
+    "Frota" => :fleet,
+    "DU" => :du,
+    "Armazém" => :warehouse,
+    "RH" => :hr,
+    "Segurança" => :safety,
+    "Financeiro" => :finance,
+    "Planejamento" => :planning
+  }.freeze
+
     enum role: { user: 0, supervisor: 1, admin: 2, mechanical: 3}
 
   # Defina um valor padrão, se quiser
