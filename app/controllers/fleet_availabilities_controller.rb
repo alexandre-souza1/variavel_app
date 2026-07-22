@@ -6,8 +6,13 @@ class FleetAvailabilitiesController < ApplicationController
   before_action :require_creator_edit_access!, only: :lock
 
   def index
-    @fleet_availabilities = FleetAvailability.recent.includes(:user)
-    @fleet_summary = fleet_summary
+    @dimensioning_periods = FleetDimensioning.recent
+    @selected_dimensioning = selected_dimensioning_period
+    @fleet_availabilities =
+      fleet_availabilities_for(@selected_dimensioning)
+      .recent
+      .includes(:user)
+    @fleet_summary = fleet_summary(@fleet_availabilities)
   end
 
   def new
@@ -161,23 +166,37 @@ class FleetAvailabilitiesController < ApplicationController
     }
   end
 
-  def fleet_summary
-    total_days = FleetAvailability.count
+  def selected_dimensioning_period
+    return FleetDimensioning.find_by(id: params[:dimensioning_id]) if params[:dimensioning_id].present?
+
+    FleetDimensioning.for_date(Date.current) || FleetDimensioning.recent.first
+  end
+
+  def fleet_availabilities_for(dimensioning)
+    return FleetAvailability.none unless dimensioning
+
+    FleetAvailability.where(date: dimensioning.start_date..dimensioning.end_date)
+  end
+
+  def fleet_summary(scope)
+    availability_ids = scope.select(:id)
+    total_days = scope.count
 
     {
       total_days: total_days,
-      open_count: FleetAvailability.where(locked_at: nil).count,
-      locked_count: FleetAvailability.where.not(locked_at: nil).count,
-      average_coverage: total_days.zero? ? 0 : average_coverage
+      open_count: scope.where(locked_at: nil).count,
+      locked_count: scope.where.not(locked_at: nil).count,
+      average_coverage: total_days.zero? ? 0 : average_coverage(scope, availability_ids)
     }
   end
 
-  def average_coverage
+  def average_coverage(scope, availability_ids)
     total_available =
       FleetAvailabilityItem
+      .where(fleet_availability_id: availability_ids)
       .where(status: FleetAvailabilityItem.statuses[:available])
       .count
-    total_dimensioning = FleetAvailability.sum(:agreed_quantity)
+    total_dimensioning = scope.sum(:agreed_quantity)
 
     return 0 if total_dimensioning.zero?
 

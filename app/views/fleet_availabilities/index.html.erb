@@ -31,17 +31,61 @@
 
   </div>
 
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <%= form_with url: fleet_availabilities_path,
+                    method: :get,
+                    local: true,
+                    class: "row g-3 align-items-end" do %>
+        <div class="col-md-6">
+          <label class="form-label text-muted small">
+            Filtrar por quinzena
+          </label>
+          <%= select_tag :dimensioning_id,
+                         options_from_collection_for_select(
+                           @dimensioning_periods,
+                           :id,
+                           :label,
+                           @selected_dimensioning&.id
+                         ),
+                         class: "form-select",
+                         onchange: "this.form.requestSubmit()" %>
+        </div>
+
+        <div class="col-md-4">
+          <span class="text-muted small d-block">
+            Período
+          </span>
+          <strong>
+            <% if @selected_dimensioning %>
+              <%= l(@selected_dimensioning.start_date) %>
+              até
+              <%= l(@selected_dimensioning.end_date) %>
+            <% else %>
+              Nenhuma quinzena cadastrada
+            <% end %>
+          </strong>
+        </div>
+
+        <div class="col-md-2 text-md-end">
+          <%= submit_tag "Filtrar",
+                         class: "btn btn-outline-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
   <div class="row g-3 mb-4">
 
     <div class="col-md-3">
       <div class="card shadow-sm border-0 h-100">
         <div class="card-body">
-          <span class="text-muted small">Dias registrados</span>
+          <span class="text-muted small">Dias registrados na quinzena</span>
           <strong class="d-block fs-3">
             <%= @fleet_summary[:total_days] %>
           </strong>
           <small class="text-muted">
-            Histórico de disponibilidades
+            Dentro do período selecionado
           </small>
         </div>
       </div>
