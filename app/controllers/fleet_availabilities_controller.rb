@@ -7,7 +7,7 @@ class FleetAvailabilitiesController < ApplicationController
 
   def index
     @fleet_availabilities = FleetAvailability.recent.includes(:user)
-    @fleet_dashboard = fleet_dashboard
+    @fleet_summary = fleet_summary
   end
 
   def new
@@ -161,118 +161,26 @@ class FleetAvailabilitiesController < ApplicationController
     }
   end
 
-  def fleet_dashboard
+  def fleet_summary
+    total_days = FleetAvailability.count
+
     {
-      total_days: FleetAvailability.count,
-      average_coverage: average_coverage,
-      locked_count: FleetAvailability.where.not(locked_at: nil).count,
+      total_days: total_days,
       open_count: FleetAvailability.where(locked_at: nil).count,
-      most_used: most_used_plates,
-      least_used: least_used_plates,
-      maintenance: maintenance_plates,
-      most_used_chart: chart_data(most_used_plates),
-      least_used_chart: chart_data(least_used_plates),
-      maintenance_chart: chart_data(maintenance_plates)
+      locked_count: FleetAvailability.where.not(locked_at: nil).count,
+      average_coverage: total_days.zero? ? 0 : average_coverage
     }
   end
 
   def average_coverage
-    availabilities = FleetAvailability.includes(:fleet_availability_items)
+    total_available =
+      FleetAvailabilityItem
+      .where(status: FleetAvailabilityItem.statuses[:available])
+      .count
+    total_dimensioning = FleetAvailability.sum(:agreed_quantity)
 
-    return 0 unless availabilities.any?
+    return 0 if total_dimensioning.zero?
 
-    percentages =
-      availabilities.map do |availability|
-        next 0 if availability.agreed_quantity.zero?
-
-        available_count =
-          availability
-          .fleet_availability_items
-          .count(&:available?)
-
-        ((available_count.to_f / availability.agreed_quantity) * 100).round
-      end
-
-    (percentages.sum.to_f / percentages.size).round
-  end
-
-  def most_used_plates
-    used_statuses = FleetAvailabilityItem.statuses.values_at(
-      "available",
-      "special_route"
-    )
-
-    FleetAvailabilityItem
-      .joins(:plate)
-      .where(status: used_statuses)
-      .group("plates.id", "plates.placa", "plates.perfil", "plates.tipo")
-      .order(Arel.sql("COUNT(fleet_availability_items.id) DESC"))
-      .limit(6)
-      .pluck(
-        "plates.placa",
-        "plates.perfil",
-        "plates.tipo",
-        Arel.sql("COUNT(fleet_availability_items.id)")
-      )
-  end
-
-  def least_used_plates
-    used_statuses = FleetAvailabilityItem.statuses.values_at(
-      "available",
-      "special_route"
-    ).join(",")
-
-    Plate
-      .where(tipo: ["Caminhão", "Van"])
-      .left_joins(:fleet_availability_items)
-      .group("plates.id", "plates.placa", "plates.perfil", "plates.tipo")
-      .order(Arel.sql(<<~SQL.squish))
-        SUM(
-          CASE
-            WHEN fleet_availability_items.status IN (#{used_statuses})
-            THEN 1
-            ELSE 0
-          END
-        ) ASC,
-        COUNT(fleet_availability_items.id) DESC,
-        plates.placa ASC
-      SQL
-      .limit(6)
-      .pluck(
-        "plates.placa",
-        "plates.perfil",
-        "plates.tipo",
-        Arel.sql(<<~SQL.squish)
-          SUM(
-            CASE
-              WHEN fleet_availability_items.status IN (#{used_statuses})
-              THEN 1
-              ELSE 0
-            END
-          )
-        SQL
-      )
-  end
-
-  def maintenance_plates
-    FleetAvailabilityItem
-      .joins(:plate)
-      .where(status: FleetAvailabilityItem.statuses[:unavailable],
-             reason: "maintenance")
-      .group("plates.id", "plates.placa", "plates.perfil", "plates.tipo")
-      .order(Arel.sql("COUNT(fleet_availability_items.id) DESC"))
-      .limit(6)
-      .pluck(
-        "plates.placa",
-        "plates.perfil",
-        "plates.tipo",
-        Arel.sql("COUNT(fleet_availability_items.id)")
-      )
-  end
-
-  def chart_data(rows)
-    rows.each_with_object({}) do |(placa, _perfil, _tipo, count), data|
-      data[placa] = count.to_i
-    end
+    ((total_available.to_f / total_dimensioning) * 100).round
   end
 end
