@@ -67,7 +67,7 @@
           </strong>
         </div>
 
-        <div class="col-md-2 text-md-end">
+        <div class="d-none">
           <%= submit_tag "Filtrar",
                          class: "btn btn-outline-primary" %>
         </div>
@@ -113,7 +113,7 @@
             <%= @fleet_summary[:open_count] %>
           </strong>
           <small class="text-muted">
-            Ainda editáveis pelo criador
+          
           </small>
         </div>
       </div>
@@ -122,12 +122,12 @@
     <div class="col-md-3">
       <div class="card shadow-sm border-0 h-100">
         <div class="card-body">
-          <span class="text-muted small">Disponibilidades travadas</span>
+          <span class="text-muted small">Disponibilidades Enviadas</span>
           <strong class="d-block fs-3">
             <%= @fleet_summary[:locked_count] %>
           </strong>
           <small class="text-muted">
-            Somente leitura
+
           </small>
         </div>
       </div>
@@ -187,7 +187,7 @@
 
                   <td class="text-center">
                     <% if availability.locked? %>
-                      <span class="badge text-bg-secondary">Travada</span>
+                      <span class="badge text-bg-secondary">Enviada</span>
                     <% else %>
                       <span class="badge text-bg-light border text-muted">Aberta</span>
                     <% end %>

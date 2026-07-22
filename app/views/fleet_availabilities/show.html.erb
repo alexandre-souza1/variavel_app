@@ -37,7 +37,7 @@
         <% if @fleet_availability.locked? %>
           <span class="badge text-bg-secondary">
             <i class="bi bi-lock-fill"></i>
-            Travada
+            Enviada
           </span>
         <% else %>
           <span class="badge text-bg-light border text-muted">
@@ -53,11 +53,11 @@
                       class: "btn btn-outline-secondary",
                       form: {
                         data: {
-                          turbo_confirm: "Depois de travar, a disponibilidade ficará somente leitura. Confirma?"
+                          turbo_confirm: "Depois de enviar, a disponibilidade ficará travada. Confirma?"
                         }
                       } do %>
-          <i class="bi bi-lock"></i>
-          Travar
+          <i class="bi bi-send"></i>
+          Enviar
         <% end %>
       <% elsif @locking_enabled && @fleet_availability.locked? && current_user.admin? %>
         <%= button_to unlock_fleet_availability_path(@fleet_availability),
@@ -156,7 +156,7 @@
       <i class="bi bi-lock-fill"></i>
       <span>
         <% if @fleet_availability.locked? %>
-          Esta disponibilidade está travada<%= " por #{@fleet_availability.locked_by.name.presence || @fleet_availability.locked_by.email}" if @fleet_availability.locked_by.present? %>.
+          Esta disponibilidade já foi enviada e está travada<%= " por #{@fleet_availability.locked_by.name.presence || @fleet_availability.locked_by.email}" if @fleet_availability.locked_by.present? %>.
           Solicite ao admin para destravar.
         <% else %>
           Esta disponibilidade está em somente leitura para seu usuário.
