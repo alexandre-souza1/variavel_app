@@ -85,6 +85,22 @@ class FleetAvailability < ApplicationRecord
     reload
   end
 
+  def destroy_without_lock_version!
+    self.class.transaction do
+      item_ids = fleet_availability_items.select(:id)
+
+      FleetAvailabilityChange
+        .where(fleet_availability_item_id: item_ids)
+        .delete_all
+      FleetAvailabilityItem
+        .where(fleet_availability_id: id)
+        .delete_all
+      self.class
+        .where(id: id)
+        .delete_all
+    end
+  end
+
   def self.locking_enabled?
     columns_hash.key?("locked_at")
   end

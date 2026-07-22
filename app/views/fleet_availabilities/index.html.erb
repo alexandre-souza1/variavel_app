@@ -31,6 +31,156 @@
 
   </div>
 
+  <div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <span class="text-muted small">Dias registrados</span>
+          <strong class="d-block fs-3">
+            <%= @fleet_dashboard[:total_days] %>
+          </strong>
+          <small class="text-muted">
+            <%= @fleet_dashboard[:open_count] %> abertas /
+            <%= @fleet_dashboard[:locked_count] %> travadas
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <span class="text-muted small">Cobertura média</span>
+          <strong class="d-block fs-3">
+            <%= @fleet_dashboard[:average_coverage] %>%
+          </strong>
+          <small class="text-muted">
+            Média das disponibilidades criadas
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Resumo rápido</span>
+            <i class="bi bi-bar-chart text-muted"></i>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-4">
+              <div class="border rounded p-2 h-100">
+                <small class="text-muted d-block">Mais saiu</small>
+                <% first_used = @fleet_dashboard[:most_used].first %>
+                <strong><%= first_used&.first || "-" %></strong>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="border rounded p-2 h-100">
+                <small class="text-muted d-block">Menos saiu</small>
+                <% first_idle = @fleet_dashboard[:least_used].first %>
+                <strong><%= first_idle&.first || "-" %></strong>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="border rounded p-2 h-100">
+                <small class="text-muted d-block">Mais manutenção</small>
+                <% first_maintenance = @fleet_dashboard[:maintenance].first %>
+                <strong><%= first_maintenance&.first || "-" %></strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="row g-3 mb-4">
+
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-white">
+          <strong>Placas que mais saíram</strong>
+        </div>
+        <div class="card-body">
+          <% if @fleet_dashboard[:most_used_chart].any? %>
+            <%= bar_chart @fleet_dashboard[:most_used_chart],
+                          height: "260px",
+                          colors: ["#198754"],
+                          library: {
+                            plugins: {
+                              legend: {
+                                display: false
+                              }
+                            }
+                          } %>
+          <% else %>
+            <div class="text-muted">
+              Sem dados de saída ainda.
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-white">
+          <strong>Placas que menos saíram</strong>
+        </div>
+        <div class="card-body">
+          <% if @fleet_dashboard[:least_used_chart].any? %>
+            <%= bar_chart @fleet_dashboard[:least_used_chart],
+                          height: "260px",
+                          colors: ["#6c757d"],
+                          library: {
+                            plugins: {
+                              legend: {
+                                display: false
+                              }
+                            }
+                          } %>
+          <% else %>
+            <div class="text-muted">
+              Sem placas cadastradas para comparar.
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-white">
+          <strong>Mais tempo em manutenção</strong>
+        </div>
+        <div class="card-body">
+          <% if @fleet_dashboard[:maintenance_chart].any? %>
+            <%= bar_chart @fleet_dashboard[:maintenance_chart],
+                          height: "260px",
+                          colors: ["#dc3545"],
+                          library: {
+                            plugins: {
+                              legend: {
+                                display: false
+                              }
+                            }
+                          } %>
+          <% else %>
+            <div class="text-muted">
+              Nenhuma manutenção registrada.
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
   <div class="card shadow-sm border-0">
 
     <div class="card-body p-0">
