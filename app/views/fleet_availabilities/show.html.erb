@@ -8,10 +8,12 @@
 <% maintenance_percentage = @items.any? ? ((maintenance_count.to_f / @items.size) * 100).round : 0 %>
 <% used_items = available_items + @items.select(&:special_route?) %>
 <% used_profile_counts = used_items.each_with_object(Hash.new(0)) { |item, counts| counts[item.plate.perfil.presence || "Sem perfil"] += 1 } %>
+<% creator_name = @fleet_availability.user.name.presence || @fleet_availability.user.email %>
 
-<div class="container-fluid py-4 fleet-availability-page"
+<div class="container-fluid py-4 fleet-availability-page <%= "fleet-availability-page--readonly" unless @editable %>"
      data-controller="fleet-availability"
-     data-availability-id="<%= @fleet_availability.id %>">
+     data-availability-id="<%= @fleet_availability.id %>"
+     data-editable="<%= @editable %>">
 
   <div class="fleet-availability-header mb-4">
 
@@ -24,9 +26,53 @@
         <i class="bi bi-calendar-event"></i>
         <%= l(@fleet_availability.date) %>
       </div>
+
+      <div class="text-muted small mt-1">
+        Iniciada por <%= creator_name %>
+      </div>
     </div>
 
-    <div class="d-flex align-items-center gap-3">
+    <div class="d-flex align-items-center gap-3 flex-wrap justify-content-end">
+      <% if @locking_enabled %>
+        <% if @fleet_availability.locked? %>
+          <span class="badge text-bg-secondary">
+            <i class="bi bi-lock-fill"></i>
+            Travada
+          </span>
+        <% else %>
+          <span class="badge text-bg-light border text-muted">
+            <i class="bi bi-unlock"></i>
+            Aberta
+          </span>
+        <% end %>
+      <% end %>
+
+      <% if @editable && @locking_enabled %>
+        <%= button_to lock_fleet_availability_path(@fleet_availability),
+                      method: :patch,
+                      class: "btn btn-outline-secondary",
+                      form: {
+                        data: {
+                          turbo_confirm: "Depois de travar, a disponibilidade ficará somente leitura. Confirma?"
+                        }
+                      } do %>
+          <i class="bi bi-lock"></i>
+          Travar
+        <% end %>
+      <% elsif @locking_enabled && @fleet_availability.locked? && current_user.admin? %>
+        <%= button_to unlock_fleet_availability_path(@fleet_availability),
+                      method: :patch,
+                      class: "btn btn-outline-secondary",
+                      form: {
+                        data: {
+                          turbo_confirm: "Destravar esta disponibilidade para edição do criador?"
+                        }
+                      } do %>
+          <i class="bi bi-unlock"></i>
+          Destravar
+        <% end %>
+      <% end %>
+
       <%= link_to fleet_availability_path(@fleet_availability, format: :pdf),
                   class: "btn btn-outline-danger",
                   target: "_blank",
@@ -74,9 +120,11 @@
 
         <div data-used-profile-counts>
           <% %w[VUC TOCO TRUCK BITRUCK].each do |profile| %>
-            <small>
+            <small data-used-profile="<%= profile %>">
               <strong><%= profile %></strong>
-              <%= used_profile_counts[profile] %>
+              <span data-used-profile-count>
+                <%= used_profile_counts[profile] %>
+              </span>
             </small>
           <% end %>
         </div>
@@ -94,6 +142,21 @@
       Não é possível adicionar outra placa: a disponibilidade já atingiu o limite pactuado.
     </span>
   </div>
+
+  <% unless @editable %>
+    <div class="fleet-readonly-alert mb-3" role="status">
+      <i class="bi bi-lock-fill"></i>
+      <span>
+        <% if @fleet_availability.locked? %>
+          Esta disponibilidade está travada<%= " por #{@fleet_availability.locked_by.name.presence || @fleet_availability.locked_by.email}" if @fleet_availability.locked_by.present? %>.
+          Solicite ao admin para destravar.
+        <% else %>
+          Esta disponibilidade está em somente leitura para seu usuário.
+          Apenas quem iniciou (<%= creator_name %>) pode editar.
+        <% end %>
+      </span>
+    </div>
+  <% end %>
 
   <% if @fleet_availability.active_special_routes.any? %>
     <section class="card shadow-sm fleet-board-card fleet-special-routes mb-3">
@@ -138,9 +201,10 @@
                  data-special-route="<%= route_key %>"
                  data-max-items="<%= route_quantity %>">
               <% route_items.each do |route_item| %>
-                <%= render "fleet_availability_items/item",
-                           item: route_item,
-                           variant: :special_route %>
+            <%= render "fleet_availability_items/item",
+                       item: route_item,
+                       variant: :special_route,
+                       editable: @editable %>
               <% end %>
 
               <% route_empty_slots.times do %>
@@ -178,7 +242,8 @@
             <%= render "fleet_availability_items/item",
                        item: item,
                        variant: :availability,
-                       standard_plate: @standard_plate_by_position[item.position.to_i]&.plate %>
+                       standard_plate: @standard_plate_by_position[item.position.to_i]&.plate,
+                       editable: @editable %>
           <% end %>
           <% empty_slots.times do |index| %>
             <% position = available_items.size + index %>
@@ -212,7 +277,10 @@
         </div>
         <div class="card-body fleet-list fleet-list--unavailable-grid sortable-list" id="unavailable-list">
           <% unavailable_items.each do |item| %>
-            <%= render "fleet_availability_items/item", item: item, variant: :unavailable %>
+            <%= render "fleet_availability_items/item",
+                       item: item,
+                       variant: :unavailable,
+                       editable: @editable %>
           <% end %>
         </div>
       </section>
@@ -228,7 +296,10 @@
         </div>
         <div class="card-body fleet-list fleet-list--deposit sortable-list" id="exchange-list">
           <% deposit_items.each do |item| %>
-            <%= render "fleet_availability_items/item", item: item, variant: :deposit %>
+            <%= render "fleet_availability_items/item",
+                       item: item,
+                       variant: :deposit,
+                       editable: @editable %>
           <% end %>
         </div>
       </section>
@@ -264,7 +335,60 @@
 
 </div>
 
+<div class="modal fade"
+     id="plateObservationModal"
+     tabindex="-1">
 
+  <div class="modal-dialog">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h5 class="modal-title">
+          Observação da placa
+        </h5>
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="modal">
+        </button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <textarea id="plateObservationText"
+                  rows="4"
+                  class="form-control"
+                  placeholder="Digite uma observação para esta placa"></textarea>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal">
+          Cancelar
+        </button>
+
+        <button type="button"
+                id="confirmPlateObservation"
+                class="btn btn-primary">
+          Salvar
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<% if @editable %>
 <div class="modal fade"
      id="unavailableModal"
      tabindex="-1">
@@ -360,3 +484,5 @@
   </div>
 
 </div>
+
+<% end %>

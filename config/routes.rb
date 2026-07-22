@@ -82,6 +82,11 @@ Rails.application.routes.draw do
   resources :task_imports, only: [:new, :create]
 
   resources :fleet_availabilities do
+    member do
+      patch :lock
+      patch :unlock
+    end
+
     resources :fleet_availability_items,
               only: [:update]
   end

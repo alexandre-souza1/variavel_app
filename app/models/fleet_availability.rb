@@ -8,6 +8,9 @@ class FleetAvailability < ApplicationRecord
   attr_accessor :copy_previous_day
 
   belongs_to :user
+  belongs_to :locked_by,
+             class_name: "User",
+             optional: true
 
   has_many :fleet_availability_items,
            -> { order(:position) },
@@ -21,9 +24,7 @@ class FleetAvailability < ApplicationRecord
 
   validates :date,
             presence: true,
-            uniqueness: {
-              scope: :user_id
-            }
+            uniqueness: true
   validates :agreed_quantity,
             numericality: {
               greater_than_or_equal_to: 0
@@ -50,6 +51,30 @@ class FleetAvailability < ApplicationRecord
     return 0 if agreed_quantity.zero?
 
     ((available_count.to_f / agreed_quantity) * 100).round
+  end
+
+  def locked?
+    self.class.locking_enabled? && locked_at.present?
+  end
+
+  def editable_by?(user)
+    user.present? && user == self.user && !locked?
+  end
+
+  def lock!(user)
+    return false unless self.class.locking_enabled?
+
+    update!(locked_at: Time.current, locked_by: user)
+  end
+
+  def unlock!
+    return false unless self.class.locking_enabled?
+
+    update!(locked_at: nil, locked_by: nil)
+  end
+
+  def self.locking_enabled?
+    columns_hash.key?("locked_at")
   end
 
   def self.dimensioning_period_for(date)

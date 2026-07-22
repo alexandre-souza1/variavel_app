@@ -8,7 +8,9 @@ export default class extends Controller {
     this.sortables = []
     this.pendingEvent = null
     this.modalConfirmed = false
+    this.editable = this.element.dataset.editable === "true"
 
+    if (!this.editable) return
 
     this.element.querySelectorAll(".sortable-list").forEach((list) => {
 
@@ -35,11 +37,13 @@ export default class extends Controller {
 
 
     this.setupModal()
+    this.setupObservationModal()
 
   }
 
 
   moved(event) {
+    if (!this.editable) return
 
     const itemId = event.item.id.replace(
       "fleet_availability_item_",
@@ -109,7 +113,8 @@ export default class extends Controller {
 
     // Resetar os campos para valores padrão
     document.getElementById("unavailableReason").value = "maintenance"
-    document.getElementById("unavailableObservation").value = ""
+    document.getElementById("unavailableObservation").value =
+      this.pendingEvent?.item?.dataset?.observation || ""
 
     this.modal.show()
   }
@@ -191,6 +196,60 @@ export default class extends Controller {
 
     })
 
+  }
+
+
+  setupObservationModal() {
+    this.observationModalElement = document.getElementById("plateObservationModal")
+    this.observationInput = document.getElementById("plateObservationText")
+    this.observationButton = document.getElementById("confirmPlateObservation")
+
+    if (!this.observationModalElement || !this.observationInput || !this.observationButton) return
+
+    this.element.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-observation-edit]")
+
+      if (!button) return
+
+      this.pendingObservationItem = button.closest(".sortable-item")
+
+      if (!this.pendingObservationItem) return
+
+      this.observationInput.value = this.pendingObservationItem.dataset.observation || ""
+      this.observationModal = bootstrap.Modal.getOrCreateInstance(
+        this.observationModalElement
+      )
+      this.observationModal.show()
+    })
+
+    this.observationButton.addEventListener("click", () => {
+      if (!this.pendingObservationItem) return
+
+      const itemElement = this.pendingObservationItem
+      const itemId = itemElement.id.replace(
+        "fleet_availability_item_",
+        ""
+      )
+      const list = itemElement.closest(".sortable-list")
+      const specialRoute = list?.dataset.specialRoute || null
+      const status = specialRoute ? "special_route" : itemElement.dataset.status
+      const reason = status === "unavailable"
+        ? itemElement.dataset.reason || "other"
+        : null
+
+      this.updateItem(
+        itemId,
+        status,
+        this.itemPositionFromElement(itemElement),
+        reason,
+        this.observationInput.value,
+        itemElement,
+        specialRoute
+      )
+
+      this.observationModal.hide()
+      this.pendingObservationItem = null
+    })
   }
 
 
@@ -329,6 +388,8 @@ export default class extends Controller {
 
   refreshItem(itemElement, item) {
     itemElement.dataset.status = item.status
+    itemElement.dataset.reason = item.reason || ""
+    itemElement.dataset.observation = item.observation || ""
     itemElement.classList.remove(
       "fleet-plate-item--availability",
       "fleet-plate-item--deposit",
@@ -356,6 +417,8 @@ export default class extends Controller {
       itemElement.removeAttribute("title")
       this.setSpecialRouteDetails(itemElement)
     }
+
+    this.setObservationDetails(itemElement, item.observation)
   }
 
 
@@ -380,12 +443,11 @@ export default class extends Controller {
 
 
   setUnavailableDetails(itemElement, item) {
-    const container = this.detailsContainer(itemElement, "fleet-plate-card__side")
+    const container = this.detailsContainer(itemElement, "fleet-plate-card__defect-wrapper")
 
     container.innerHTML = `
       <div class="fleet-plate-card__defect" data-defect>
         <strong>${this.escapeHtml(item.reason_label)}</strong>
-        ${item.observation ? `<span>${this.escapeHtml(item.observation)}</span>` : ""}
       </div>
     `
   }
@@ -429,6 +491,40 @@ export default class extends Controller {
   }
 
 
+  itemPositionFromElement(itemElement) {
+    const list = itemElement.closest(".sortable-list")
+
+    if (!list) return 0
+
+    return Array
+      .from(list.querySelectorAll(".sortable-item"))
+      .indexOf(itemElement)
+  }
+
+
+  setObservationDetails(itemElement, observation) {
+    const container = itemElement.querySelector("[data-observation-display]")
+
+    if (!container) return
+
+    const button = container.querySelector("[data-observation-edit]")
+    const observationText = String(observation || "").trim()
+    const label = observationText
+      ? `<span>${this.escapeHtml(observationText)}</span>`
+      : "<span>Sem observação</span>"
+
+    container.classList.toggle(
+      "fleet-plate-card__observation--empty",
+      !observationText
+    )
+    container.innerHTML = label
+
+    if (button) {
+      container.appendChild(button)
+    }
+  }
+
+
   standardPlateForPosition(position) {
     const availableList = document.getElementById("available-list")
 
@@ -451,6 +547,8 @@ export default class extends Controller {
     this.refreshSpecialRoutePlaceholders()
     this.refreshCounts()
     this.refreshCoverage()
+    this.refreshMaintenance()
+    this.refreshUsedProfiles()
   }
 
 
@@ -604,6 +702,78 @@ export default class extends Controller {
     if (ratioElement) {
       ratioElement.textContent = `${availableCount} / ${maxItems} linhas`
     }
+  }
+
+
+  refreshMaintenance() {
+    const unavailableList = document.getElementById("unavailable-list")
+    const totalItems = this.element.querySelectorAll(".sortable-item").length
+
+    if (!unavailableList) return
+
+    const maintenanceCount = Array
+      .from(unavailableList.querySelectorAll(".sortable-item"))
+      .filter((item) => item.dataset.reason === "maintenance")
+      .length
+
+    const percentage = totalItems === 0
+      ? 0
+      : Math.round((maintenanceCount / totalItems) * 100)
+    const percentageElement = document.querySelector("[data-maintenance-percentage]")
+    const ratioElement = document.querySelector("[data-maintenance-ratio]")
+
+    if (percentageElement) {
+      percentageElement.textContent = `${percentage}%`
+    }
+
+    if (ratioElement) {
+      ratioElement.textContent = `${maintenanceCount} / ${totalItems} veículos`
+    }
+  }
+
+
+  refreshUsedProfiles() {
+    const profileCountsElement = document.querySelector("[data-used-profile-counts]")
+
+    if (!profileCountsElement) return
+
+    const counts = {
+      VUC: 0,
+      TOCO: 0,
+      TRUCK: 0,
+      BITRUCK: 0
+    }
+
+    this.usedItems().forEach((item) => {
+      const profile = item.dataset.profile
+
+      if (Object.prototype.hasOwnProperty.call(counts, profile)) {
+        counts[profile] += 1
+      }
+    })
+
+    profileCountsElement
+      .querySelectorAll("[data-used-profile]")
+      .forEach((profileElement) => {
+        const profile = profileElement.dataset.usedProfile
+        const countElement = profileElement.querySelector("[data-used-profile-count]")
+
+        if (countElement) {
+          countElement.textContent = counts[profile] || 0
+        }
+      })
+  }
+
+
+  usedItems() {
+    const availableItems = Array.from(
+      document.querySelectorAll("#available-list .sortable-item")
+    )
+    const specialRouteItems = Array.from(
+      this.element.querySelectorAll(".fleet-special-route-list .sortable-item")
+    )
+
+    return availableItems.concat(specialRouteItems)
   }
 
 

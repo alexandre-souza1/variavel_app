@@ -94,13 +94,14 @@ class FleetAvailabilityPdf < Prawn::Document
           standard_plate&.placa || "-",
           standard_plate&.perfil.presence || "-",
           plate&.placa || "-",
-          plate&.perfil.presence || "-"
+          plate&.perfil.presence || "-",
+          item&.observation.presence || "-"
         ]
       end
 
     table_section(
       STATUS_TITLES[:available],
-      ["Placa padrão", "Perfil padrão", "Placa atualizada", "Perfil atual"],
+      ["Placa padrão", "Perfil padrão", "Placa atualizada", "Perfil atual", "Observação"],
       rows,
       highlighted_rows: highlighted_rows
     )
@@ -140,13 +141,14 @@ class FleetAvailabilityPdf < Prawn::Document
 
         [
           item.special_route_label,
-          plate.placa
+          plate.placa,
+          item.observation.presence || "-"
         ]
       end
 
     table_section(
       STATUS_TITLES[:special_route],
-      ["Rota", "Placa"],
+      ["Rota", "Placa", "Observação"],
       rows
     )
   end
@@ -176,13 +178,14 @@ class FleetAvailabilityPdf < Prawn::Document
         plate = item.plate
 
         [
-          plate.placa
+          plate.placa,
+          item.observation.presence || "-"
         ]
       end
 
     table_section(
       STATUS_TITLES[:exchange],
-      ["Placa"],
+      ["Placa", "Observação"],
       rows
     )
   end

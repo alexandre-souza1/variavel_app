@@ -65,17 +65,16 @@ module FleetAvailabilityItems
         position: @position
       }
 
+      attributes[:observation] = @observation unless @observation.nil?
+
       if @status == "unavailable"
         attributes[:reason] = @reason.presence || "other"
-        attributes[:observation] = @observation
         attributes[:special_route] = nil
       elsif @status == "special_route"
         attributes[:reason] = nil
-        attributes[:observation] = nil
         attributes[:special_route] = @special_route
       else
         attributes[:reason] = nil
-        attributes[:observation] = nil
         attributes[:special_route] = nil
       end
 

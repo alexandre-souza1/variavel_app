@@ -47,6 +47,10 @@
 
                 <th>Data</th>
 
+                <th>Iniciada por</th>
+
+                <th class="text-center">Status</th>
+
                 <th class="text-center">Dimensionamento</th>
 
                 <th class="text-center">Disponibilizados</th>
@@ -71,6 +75,18 @@
 
                   <td>
                     <%= l(availability.date) %>
+                  </td>
+
+                  <td class="text-muted">
+                    <%= availability.user.name.presence || availability.user.email %>
+                  </td>
+
+                  <td class="text-center">
+                    <% if availability.locked? %>
+                      <span class="badge text-bg-secondary">Travada</span>
+                    <% else %>
+                      <span class="badge text-bg-light border text-muted">Aberta</span>
+                    <% end %>
                   </td>
 
                   <td class="text-center">

@@ -1,11 +1,15 @@
 <% variant = local_assigns.fetch(:variant, :default).to_sym %>
 <% plate = item.plate %>
 <% standard_plate = local_assigns[:standard_plate] %>
+<% editable = local_assigns.fetch(:editable, false) %>
 
 <article id="<%= dom_id(item) %>"
          class="fleet-plate-item fleet-plate-item--<%= variant %> sortable-item"
          data-status="<%= item.status %>"
          data-setor="<%= plate.setor.presence || "-" %>"
+         data-profile="<%= plate.perfil.presence || "Sem perfil" %>"
+         data-reason="<%= item.reason %>"
+         data-observation="<%= item.observation %>"
          data-van-plate="<%= item.van_plate? %>"
          title="<%= "#{item.reason_label}#{item.observation.present? ? " - #{item.observation}" : ""}" if variant == :unavailable %>">
 
@@ -34,7 +38,7 @@
         </div>
       </div>
 
-      <div class="fleet-plate-card__side" data-live-details>
+      <div class="<%= variant == :unavailable ? "fleet-plate-card__defect-wrapper" : "fleet-plate-card__side" %>" data-live-details>
         <% if variant == :availability %>
           <span>
             Placa padrão:
@@ -45,15 +49,29 @@
             <strong>
               <%= item.reason_label %>
             </strong>
-            <% if item.observation.present? %>
-              <span>
-                <%= item.observation %>
-              </span>
-            <% end %>
           </div>
         <% end %>
       </div>
 
+    </div>
+
+    <div class="fleet-plate-card__observation <%= "fleet-plate-card__observation--empty" if item.observation.blank? %>"
+         data-observation-display>
+      <% if item.observation.present? %>
+        <span>
+          <%= item.observation %>
+        </span>
+      <% else %>
+        <span>Sem observação</span>
+      <% end %>
+
+      <% if editable %>
+        <button type="button"
+                class="btn btn-sm btn-link fleet-plate-card__observation-button"
+                data-observation-edit>
+          <i class="bi bi-pencil-square"></i>
+        </button>
+      <% end %>
     </div>
 
   </div>

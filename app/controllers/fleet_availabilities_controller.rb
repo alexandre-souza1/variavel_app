@@ -1,10 +1,11 @@
 class FleetAvailabilitiesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_fleet_availability, only: %i[show destroy]
-  before_action :require_admin!, only: :destroy
+  before_action :set_fleet_availability, only: %i[show destroy lock unlock]
+  before_action :require_admin!, only: %i[destroy unlock]
+  before_action :require_creator_edit_access!, only: :lock
 
   def index
-    @fleet_availabilities = FleetAvailability.all
+    @fleet_availabilities = FleetAvailability.recent.includes(:user)
   end
 
   def new
@@ -61,6 +62,8 @@ class FleetAvailabilitiesController < ApplicationController
   end
 
   def show
+    @locking_enabled = FleetAvailability.locking_enabled?
+    @editable = @fleet_availability.editable_by?(current_user)
     @items = @fleet_availability
               .fleet_availability_items
               .includes(:plate)
@@ -89,10 +92,43 @@ class FleetAvailabilitiesController < ApplicationController
                 notice: "Disponibilidade removida com sucesso."
   end
 
+  def lock
+    unless FleetAvailability.locking_enabled?
+      redirect_to @fleet_availability,
+                  alert: "A migration de trava ainda precisa ser aplicada."
+      return
+    end
+
+    @fleet_availability.lock!(current_user)
+
+    redirect_to @fleet_availability,
+                notice: "Disponibilidade travada com sucesso."
+  end
+
+  def unlock
+    unless FleetAvailability.locking_enabled?
+      redirect_to @fleet_availability,
+                  alert: "A migration de trava ainda precisa ser aplicada."
+      return
+    end
+
+    @fleet_availability.unlock!
+
+    redirect_to @fleet_availability,
+                notice: "Disponibilidade destravada com sucesso."
+  end
+
   private
 
   def set_fleet_availability
     @fleet_availability = FleetAvailability.find(params[:id])
+  end
+
+  def require_creator_edit_access!
+    return if @fleet_availability.editable_by?(current_user)
+
+    redirect_to @fleet_availability,
+                alert: "Apenas quem iniciou a disponibilidade pode travá-la enquanto ela estiver aberta."
   end
 
   def fleet_availability_params
