@@ -1,4 +1,6 @@
 class FleetAvailability < ApplicationRecord
+  self.lock_optimistically = false
+
   SPECIAL_ROUTES = {
     "vespertina" => "Vespertina",
     "van" => "Van",
@@ -61,20 +63,67 @@ class FleetAvailability < ApplicationRecord
     user.present? && user == self.user && !locked?
   end
 
-  def lock!(user)
+  def lock_availability!(user)
     return false unless self.class.locking_enabled?
 
-    update!(locked_at: Time.current, locked_by: user)
+    self.class.update_lock_columns(
+      id,
+      locked_at: Time.current,
+      locked_by_id: user.id
+    )
+    reload
   end
 
-  def unlock!
+  def unlock_availability!
     return false unless self.class.locking_enabled?
 
-    update!(locked_at: nil, locked_by: nil)
+    self.class.update_lock_columns(
+      id,
+      locked_at: nil,
+      locked_by_id: nil
+    )
+    reload
   end
 
   def self.locking_enabled?
     columns_hash.key?("locked_at")
+  end
+
+  def self.update_lock_columns(id, locked_at:, locked_by_id:)
+    sanitized_sql = sanitize_sql_array(
+      [
+        <<~SQL.squish,
+          locked_at = ?,
+          locked_by_id = ?,
+          updated_at = ?
+        SQL
+        locked_at,
+        locked_by_id,
+        Time.current
+      ]
+    )
+
+    where(id: id).update_all(sanitized_sql)
+  end
+
+  def self.auto_lock_expired!
+    return 0 unless locking_enabled?
+
+    sanitized_sql = sanitize_sql_array(
+      [
+        <<~SQL.squish,
+          locked_at = ?,
+          locked_by_id = NULL,
+          updated_at = ?
+        SQL
+        Time.current,
+        Time.current
+      ]
+    )
+
+    where(locked_at: nil)
+      .where("created_at <= ?", 24.hours.ago)
+      .update_all(sanitized_sql)
   end
 
   def self.dimensioning_period_for(date)

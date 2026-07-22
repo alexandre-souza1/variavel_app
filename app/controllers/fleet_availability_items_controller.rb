@@ -1,5 +1,6 @@
 class FleetAvailabilityItemsController < ApplicationController
   before_action :authenticate_user!
+  before_action :auto_lock_expired_fleet_availabilities
   before_action :set_item
   before_action :require_edit_access!
 
@@ -41,6 +42,11 @@ class FleetAvailabilityItemsController < ApplicationController
   def set_item
     @fleet_availability = FleetAvailability.find(params[:fleet_availability_id])
     @item = @fleet_availability.fleet_availability_items.find(params[:id])
+  end
+
+
+  def auto_lock_expired_fleet_availabilities
+    FleetAvailability.auto_lock_expired!
   end
 
 

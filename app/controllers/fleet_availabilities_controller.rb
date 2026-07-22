@@ -1,5 +1,6 @@
 class FleetAvailabilitiesController < ApplicationController
   before_action :authenticate_user!
+  before_action :auto_lock_expired_fleet_availabilities
   before_action :set_fleet_availability, only: %i[show destroy lock unlock]
   before_action :require_admin!, only: %i[destroy unlock]
   before_action :require_creator_edit_access!, only: :lock
@@ -99,7 +100,7 @@ class FleetAvailabilitiesController < ApplicationController
       return
     end
 
-    @fleet_availability.lock!(current_user)
+    @fleet_availability.lock_availability!(current_user)
 
     redirect_to @fleet_availability,
                 notice: "Disponibilidade travada com sucesso."
@@ -112,7 +113,7 @@ class FleetAvailabilitiesController < ApplicationController
       return
     end
 
-    @fleet_availability.unlock!
+    @fleet_availability.unlock_availability!
 
     redirect_to @fleet_availability,
                 notice: "Disponibilidade destravada com sucesso."
@@ -122,6 +123,10 @@ class FleetAvailabilitiesController < ApplicationController
 
   def set_fleet_availability
     @fleet_availability = FleetAvailability.find(params[:id])
+  end
+
+  def auto_lock_expired_fleet_availabilities
+    FleetAvailability.auto_lock_expired!
   end
 
   def require_creator_edit_access!
