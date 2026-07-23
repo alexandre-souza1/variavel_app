@@ -9,6 +9,7 @@ export default class extends Controller {
     this.pendingEvent = null
     this.modalConfirmed = false
     this.editable = this.element.dataset.editable === "true"
+    this.isTouchDevice = window.matchMedia("(pointer: coarse)").matches
 
     if (!this.editable) return
 
@@ -19,6 +20,26 @@ export default class extends Controller {
         group: "fleet",
 
         animation: 150,
+
+        sort: list.id !== "available-list",
+
+        delay: this.isTouchDevice ? 180 : 0,
+
+        delayOnTouchOnly: true,
+
+        touchStartThreshold: 5,
+
+        fallbackTolerance: 5,
+
+        fallbackOnBody: true,
+
+        scroll: true,
+
+        bubbleScroll: true,
+
+        scrollSensitivity: 90,
+
+        scrollSpeed: 16,
 
         draggable: ".sortable-item",
 

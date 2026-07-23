@@ -3,7 +3,13 @@
 <% unavailable_items = @items.select(&:unavailable?) %>
 <% special_route_items = @items.select(&:special_route?).group_by(&:special_route) %>
 <% availability_slots = [@fleet_availability.agreed_quantity, 0].max %>
-<% available_items_by_position = available_items.index_by { |item| item.position.to_i } %>
+<% available_items_by_position = {} %>
+<% available_items.each do |item| %>
+  <% position = item.position.to_i %>
+  <% position = nil unless position.between?(0, availability_slots - 1) && !available_items_by_position.key?(position) %>
+  <% position ||= (0...availability_slots).find { |slot| !available_items_by_position.key?(slot) } %>
+  <% available_items_by_position[position] = item if position %>
+<% end %>
 <% maintenance_count = unavailable_items.count { |item| item.reason == "maintenance" } %>
 <% maintenance_percentage = @items.any? ? ((maintenance_count.to_f / @items.size) * 100).round : 0 %>
 <% used_items = available_items + @items.select(&:special_route?) %>
@@ -32,64 +38,67 @@
       </div>
     </div>
 
-    <div class="d-flex align-items-center gap-3 flex-wrap justify-content-end">
-      <% if @locking_enabled %>
-        <% if @fleet_availability.locked? %>
-          <span class="badge text-bg-secondary">
-            <i class="bi bi-lock-fill"></i>
-            Enviada
-          </span>
-        <% else %>
-          <span class="badge text-bg-light border text-muted">
+    <div class="fleet-header-tools">
+      <div class="fleet-header-actions">
+        <% if @locking_enabled %>
+          <% if @fleet_availability.locked? %>
+            <span class="badge text-bg-secondary">
+              <i class="bi bi-lock-fill"></i>
+              Enviada
+            </span>
+          <% else %>
+            <span class="badge text-bg-light border text-muted">
+              <i class="bi bi-unlock"></i>
+              Aberta
+            </span>
+          <% end %>
+        <% end %>
+
+        <% if @editable && @locking_enabled %>
+          <%= button_to lock_fleet_availability_path(@fleet_availability),
+                        method: :patch,
+                        class: "btn btn-outline-secondary",
+                        form: {
+                          data: {
+                            turbo_confirm: "Depois de enviar, a disponibilidade ficará travada. Confirma?"
+                          }
+                        } do %>
+            <i class="bi bi-send"></i>
+            Enviar
+          <% end %>
+        <% elsif @locking_enabled && @fleet_availability.locked? && current_user.admin? %>
+          <%= button_to unlock_fleet_availability_path(@fleet_availability),
+                        method: :patch,
+                        class: "btn btn-outline-secondary",
+                        form: {
+                          data: {
+                            turbo_confirm: "Destravar esta disponibilidade para edição do criador?"
+                          }
+                        } do %>
             <i class="bi bi-unlock"></i>
-            Aberta
-          </span>
+            Destravar
+          <% end %>
         <% end %>
-      <% end %>
 
-      <% if @editable && @locking_enabled %>
-        <%= button_to lock_fleet_availability_path(@fleet_availability),
-                      method: :patch,
-                      class: "btn btn-outline-secondary",
-                      form: {
-                        data: {
-                          turbo_confirm: "Depois de enviar, a disponibilidade ficará travada. Confirma?"
-                        }
-                      } do %>
-          <i class="bi bi-send"></i>
-          Enviar
+        <%= link_to fleet_availability_path(@fleet_availability, format: :pdf),
+                    class: "btn btn-outline-danger",
+                    target: "_blank",
+                    rel: "noopener" do %>
+          <i class="bi bi-file-earmark-pdf"></i>
+          PDF
         <% end %>
-      <% elsif @locking_enabled && @fleet_availability.locked? && current_user.admin? %>
-        <%= button_to unlock_fleet_availability_path(@fleet_availability),
-                      method: :patch,
-                      class: "btn btn-outline-secondary",
-                      form: {
-                        data: {
-                          turbo_confirm: "Destravar esta disponibilidade para edição do criador?"
-                        }
-                      } do %>
-          <i class="bi bi-unlock"></i>
-          Destravar
+
+        <%= link_to fleet_availabilities_path,
+                    class: "btn btn-outline-secondary" do %>
+
+          <i class="bi bi-arrow-left"></i>
+          Voltar
+
         <% end %>
-      <% end %>
+      </div>
 
-      <%= link_to fleet_availability_path(@fleet_availability, format: :pdf),
-                  class: "btn btn-outline-danger",
-                  target: "_blank",
-                  rel: "noopener" do %>
-        <i class="bi bi-file-earmark-pdf"></i>
-        PDF
-      <% end %>
-
-      <%= link_to fleet_availabilities_path,
-                  class: "btn btn-outline-secondary" do %>
-
-        <i class="bi bi-arrow-left"></i>
-        Voltar
-
-      <% end %>
-
-      <div class="fleet-kpi-panel">
+      <div class="fleet-header-metrics">
+        <div class="fleet-kpi-panel">
 
         <span class="text-muted">
           Cobertura
@@ -104,9 +113,9 @@
           <%= @fleet_availability.agreed_quantity %> linhas
         </small>
 
-      </div>
+        </div>
 
-      <div class="fleet-kpi-panel fleet-kpi-panel--danger">
+        <div class="fleet-kpi-panel fleet-kpi-panel--danger">
         <span class="text-muted">
           Manutenção
         </span>
@@ -119,9 +128,9 @@
           <%= maintenance_count %> /
           <%= @items.size %> veículos
         </small>
-      </div>
+        </div>
 
-      <div class="fleet-profile-panel">
+        <div class="fleet-profile-panel">
         <span class="text-muted">
           Em uso por perfil
         </span>
@@ -135,6 +144,7 @@
               </span>
             </small>
           <% end %>
+        </div>
         </div>
       </div>
 

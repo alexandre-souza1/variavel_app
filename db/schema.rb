@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_22_185242) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_23_111500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -262,6 +262,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_22_185242) do
     t.datetime "updated_at", null: false
     t.string "special_route"
     t.index ["fleet_availability_id", "plate_id"], name: "idx_fleet_availability_item", unique: true
+    t.index ["fleet_availability_id", "position"], name: "index_fleet_availability_items_on_unique_available_position", unique: true, where: "(status = 0)"
     t.index ["fleet_availability_id"], name: "index_fleet_availability_items_on_fleet_availability_id"
     t.index ["plate_id"], name: "index_fleet_availability_items_on_plate_id"
   end

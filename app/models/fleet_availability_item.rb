@@ -30,11 +30,19 @@ class FleetAvailabilityItem < ApplicationRecord
             numericality: {
               greater_than_or_equal_to: 0
             }
+  validates :position,
+            uniqueness: {
+              scope: :fleet_availability_id,
+              conditions: -> { where(status: FleetAvailabilityItem.statuses[:available]) },
+              message: "já está ocupada por outra placa disponível"
+            },
+            if: :available?
   validate :special_route_is_valid
   validate :special_route_is_active
   validate :special_route_status_has_route
   validate :special_route_quantity_is_available
   validate :van_route_requires_van_plate
+  validate :available_position_is_dimensioned
 
   def status_badge_class
     case status
@@ -123,5 +131,12 @@ class FleetAvailabilityItem < ApplicationRecord
     return if van_plate?
 
     errors.add(:plate, "precisa ser VAN para a rota Van")
+  end
+
+  def available_position_is_dimensioned
+    return unless available?
+    return if position.to_i < fleet_availability.agreed_quantity.to_i
+
+    errors.add(:position, "precisa estar dentro da disponibilidade dimensionada")
   end
 end
