@@ -9,7 +9,6 @@ export default class extends Controller {
     this.pendingEvent = null
     this.modalConfirmed = false
     this.editable = this.element.dataset.editable === "true"
-    this.isTouchDevice = window.matchMedia("(pointer: coarse)").matches
 
     if (!this.editable) return
 
@@ -20,26 +19,6 @@ export default class extends Controller {
         group: "fleet",
 
         animation: 150,
-
-        sort: list.id !== "available-list",
-
-        delay: this.isTouchDevice ? 180 : 0,
-
-        delayOnTouchOnly: true,
-
-        touchStartThreshold: 5,
-
-        fallbackTolerance: 5,
-
-        fallbackOnBody: true,
-
-        scroll: true,
-
-        bubbleScroll: true,
-
-        scrollSensitivity: 90,
-
-        scrollSpeed: 16,
 
         draggable: ".sortable-item",
 
@@ -114,7 +93,6 @@ export default class extends Controller {
       return
     }
 
-    this.adjustAvailableSlots(event)
 
     this.updateItem(
       itemId,
@@ -196,7 +174,6 @@ export default class extends Controller {
 
       this.modalConfirmed = true
 
-      this.adjustAvailableSlots(event)
 
       this.updateItem(
         itemId,
@@ -364,7 +341,9 @@ export default class extends Controller {
 
 
   itemPosition(event) {
-    return Array.from(event.to.children).indexOf(event.item)
+    return Array
+      .from(event.to.querySelectorAll(".sortable-item"))
+      .indexOf(event.item)
   }
 
 
@@ -506,7 +485,9 @@ export default class extends Controller {
 
     if (!list) return 0
 
-    return Array.from(list.children).indexOf(itemElement)
+    return Array
+      .from(list.querySelectorAll(".sortable-item"))
+      .indexOf(itemElement)
   }
 
 
@@ -515,7 +496,9 @@ export default class extends Controller {
 
     if (!list) return 0
 
-    return Array.from(list.children).indexOf(itemElement)
+    return Array
+      .from(list.querySelectorAll(".sortable-item"))
+      .indexOf(itemElement)
   }
 
 
@@ -573,9 +556,8 @@ export default class extends Controller {
     const availableList = document.getElementById("available-list")
 
     availableList
-      .querySelectorAll(":scope > .sortable-item")
-      .forEach((item) => {
-        const index = this.itemIndex(item)
+      .querySelectorAll(".sortable-item")
+      .forEach((item, index) => {
         const label = item.querySelector("[data-line-label]")
 
         if (label) label.textContent = `${index + 1} -`
@@ -608,71 +590,24 @@ export default class extends Controller {
 
     if (!Number.isFinite(maxItems)) return
 
+    availableList
+      .querySelectorAll(".fleet-empty-slot")
+      .forEach((slot) => slot.remove())
+
     const currentItems = availableList.querySelectorAll(".sortable-item").length
-    const requiredSlots = Math.max(maxItems - currentItems, 0)
-    const slots = Array.from(
-      availableList.querySelectorAll(":scope > .fleet-empty-slot")
-    )
+    const emptySlots = Math.max(maxItems - currentItems, 0)
 
-    while (slots.length > requiredSlots) {
-      slots.pop().remove()
-    }
-
-    while (slots.length < requiredSlots) {
-      const position = availableList.children.length
-      availableList.insertAdjacentHTML("beforeend", this.emptySlotHtml(position))
-      slots.push(availableList.lastElementChild)
-    }
-
-    slots.forEach((slot) => this.refreshEmptySlot(slot))
-  }
-
-
-  adjustAvailableSlots(event) {
-    const fromAvailable = event.from.id === "available-list"
-    const toAvailable = event.to.id === "available-list"
-
-    if (fromAvailable && !toAvailable) {
-      event.from.insertAdjacentHTML("beforeend", this.emptySlotHtml(event.oldIndex))
-
-      const slot = event.from.lastElementChild
-      event.from.insertBefore(slot, event.from.children[event.oldIndex] || null)
-    }
-
-    if (!fromAvailable && toAvailable) {
-      const slots = Array.from(
-        event.to.querySelectorAll(":scope > .fleet-empty-slot")
+    for (let index = 0; index < emptySlots; index += 1) {
+      availableList.insertAdjacentHTML(
+        "beforeend",
+        `
+          <div class="fleet-empty-slot">
+            <span>Linha ${currentItems + index + 1}</span>
+            <small>${this.emptySlotStandardPlateText(currentItems + index)}</small>
+          </div>
+        `
       )
-      const slotAfterItem = event.item.nextElementSibling
-      const slot = slotAfterItem?.classList.contains("fleet-empty-slot")
-        ? slotAfterItem
-        : slots[slots.length - 1]
-
-      if (slot) {
-        event.to.insertBefore(event.item, slot)
-        slot.remove()
-      }
     }
-  }
-
-
-  emptySlotHtml(position) {
-    return `
-      <div class="fleet-empty-slot" data-empty-slot>
-        <span>Linha ${position + 1}</span>
-        <small>${this.emptySlotStandardPlateText(position)}</small>
-      </div>
-    `
-  }
-
-
-  refreshEmptySlot(slot) {
-    const position = Array.from(slot.parentElement.children).indexOf(slot)
-    const label = slot.querySelector("span")
-    const details = slot.querySelector("small")
-
-    if (label) label.textContent = `Linha ${position + 1}`
-    if (details) details.textContent = this.emptySlotStandardPlateText(position)
   }
 
 

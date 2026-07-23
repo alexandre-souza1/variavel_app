@@ -71,8 +71,7 @@ class FleetAvailability < ApplicationRecord
     self.class.update_lock_columns(
       id,
       locked_at: Time.current,
-      locked_by_id: user.id,
-      auto_lock_exempted_at: nil
+      locked_by_id: user.id
     )
     reload
   end
@@ -83,8 +82,7 @@ class FleetAvailability < ApplicationRecord
     self.class.update_lock_columns(
       id,
       locked_at: nil,
-      locked_by_id: nil,
-      auto_lock_exempted_at: Time.current
+      locked_by_id: nil
     )
     reload
   end
@@ -109,16 +107,19 @@ class FleetAvailability < ApplicationRecord
     columns_hash.key?("locked_at")
   end
 
-  def self.update_lock_columns(id, locked_at:, locked_by_id:, auto_lock_exempted_at: :unchanged)
-    assignments = ["locked_at = ?", "locked_by_id = ?", "updated_at = ?"]
-    values = [locked_at, locked_by_id, Time.current]
-
-    if auto_lock_exemption_enabled? && auto_lock_exempted_at != :unchanged
-      assignments << "auto_lock_exempted_at = ?"
-      values << auto_lock_exempted_at
-    end
-
-    sanitized_sql = sanitize_sql_array([assignments.join(", "), *values])
+  def self.update_lock_columns(id, locked_at:, locked_by_id:)
+    sanitized_sql = sanitize_sql_array(
+      [
+        <<~SQL.squish,
+          locked_at = ?,
+          locked_by_id = ?,
+          updated_at = ?
+        SQL
+        locked_at,
+        locked_by_id,
+        Time.current
+      ]
+    )
 
     where(id: id).update_all(sanitized_sql)
   end
@@ -138,14 +139,9 @@ class FleetAvailability < ApplicationRecord
       ]
     )
 
-    scope = where(locked_at: nil).where("created_at <= ?", 24.hours.ago)
-    scope = scope.where(auto_lock_exempted_at: nil) if auto_lock_exemption_enabled?
-
-    scope.update_all(sanitized_sql)
-  end
-
-  def self.auto_lock_exemption_enabled?
-    columns_hash.key?("auto_lock_exempted_at")
+    where(locked_at: nil)
+      .where("created_at <= ?", 24.hours.ago)
+      .update_all(sanitized_sql)
   end
 
   def self.dimensioning_period_for(date)
