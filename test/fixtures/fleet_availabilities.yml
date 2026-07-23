@@ -2,10 +2,10 @@
 
 one:
   date: 2026-07-20
-  planned_quantity: 1
+  agreed_quantity: 1
   user: one
 
 two:
-  date: 2026-07-20
-  planned_quantity: 1
+  date: 2026-07-21
+  agreed_quantity: 1
   user: two

@@ -8,7 +8,7 @@ class FleetDimensioningsController < ApplicationController
 
   def new
     @fleet_dimensioning = FleetDimensioning.new
-    @fleet_dimensioning.build_standard_plate_slots
+    @fleet_dimensioning.build_standard_plate_slots(standard_plate_slot_quantity)
   end
 
   def create
@@ -18,13 +18,13 @@ class FleetDimensioningsController < ApplicationController
       redirect_to fleet_dimensionings_path,
                   notice: "Dimensionamento cadastrado com sucesso."
     else
-      @fleet_dimensioning.build_standard_plate_slots
+      @fleet_dimensioning.build_standard_plate_slots(standard_plate_slot_quantity)
       render :new, status: :unprocessable_entity
     end
   end
 
   def edit
-    @fleet_dimensioning.build_standard_plate_slots
+    @fleet_dimensioning.build_standard_plate_slots(standard_plate_slot_quantity)
   end
 
   def update
@@ -32,7 +32,7 @@ class FleetDimensioningsController < ApplicationController
       redirect_to fleet_dimensionings_path,
                   notice: "Dimensionamento atualizado com sucesso."
     else
-      @fleet_dimensioning.build_standard_plate_slots
+      @fleet_dimensioning.build_standard_plate_slots(standard_plate_slot_quantity)
       render :edit, status: :unprocessable_entity
     end
   end
@@ -48,6 +48,14 @@ class FleetDimensioningsController < ApplicationController
 
   def set_fleet_dimensioning
     @fleet_dimensioning = FleetDimensioning.find(params[:id])
+  end
+
+  def standard_plate_slot_quantity
+    [
+      @fleet_dimensioning.route_quantity.to_i,
+      Plate.where(setor: "ROTA").count,
+      FleetDimensioning::STANDARD_PLATE_SLOTS
+    ].max
   end
 
   def fleet_dimensioning_params

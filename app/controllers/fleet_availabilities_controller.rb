@@ -69,6 +69,8 @@ class FleetAvailabilitiesController < ApplicationController
   end
 
   def show
+    @fleet_availability.sync_dimensioning! unless @fleet_availability.locked?
+
     @locking_enabled = FleetAvailability.locking_enabled?
     @editable = @fleet_availability.editable_by?(current_user)
     @items = @fleet_availability

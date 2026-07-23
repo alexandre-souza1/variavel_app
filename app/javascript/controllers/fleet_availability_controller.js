@@ -13,6 +13,9 @@ export default class extends Controller {
     if (!this.editable) return
 
     this.element.querySelectorAll(".sortable-list").forEach((list) => {
+      if (list.id === "available-list") return
+
+      const availabilitySlot = this.availableSlotFor(list)
 
       const sortable = Sortable.create(list, {
 
@@ -20,9 +23,21 @@ export default class extends Controller {
 
         animation: 150,
 
+        sort: !availabilitySlot,
+
         draggable: ".sortable-item",
 
         ghostClass: "fleet-plate-item--ghost",
+
+        chosenClass: "fleet-plate-item--chosen",
+
+        dragClass: "fleet-plate-item--dragging",
+
+        fallbackClass: "fleet-plate-item--fallback",
+
+        onMove: (event) => {
+          return this.canMoveToTarget(event)
+        },
 
         onEnd: (event) => {
           this.moved(event)
@@ -58,15 +73,22 @@ export default class extends Controller {
     }
 
 
+    const targetSlot = this.availableSlotFor(event.to)
     const specialRoute = event.to.dataset.specialRoute
-    const status = specialRoute ? "special_route" : statusMap[event.to.id]
+    const status = targetSlot ? "available" : specialRoute ? "special_route" : statusMap[event.to.id]
 
     if (!status) return
 
-    if (status === "available" && this.availableListIsFull(event.to)) {
+    if (this.availableSlotFor(event.from) && targetSlot) {
+      this.restoreItem(event)
+      this.showAlert("Para trocar a posição, envie a placa para o depósito e depois para a linha desejada.")
+      return
+    }
+
+    if (status === "available" && !this.slotCanReceiveItem(targetSlot, event.item)) {
       this.restoreItem(event)
       this.showAlert(
-        "Não é possível adicionar outra placa: a disponibilidade já atingiu o limite pactuado."
+        "Essa linha já possui uma placa. Escolha uma linha vazia."
       )
       return
     }
@@ -86,6 +108,8 @@ export default class extends Controller {
 
     if (status === "unavailable") {
 
+      this.ensureAvailabilitySlotPlaceholder(this.availableSlotFor(event.from))
+
       this.pendingEvent = event
 
       this.openModal()
@@ -97,12 +121,15 @@ export default class extends Controller {
     this.updateItem(
       itemId,
       status,
-      this.itemPosition(event),
+      targetSlot ? this.positionForAvailableSlot(targetSlot) : this.itemPosition(event),
       null,
       null,
       event.item,
       specialRoute
     )
+
+    this.ensureAvailabilitySlotPlaceholder(this.availableSlotFor(event.from))
+    this.removeAvailabilitySlotPlaceholder(targetSlot)
 
   }
 
@@ -173,6 +200,8 @@ export default class extends Controller {
 
 
       this.modalConfirmed = true
+
+      this.ensureAvailabilitySlotPlaceholder(this.availableSlotFor(event.from))
 
 
       this.updateItem(
@@ -341,6 +370,10 @@ export default class extends Controller {
 
 
   itemPosition(event) {
+    const targetSlot = this.availableSlotFor(event.to)
+
+    if (targetSlot) return this.positionForAvailableSlot(targetSlot)
+
     return Array
       .from(event.to.querySelectorAll(".sortable-item"))
       .indexOf(event.item)
@@ -351,6 +384,9 @@ export default class extends Controller {
     const referenceNode = event.from.children[event.oldIndex] || null
 
     event.from.insertBefore(event.item, referenceNode)
+
+    this.removeAvailabilitySlotPlaceholder(this.availableSlotFor(event.from))
+    this.ensureAvailabilitySlotPlaceholder(this.availableSlotFor(event.to))
 
     this.refreshBoard()
   }
@@ -426,6 +462,7 @@ export default class extends Controller {
     const container = this.detailsContainer(itemElement, "fleet-plate-card__side")
     const position = this.itemIndex(itemElement)
     const standardPlate = this.standardPlateForPosition(position)
+    const observation = String(itemElement.dataset.observation || "").trim()
 
     container.innerHTML = `
       <span>
@@ -481,6 +518,10 @@ export default class extends Controller {
 
 
   itemIndex(itemElement) {
+    const availabilitySlot = this.availableSlotFor(itemElement)
+
+    if (availabilitySlot) return this.positionForAvailableSlot(availabilitySlot)
+
     const list = itemElement.closest(".sortable-list")
 
     if (!list) return 0
@@ -492,6 +533,10 @@ export default class extends Controller {
 
 
   itemPositionFromElement(itemElement) {
+    const availabilitySlot = this.availableSlotFor(itemElement)
+
+    if (availabilitySlot) return this.positionForAvailableSlot(availabilitySlot)
+
     const list = itemElement.closest(".sortable-list")
 
     if (!list) return 0
@@ -543,7 +588,6 @@ export default class extends Controller {
   refreshBoard() {
     this.refreshAvailabilityRows()
     this.refreshUnavailableRows()
-    this.refreshEmptySlots()
     this.refreshSpecialRoutePlaceholders()
     this.refreshCounts()
     this.refreshCoverage()
@@ -556,11 +600,18 @@ export default class extends Controller {
     const availableList = document.getElementById("available-list")
 
     availableList
-      .querySelectorAll(".sortable-item")
-      .forEach((item, index) => {
+      .querySelectorAll("[data-availability-slot]")
+      .forEach((slot) => {
+        this.ensureAvailabilitySlotPlaceholder(slot)
+
+        const item = slot.querySelector(":scope > .fleet-availability-slot__body > .sortable-item")
+
+        if (!item) return
+
+        const position = this.positionForAvailableSlot(slot)
         const label = item.querySelector("[data-line-label]")
 
-        if (label) label.textContent = `${index + 1} -`
+        if (label) label.textContent = `${position + 1} -`
 
         if (item.classList.contains("fleet-plate-item--availability")) {
           this.setAvailabilityDetails(item)
@@ -584,30 +635,80 @@ export default class extends Controller {
   }
 
 
-  refreshEmptySlots() {
-    const availableList = document.getElementById("available-list")
-    const maxItems = Number(availableList.dataset.maxItems)
+  canMoveToTarget(event) {
+    const targetSlot = this.availableSlotFor(event.to)
 
-    if (!Number.isFinite(maxItems)) return
+    if (!targetSlot) return true
 
-    availableList
-      .querySelectorAll(".fleet-empty-slot")
-      .forEach((slot) => slot.remove())
+    if (this.availableSlotFor(event.from)) return false
 
-    const currentItems = availableList.querySelectorAll(".sortable-item").length
-    const emptySlots = Math.max(maxItems - currentItems, 0)
+    return this.slotCanReceiveItem(targetSlot, event.dragged)
+  }
 
-    for (let index = 0; index < emptySlots; index += 1) {
-      availableList.insertAdjacentHTML(
+
+  availableSlotFor(element) {
+    if (!element) return null
+
+    if (element.matches?.("[data-availability-slot]")) return element
+
+    return element.closest?.("[data-availability-slot]") || null
+  }
+
+
+  positionForAvailableSlot(slot) {
+    const position = Number(slot?.dataset.position)
+
+    return Number.isInteger(position) ? position : 0
+  }
+
+
+  slotCanReceiveItem(slot, itemElement) {
+    if (!slot) return false
+
+    const body = slot.querySelector(":scope > .fleet-availability-slot__body")
+    const currentItem = body?.querySelector(":scope > .sortable-item")
+
+    return !currentItem || currentItem === itemElement
+  }
+
+
+  ensureAvailabilitySlotPlaceholder(slot) {
+    if (!slot) return
+
+    const body = slot.querySelector(":scope > .fleet-availability-slot__body")
+
+    if (!body) return
+
+    const item = body.querySelector(":scope > .sortable-item")
+    const placeholder = body.querySelector(":scope > [data-empty-slot]")
+
+    if (item) {
+      placeholder?.remove()
+      return
+    }
+
+    if (!placeholder) {
+      const position = this.positionForAvailableSlot(slot)
+
+      body.insertAdjacentHTML(
         "beforeend",
         `
-          <div class="fleet-empty-slot">
-            <span>Linha ${currentItems + index + 1}</span>
-            <small>${this.emptySlotStandardPlateText(currentItems + index)}</small>
+          <div class="fleet-empty-slot" data-empty-slot>
+            <span>Linha ${position + 1}</span>
+            <small>${this.emptySlotStandardPlateText(position)}</small>
           </div>
         `
       )
     }
+  }
+
+
+  removeAvailabilitySlotPlaceholder(slot) {
+    if (!slot) return
+
+    slot
+      .querySelectorAll(":scope > .fleet-availability-slot__body > [data-empty-slot]")
+      .forEach((placeholder) => placeholder.remove())
   }
 
 

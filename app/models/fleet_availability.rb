@@ -55,6 +55,42 @@ class FleetAvailability < ApplicationRecord
     ((available_count.to_f / agreed_quantity) * 100).round
   end
 
+  def sync_dimensioning!
+    dimensioning = self.class.dimensioning_period_for(date)
+
+    return unless dimensioning
+    route_quantity = dimensioning.route_quantity.to_i
+
+    if agreed_quantity.to_i != route_quantity ||
+       special_routes != dimensioning.special_routes
+      self.class
+        .where(id: id)
+        .update_all(
+          self.class.sanitize_sql_array(
+            [
+              "agreed_quantity = ?, special_routes = ?, updated_at = ?",
+              route_quantity,
+              dimensioning.special_routes.to_json,
+              Time.current
+            ]
+          )
+        )
+
+      self.agreed_quantity = route_quantity
+      self.special_routes = dimensioning.special_routes
+    end
+
+    fleet_availability_items
+      .available
+      .where("position >= ?", route_quantity)
+      .update_all(
+        status: FleetAvailabilityItem.statuses[:exchange],
+        reason: nil,
+        special_route: nil,
+        updated_at: Time.current
+      )
+  end
+
   def locked?
     self.class.locking_enabled? && locked_at.present?
   end

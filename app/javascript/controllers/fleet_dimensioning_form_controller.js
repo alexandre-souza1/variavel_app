@@ -3,6 +3,7 @@ import Sortable from "sortablejs"
 
 export default class extends Controller {
   static targets = [
+    "routeQuantity",
     "sourceList",
     "slot",
     "slotList",
@@ -13,6 +14,10 @@ export default class extends Controller {
   connect() {
     this.sortables = []
     this.setupSortable()
+    this.refreshSlots()
+  }
+
+  syncSlots() {
     this.refreshSlots()
   }
 
@@ -51,7 +56,11 @@ export default class extends Controller {
   }
 
   refreshSlots() {
+    const activeSlotCount = this.activeSlotCount()
+
     this.slotTargets.forEach((slot) => {
+      const position = Number(slot.dataset.position)
+      const slotIsActive = !Number.isInteger(position) || position < activeSlotCount
       const slotList = slot.querySelector(
         "[data-fleet-dimensioning-form-target='slotList']"
       )
@@ -64,12 +73,18 @@ export default class extends Controller {
         "[data-fleet-dimensioning-form-target='destroyInput']"
       )
 
+      slot.classList.toggle("d-none", !slotIsActive)
+
+      if (!slotIsActive && plate) {
+        this.sourceListTarget.appendChild(plate)
+      }
+
       if (plateInput) {
-        plateInput.value = plate ? plate.dataset.plateId : ""
+        plateInput.value = slotIsActive && plate ? plate.dataset.plateId : ""
       }
 
       if (destroyInput) {
-        destroyInput.value = plate ? "0" : "1"
+        destroyInput.value = slotIsActive && plate ? "0" : "1"
       }
 
       if (!placeholder) {
@@ -83,5 +98,13 @@ export default class extends Controller {
         placeholder.classList.toggle("d-none", Boolean(plate))
       }
     })
+  }
+
+  activeSlotCount() {
+    const value = Number(this.routeQuantityTarget.value)
+
+    if (Number.isInteger(value) && value >= 0) return value
+
+    return this.slotTargets.length
   }
 }

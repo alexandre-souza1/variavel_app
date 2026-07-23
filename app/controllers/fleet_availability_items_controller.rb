@@ -41,6 +41,7 @@ class FleetAvailabilityItemsController < ApplicationController
 
   def set_item
     @fleet_availability = FleetAvailability.find(params[:fleet_availability_id])
+    @fleet_availability.sync_dimensioning! unless @fleet_availability.locked?
     @item = @fleet_availability.fleet_availability_items.find(params[:id])
   end
 

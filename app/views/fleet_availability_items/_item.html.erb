@@ -55,7 +55,7 @@
 
     </div>
 
-    <div class="fleet-plate-card__observation <%= "fleet-plate-card__observation--empty" if item.observation.blank? %>"
+    <div class="fleet-plate-card__observation <%= "fleet-plate-card__observation--inline" if item.observation.blank? %> <%= "fleet-plate-card__observation--inline" if variant == :availability %>"
          data-observation-display>
       <% if item.observation.present? %>
         <span>

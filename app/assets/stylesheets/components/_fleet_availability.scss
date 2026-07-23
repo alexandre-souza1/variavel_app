@@ -290,16 +290,13 @@
       min-height: 25.75rem;
       max-height: 25.75rem;
 
-      // Itens dentro do grid
       .fleet-plate-item {
-        display: block; // anula o grid de duas colunas
+        display: block;
 
-        // Esconde o número de linha
         .fleet-plate-item__line {
           display: none !important;
         }
 
-        // Estilo base do card compacto (depósito e indisponíveis)
         .fleet-plate-card {
           display: grid;
           min-height: 3.55rem;
@@ -333,7 +330,7 @@
           }
 
           .fleet-plate-card__details {
-            display: none; // esconde detalhes extras
+            display: none;
           }
 
           .fleet-plate-card__side {
@@ -341,7 +338,6 @@
           }
         }
 
-        // Específico para special_route (se aparecer no grid)
         &--special_route .fleet-plate-card {
           border-color: rgba(var(--bs-info-rgb), 0.45);
           min-height: 3.75rem;
@@ -425,12 +421,12 @@
       cursor: grabbing;
     }
 
-    // Estilo para itens que NÃO estão no grid (availability, etc.)
     &--availability {
       display: grid;
       grid-template-columns: 2.25rem minmax(0, 1fr);
-      align-items: start;
+      align-items: stretch;
       gap: 0.65rem;
+      min-height: 4.5rem;
     }
 
     .fleet-plate-item__line {
@@ -462,7 +458,72 @@
     }
 
     &--availability .fleet-plate-card {
-      padding: 0.58rem 0.75rem;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      height: 4.5rem;           /* Mantida a altura fixa */
+      min-height: 4.5rem;
+      padding: 0.45rem 0.75rem;
+      overflow: hidden;         /* Corte continua, mas agora a obs pode quebrar linha */
+    }
+
+    &--availability .fleet-plate-card__main {
+      min-width: 0;
+      gap: 0.6rem;
+    }
+
+    &--availability .fleet-plate-card__plate,
+    &--availability .fleet-plate-card__meta,
+    &--availability .fleet-plate-card__side {
+      overflow: hidden;
+    }
+
+    &--availability .fleet-plate-card__plate,
+    &--availability .fleet-plate-card__meta span,
+    &--availability .fleet-plate-card__side span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Removido o nowrap da observação */
+    &--availability .fleet-plate-card__observation span {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    &--availability .fleet-plate-card__plate {
+      font-size: 0.98rem;
+      line-height: 1.05;
+    }
+
+    &--availability .fleet-plate-card__meta {
+      gap: 0.25rem 0.4rem;
+      margin-top: 0.18rem;
+      font-size: 0.72rem;
+      line-height: 1.1;
+    }
+
+    &--availability .fleet-plate-card__side {
+      max-width: 42%;
+      font-size: 0.7rem;
+    }
+
+    &--availability .fleet-plate-card__observation {
+      min-width: 0;
+      margin-top: 0.18rem;
+      padding-top: 0.12rem;
+      border-top: 0;
+      font-size: 0.66rem;
+      line-height: 1;
+    }
+
+    /* Mostra o rodapé inline em vez de esconder */
+    &--availability .fleet-plate-card__observation--inline {
+      display: flex;
+    }
+
+    &--availability .fleet-plate-card__observation--empty {
+      display: none;   /* mantém escondido se não houver observação */
     }
 
     &--ghost {
@@ -600,6 +661,35 @@
     small {
       text-align: right;
     }
+  }
+
+  .fleet-list--availability {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    align-content: initial;
+  }
+
+  .fleet-availability-slot {
+    display: block;
+    min-width: 0;
+  }
+
+  .fleet-availability-slot__body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 4.5rem;
+  }
+
+  .fleet-availability-slot__body > .sortable-item,
+  .fleet-availability-slot__body > .fleet-empty-slot {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  .fleet-availability-slot__body > .sortable-item {
+    margin: 0;
   }
 }
 
