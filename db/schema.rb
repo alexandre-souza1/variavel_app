@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_23_111500) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_23_113000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -234,6 +234,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_23_111500) do
     t.json "special_routes", default: [], null: false
     t.datetime "locked_at"
     t.bigint "locked_by_id"
+    t.datetime "auto_lock_exempted_at"
     t.index ["date"], name: "idx_fleet_availability_date", unique: true
     t.index ["locked_by_id"], name: "index_fleet_availabilities_on_locked_by_id"
   end
