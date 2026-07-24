@@ -1,0 +1,213 @@
+<div class="container p-3">
+  <div class="row align-items-center">
+    <div class="col-md-8">
+      <h1 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Dashboard de Mapas</h1>
+    </div>
+    <div class="col-md-4 text-md-end d-flex flex-row-reverse">
+      <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card shadow-sm rounded mb-4">
+    <div class="card-body">
+      <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+        <div>
+          <h2 class="mb-1">
+            <i class="bi bi-calendar-range me-2"></i>
+            <%= @periodo_inicio.strftime("%d/%m/%Y") %> a <%= @periodo_fim.strftime("%d/%m/%Y") %>
+          </h2>
+          <p class="text-muted mb-0">Visão consolidada pelo ciclo de remuneração, do dia 21 ao dia 20.</p>
+        </div>
+
+        <%= form_with url: dashboard_mapas_path, method: :get, local: true, class: "row gx-2 gy-2 align-items-end" do %>
+          <div class="col-auto">
+            <label class="form-label small text-muted mb-1" for="mes">Mês</label>
+            <%= select_tag :mes,
+                options_for_select((1..12).map { |m| [I18n.t("date.month_names")[m], m] }, @mes),
+                class: "form-select form-select-sm" %>
+          </div>
+
+          <div class="col-auto">
+            <label class="form-label small text-muted mb-1" for="ano">Ano</label>
+            <%= select_tag :ano,
+                options_for_select((Date.today.year - 5..Date.today.year).to_a.reverse, @ano),
+                class: "form-select form-select-sm" %>
+          </div>
+
+          <div class="col-auto">
+            <label class="form-label small text-muted mb-1" for="periodo_tipo">Período</label>
+            <%= select_tag :periodo_tipo,
+                options_for_select([
+                  ["Ciclo completo", "mes"],
+                  ["1ª quinzena do ciclo", "primeira_quinzena"],
+                  ["2ª quinzena do ciclo", "segunda_quinzena"]
+                ], @periodo_tipo),
+                class: "form-select form-select-sm" %>
+          </div>
+
+          <div class="col-auto">
+            <%= submit_tag "Filtrar", class: "btn btn-primary btn-sm" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-3">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1">Mapas</p>
+          <h3 class="mb-0"><%= @total_mapas %></h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1">Motoristas</p>
+          <h3 class="mb-0"><%= @ranking_motoristas.size %></h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1">Placas</p>
+          <h3 class="mb-0"><%= @ranking_placas.size %></h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1">Remuneração Motoristas</p>
+          <h3 class="mb-0"><%= number_to_currency(@total_remuneracao_motoristas, unit: "R$ ", separator: ",", delimiter: ".") %></h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1">Cx Real</p>
+          <h4 class="mb-0"><%= number_with_precision(@total_cx_real, precision: 0, delimiter: ".") %></h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1">PDV Real</p>
+          <h4 class="mb-0"><%= number_with_precision(@total_pdv_real, precision: 0, delimiter: ".") %></h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1">Recargas</p>
+          <h4 class="mb-0"><%= @total_recargas %></h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm rounded mb-4">
+    <div class="card-header bg-light border-bottom">
+      <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Motoristas que Mais Rodaram</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Motorista</th>
+              <th>Matrícula</th>
+              <th>Mapas</th>
+              <th>Placas</th>
+              <th>Cx Real</th>
+              <th>PDV Real</th>
+              <th>Recargas</th>
+              <th>Devolução</th>
+              <th>Bônus</th>
+              <th class="text-end">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if @ranking_motoristas.empty? %>
+              <tr>
+                <td colspan="11" class="text-center text-muted">Nenhum mapa encontrado no período.</td>
+              </tr>
+            <% end %>
+
+            <% @ranking_motoristas.each_with_index do |motorista, index| %>
+              <tr>
+                <td><%= index + 1 %></td>
+                <td><%= motorista[:nome] %></td>
+                <td><%= motorista[:matricula] || motorista[:promax] %></td>
+                <td><span class="badge bg-primary"><%= motorista[:mapas] %></span></td>
+                <td><%= motorista[:placas] %></td>
+                <td><%= number_with_precision(motorista[:cx_real], precision: 0, delimiter: ".") %></td>
+                <td><%= number_with_precision(motorista[:pdv_real], precision: 0, delimiter: ".") %></td>
+                <td><%= motorista[:recargas] %></td>
+                <td><%= (motorista[:percentual_devolucao] * 100).round(2) %>%</td>
+                <td><%= number_to_currency(motorista[:bonus_devolucao], unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                <td class="text-end fw-bold"><%= number_to_currency(motorista[:valor_total], unit: "R$ ", separator: ",", delimiter: ".") %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm rounded mb-4">
+    <div class="card-header bg-light border-bottom">
+      <h5 class="mb-0"><i class="bi bi-truck-front-fill me-2"></i>Placas que Mais Rodaram</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Placa</th>
+              <th>Mapas</th>
+              <th>Motoristas</th>
+              <th>Cx Real</th>
+              <th>PDV Real</th>
+              <th>Recargas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if @ranking_placas.empty? %>
+              <tr>
+                <td colspan="7" class="text-center text-muted">Nenhuma placa encontrada no período.</td>
+              </tr>
+            <% end %>
+
+            <% @ranking_placas.each_with_index do |placa, index| %>
+              <tr>
+                <td><%= index + 1 %></td>
+                <td class="fw-bold"><%= placa[:placa] %></td>
+                <td><span class="badge bg-primary"><%= placa[:mapas] %></span></td>
+                <td><%= placa[:motoristas] %></td>
+                <td><%= number_with_precision(placa[:cx_real], precision: 0, delimiter: ".") %></td>
+                <td><%= number_with_precision(placa[:pdv_real], precision: 0, delimiter: ".") %></td>
+                <td><%= placa[:recargas] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <%= link_to "Voltar", dashboard_path, class: "btn btn-primary shadow-sm p-3 w-100 mb-4" %>
+</div>

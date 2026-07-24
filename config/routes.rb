@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   get 'checklist_templates/create'
   get 'checklist_templates/show'
   get 'dashboard/placas_por_setor', to: 'dashboards#placas_por_setor', as: 'placas_por_setor'
+  get 'dashboard/mapas', to: 'dashboards#mapas', as: 'dashboard_mapas'
   get 'dashboard', to: 'dashboards#index', as: 'dashboard'
   mount ActionCable.server => '/cable'
 

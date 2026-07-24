@@ -1,6 +1,6 @@
 class DashboardsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_mes_ano, only: [:index, :placas_por_setor]
+  before_action :set_mes_ano, only: [:index, :placas_por_setor, :mapas]
 
   def index
     # ------------------------------------------------------------
@@ -146,6 +146,21 @@ class DashboardsController < ApplicationController
     end
   end
 
+  def mapas
+    @periodo_tipo = params[:periodo_tipo].presence || "mes"
+    @periodo_inicio, @periodo_fim = periodo_dashboard_mapas(@periodo_tipo, @mes, @ano)
+
+    @mapas = mapas_no_periodo(@periodo_inicio, @periodo_fim)
+    @total_mapas = @mapas.size
+    @total_cx_real = @mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.cx_real.to_f }
+    @total_pdv_real = @mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.pdv_real.to_f }
+    @total_recargas = @mapas.count { |mapa| mapa.recarga == "SIM" }
+
+    @ranking_motoristas = ranking_motoristas(@mapas)
+    @ranking_placas = ranking_placas(@mapas)
+    @total_remuneracao_motoristas = @ranking_motoristas.sum { |item| item[:valor_total] }
+  end
+
   private
 
   def set_mes_ano
@@ -216,5 +231,119 @@ class DashboardsController < ApplicationController
     when 6 then data[0,1].to_i
     else nil
     end
+  end
+
+  def periodo_dashboard_mapas(tipo, mes, ano)
+    fim_periodo = Date.new(ano, mes, 20)
+    inicio_periodo = fim_periodo.prev_month.change(day: 21)
+
+    case tipo
+    when "primeira_quinzena"
+      [inicio_periodo, inicio_periodo + 14.days]
+    when "segunda_quinzena"
+      [inicio_periodo + 15.days, fim_periodo]
+    else
+      [inicio_periodo, fim_periodo]
+    end
+  end
+
+  def mapas_no_periodo(inicio, fim)
+    anos = (inicio.year..fim.year).to_a
+    scope = Mapa.where.not(data: [nil, ""])
+    scope = scope.where(anos.map { "data LIKE ?" }.join(" OR "), *anos.map { |ano| "%#{ano}" })
+
+    scope.select do |mapa|
+      data = mapa.data_formatada
+      data.present? && data >= inicio && data <= fim
+    end
+  end
+
+  def ranking_motoristas(mapas)
+    promaxes = mapas.map { |mapa| mapa.matric_motorista.to_s }.reject(&:blank?).uniq
+    drivers_by_promax = Driver.where(promax: promaxes).index_by { |driver| driver.promax.to_s }
+
+    mapas
+      .group_by(&:matric_motorista)
+      .map do |promax, mapas_motorista|
+        driver = drivers_by_promax[promax.to_s]
+        totais = totais_remuneracao_motorista(mapas_motorista)
+
+        {
+          promax: promax,
+          nome: driver&.nome.presence || "Motorista #{promax}",
+          matricula: driver&.matricula,
+          mapas: mapas_motorista.size,
+          placas: mapas_motorista.map(&:plate).compact_blank.uniq.size,
+          cx_real: totais[:cx_real],
+          pdv_real: totais[:pdv_real],
+          recargas: totais[:recargas],
+          devolucoes: totais[:devolucoes],
+          percentual_devolucao: totais[:percentual_devolucao],
+          bonus_devolucao: totais[:bonus_devolucao],
+          valor_total: totais[:valor_total]
+        }
+      end
+      .sort_by { |item| [-item[:mapas], -item[:valor_total], item[:nome].to_s] }
+  end
+
+  def ranking_placas(mapas)
+    mapas
+      .group_by { |mapa| mapa.plate.presence || "Sem placa" }
+      .map do |placa, mapas_placa|
+        {
+          placa: placa,
+          mapas: mapas_placa.size,
+          motoristas: mapas_placa.map(&:matric_motorista).compact_blank.uniq.size,
+          cx_real: mapas_placa.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.cx_real.to_f },
+          pdv_real: mapas_placa.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.pdv_real.to_f },
+          recargas: mapas_placa.count { |mapa| mapa.recarga == "SIM" }
+        }
+      end
+      .sort_by { |item| [-item[:mapas], item[:placa].to_s] }
+  end
+
+  def totais_remuneracao_motorista(mapas)
+    valor_caixa = ParametroCalculo.valor_para(categoria: "motorista", nome: "valor_caixa").to_f
+    valor_entrega = ParametroCalculo.valor_para(categoria: "motorista", nome: "valor_entrega").to_f
+    valor_recarga = ParametroCalculo.valor_para(categoria: "motorista", nome: "valor_recarga").to_f
+    valor_bonus_devolucao = ParametroCalculo.valor_para(categoria: "geral", nome: "bonus_devolucao").to_f
+
+    total_valor = 0
+    total_cx_real = 0
+    total_pdv_real = mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.pdv_real.to_f }
+    total_pdv_total = mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.pdv_total.to_f }
+    total_recargas = 0
+
+    mapas.each do |mapa|
+      if mapa.fator == 2
+        valor_cx = mapa.cx_real.to_f * valor_caixa / 2
+        valor_pdv = mapa.pdv_real.to_f * valor_entrega / 2
+      else
+        multiplicador = mapa.fator == 0 && mapa.pdv_total.to_f >= 2 ? 2 : 1
+        valor_cx = mapa.cx_real.to_f * valor_caixa * multiplicador
+        valor_pdv = mapa.pdv_real.to_f * valor_entrega * multiplicador
+      end
+
+      valor_rec = mapa.recarga == "SIM" ? valor_recarga : 0
+      valor_mapa = mapa.recarga == "SIM" ? valor_rec : valor_cx + valor_pdv
+
+      total_cx_real += mapa.cx_real.to_f unless mapa.recarga == "SIM"
+      total_recargas += 1 if mapa.recarga == "SIM"
+      total_valor += valor_mapa
+    end
+
+    devolucoes = total_pdv_total - total_pdv_real
+    percentual_devolucao = total_pdv_total.zero? ? 0 : devolucoes / total_pdv_total
+    bonus_devolucao = mapas.size >= 15 && percentual_devolucao <= 0.03 ? valor_bonus_devolucao : 0
+
+    {
+      cx_real: total_cx_real,
+      pdv_real: total_pdv_real,
+      recargas: total_recargas,
+      devolucoes: devolucoes,
+      percentual_devolucao: percentual_devolucao,
+      bonus_devolucao: bonus_devolucao,
+      valor_total: total_valor + bonus_devolucao
+    }
   end
 end
