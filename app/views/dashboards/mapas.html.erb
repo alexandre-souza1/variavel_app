@@ -1,15 +1,15 @@
-<div class="container p-3">
-  <div class="row align-items-center">
+<div class="container-fluid p-3">
+  <!-- Cabeçalho -->
+  <div class="row align-items-center mb-4">
     <div class="col-md-8">
       <h1 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Dashboard de Mapas</h1>
     </div>
-    <div class="col-md-4 text-md-end d-flex flex-row-reverse">
-      <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+    <div class="col-md-4 text-md-end">
+      <p class="font-weight-light mb-0">LOG20 - Foz do Iguaçu</p>
     </div>
   </div>
-</div>
 
-<div class="container">
+  <!-- Filtro de período -->
   <div class="card shadow-sm rounded mb-4">
     <div class="card-body">
       <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
@@ -55,43 +55,61 @@
     </div>
   </div>
 
+  <!-- Cards de resumo -->
   <div class="row g-3 mb-4">
-    <div class="col-12 col-md-3">
+    <div class="col-6 col-md-4 col-lg-2">
       <div class="card shadow-sm rounded h-100">
-        <div class="card-body">
+        <div class="card-body text-center">
           <p class="text-muted small mb-1">Mapas</p>
           <h3 class="mb-0"><%= @total_mapas %></h3>
         </div>
       </div>
     </div>
-    <div class="col-12 col-md-3">
+    <div class="col-6 col-md-4 col-lg-2">
       <div class="card shadow-sm rounded h-100">
-        <div class="card-body">
+        <div class="card-body text-center">
           <p class="text-muted small mb-1">Motoristas</p>
           <h3 class="mb-0"><%= @ranking_motoristas.size %></h3>
         </div>
       </div>
     </div>
-    <div class="col-12 col-md-3">
+    <div class="col-6 col-md-4 col-lg-2">
       <div class="card shadow-sm rounded h-100">
-        <div class="card-body">
+        <div class="card-body text-center">
+          <p class="text-muted small mb-1">Ajudantes</p>
+          <h3 class="mb-0"><%= @ranking_ajudantes.size %></h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-body text-center">
           <p class="text-muted small mb-1">Placas</p>
           <h3 class="mb-0"><%= @ranking_placas.size %></h3>
         </div>
       </div>
     </div>
-    <div class="col-12 col-md-3">
+    <div class="col-6 col-md-4 col-lg-2">
       <div class="card shadow-sm rounded h-100">
-        <div class="card-body">
-          <p class="text-muted small mb-1">Remuneração Motoristas</p>
-          <h3 class="mb-0"><%= number_to_currency(@total_remuneracao_motoristas, unit: "R$ ", separator: ",", delimiter: ".") %></h3>
+        <div class="card-body text-center">
+          <p class="text-muted small mb-1">Remun. Motoristas</p>
+          <h5 class="mb-0"><%= number_to_currency(@total_remuneracao_motoristas, unit: "R$ ", separator: ",", delimiter: ".") %></h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-body text-center">
+          <p class="text-muted small mb-1">Remun. Ajudantes</p>
+          <h5 class="mb-0"><%= number_to_currency(@total_remuneracao_ajudantes, unit: "R$ ", separator: ",", delimiter: ".") %></h5>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Segunda linha de cards (operações) -->
   <div class="row g-3 mb-4">
-    <div class="col-12 col-lg-4">
+    <div class="col-12 col-md-4">
       <div class="card shadow-sm rounded h-100">
         <div class="card-body">
           <p class="text-muted small mb-1">Cx Real</p>
@@ -99,7 +117,7 @@
         </div>
       </div>
     </div>
-    <div class="col-12 col-lg-4">
+    <div class="col-12 col-md-4">
       <div class="card shadow-sm rounded h-100">
         <div class="card-body">
           <p class="text-muted small mb-1">PDV Real</p>
@@ -107,7 +125,7 @@
         </div>
       </div>
     </div>
-    <div class="col-12 col-lg-4">
+    <div class="col-12 col-md-4">
       <div class="card shadow-sm rounded h-100">
         <div class="card-body">
           <p class="text-muted small mb-1">Recargas</p>
@@ -117,63 +135,143 @@
     </div>
   </div>
 
-  <div class="card shadow-sm rounded mb-4">
-    <div class="card-header bg-light border-bottom">
-      <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Motoristas que Mais Rodaram</h5>
+  <!-- Gráficos -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="bi bi-pie-chart-fill me-2"></i>Recargas vs Normais</h5>
+        </div>
+        <div class="card-body">
+          <%= pie_chart @recargas_distribuicao, height: "250px" %>
+        </div>
+      </div>
     </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle">
-          <thead class="table-light">
-            <tr>
-              <th>#</th>
-              <th>Motorista</th>
-              <th>Matrícula</th>
-              <th>Mapas</th>
-              <th>Placas</th>
-              <th>Cx Real</th>
-              <th>PDV Real</th>
-              <th>Recargas</th>
-              <th>Devolução</th>
-              <th>Bônus</th>
-              <th class="text-end">Valor</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% if @ranking_motoristas.empty? %>
-              <tr>
-                <td colspan="11" class="text-center text-muted">Nenhum mapa encontrado no período.</td>
-              </tr>
-            <% end %>
-
-            <% @ranking_motoristas.each_with_index do |motorista, index| %>
-              <tr>
-                <td><%= index + 1 %></td>
-                <td><%= motorista[:nome] %></td>
-                <td><%= motorista[:matricula] || motorista[:promax] %></td>
-                <td><span class="badge bg-primary"><%= motorista[:mapas] %></span></td>
-                <td><%= motorista[:placas] %></td>
-                <td><%= number_with_precision(motorista[:cx_real], precision: 0, delimiter: ".") %></td>
-                <td><%= number_with_precision(motorista[:pdv_real], precision: 0, delimiter: ".") %></td>
-                <td><%= motorista[:recargas] %></td>
-                <td><%= (motorista[:percentual_devolucao] * 100).round(2) %>%</td>
-                <td><%= number_to_currency(motorista[:bonus_devolucao], unit: "R$ ", separator: ",", delimiter: ".") %></td>
-                <td class="text-end fw-bold"><%= number_to_currency(motorista[:valor_total], unit: "R$ ", separator: ",", delimiter: ".") %></td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="bi bi-bar-chart-fill me-2"></i>Top 10 Motoristas (Mapas)</h5>
+        </div>
+        <div class="card-body">
+          <%= column_chart @motoristas_top10_mapas, height: "250px" %>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-12 col-xl-4">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Mapas por Dia</h5>
+        </div>
+        <div class="card-body">
+          <%= line_chart @mapas_por_dia, height: "250px", discrete: true %>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Tabelas Motoristas e Ajudantes lado a lado -->
+  <div class="row g-3 mb-4">
+    <!-- Tabela Motoristas -->
+    <div class="col-12 col-xl-6">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-header bg-light border-bottom">
+          <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Motoristas que Mais Rodaram</h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Motorista</th>
+                  <th>Mapas</th>
+                  <th>Cx Real</th>
+                  <th>PDV Real</th>
+                  <th>Rec.</th>
+                  <th>Dev.%</th>
+                  <th class="text-end">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if @ranking_motoristas.empty? %>
+                  <tr>
+                    <td colspan="8" class="text-center text-muted">Nenhum motorista encontrado.</td>
+                  </tr>
+                <% end %>
+                <% @ranking_motoristas.each_with_index do |m, index| %>
+                  <tr>
+                    <td><%= index + 1 %></td>
+                    <td><%= m[:nome].upcase %></td>
+                    <td><span class="badge bg-primary"><%= m[:mapas] %></span></td>
+                    <td><%= number_with_precision(m[:cx_real], precision: 0, delimiter: ".") %></td>
+                    <td><%= number_with_precision(m[:pdv_real], precision: 0, delimiter: ".") %></td>
+                    <td><%= m[:recargas] %></td>
+                    <td><%= (m[:percentual_devolucao] * 100).round(2) %>%</td>
+                    <td class="text-end fw-bold"><%= number_to_currency(m[:valor_total], unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela Ajudantes -->
+    <div class="col-12 col-xl-6">
+      <div class="card shadow-sm rounded h-100">
+        <div class="card-header bg-light border-bottom">
+          <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>Ajudantes que Mais Rodaram</h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Ajudante</th>
+                  <th>Mapas</th>
+                  <th>Cx Real</th>
+                  <th>PDV Real</th>
+                  <th>Rec.</th>
+                  <th>Dev.%</th>
+                  <th class="text-end">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if @ranking_ajudantes.empty? %>
+                  <tr>
+                    <td colspan="8" class="text-center text-muted">Nenhum ajudante encontrado.</td>
+                  </tr>
+                <% end %>
+                <% @ranking_ajudantes.each_with_index do |a, index| %>
+                  <tr>
+                    <td><%= index + 1 %></td>
+                    <td><%= a[:nome].upcase %></td>
+                    <td><span class="badge bg-primary"><%= a[:mapas] %></span></td>
+                    <td><%= number_with_precision(a[:cx_real], precision: 0, delimiter: ".") %></td>
+                    <td><%= number_with_precision(a[:pdv_real], precision: 0, delimiter: ".") %></td>
+                    <td><%= a[:recargas] %></td>
+                    <td><%= (a[:percentual_devolucao] * 100).round(2) %>%</td>
+                    <td class="text-end fw-bold"><%= number_to_currency(a[:valor_total], unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabela Placas (largura total) -->
   <div class="card shadow-sm rounded mb-4">
     <div class="card-header bg-light border-bottom">
       <h5 class="mb-0"><i class="bi bi-truck-front-fill me-2"></i>Placas que Mais Rodaram</h5>
     </div>
-    <div class="card-body">
+    <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-hover align-middle">
+        <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
             <tr>
               <th>#</th>
@@ -188,10 +286,9 @@
           <tbody>
             <% if @ranking_placas.empty? %>
               <tr>
-                <td colspan="7" class="text-center text-muted">Nenhuma placa encontrada no período.</td>
+                <td colspan="7" class="text-center text-muted">Nenhuma placa encontrada.</td>
               </tr>
             <% end %>
-
             <% @ranking_placas.each_with_index do |placa, index| %>
               <tr>
                 <td><%= index + 1 %></td>
@@ -209,5 +306,5 @@
     </div>
   </div>
 
-  <%= link_to "Voltar", dashboard_path, class: "btn btn-primary shadow-sm p-3 w-100 mb-4" %>
+  <%= link_to "Voltar", dashboard_path, class: "btn btn-primary shadow-sm w-100 mb-4" %>
 </div>

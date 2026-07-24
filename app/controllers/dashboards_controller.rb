@@ -112,9 +112,7 @@ class DashboardsController < ApplicationController
     @stress_tests_count = StressTestImport.count
   end
 
-  # ------------------------------------------------------------
-  # 6. Ações e métodos privados (mantidos iguais)
-  # ------------------------------------------------------------
+
   def placas_por_setor
     @setor = "ROTA"
     @placa = params[:placa]
@@ -155,10 +153,25 @@ class DashboardsController < ApplicationController
     @total_cx_real = @mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.cx_real.to_f }
     @total_pdv_real = @mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.pdv_real.to_f }
     @total_recargas = @mapas.count { |mapa| mapa.recarga == "SIM" }
-
+    @ranking_ajudantes = ranking_ajudantes(@mapas)
     @ranking_motoristas = ranking_motoristas(@mapas)
     @ranking_placas = ranking_placas(@mapas)
     @total_remuneracao_motoristas = @ranking_motoristas.sum { |item| item[:valor_total] }
+    @total_remuneracao_ajudantes = @ranking_ajudantes.sum { |item| item[:valor_total] }
+    # Dados para gráficos
+    @motoristas_top10_mapas = @ranking_motoristas.first(10).map { |m| [m[:nome], m[:mapas]] }
+    @motoristas_top10_valor = @ranking_motoristas.first(10).map { |m| [m[:nome], m[:valor_total]] }
+    @placas_top10_mapas = @ranking_placas.first(10).map { |p| [p[:placa], p[:mapas]] }
+
+    @mapas_por_dia = @mapas
+      .group_by { |m| m.data_formatada }
+      .transform_values(&:count)
+      .sort.to_h
+
+    @recargas_distribuicao = {
+      "Recargas" => @total_recargas,
+      "Normais" => @total_mapas - @total_recargas
+    }
   end
 
   private
@@ -266,12 +279,14 @@ class DashboardsController < ApplicationController
       .group_by(&:matric_motorista)
       .map do |promax, mapas_motorista|
         driver = drivers_by_promax[promax.to_s]
+        next unless driver  # <-- ignora motoristas sem registro na tabela drivers
+
         totais = totais_remuneracao_motorista(mapas_motorista)
 
         {
           promax: promax,
-          nome: driver&.nome.presence || "Motorista #{promax}",
-          matricula: driver&.matricula,
+          nome: driver.nome,  # agora garantido que existe
+          matricula: driver.matricula,
           mapas: mapas_motorista.size,
           placas: mapas_motorista.map(&:plate).compact_blank.uniq.size,
           cx_real: totais[:cx_real],
@@ -283,7 +298,85 @@ class DashboardsController < ApplicationController
           valor_total: totais[:valor_total]
         }
       end
+      .compact  # remove os nils gerados pelo 'next unless driver'
       .sort_by { |item| [-item[:mapas], -item[:valor_total], item[:nome].to_s] }
+  end
+
+  def ranking_ajudantes(mapas)
+    promaxes = mapas.map { |mapa| mapa.matric_ajudante.to_s }.reject(&:blank?).uniq
+    ajudantes_by_promax = Ajudante.where(promax: promaxes).index_by { |a| a.promax.to_s }
+
+    mapas
+      .group_by(&:matric_ajudante)
+      .map do |promax, mapas_ajudante|
+        ajudante = ajudantes_by_promax[promax.to_s]
+        next unless ajudante
+
+        totais = totais_remuneracao_ajudante(mapas_ajudante)  # novo método
+
+        {
+          promax: promax,
+          nome: ajudante.nome,
+          matricula: ajudante.matricula,
+          mapas: mapas_ajudante.size,
+          placas: mapas_ajudante.map(&:plate).compact_blank.uniq.size,
+          cx_real: totais[:cx_real],
+          pdv_real: totais[:pdv_real],
+          recargas: totais[:recargas],
+          devolucoes: totais[:devolucoes],
+          percentual_devolucao: totais[:percentual_devolucao],
+          bonus_devolucao: totais[:bonus_devolucao],
+          valor_total: totais[:valor_total]
+        }
+      end
+      .compact
+      .sort_by { |item| [-item[:mapas], -item[:valor_total], item[:nome].to_s] }
+  end
+
+  # Novo método de cálculo (igual ao de motorista, mas usando parâmetros de ajudante)
+  def totais_remuneracao_ajudante(mapas)
+    valor_caixa = ParametroCalculo.valor_para(categoria: "ajudante", nome: "valor_caixa").to_f
+    valor_entrega = ParametroCalculo.valor_para(categoria: "ajudante", nome: "valor_entrega").to_f
+    valor_recarga = ParametroCalculo.valor_para(categoria: "ajudante", nome: "valor_recarga").to_f
+    valor_bonus_devolucao = ParametroCalculo.valor_para(categoria: "geral", nome: "bonus_devolucao").to_f
+
+    total_valor = 0
+    total_cx_real = 0
+    total_pdv_real = mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.pdv_real.to_f }
+    total_pdv_total = mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.pdv_total.to_f }
+    total_recargas = 0
+
+    mapas.each do |mapa|
+      if mapa.fator == 2
+        valor_cx = mapa.cx_real.to_f * valor_caixa / 2
+        valor_pdv = mapa.pdv_real.to_f * valor_entrega / 2
+      else
+        multiplicador = mapa.fator == 0 && mapa.pdv_total.to_f >= 2 ? 2 : 1
+        valor_cx = mapa.cx_real.to_f * valor_caixa * multiplicador
+        valor_pdv = mapa.pdv_real.to_f * valor_entrega * multiplicador
+      end
+
+      valor_rec = mapa.recarga == "SIM" ? valor_recarga : 0
+      valor_mapa = mapa.recarga == "SIM" ? valor_rec : valor_cx + valor_pdv
+
+      total_cx_real += mapa.cx_real.to_f unless mapa.recarga == "SIM"
+      total_recargas += 1 if mapa.recarga == "SIM"
+      total_valor += valor_mapa
+    end
+
+    devolucoes = total_pdv_total - total_pdv_real
+    percentual_devolucao = total_pdv_total.zero? ? 0 : devolucoes / total_pdv_total
+    bonus_devolucao = mapas.size >= 15 && percentual_devolucao <= 0.03 ? valor_bonus_devolucao : 0
+
+    {
+      cx_real: total_cx_real,
+      pdv_real: total_pdv_real,
+      recargas: total_recargas,
+      devolucoes: devolucoes,
+      percentual_devolucao: percentual_devolucao,
+      bonus_devolucao: bonus_devolucao,
+      valor_total: total_valor + bonus_devolucao
+    }
   end
 
   def ranking_placas(mapas)
