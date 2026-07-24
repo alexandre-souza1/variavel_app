@@ -44,20 +44,21 @@ class MapasController < ApplicationController
   end
 
   def show_todos
-    @mapas = Mapa.order(data: :desc)
+    @per_page = [[params.fetch(:per_page, 100).to_i, 25].max, 500].min
+    @page = [params.fetch(:page, 1).to_i, 1].max
 
-    # Agrupa por mês/ano usando o método data_formatada
-    @mapas_por_mes = @mapas
-                      .group_by { |m| [m.data_formatada.year, m.data_formatada.month] if m.data_formatada }
-                      .compact
-                      .sort_by { |(ano, mes), _| [ano, mes] }
-                      .reverse
-                      .to_h
+    @mapas_scope = aplicar_filtros_mapa(Mapa.all)
+    @total_mapas = @mapas_scope.count
+    @total_pages = (@total_mapas.to_f / @per_page).ceil
+    @page = @total_pages if @total_pages.positive? && @page > @total_pages
 
-    # Cálculo do período (datas mín/máx)
-    datas_validas = @mapas.map do |mapa|
-      mapa.data_formatada
-    end.compact
+    @mapas = @mapas_scope
+              .order(created_at: :desc, id: :desc)
+              .offset((@page - 1) * @per_page)
+              .limit(@per_page)
+              .to_a
+
+    datas_validas = @mapas.filter_map(&:data_formatada)
 
     @data_inicio = datas_validas.min
     @data_fim = datas_validas.max
@@ -170,5 +171,41 @@ class MapasController < ApplicationController
 
   def mapa_params
     params.require(:mapa).permit(:matric_ajudante, :matric_ajudante_2)
+  end
+
+  def aplicar_filtros_mapa(scope)
+    if params[:mapa].present?
+      scope = scope.where("mapa ILIKE ?", "%#{ActiveRecord::Base.sanitize_sql_like(params[:mapa].strip)}%")
+    end
+
+    if params[:motorista].present?
+      scope = scope.where("matric_motorista ILIKE ?", "%#{ActiveRecord::Base.sanitize_sql_like(params[:motorista].strip)}%")
+    end
+
+    if params[:data].present?
+      scope = scope.where("data ILIKE ?", "%#{ActiveRecord::Base.sanitize_sql_like(params[:data].strip)}%")
+    end
+
+    if params[:ajudante].present?
+      ajudante = "%#{ActiveRecord::Base.sanitize_sql_like(params[:ajudante].strip)}%"
+      scope = scope.where("matric_ajudante ILIKE :ajudante OR matric_ajudante_2 ILIKE :ajudante", ajudante: ajudante)
+    end
+
+    if params[:mes].present?
+      mes = params[:mes].to_s.rjust(2, "0")
+      mes_sem_zero = mes.to_i.to_s
+      scope = scope.where(
+        "data LIKE :mes_com_barras OR data LIKE :mes_digitos OR data LIKE :mes_sem_zero",
+        mes_com_barras: "%/#{mes}/%",
+        mes_digitos: "__#{mes}____",
+        mes_sem_zero: "_#{mes_sem_zero}____"
+      )
+    end
+
+    if params[:ano].present?
+      scope = scope.where("data LIKE ?", "%#{ActiveRecord::Base.sanitize_sql_like(params[:ano].strip)}")
+    end
+
+    scope
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_24_151526) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_24_162000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -364,6 +364,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_24_151526) do
     t.string "matric_ajudante"
     t.string "matric_ajudante_2"
     t.string "plate"
+    t.index ["created_at", "id"], name: "index_mapas_on_created_at_and_id"
+    t.index ["data"], name: "index_mapas_on_data"
+    t.index ["mapa"], name: "index_mapas_on_mapa"
+    t.index ["matric_ajudante"], name: "index_mapas_on_matric_ajudante"
+    t.index ["matric_ajudante_2"], name: "index_mapas_on_matric_ajudante_2"
+    t.index ["matric_motorista"], name: "index_mapas_on_matric_motorista"
   end
 
   create_table "operators", force: :cascade do |t|
