@@ -161,17 +161,13 @@ class DashboardsController < ApplicationController
     # Dados para gráficos
     @motoristas_top10_mapas = @ranking_motoristas.first(10).map { |m| [m[:nome], m[:mapas]] }
     @motoristas_top10_valor = @ranking_motoristas.first(10).map { |m| [m[:nome], m[:valor_total]] }
+    @ajudantes_top10_valor = @ranking_ajudantes.first(10).map { |m| [m[:nome], m[:valor_total]] }
     @placas_top10_mapas = @ranking_placas.first(10).map { |p| [p[:placa], p[:mapas]] }
 
     @mapas_por_dia = @mapas
       .group_by { |m| m.data_formatada }
       .transform_values(&:count)
       .sort.to_h
-
-    @recargas_distribuicao = {
-      "Recargas" => @total_recargas,
-      "Normais" => @total_mapas - @total_recargas
-    }
   end
 
   private
