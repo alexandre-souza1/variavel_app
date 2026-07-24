@@ -70,6 +70,13 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :routine_templates do
+    resources :routine_categories, except: %i[index show] do
+      resources :routine_indicators,
+                except: %i[index show]
+    end
+  end
+
   resources :autonomies do
     collection do
       get :dashboard

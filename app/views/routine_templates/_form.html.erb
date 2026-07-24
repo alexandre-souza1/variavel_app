@@ -1,0 +1,31 @@
+<%= form_with model: @routine_template do |f| %>
+
+  <div class="mb-3">
+    <%= f.label :name, "Nome" %>
+
+    <%= f.text_field :name,
+                     class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :description, "Descrição" %>
+
+    <%= f.text_area :description,
+                    rows: 4,
+                    class: "form-control" %>
+  </div>
+
+  <div class="form-check mb-4">
+
+    <%= f.check_box :active,
+                    class: "form-check-input" %>
+
+    <%= f.label :active,
+                "Ativo",
+                class: "form-check-label" %>
+
+  </div>
+
+  <%= f.submit class: "btn btn-primary" %>
+
+<% end %>

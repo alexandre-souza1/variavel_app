@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  routine_value: one
+  user: one
+  body: MyText
+
+two:
+  routine_value: two
+  user: two
+  body: MyText

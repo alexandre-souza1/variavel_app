@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  routine: one
+  routine_indicator: one
+  reference_date: 2026-07-24
+  value: 9.99
+  updated_by: one
+
+two:
+  routine: two
+  routine_indicator: two
+  reference_date: 2026-07-24
+  value: 9.99
+  updated_by: two

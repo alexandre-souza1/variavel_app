@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_23_113000) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_24_151526) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -414,6 +414,92 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_23_113000) do
     t.index ["label"], name: "index_remuneration_periods_on_label", unique: true
   end
 
+  create_table "routine_categories", force: :cascade do |t|
+    t.bigint "routine_template_id", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.boolean "collapsed", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["routine_template_id", "name"], name: "index_routine_categories_on_routine_template_id_and_name", unique: true
+    t.index ["routine_template_id", "position"], name: "index_routine_categories_on_routine_template_id_and_position"
+    t.index ["routine_template_id"], name: "index_routine_categories_on_routine_template_id"
+  end
+
+  create_table "routine_comments", force: :cascade do |t|
+    t.bigint "routine_value_id", null: false
+    t.bigint "user_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["routine_value_id"], name: "index_routine_comments_on_routine_value_id"
+    t.index ["user_id"], name: "index_routine_comments_on_user_id"
+  end
+
+  create_table "routine_indicator_targets", force: :cascade do |t|
+    t.bigint "routine_indicator_id", null: false
+    t.decimal "goal", precision: 15, scale: 4, null: false
+    t.date "starts_at", null: false
+    t.date "ends_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["routine_indicator_id", "starts_at"], name: "idx_indicator_targets_start"
+    t.index ["routine_indicator_id"], name: "index_routine_indicator_targets_on_routine_indicator_id"
+  end
+
+  create_table "routine_indicators", force: :cascade do |t|
+    t.bigint "routine_category_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.integer "position", default: 0, null: false
+    t.integer "calculation_type", default: 0, null: false
+    t.integer "value_type", default: 0, null: false
+    t.integer "goal_direction", default: 0, null: false
+    t.boolean "required", default: false, null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["routine_category_id", "position"], name: "index_routine_indicators_on_routine_category_id_and_position"
+    t.index ["routine_category_id"], name: "index_routine_indicators_on_routine_category_id"
+  end
+
+  create_table "routine_templates", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_routine_templates_on_name", unique: true
+  end
+
+  create_table "routine_values", force: :cascade do |t|
+    t.bigint "routine_id", null: false
+    t.bigint "routine_indicator_id", null: false
+    t.date "reference_date", null: false
+    t.decimal "value", precision: 15, scale: 4
+    t.bigint "updated_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["routine_id", "routine_indicator_id", "reference_date"], name: "idx_unique_routine_value", unique: true
+    t.index ["routine_id"], name: "index_routine_values_on_routine_id"
+    t.index ["routine_indicator_id"], name: "index_routine_values_on_routine_indicator_id"
+    t.index ["updated_by_id"], name: "index_routine_values_on_updated_by_id"
+  end
+
+  create_table "routines", force: :cascade do |t|
+    t.bigint "routine_template_id", null: false
+    t.bigint "created_by_id", null: false
+    t.string "title"
+    t.date "period_start", null: false
+    t.date "period_end", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_routines_on_created_by_id"
+    t.index ["routine_template_id", "period_start", "period_end"], name: "idx_unique_routine_period", unique: true
+    t.index ["routine_template_id"], name: "index_routines_on_routine_template_id"
+  end
+
   create_table "stress_test_events", force: :cascade do |t|
     t.bigint "plate_id"
     t.string "placa"
@@ -596,6 +682,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_23_113000) do
   add_foreign_key "labels", "action_plans"
   add_foreign_key "remuneration_category_values", "budget_categories"
   add_foreign_key "remuneration_category_values", "vehicle_remunerations"
+  add_foreign_key "routine_categories", "routine_templates"
+  add_foreign_key "routine_comments", "routine_values"
+  add_foreign_key "routine_comments", "users"
+  add_foreign_key "routine_indicator_targets", "routine_indicators"
+  add_foreign_key "routine_indicators", "routine_categories"
+  add_foreign_key "routine_values", "routine_indicators"
+  add_foreign_key "routine_values", "routines"
+  add_foreign_key "routine_values", "users", column: "updated_by_id"
+  add_foreign_key "routines", "routine_templates"
+  add_foreign_key "routines", "users", column: "created_by_id"
   add_foreign_key "stress_test_events", "plates"
   add_foreign_key "stress_test_events", "stress_test_imports"
   add_foreign_key "stress_test_imports", "users"

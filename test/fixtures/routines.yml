@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  routine_template: one
+  created_by: one
+  title: MyString
+  period_start: 2026-07-24
+  period_end: 2026-07-24
+  status: 1
+
+two:
+  routine_template: two
+  created_by: two
+  title: MyString
+  period_start: 2026-07-24
+  period_end: 2026-07-24
+  status: 1

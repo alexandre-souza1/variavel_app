@@ -1,0 +1,77 @@
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+
+      <h2 class="fw-bold">
+        <%= @routine_template.name %>
+      </h2>
+
+      <p class="text-muted mb-0">
+        <%= @routine_template.description %>
+      </p>
+
+    </div>
+
+    <%= link_to "Nova Categoria",
+                new_routine_template_routine_category_path(@routine_template),
+                class: "btn btn-primary" %>
+
+  </div>
+
+  <% if @routine_template.routine_categories.any? %>
+
+    <% @routine_template.routine_categories.order(:position).each do |category| %>
+
+      <div class="card mb-3">
+
+        <div class="card-body d-flex justify-content-between align-items-center">
+
+          <div>
+
+            <h5 class="mb-1">
+              <%= category.name %>
+            </h5>
+
+            <small class="text-muted">
+              <%= pluralize(category.routine_indicators.count,
+                            "indicador") %>
+            </small>
+
+          </div>
+
+          <div>
+
+            <%= link_to "Editar",
+                        edit_routine_template_routine_category_path(
+                          @routine_template,
+                          category
+                        ),
+                        class: "btn btn-sm btn-outline-secondary" %>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    <% end %>
+
+  <% else %>
+
+    <div class="text-center py-5">
+
+      <h5>
+        Nenhuma categoria cadastrada
+      </h5>
+
+      <p class="text-muted">
+        Comece criando a primeira categoria do template.
+      </p>
+
+    </div>
+
+  <% end %>
+
+</div>

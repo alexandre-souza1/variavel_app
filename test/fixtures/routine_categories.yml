@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  routine_template: one
+  name: MyString
+  position: 1
+  collapsed: false
+
+two:
+  routine_template: two
+  name: MyString
+  position: 1
+  collapsed: false

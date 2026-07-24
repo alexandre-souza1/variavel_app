@@ -1,0 +1,14 @@
+<%= form_with model: [@template, @routine_category] do |f| %>
+
+  <div class="mb-3">
+
+    <%= f.label :name %>
+
+    <%= f.text_field :name,
+                     class: "form-control" %>
+
+  </div>
+
+  <%= f.submit class: "btn btn-primary" %>
+
+<% end %>
