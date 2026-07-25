@@ -87,7 +87,10 @@ module FleetAvailabilities
     end
 
     def previous_day_availability
-      @user.fleet_availabilities.find_by(date: @date - 1.day)
+      FleetAvailability
+        .where("date < ?", @date)
+        .order(date: :desc)
+        .first
     end
   end
 end
