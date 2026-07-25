@@ -184,11 +184,40 @@ class FleetAvailabilitiesController < ApplicationController
     availability_ids = scope.select(:id)
     total_days = scope.count
 
+    # Média de indisponibilidade por dia (em %)
+    avg_unavailability = if total_days.zero?
+      0
+    else
+      # Soma os percentuais de indisponibilidade de cada dia e divide pelo total de dias
+      daily_unavailability_sum = scope.sum do |fa|
+        fa.unavailable_count.to_f / fa.agreed_quantity * 100
+      end
+      (daily_unavailability_sum / total_days).round
+    end
+
+    # Placa mais indisponível (maior número de ocorrências com status "unavailable")
+    most_unavailable = FleetAvailabilityItem
+      .where(fleet_availability_id: availability_ids)
+      .where(status: FleetAvailabilityItem.statuses[:unavailable])
+      .group(:plate_id)
+      .order("count_all DESC")
+      .limit(1)
+      .count
+      .first # retorna [plate_id, count] ou nil
+
+    most_unavailable_plate =
+      if most_unavailable
+        plate = Plate.find_by(id: most_unavailable[0])
+        "#{plate&.placa || 'N/D'}"
+      else
+        "—"
+      end
+
     {
       total_days: total_days,
-      open_count: scope.where(locked_at: nil).count,
-      locked_count: scope.where.not(locked_at: nil).count,
-      average_coverage: total_days.zero? ? 0 : average_coverage(scope, availability_ids)
+      average_coverage: total_days.zero? ? 0 : average_coverage(scope, availability_ids),
+      average_unavailability: avg_unavailability,
+      most_unavailable_plate: most_unavailable_plate
     }
   end
 

@@ -108,12 +108,12 @@
     <div class="col-md-3">
       <div class="card shadow-sm border-0 h-100">
         <div class="card-body">
-          <span class="text-muted small">Disponibilidades abertas</span>
+          <span class="text-muted small">Média de indisponibilidade</span>
           <strong class="d-block fs-3">
-            <%= @fleet_summary[:open_count] %>
+            <%= @fleet_summary[:average_unavailability] %>%
           </strong>
           <small class="text-muted">
-          
+            Indisponíveis em relação ao dimensionamento
           </small>
         </div>
       </div>
@@ -122,12 +122,12 @@
     <div class="col-md-3">
       <div class="card shadow-sm border-0 h-100">
         <div class="card-body">
-          <span class="text-muted small">Disponibilidades Enviadas</span>
-          <strong class="d-block fs-3">
-            <%= @fleet_summary[:locked_count] %>
+          <span class="text-muted small">Placa mais indisponível</span>
+          <strong class="d-block fs-4 text-truncate" title="<%= @fleet_summary[:most_unavailable_plate] %>">
+            <%= @fleet_summary[:most_unavailable_plate] %>
           </strong>
           <small class="text-muted">
-
+            Maior número de ocorrências no período
           </small>
         </div>
       </div>
