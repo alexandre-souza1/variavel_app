@@ -72,11 +72,17 @@ Rails.application.routes.draw do
   end
 
   resources :routine_templates do
-    resources :routine_categories, except: %i[index show] do
-      resources :routine_indicators,
-                except: %i[index show]
+    resource :generator,
+            only: %i[new create],
+            controller: :routine_generators
+
+    resources :routine_categories do
+      resources :routine_indicators
     end
   end
+
+  resources :routines, only: %i[index show]
+  resources :routine_values, only: :update
 
   resources :autonomies do
     collection do

@@ -1,0 +1,89 @@
+<%= form_with model: [@template, @category, @routine_indicator] do |f| %>
+
+  <div class="mb-3">
+
+    <%= f.label :name %>
+
+    <%= f.text_field :name,
+                     class: "form-control" %>
+
+  </div>
+
+  <div class="mb-3">
+
+    <%= f.label :description %>
+
+    <%= f.text_area :description,
+                    rows: 3,
+                    class: "form-control" %>
+
+  </div>
+
+  <div class="row">
+
+    <div class="col-md-4">
+
+      <%= f.label :value_type %>
+
+      <%= f.select :value_type,
+          RoutineIndicator.value_types.keys.map { |k| [k.humanize, k] },
+          {},
+          class: "form-select" %>
+
+    </div>
+
+    <div class="col-md-4">
+
+      <%= f.label :calculation_type %>
+
+      <%= f.select :calculation_type,
+          RoutineIndicator.calculation_types.keys.map { |k| [k.humanize, k] },
+          {},
+          class: "form-select" %>
+
+    </div>
+
+    <div class="col-md-4">
+
+      <%= f.label :goal_direction %>
+
+      <%= f.select :goal_direction,
+          RoutineIndicator.goal_directions.keys.map { |k| [k.humanize, k] },
+          {},
+          class: "form-select" %>
+
+    </div>
+
+  </div>
+
+  <div class="mt-4 d-flex gap-4">
+
+    <div class="form-check">
+
+      <%= f.check_box :required,
+                      class: "form-check-input" %>
+
+      <%= f.label :required,
+                  class: "form-check-label" %>
+
+    </div>
+
+    <div class="form-check">
+
+      <%= f.check_box :active,
+                      class: "form-check-input" %>
+
+      <%= f.label :active,
+                  class: "form-check-label" %>
+
+    </div>
+
+  </div>
+
+  <div class="mt-4">
+
+    <%= f.submit class: "btn btn-primary" %>
+
+  </div>
+
+<% end %>

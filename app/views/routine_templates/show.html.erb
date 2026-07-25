@@ -12,6 +12,10 @@
         <%= @routine_template.description %>
       </p>
 
+      <%= link_to "Gerar Rotina",
+        new_routine_template_generator_path(@routine_template),
+        class: "btn btn-success" %>
+
     </div>
 
     <%= link_to "Nova Categoria",
@@ -24,33 +28,101 @@
 
     <% @routine_template.routine_categories.order(:position).each do |category| %>
 
-      <div class="card mb-3">
+      <div class="card shadow-sm mb-4">
 
-        <div class="card-body d-flex justify-content-between align-items-center">
+        <div class="card-header d-flex justify-content-between align-items-center">
 
-          <div>
+          <strong>
+            <%= category.name %>
+          </strong>
 
-            <h5 class="mb-1">
-              <%= category.name %>
-            </h5>
+          <%= link_to "Novo Indicador",
+            new_routine_template_routine_category_routine_indicator_path(
+              @routine_template,
+              category
+            ),
+            class: "btn btn-sm btn-primary" %>
 
-            <small class="text-muted">
-              <%= pluralize(category.routine_indicators.count,
-                            "indicador") %>
-            </small>
-
+          <div class="small text-muted">
+            <%= pluralize(category.routine_indicators.count, "Indicador") %>
           </div>
 
-          <div>
-
+          <div class="btn-group gap-2">
             <%= link_to "Editar",
-                        edit_routine_template_routine_category_path(
-                          @routine_template,
-                          category
-                        ),
-                        class: "btn btn-sm btn-outline-secondary" %>
-
+                edit_routine_template_routine_category_path(@routine_template, category),
+                class: "btn btn-sm btn-outline-secondary" %>
+            <%= button_to "Excluir",
+                routine_template_routine_category_path(@routine_template, category),
+                method: :delete,
+                class: "btn btn-sm btn-outline-danger",
+                form: {
+                  data: { turbo_confirm: "Tem certeza que deseja excluir esta categoria e seus indicadores?" }
+                } %>
           </div>
+        </div>
+
+        <div class="card-body">
+
+          <% if category.routine_indicators.any? %>
+
+            <table class="table table-sm">
+
+              <thead>
+
+                <tr>
+                  <th>Nome</th>
+                  <th>Tipo</th>
+                  <th>Cálculo</th>
+                  <th></th>
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                <% category.routine_indicators.order(:position).each do |indicator| %>
+
+                  <tr>
+
+                    <td>
+                      <%= indicator.name %>
+                    </td>
+
+                    <td>
+                      <%= indicator.value_type_label.humanize %>
+                    </td>
+
+                    <td>
+                      <%= indicator.calculation_type_label.humanize %>
+                    </td>
+
+                    <td class="text-end">
+
+                      <%= link_to "Editar",
+                          edit_routine_template_routine_category_routine_indicator_path(
+                            @routine_template,
+                            category,
+                            indicator
+                          ),
+                          class: "btn btn-sm btn-outline-secondary" %>
+
+                    </td>
+
+                  </tr>
+
+                <% end %>
+
+              </tbody>
+
+            </table>
+
+          <% else %>
+
+            <p class="text-muted mb-0">
+              Nenhum indicador cadastrado.
+            </p>
+
+          <% end %>
 
         </div>
 

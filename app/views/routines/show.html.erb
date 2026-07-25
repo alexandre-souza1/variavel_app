@@ -1,0 +1,124 @@
+<div class="container-fluid py-4">
+
+  <div class="mb-4">
+
+    <h2 class="fw-bold">
+      <%= @routine.title %>
+    </h2>
+
+    <p class="text-muted mb-0">
+
+      <%= l(@routine.period_start) %>
+
+      até
+
+      <%= l(@routine.period_end) %>
+
+    </p>
+
+  </div>
+
+  <div class="table-responsive">
+
+    <table class="table table-bordered align-middle">
+
+      <thead>
+
+        <tr>
+
+          <th style="min-width:250px;">
+            Indicador
+          </th>
+
+          <th style="width:120px;">
+            Meta
+          </th>
+
+          <% @days.each do |day| %>
+
+            <th class="text-center">
+
+              <%= day.day %>
+
+            </th>
+
+          <% end %>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <% @categories.each do |category| %>
+
+          <tr class="table-light">
+
+            <td colspan="<%= @days.count + 2 %>">
+
+              <strong>
+
+                <%= category.name %>
+
+              </strong>
+
+            </td>
+
+          </tr>
+
+          <% category.routine_indicators.each do |indicator| %>
+
+            <tr>
+              <td>
+
+                <strong>
+                  <%= indicator.name %>
+                </strong>
+
+                <% if indicator.description.present? %>
+
+                  <br>
+
+                  <small class="text-muted">
+                    <%= indicator.description %>
+                  </small>
+
+                <% end %>
+
+              </td>
+              <td class="routine-cell">
+                <%= indicator.target_for(@routine.period_start)&.goal || "-" %>
+              </td>
+
+              <% @days.each do |day| %>
+
+                <% value = @values_index[[indicator.id, day]] %>
+
+                <td
+                  class="routine-cell text-center"
+                  data-controller="routine-cell"
+                  data-action="click->routine-cell#edit"
+                  data-routine-cell-id-value="<%= value.id %>"
+                  data-routine-cell-value-value="<%= value.value %>">
+
+                  <span data-routine-cell-target="display">
+                    <%= value&.value.presence || "-" %>
+                  </span>
+
+                  <input
+                    type="text"
+                    class="routine-cell__input d-none"
+                    data-routine-cell-target="input">
+
+                </td>
+
+              <% end %>
+            </tr>
+
+          <% end %>
+        <% end %>
+
+      </tbody>
+    </table>
+  </div>
+</div>

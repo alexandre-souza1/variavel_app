@@ -36,4 +36,37 @@ class RoutineIndicator < ApplicationRecord
   validates :position, presence: true
 
   scope :active, -> { where(active: true) }
+
+  def calculation_type_label
+    {
+      "manual_calculation" => "Manual",
+      "ranged" => "Média",
+      "plus" => "Soma",
+      "last_value" => "Último valor",
+      "minimal" => "Menor valor",
+      "maximal" => "Maior valor"
+    }[calculation_type]
+  end
+
+  def value_type_label
+    {
+      "integer" => "Número",
+      "decimal" => "Decimal",
+      "percentage" => "%",
+      "currency" => "Moeda",
+      "boolean" => "Sim/Não",
+      "text" => "Texto",
+      "date" => "Data",
+      "time" => "Hora"
+    }[value_type]
+  end
+
+  def target_for(date)
+    routine_indicator_targets
+      .where("starts_at <= ?", date)
+      .where("ends_at IS NULL OR ends_at >= ?", date)
+      .order(starts_at: :desc)
+      .first
+  end
+
 end

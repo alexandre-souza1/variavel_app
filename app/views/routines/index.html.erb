@@ -1,0 +1,82 @@
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+      <h2 class="fw-bold mb-0">
+        Rotinas
+      </h2>
+
+      <small class="text-muted">
+        Histórico de rotinas geradas.
+      </small>
+    </div>
+
+  </div>
+
+  <% if @routines.any? %>
+
+    <table class="table table-hover">
+
+      <thead>
+
+        <tr>
+          <th>Título</th>
+          <th>Período</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <% @routines.each do |routine| %>
+
+          <tr>
+
+            <td>
+              <%= routine.title %>
+            </td>
+
+            <td>
+              <%= l(routine.period_start) %> até <%= l(routine.period_end) %>
+            </td>
+
+            <td>
+              <%= routine.status.humanize %>
+            </td>
+
+            <td class="text-end">
+
+              <%= link_to "Abrir",
+                          routine,
+                          class: "btn btn-sm btn-primary" %>
+
+            </td>
+
+          </tr>
+
+        <% end %>
+
+      </tbody>
+
+    </table>
+
+  <% else %>
+
+    <div class="text-center py-5">
+
+      <h4>
+        Nenhuma rotina gerada
+      </h4>
+
+      <p class="text-muted">
+        Gere uma rotina a partir de um template.
+      </p>
+
+    </div>
+
+  <% end %>
+
+</div>

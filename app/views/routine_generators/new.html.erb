@@ -1,0 +1,49 @@
+<div class="container py-4">
+
+  <div class="card mx-auto" style="max-width: 500px;">
+
+    <div class="card-header">
+      <h4 class="mb-0">
+        Gerar Rotina
+      </h4>
+    </div>
+
+    <div class="card-body">
+
+      <p class="text-muted">
+        Template:
+        <strong><%= @template.name %></strong>
+      </p>
+
+      <%= form_with url: routine_template_generator_path(@template), method: :post do |f| %>
+
+        <div class="mb-3">
+
+          <%= label_tag :period_start, "Data inicial" %>
+
+          <%= date_field_tag :period_start,
+                             Date.current.beginning_of_month,
+                             class: "form-control" %>
+
+        </div>
+
+        <div class="mb-4">
+
+          <%= label_tag :period_end, "Data final" %>
+
+          <%= date_field_tag :period_end,
+                             Date.current.end_of_month,
+                             class: "form-control" %>
+
+        </div>
+
+        <%= submit_tag "Gerar Rotina",
+                       class: "btn btn-success w-100" %>
+
+      <% end %>
+
+    </div>
+
+  </div>
+
+</div>
