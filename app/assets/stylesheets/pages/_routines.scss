@@ -23,7 +23,7 @@
 }
 
 .routine-cell--saving {
-  background: rgba(var(--bs-primary-rgb), .15);
+  background: rgba(var(--bs-warning-rgb), .12);
 }
 
 .routine-cell--saved {
@@ -50,4 +50,9 @@
   background: var(--bs-warning-bg-subtle);
 
   font-size: inherit;
+}
+
+.routine-cell__input:focus {
+  background: rgba(var(--bs-primary-rgb), .08);
+  box-shadow: inset 0 0 0 2px rgba(var(--bs-primary-rgb), .35);
 }

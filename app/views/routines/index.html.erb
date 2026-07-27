@@ -11,7 +11,9 @@
         Histórico de rotinas geradas.
       </small>
     </div>
-
+        <%= link_to routine_templates_path, class: "btn btn-outline-danger me-2" do %>
+          <i class="fa-solid fa-table"></i> Gerot
+        <% end %>
   </div>
 
   <% if @routines.any? %>

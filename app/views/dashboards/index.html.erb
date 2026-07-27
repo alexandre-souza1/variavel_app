@@ -1,7 +1,7 @@
 <div class="container-fluid py-4">
   <!-- Cabeçalho -->
   <div class="row mb-4 align-items-center">
-    <div class="col-md-8">
+    <div class="col-md-7">
       <h1 class="display-5 fw-bold mb-1">Gestão de Frotas - ROTA</h1>
       <p class="text-muted fs-5">
         <i class="fas fa-calendar-alt me-2"></i>
@@ -9,7 +9,7 @@
         &nbsp;|&nbsp; Bem-vindo(a), <strong><%= current_user&.name || "Usuário" %></strong>
       </p>
     </div>
-    <div class="col-md-4 text-md-end">
+    <div class="col-md-5 text-md-end">
       <%= link_to dashboard_invoices_path, class: "btn btn-outline-primary me-2" do %>
         <i class="fas fa-file-invoice"></i> Faturas
       <% end %>
@@ -18,6 +18,9 @@
       <% end %>
       <%= link_to fleet_availabilities_path, class: "btn btn-outline-success me-2" do %>
         <i class="fas fa-truck"></i> Disponibilidade
+      <% end %>
+      <%= link_to routines_path, class: "btn btn-outline-danger me-2" do %>
+        <i class="fa-solid fa-table"></i> GEROT
       <% end %>
     </div>
   </div>

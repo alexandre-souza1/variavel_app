@@ -35,11 +35,45 @@ export default class extends Controller {
     if (event.key === "Enter") {
       event.preventDefault()
 
+      const rowOffset = event.shiftKey ? -1 : 1
+
       this.save().then((saved) => {
         if (saved) {
-          this.focusBelow()
+          this.focusCell(rowOffset, 0)
         }
       })
+    }
+
+    if (event.key === "Tab") {
+      event.preventDefault()
+
+      const columnOffset = event.shiftKey ? -1 : 1
+
+      this.save().then((saved) => {
+        if (saved) {
+          this.focusCell(0, columnOffset)
+        }
+      })
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault()
+      this.focusCell(1, 0)
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault()
+      this.focusCell(-1, 0)
+    }
+
+    if (event.key === "ArrowRight") {
+      event.preventDefault()
+      this.focusCell(0, 1)
+    }
+
+    if (event.key === "ArrowLeft") {
+      event.preventDefault()
+      this.focusCell(0, -1)
     }
 
     if (event.key === "Escape") {
@@ -99,13 +133,13 @@ export default class extends Controller {
 
   }
 
-  focusBelow() {
+  focusCell(rowOffset, columnOffset) {
 
-    const row = Number(this.element.dataset.row)
-    const column = Number(this.element.dataset.column)
+    const row = Number(this.element.dataset.row) + rowOffset
+    const column = Number(this.element.dataset.column) + columnOffset
 
     const nextCell = document.querySelector(
-      `[data-row="${row + 1}"][data-column="${column}"]`
+      `[data-controller="routine-cell"][data-row="${row}"][data-column="${column}"]`
     )
 
     if (nextCell) {
@@ -136,6 +170,12 @@ export default class extends Controller {
   async save() {
 
     const value = this.inputTarget.value.trim()
+
+    // Não alterou nada
+    if (value === (this.rawValueValue || "")) {
+      this.cancel()
+      return true
+    }
 
     if (!this.validate(value)) {
 
@@ -188,7 +228,7 @@ export default class extends Controller {
     this.rawValueValue = data.value
 
     this.displayTarget.textContent = data.formatted_value
-    
+
     this.cancel()
 
     this.element.classList.remove("routine-cell--saving")
