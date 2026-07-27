@@ -90,7 +90,7 @@
                 <%= indicator.target_for(@routine.period_start)&.goal || "-" %>
               </td>
 
-              <% @days.each do |day| %>
+              <% @days.each_with_index do |day, column_index| %>
 
                 <% value = @values_index[[indicator.id, day]] %>
 
@@ -99,16 +99,20 @@
                   data-controller="routine-cell"
                   data-action="click->routine-cell#edit"
                   data-routine-cell-id-value="<%= value.id %>"
-                  data-routine-cell-value-value="<%= value.value %>">
+                  data-routine-cell-raw-value-value="<%= value.value %>"
+                  data-routine-cell-type-value="<%= indicator.value_type %>"
+                  data-row="<%= @row_index[indicator.id] %>"
+                  data-column="<%= column_index %>">
 
                   <span data-routine-cell-target="display">
-                    <%= value&.value.presence || "-" %>
+                    <%= routine_value_display(indicator, value&.value) %>
                   </span>
 
                   <input
                     type="text"
                     class="routine-cell__input d-none"
-                    data-routine-cell-target="input">
+                    data-routine-cell-target="input"
+                    autocomplete="off">
 
                 </td>
 

@@ -6,7 +6,11 @@ class RoutineValuesController < ApplicationController
     @routine_value.update!(routine_value_params)
 
     render json: {
-      value: @routine_value.value
+      value: @routine_value.value,
+      formatted_value: helpers.routine_value_display(
+        @routine_value.routine_indicator,
+        @routine_value.value
+      )
     }
   end
 

@@ -22,6 +22,17 @@ class RoutinesController < ApplicationController
                       .index_by do |value|
                         [value.routine_indicator_id, value.reference_date]
                       end
+
+    @row_index = {}
+
+    index = 0
+
+    @categories.each do |category|
+      category.routine_indicators.each do |indicator|
+        @row_index[indicator.id] = index
+        index += 1
+      end
+    end
   end
 
   private
