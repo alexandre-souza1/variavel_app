@@ -13,6 +13,13 @@ export default class extends Controller {
     type: String
   }
 
+  connect() {
+    this.saving = false
+
+    this.inputTarget.addEventListener("keydown", this.keydown.bind(this))
+    this.inputTarget.addEventListener("blur", this.blur.bind(this))
+  }
+
   edit() {
     this.inputTarget.value = this.rawValueValue || ""
 
@@ -25,61 +32,68 @@ export default class extends Controller {
     this.inputTarget.select()
   }
 
-  connect() {
-    this.inputTarget.addEventListener("keydown", this.keydown.bind(this))
-    this.inputTarget.addEventListener("blur", this.blur.bind(this))
-  }
-
   keydown(event) {
 
-    if (event.key === "Enter") {
-      event.preventDefault()
+    switch (event.key) {
 
-      const rowOffset = event.shiftKey ? -1 : 1
+      case "Enter":
+        event.preventDefault()
 
-      this.save().then((saved) => {
-        if (saved) {
-          this.focusCell(rowOffset, 0)
-        }
-      })
+        this.save().then((saved) => {
+          if (saved) {
+            this.focusCell(event.shiftKey ? -1 : 1, 0)
+          }
+        })
+
+        break
+
+      case "Tab":
+        event.preventDefault()
+
+        this.save().then((saved) => {
+          if (saved) {
+            this.focusCell(0, event.shiftKey ? -1 : 1)
+          }
+        })
+
+        break
+
+      case "ArrowDown":
+        event.preventDefault()
+        this.focusCell(1, 0)
+        break
+
+      case "ArrowUp":
+        event.preventDefault()
+        this.focusCell(-1, 0)
+        break
+
+      case "ArrowRight":
+        event.preventDefault()
+        this.focusCell(0, 1)
+        break
+
+      case "ArrowLeft":
+        event.preventDefault()
+        this.focusCell(0, -1)
+        break
+
+      case "Escape":
+        event.preventDefault()
+        this.cancel()
+        break
+
     }
 
-    if (event.key === "Tab") {
-      event.preventDefault()
+  }
 
-      const columnOffset = event.shiftKey ? -1 : 1
+  blur() {
 
-      this.save().then((saved) => {
-        if (saved) {
-          this.focusCell(0, columnOffset)
-        }
-      })
-    }
+    if (this.saving) return
 
-    if (event.key === "ArrowDown") {
-      event.preventDefault()
-      this.focusCell(1, 0)
-    }
+    if (this.inputTarget.classList.contains("d-none")) return
 
-    if (event.key === "ArrowUp") {
-      event.preventDefault()
-      this.focusCell(-1, 0)
-    }
-
-    if (event.key === "ArrowRight") {
-      event.preventDefault()
-      this.focusCell(0, 1)
-    }
-
-    if (event.key === "ArrowLeft") {
-      event.preventDefault()
-      this.focusCell(0, -1)
-    }
-
-    if (event.key === "Escape") {
-      event.preventDefault()
-      this.cancel()
-    }
+    this.save()
 
   }
 
@@ -88,18 +102,7 @@ export default class extends Controller {
     this.inputTarget.value = this.rawValueValue || ""
 
     this.inputTarget.classList.add("d-none")
-
     this.displayTarget.classList.remove("d-none")
-
-  }
-
-  blur() {
-
-    if (this.inputTarget.classList.contains("d-none")) {
-      return
-    }
-
-    this.save()
 
   }
 
@@ -115,13 +118,7 @@ export default class extends Controller {
         break
 
       case "decimal":
-        this.inputTarget.inputMode = "decimal"
-        break
-
       case "percentage":
-        this.inputTarget.inputMode = "decimal"
-        break
-
       case "currency":
         this.inputTarget.inputMode = "decimal"
         break
@@ -167,28 +164,53 @@ export default class extends Controller {
 
   }
 
+  showError() {
+
+    this.saving = false
+
+    this.element.classList.remove("routine-cell--saving")
+    this.element.classList.add("routine-cell--error")
+
+    setTimeout(() => {
+      this.element.classList.remove("routine-cell--error")
+    }, 800)
+
+  }
+
+  finishEdition() {
+
+    this.cancel()
+
+    this.saving = false
+
+    this.element.classList.remove("routine-cell--saving")
+    this.element.classList.add("routine-cell--saved")
+
+    setTimeout(() => {
+      this.element.classList.remove("routine-cell--saved")
+    }, 600)
+
+  }
+
   async save() {
+
+    if (this.saving) return false
+
+    this.saving = true
 
     const value = this.inputTarget.value.trim()
 
     // Não alterou nada
     if (value === (this.rawValueValue || "")) {
+      this.saving = false
       this.cancel()
       return true
     }
 
     if (!this.validate(value)) {
-
-      this.element.classList.add("routine-cell--error")
-
+      this.showError()
       this.inputTarget.focus()
-
-      setTimeout(() => {
-        this.element.classList.remove("routine-cell--error")
-      }, 800)
-
       return false
-
     }
 
     this.element.classList.add("routine-cell--saving")
@@ -211,32 +233,20 @@ export default class extends Controller {
 
     if (!response.ok) {
 
-      this.element.classList.remove("routine-cell--saving")
-      this.element.classList.add("routine-cell--error")
-
-      setTimeout(() => {
-        this.element.classList.remove("routine-cell--error")
-      }, 1000)
-
       alert("Erro ao salvar.")
 
+      this.showError()
+
       return false
+
     }
 
     const data = await response.json()
 
     this.rawValueValue = data.value
-
     this.displayTarget.textContent = data.formatted_value
 
-    this.cancel()
-
-    this.element.classList.remove("routine-cell--saving")
-    this.element.classList.add("routine-cell--saved")
-
-    setTimeout(() => {
-      this.element.classList.remove("routine-cell--saved")
-    }, 600)
+    this.finishEdition()
 
     return true
 
