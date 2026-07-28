@@ -215,10 +215,16 @@ class FleetAvailabilityPdf < Prawn::Document
         ]
       end
 
+    # Larguras fixas para as 5 primeiras colunas (ordem atual)
+    fixed_widths = [50, 50]   # soma = 245
+    obs_width = bounds.width - fixed_widths.sum  # o resto para Observação
+
+    col_widths = fixed_widths + [obs_width]
+
     table_section(
       STATUS_TITLES[:unavailable],
       ["Placa", "Defeito", "Observação"],
-      rows
+      rows, column_widths: col_widths
     )
   end
 
@@ -233,10 +239,16 @@ class FleetAvailabilityPdf < Prawn::Document
         ]
       end
 
+      # Larguras fixas para as 5 primeiras colunas (ordem atual)
+      fixed_widths = [50]
+      obs_width = bounds.width - fixed_widths.sum  # o resto para Observação
+
+      col_widths = fixed_widths + [obs_width]
+
     table_section(
       STATUS_TITLES[:exchange],
       ["Placa", "Observação"],
-      rows
+      rows, column_widths: col_widths
     )
   end
 
