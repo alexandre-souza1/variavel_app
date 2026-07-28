@@ -12,6 +12,10 @@ class RoutineTemplatesController < ApplicationController
   end
 
   def show
+    @routine_template = RoutineTemplate.find(params[:id])
+    # Para contar indicadores sem N+1 (já que tem has_many :routine_indicators through: :routine_categories)
+    @routine_template = RoutineTemplate.includes(routine_categories: :routine_indicators).find(params[:id])
+    # ou use counter_cache se preferir
   end
 
   def new

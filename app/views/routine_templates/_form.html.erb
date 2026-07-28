@@ -1,31 +1,66 @@
-<%= form_with model: @routine_template do |f| %>
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
 
-  <div class="mb-3">
-    <%= f.label :name, "Nome" %>
+      <div class="d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-file-earmark-plus fs-2 text-primary"></i>
+        <h2 class="fw-bold mb-0">
+          <%= @routine_template.new_record? ? 'Novo Template' : 'Editar Template' %>
+        </h2>
+      </div>
 
-    <%= f.text_field :name,
-                     class: "form-control" %>
+      <%= form_with model: @routine_template, class: "card shadow-sm p-4" do |f| %>
+
+        <% if @routine_template.errors.any? %>
+          <div class="alert alert-danger">
+            <h5><%= pluralize(@routine_template.errors.count, "erro") %> impediu o salvamento:</h5>
+            <ul class="mb-0">
+              <% @routine_template.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div class="mb-3">
+          <%= f.label :name, class: "form-label fw-semibold" do %>
+            <i class="bi bi-tag me-1"></i> Nome <span class="text-danger">*</span>
+          <% end %>
+          <%= f.text_field :name,
+                           class: "form-control form-control-lg",
+                           placeholder: "Ex: Rotina de Vendas Semanal",
+                           autofocus: true %>
+          <small class="text-muted">Escolha um nome descritivo para o template.</small>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :description, class: "form-label fw-semibold" do %>
+            <i class="bi bi-card-text me-1"></i> Descrição
+          <% end %>
+          <%= f.text_area :description,
+                          rows: 4,
+                          class: "form-control",
+                          placeholder: "Descreva o propósito e uso deste template..." %>
+        </div>
+
+        <div class="form-check form-switch mb-4">
+          <%= f.check_box :active,
+                          class: "form-check-input",
+                          role: "switch" %>
+          <%= f.label :active,
+                      class: "form-check-label fw-semibold" do %>
+            <i class="bi bi-check-circle me-1"></i> Ativo
+          <% end %>
+          <small class="d-block text-muted">Templates inativos não aparecem na lista de geração.</small>
+        </div>
+
+        <div class="d-flex gap-2">
+          <%= f.submit class: "btn btn-primary btn-lg px-4" %>
+          <%= link_to "Cancelar", routine_templates_path, class: "btn btn-outline-secondary btn-lg" %>
+        </div>
+
+      <% end %>
+
+    </div>
   </div>
-
-  <div class="mb-3">
-    <%= f.label :description, "Descrição" %>
-
-    <%= f.text_area :description,
-                    rows: 4,
-                    class: "form-control" %>
-  </div>
-
-  <div class="form-check mb-4">
-
-    <%= f.check_box :active,
-                    class: "form-check-input" %>
-
-    <%= f.label :active,
-                "Ativo",
-                class: "form-check-label" %>
-
-  </div>
-
-  <%= f.submit class: "btn btn-primary" %>
-
-<% end %>
+</div>

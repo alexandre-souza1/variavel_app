@@ -2,7 +2,7 @@
 
   <div class="mb-3">
 
-    <%= f.label :name %>
+    <%= f.label :name, "Nome do Indicador" %>
 
     <%= f.text_field :name,
                      class: "form-control" %>
@@ -11,7 +11,7 @@
 
   <div class="mb-3">
 
-    <%= f.label :description %>
+    <%= f.label :description, "descrição" %>
 
     <%= f.text_area :description,
                     rows: 3,
@@ -22,38 +22,28 @@
   <div class="row">
 
     <div class="col-md-4">
-
-      <%= f.label :value_type %>
-
+      <%= f.label :value_type, "Tipagem" %>
       <%= f.select :value_type,
-          RoutineIndicator.value_types.keys.map { |k| [k.humanize, k] },
+          RoutineIndicator.value_types.keys.map { |k| [RoutineIndicator::VALUE_TYPE_LABELS[k], k] },
           {},
           class: "form-select" %>
-
     </div>
 
     <div class="col-md-4">
-
-      <%= f.label :calculation_type %>
-
+      <%= f.label :calculation_type, "Tipo de Calculo" %>
       <%= f.select :calculation_type,
-          RoutineIndicator.calculation_types.keys.map { |k| [k.humanize, k] },
+          RoutineIndicator.calculation_types.keys.map { |k| [RoutineIndicator::CALCULATION_TYPE_LABELS[k], k] },
           {},
           class: "form-select" %>
-
     </div>
 
     <div class="col-md-4">
-
-      <%= f.label :goal_direction %>
-
+      <%= f.label :goal_direction, "Meta" %>
       <%= f.select :goal_direction,
-          RoutineIndicator.goal_directions.keys.map { |k| [k.humanize, k] },
+          RoutineIndicator.goal_directions.keys.map { |k| [RoutineIndicator::GOAL_DIRECTION_LABELS[k], k] },
           {},
           class: "form-select" %>
-
     </div>
-
   </div>
 
   <div class="mt-4 d-flex gap-4">

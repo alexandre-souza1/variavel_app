@@ -69,4 +69,28 @@ class RoutineIndicator < ApplicationRecord
       .first
   end
 
+    VALUE_TYPE_LABELS = {
+    "integer"   => "Número",
+    "decimal"   => "Decimal",
+    "percentage"=> "%",
+    "currency"  => "Moeda",
+    "boolean"   => "Sim/Não",
+    "text"      => "Texto",
+    "date"      => "Data",
+    "time"      => "Hora"
+  }.freeze
+
+  CALCULATION_TYPE_LABELS = {
+    "manual_calculation" => "Manual",
+    "ranged"             => "Média",
+    "plus"               => "Soma",
+    "last_value"         => "Último valor",
+    "minimal"            => "Menor valor",
+    "maximal"            => "Maior valor"
+  }.freeze
+
+  GOAL_DIRECTION_LABELS = {
+    "greater_or_equal" => "Maior ou igual",
+    "less_or_equal"    => "Menor ou igual"
+  }.freeze
 end
