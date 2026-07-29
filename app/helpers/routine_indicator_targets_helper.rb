@@ -1,0 +1,2 @@
+module RoutineIndicatorTargetsHelper
+end

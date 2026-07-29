@@ -95,9 +95,25 @@
                             </span>
                           </td>
                           <td class="text-end pe-3 d-flex justify-content-end gap-2">
-                            <%= link_to edit_routine_template_routine_category_routine_indicator_path(@routine_template, category, indicator), class: "btn btn-sm btn-outline-secondary" do %>
-                              <i class="bi bi-pencil"></i>
-                            <% end %>
+                            <div class="d-flex justify-content-end gap-2">
+
+                              <%= link_to "Metas",
+                                  routine_template_routine_category_routine_indicator_routine_indicator_targets_path(
+                                    @routine_template,
+                                    category,
+                                    indicator
+                                  ),
+                                  class: "btn btn-sm btn-outline-primary" %>
+
+                              <%= link_to "Editar",
+                                  edit_routine_template_routine_category_routine_indicator_path(
+                                    @routine_template,
+                                    category,
+                                    indicator
+                                  ),
+                                  class: "btn btn-sm btn-outline-secondary" %>
+
+                            </div>
                             <%= button_to routine_template_routine_category_routine_indicator_path(@routine_template, category, indicator), method: :delete, class: "btn btn-sm btn-outline-danger", form: { data: { turbo_confirm: "Tem certeza?" } } do %>
                               <i class="bi bi-trash3"></i>
                             <% end %>

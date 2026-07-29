@@ -1,0 +1,70 @@
+<%= form_with model: [
+      @template,
+      @category,
+      @indicator,
+      @routine_indicator_target
+    ] do |f| %>
+
+  <% if @routine_indicator_target.errors.any? %>
+
+    <div class="alert alert-danger">
+
+      <ul class="mb-0">
+
+        <% @routine_indicator_target.errors.full_messages.each do |message| %>
+
+          <li>
+            <%= message %>
+          </li>
+
+        <% end %>
+
+      </ul>
+
+    </div>
+
+  <% end %>
+
+  <div class="mb-3">
+
+    <%= f.label :goal, "Meta", class: "form-label" %>
+
+    <%= f.number_field :goal,
+                       step: "0.0001",
+                       class: "form-control" %>
+
+  </div>
+
+  <div class="row">
+
+    <div class="col-md-6 mb-3">
+
+      <%= f.label :starts_at,
+                  "Início da vigência",
+                  class: "form-label" %>
+
+      <%= f.date_field :starts_at,
+                       class: "form-control" %>
+
+    </div>
+
+    <div class="col-md-6 mb-3">
+
+      <%= f.label :ends_at,
+                  "Fim da vigência",
+                  class: "form-label" %>
+
+      <%= f.date_field :ends_at,
+                       class: "form-control" %>
+
+      <div class="form-text">
+        Deixe em branco para uma meta sem data final.
+      </div>
+
+    </div>
+
+  </div>
+
+  <%= f.submit class: "btn btn-primary" %>
+
+<% end %>

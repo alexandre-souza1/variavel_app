@@ -177,6 +177,86 @@ export default class extends Controller {
 
   }
 
+  updateCalculationResult(data) {
+    const resultElement = document.querySelector(
+      `[data-routine-result-indicator-id="${this.element.dataset.indicatorId}"]`
+    )
+
+    if (!resultElement) {
+      return
+    }
+
+    const valueElement = resultElement.querySelector(
+      "[data-routine-result-value]"
+    )
+
+    const statusElement = resultElement.querySelector(
+      "[data-routine-result-status]"
+    )
+
+    if (valueElement) {
+      valueElement.textContent =
+        data.formatted_calculated_value || "-"
+    }
+
+    if (!statusElement) {
+      return
+    }
+
+    switch (data.status) {
+      case "success":
+        statusElement.innerHTML = `
+          <span class="badge text-bg-success">
+            Meta atingida
+          </span>
+        `
+        break
+
+      case "danger":
+        statusElement.innerHTML = `
+          <span class="badge text-bg-danger">
+            Meta não atingida
+          </span>
+        `
+        break
+
+      case "partial":
+        statusElement.innerHTML = `
+          <span class="badge text-bg-warning">
+            Parcial — ${data.filled_days}/${data.total_days} dias
+          </span>
+        `
+        break
+
+      case "no_data":
+        statusElement.innerHTML = `
+          <span class="badge text-bg-secondary">
+            Sem dados
+          </span>
+        `
+        break
+
+      case "no_goal":
+        statusElement.innerHTML = `
+          <span class="badge text-bg-info">
+            Sem meta
+          </span>
+        `
+        break
+
+      case "manual":
+        statusElement.innerHTML = `
+          <span class="badge text-bg-secondary">
+            Manual
+          </span>
+        `
+        break
+
+      default:
+        statusElement.innerHTML = ""
+    }
+  }
+
   finishEdition() {
 
     this.cancel()
@@ -245,6 +325,8 @@ export default class extends Controller {
 
     this.rawValueValue = data.value
     this.displayTarget.textContent = data.formatted_value
+
+    this.updateCalculationResult(data)
 
     this.finishEdition()
 

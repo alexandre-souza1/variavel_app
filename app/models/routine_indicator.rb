@@ -66,6 +66,8 @@ class RoutineIndicator < ApplicationRecord
       .where("starts_at <= ?", date)
       .where("ends_at IS NULL OR ends_at >= ?", date)
       .order(starts_at: :desc)
+      .order(Arel.sql("ends_at IS NULL ASC"))
+      .order(ends_at: :asc)
       .first
   end
 

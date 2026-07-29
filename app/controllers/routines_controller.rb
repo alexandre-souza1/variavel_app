@@ -33,6 +33,18 @@ class RoutinesController < ApplicationController
         index += 1
       end
     end
+
+    @calculation_results = {}
+
+    @categories.each do |category|
+      category.routine_indicators.each do |indicator|
+        @calculation_results[indicator.id] =
+          Routines::CalculationService.call(
+            routine: @routine,
+            indicator: indicator
+          )
+      end
+    end
   end
 
   private

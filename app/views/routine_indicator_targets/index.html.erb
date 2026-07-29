@@ -1,0 +1,122 @@
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+      <h2 class="fw-bold mb-1">
+        Metas
+      </h2>
+
+      <p class="text-muted mb-0">
+        <%= @indicator.name %>
+      </p>
+    </div>
+
+    <div class="d-flex gap-2">
+
+      <%= link_to "Voltar",
+                  @template,
+                  class: "btn btn-outline-secondary" %>
+
+      <%= link_to "Nova Meta",
+                  new_routine_template_routine_category_routine_indicator_routine_indicator_target_path(
+                    @template,
+                    @category,
+                    @indicator
+                  ),
+                  class: "btn btn-primary" %>
+
+    </div>
+
+  </div>
+
+  <% if @routine_indicator_targets.any? %>
+
+    <div class="table-responsive">
+
+      <table class="table table-bordered align-middle">
+
+        <thead>
+
+          <tr>
+            <th>Meta</th>
+            <th>Início</th>
+            <th>Fim</th>
+            <th></th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          <% @routine_indicator_targets.each do |target| %>
+
+            <tr>
+
+              <td>
+                <%= target.goal %>
+              </td>
+
+              <td>
+                <%= l(target.starts_at) %>
+              </td>
+
+              <td>
+                <%= target.ends_at.present? ? l(target.ends_at) : "Sem término" %>
+              </td>
+
+              <td class="text-end">
+
+                <%= link_to "Editar",
+                    edit_routine_template_routine_category_routine_indicator_routine_indicator_target_path(
+                      @template,
+                      @category,
+                      @indicator,
+                      target
+                    ),
+                    class: "btn btn-sm btn-outline-secondary" %>
+
+                <%= button_to "Excluir",
+                    routine_template_routine_category_routine_indicator_routine_indicator_target_path(
+                      @template,
+                      @category,
+                      @indicator,
+                      target
+                    ),
+                    method: :delete,
+                    class: "btn btn-sm btn-outline-danger",
+                    form: {
+                      data: {
+                        turbo_confirm: "Tem certeza que deseja excluir esta meta?"
+                      }
+                    } %>
+
+              </td>
+
+            </tr>
+
+          <% end %>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  <% else %>
+
+    <div class="text-center py-5">
+
+      <h5>
+        Nenhuma meta cadastrada
+      </h5>
+
+      <p class="text-muted">
+        Adicione a primeira meta para este indicador.
+      </p>
+
+    </div>
+
+  <% end %>
+
+</div>

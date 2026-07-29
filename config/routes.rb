@@ -77,7 +77,10 @@ Rails.application.routes.draw do
             controller: :routine_generators
 
     resources :routine_categories do
-      resources :routine_indicators
+      resources :routine_indicators do
+        resources :routine_indicator_targets,
+                  except: :show
+      end
     end
   end
 

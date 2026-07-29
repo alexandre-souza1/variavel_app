@@ -7,13 +7,9 @@
     </h2>
 
     <p class="text-muted mb-0">
-
       <%= l(@routine.period_start) %>
-
       até
-
       <%= l(@routine.period_end) %>
-
     </p>
 
   </div>
@@ -34,12 +30,14 @@
             Meta
           </th>
 
+          <th style="width:120px;">
+            Resultado
+          </th>
+
           <% @days.each do |day| %>
 
             <th class="text-center">
-
               <%= day.day %>
-
             </th>
 
           <% end %>
@@ -54,12 +52,10 @@
 
           <tr class="table-light">
 
-            <td colspan="<%= @days.count + 2 %>">
+            <td colspan="<%= @days.count + 3 %>">
 
               <strong>
-
                 <%= category.name %>
-
               </strong>
 
             </td>
@@ -68,7 +64,10 @@
 
           <% category.routine_indicators.each do |indicator| %>
 
+            <% calculation = @calculation_results[indicator.id] %>
+
             <tr>
+
               <td>
 
                 <strong>
@@ -86,8 +85,71 @@
                 <% end %>
 
               </td>
-              <td class="routine-cell">
-                <%= indicator.target_for(@routine.period_start)&.goal || "-" %>
+
+              <td class="text-center">
+
+                <%= routine_value_display(
+                      indicator,
+                      calculation[:goal]
+                    ) %>
+
+              </td>
+
+              <td
+                id="routine-result-<%= indicator.id %>"
+                class="text-center"
+                data-routine-result-indicator-id="<%= indicator.id %>">
+
+                <div data-routine-result-value>
+                  <%= routine_value_display(
+                        indicator,
+                        calculation[:value]
+                      ) %>
+                </div>
+
+                <span data-routine-result-status>
+
+                  <% if calculation[:status] == :success %>
+
+                    <span class="badge text-bg-success">
+                      Meta atingida
+                    </span>
+
+                  <% elsif calculation[:status] == :danger %>
+
+                    <span class="badge text-bg-danger">
+                      Meta não atingida
+                    </span>
+
+                  <% elsif calculation[:status] == :partial %>
+
+                    <span class="badge text-bg-warning">
+                      Parcial —
+                      <%= calculation[:filled_days] %>/<%= calculation[:total_days] %> dias
+                    </span>
+
+                  <% elsif calculation[:status] == :no_data %>
+
+                    <span class="badge text-bg-secondary">
+                      Sem dados
+                    </span>
+
+                  <% elsif calculation[:status] == :no_goal %>
+
+                    <span class="badge text-bg-info">
+                      Sem meta
+                    </span>
+
+                  <% elsif calculation[:status] == :manual %>
+
+                    <span class="badge text-bg-secondary">
+                      Manual
+                    </span>
+
+                  <% end %>
+
+                </span>
+
               </td>
 
               <% @days.each_with_index do |day, column_index| %>
@@ -101,11 +163,15 @@
                   data-routine-cell-id-value="<%= value.id %>"
                   data-routine-cell-raw-value-value="<%= value.value %>"
                   data-routine-cell-type-value="<%= indicator.value_type %>"
+                  data-indicator-id="<%= indicator.id %>"
                   data-row="<%= @row_index[indicator.id] %>"
                   data-column="<%= column_index %>">
 
                   <span data-routine-cell-target="display">
-                    <%= routine_value_display(indicator, value&.value) %>
+                    <%= routine_value_display(
+                          indicator,
+                          value&.value
+                        ) %>
                   </span>
 
                   <input
@@ -117,12 +183,17 @@
                 </td>
 
               <% end %>
+
             </tr>
 
           <% end %>
+
         <% end %>
 
       </tbody>
+
     </table>
+
   </div>
+
 </div>
