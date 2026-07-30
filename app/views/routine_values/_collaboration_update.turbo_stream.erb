@@ -1,0 +1,87 @@
+<% indicator = routine_value.routine_indicator %>
+
+<% calculation = Routines::CalculationService.call(
+     routine: routine_value.routine,
+     indicator: indicator
+   ) %>
+
+<%= turbo_stream.replace "routine-value-display-#{routine_value.id}" do %>
+
+  <span
+    id="routine-value-display-<%= routine_value.id %>"
+    data-routine-cell-target="display">
+
+    <%= routine_value_display(
+          indicator,
+          routine_value.value
+        ) %>
+
+  </span>
+
+<% end %>
+
+
+<%= turbo_stream.replace "routine-result-value-#{indicator.id}" do %>
+
+  <div
+    id="routine-result-value-<%= indicator.id %>"
+    data-routine-result-value>
+
+    <%= routine_value_display(
+          indicator,
+          calculation[:value]
+        ) %>
+
+  </div>
+
+<% end %>
+
+
+<%= turbo_stream.replace "routine-result-status-#{indicator.id}" do %>
+
+  <span
+    id="routine-result-status-<%= indicator.id %>"
+    data-routine-result-status>
+
+    <% if calculation[:status] == :success %>
+
+      <span class="badge text-bg-success">
+        Meta atingida
+      </span>
+
+    <% elsif calculation[:status] == :danger %>
+
+      <span class="badge text-bg-danger">
+        Meta não atingida
+      </span>
+
+    <% elsif calculation[:status] == :partial %>
+
+      <span class="badge text-bg-warning">
+        Parcial —
+        <%= calculation[:filled_days] %>/<%= calculation[:total_days] %> dias
+      </span>
+
+    <% elsif calculation[:status] == :no_data %>
+
+      <span class="badge text-bg-secondary">
+        Sem dados
+      </span>
+
+    <% elsif calculation[:status] == :no_goal %>
+
+      <span class="badge text-bg-info">
+        Sem meta
+      </span>
+
+    <% elsif calculation[:status] == :manual %>
+
+      <span class="badge text-bg-secondary">
+        Manual
+      </span>
+
+    <% end %>
+
+  </span>
+
+<% end %>

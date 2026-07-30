@@ -1,5 +1,7 @@
 <div class="container-fluid py-4">
 
+  <%= turbo_stream_from [@routine, :collaboration] %>
+
   <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
 
     <div>
@@ -116,14 +118,18 @@
                 class="text-center"
                 data-routine-result-indicator-id="<%= indicator.id %>">
 
-                <div data-routine-result-value>
+                <div
+                  id="routine-result-value-<%= indicator.id %>"
+                  data-routine-result-value>
                   <%= routine_value_display(
                         indicator,
                         calculation[:value]
                       ) %>
                 </div>
 
-                <span data-routine-result-status>
+                <span
+                  id="routine-result-status-<%= indicator.id %>"
+                  data-routine-result-status>
 
                   <% if calculation[:status] == :success %>
 
@@ -183,7 +189,9 @@
                   data-row="<%= @row_index[indicator.id] %>"
                   data-column="<%= column_index %>">
 
-                  <span data-routine-cell-target="display">
+                  <span
+                    id="routine-value-display-<%= value.id %>"
+                    data-routine-cell-target="display">
                     <%= routine_value_display(
                           indicator,
                           value&.value
