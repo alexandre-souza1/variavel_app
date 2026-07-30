@@ -1,4 +1,8 @@
-<div class="container-fluid py-4">
+<div
+  class="container-fluid py-4"
+  data-controller="routine-presence"
+  data-routine-presence-routine-id-value="<%= @routine.id %>"
+  data-routine-presence-current-user-id-value="<%= current_user.id %>">
 
   <%= turbo_stream_from [@routine, :collaboration] %>
 
@@ -190,12 +194,19 @@
                   data-column="<%= column_index %>">
 
                   <span
+                    class="routine-cell__display"
                     id="routine-value-display-<%= value.id %>"
                     data-routine-cell-target="display">
                     <%= routine_value_display(
                           indicator,
                           value&.value
                         ) %>
+                  </span>
+
+                  <span
+                    class="routine-cell__presence d-none"
+                    data-routine-presence-badge
+                    aria-hidden="true">
                   </span>
 
                   <input

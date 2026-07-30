@@ -30,6 +30,34 @@ export default class extends Controller {
 
     this.inputTarget.focus()
     this.inputTarget.select()
+
+    this.notifyEditingStart()
+  }
+
+  notifyEditingStart() {
+    document.dispatchEvent(
+      new CustomEvent(
+        "routine:editing-start",
+        {
+          detail: {
+            routineValueId: this.idValue
+          }
+        }
+      )
+    )
+  }
+
+  notifyEditingStop() {
+    document.dispatchEvent(
+      new CustomEvent(
+        "routine:editing-stop",
+        {
+          detail: {
+            routineValueId: this.idValue
+          }
+        }
+      )
+    )
   }
 
   keydown(event) {
@@ -60,21 +88,25 @@ export default class extends Controller {
 
       case "ArrowDown":
         event.preventDefault()
+        this.cancel()
         this.focusCell(1, 0)
         break
 
       case "ArrowUp":
         event.preventDefault()
+        this.cancel()
         this.focusCell(-1, 0)
         break
 
       case "ArrowRight":
         event.preventDefault()
+        this.cancel()
         this.focusCell(0, 1)
         break
 
       case "ArrowLeft":
         event.preventDefault()
+        this.cancel()
         this.focusCell(0, -1)
         break
 
@@ -98,6 +130,8 @@ export default class extends Controller {
   }
 
   cancel() {
+
+    this.notifyEditingStop()
 
     this.inputTarget.value = this.rawValueValue || ""
 
@@ -259,6 +293,8 @@ export default class extends Controller {
 
   finishEdition() {
 
+    this.notifyEditingStop()
+
     this.cancel()
 
     this.saving = false
@@ -269,7 +305,6 @@ export default class extends Controller {
     setTimeout(() => {
       this.element.classList.remove("routine-cell--saved")
     }, 600)
-
   }
 
   async save() {
