@@ -84,7 +84,11 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :routines, only: %i[index show]
+  resources :routines, only: %i[index show] do
+    resources :activities,
+              only: :index,
+              controller: :routine_activities
+  end
   resources :routine_values, only: :update
 
   resources :autonomies do

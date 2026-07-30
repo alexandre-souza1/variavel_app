@@ -3,11 +3,31 @@ class RoutineValuesController < ApplicationController
   before_action :set_routine_value
 
   def update
-    @routine_value.update!(
-      routine_value_params.merge(
-        updated_by: current_user
+    ActiveRecord::Base.transaction do
+      @routine_value.assign_attributes(
+        routine_value_params.merge(
+          updated_by: current_user
+        )
       )
-    )
+
+      value_changed =
+        @routine_value.will_save_change_to_value?
+
+      @routine_value.save!
+
+      if value_changed
+        previous_value, new_value =
+          @routine_value.saved_change_to_value
+
+        @routine_value.routine.routine_activities.create!(
+          user: current_user,
+          routine_value: @routine_value,
+          activity_type: :value_changed,
+          previous_value: previous_value,
+          new_value: new_value
+        )
+      end
+    end
 
     calculation =
       Routines::CalculationService.call(

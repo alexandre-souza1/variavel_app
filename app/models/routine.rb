@@ -7,6 +7,9 @@ class Routine < ApplicationRecord
   has_many :routine_values,
            dependent: :destroy
 
+  has_many :routine_activities,
+           dependent: :destroy
+
   enum :status, {
     draft: 0,
     open: 1,

@@ -1,16 +1,32 @@
 <div class="container-fluid py-4">
 
-  <div class="mb-4">
+  <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
 
-    <h2 class="fw-bold">
-      <%= @routine.title %>
-    </h2>
+    <div>
 
-    <p class="text-muted mb-0">
-      <%= l(@routine.period_start) %>
-      até
-      <%= l(@routine.period_end) %>
-    </p>
+      <h2 class="fw-bold">
+        <%= @routine.title %>
+      </h2>
+
+      <p class="text-muted mb-0">
+        <%= l(@routine.period_start) %>
+        até
+        <%= l(@routine.period_end) %>
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      data-bs-toggle="offcanvas"
+      data-bs-target="#routineActivitiesOffcanvas"
+      aria-controls="routineActivitiesOffcanvas">
+
+      <i class="bi bi-clock-history me-1"></i>
+      Atividades
+
+    </button>
 
   </div>
 
@@ -193,6 +209,64 @@
       </tbody>
 
     </table>
+
+  </div>
+
+</div>
+
+<div
+  class="offcanvas offcanvas-end"
+  tabindex="-1"
+  id="routineActivitiesOffcanvas"
+  aria-labelledby="routineActivitiesOffcanvasLabel">
+
+  <div class="offcanvas-header border-bottom">
+
+    <div>
+
+      <h5
+        class="offcanvas-title"
+        id="routineActivitiesOffcanvasLabel">
+        Atividades
+      </h5>
+
+      <div class="small text-muted">
+        <%= @routine.title %>
+      </div>
+
+    </div>
+
+    <button
+      type="button"
+      class="btn-close"
+      data-bs-dismiss="offcanvas"
+      aria-label="Fechar">
+    </button>
+
+  </div>
+
+  <div class="offcanvas-body">
+
+    <%= turbo_frame_tag "routine_activities_frame",
+                        src: routine_activities_path(@routine) do %>
+
+      <div class="text-center py-5 text-muted">
+
+        <div
+          class="spinner-border spinner-border-sm"
+          role="status">
+          <span class="visually-hidden">
+            Carregando...
+          </span>
+        </div>
+
+        <p class="mt-3 mb-0">
+          Carregando atividades...
+        </p>
+
+      </div>
+
+    <% end %>
 
   </div>
 

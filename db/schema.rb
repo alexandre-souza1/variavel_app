@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_24_162000) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_30_140451) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -420,6 +420,23 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_24_162000) do
     t.index ["label"], name: "index_remuneration_periods_on_label", unique: true
   end
 
+  create_table "routine_activities", force: :cascade do |t|
+    t.bigint "routine_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "routine_value_id"
+    t.integer "activity_type", default: 0, null: false
+    t.decimal "previous_value", precision: 15, scale: 4
+    t.decimal "new_value", precision: 15, scale: 4
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["activity_type"], name: "index_routine_activities_on_activity_type"
+    t.index ["routine_id", "created_at"], name: "index_routine_activities_on_routine_id_and_created_at"
+    t.index ["routine_id"], name: "index_routine_activities_on_routine_id"
+    t.index ["routine_value_id"], name: "index_routine_activities_on_routine_value_id"
+    t.index ["user_id"], name: "index_routine_activities_on_user_id"
+  end
+
   create_table "routine_categories", force: :cascade do |t|
     t.bigint "routine_template_id", null: false
     t.string "name", null: false
@@ -688,6 +705,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_24_162000) do
   add_foreign_key "labels", "action_plans"
   add_foreign_key "remuneration_category_values", "budget_categories"
   add_foreign_key "remuneration_category_values", "vehicle_remunerations"
+  add_foreign_key "routine_activities", "routine_values"
+  add_foreign_key "routine_activities", "routines"
+  add_foreign_key "routine_activities", "users"
   add_foreign_key "routine_categories", "routine_templates"
   add_foreign_key "routine_comments", "routine_values"
   add_foreign_key "routine_comments", "users"

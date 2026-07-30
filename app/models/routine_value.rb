@@ -10,6 +10,9 @@ class RoutineValue < ApplicationRecord
   has_many :routine_comments,
            dependent: :destroy
 
+  has_many :routine_activities,
+         dependent: :destroy
+
   validates :reference_date,
             presence: true
 end

@@ -1,0 +1,76 @@
+<div
+  id="routine-activity-<%= activity.id %>"
+  class="routine-activity mb-4">
+
+  <div class="d-flex align-items-start gap-3">
+
+    <div class="routine-activity__icon">
+      <i class="bi bi-pencil-square"></i>
+    </div>
+
+    <div class="flex-grow-1">
+
+      <div class="d-flex justify-content-between gap-2">
+
+        <div>
+
+          <strong>
+            <%= routine_activity_user_name(activity.user) %>
+          </strong>
+
+          <span class="text-muted">
+            alterou um valor
+          </span>
+
+        </div>
+
+        <time class="small text-muted text-nowrap">
+          <%= l(activity.created_at, format: "%H:%M") %>
+        </time>
+
+      </div>
+
+      <% if activity.routine_value.present? %>
+
+        <% indicator = activity.routine_value.routine_indicator %>
+
+        <div class="mt-2">
+
+          <div class="fw-semibold">
+            <%= indicator.name %>
+          </div>
+
+          <div class="small text-muted">
+            Referência:
+            <%= l(activity.routine_value.reference_date) %>
+          </div>
+
+        </div>
+
+        <div class="routine-activity__change mt-2">
+
+          <span class="routine-activity__old-value">
+            <%= routine_activity_value(
+                  activity,
+                  activity.previous_value
+                ) %>
+          </span>
+
+          <i class="bi bi-arrow-right mx-2"></i>
+
+          <span class="routine-activity__new-value">
+            <%= routine_activity_value(
+                  activity,
+                  activity.new_value
+                ) %>
+          </span>
+
+        </div>
+
+      <% end %>
+
+    </div>
+
+  </div>
+
+</div>
