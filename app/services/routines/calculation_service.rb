@@ -17,6 +17,7 @@ module Routines
         status: status,
         filled_days: filled_days,
         total_days: total_days,
+        progress_label: progress_label,
         completion: completion,
         complete: complete?
       }
@@ -30,6 +31,7 @@ module Routines
       @values ||= routine
         .routine_values
         .where(routine_indicator: indicator)
+        .where(reference_date: expected_reference_dates)
         .where.not(value: nil)
     end
 
@@ -71,9 +73,28 @@ module Routines
     end
 
     def total_days
-      @total_days ||= (
-        routine.period_start..routine.period_end
-      ).count
+      @total_days ||= expected_reference_dates.count
+    end
+
+    def expected_reference_dates
+      @expected_reference_dates ||=
+        indicator.reference_dates_between(
+          routine.period_start,
+          routine.period_end
+        )
+    end
+
+    def progress_label
+      case indicator.response_frequency
+      when "daily"
+        "dias"
+      when "weekly"
+        "semanas"
+      when "monthly"
+        "meses"
+      else
+        "preenchimentos"
+      end
     end
 
     def completion

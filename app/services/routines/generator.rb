@@ -41,30 +41,7 @@ module Routines
     end
 
     def create_values(routine)
-
-      indicators = template
-        .routine_categories
-        .includes(:routine_indicators)
-        .flat_map(&:routine_indicators)
-
-      indicators.each do |indicator|
-
-        (period_start..period_end).each do |date|
-
-          RoutineValue.create!(
-
-            routine: routine,
-
-            routine_indicator: indicator,
-
-            reference_date: date
-
-          )
-
-        end
-
-      end
-
+      routine.ensure_expected_values!
     end
 
     def default_title

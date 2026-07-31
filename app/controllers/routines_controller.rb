@@ -9,6 +9,8 @@ class RoutinesController < ApplicationController
   end
 
   def show
+    @routine.ensure_expected_values!
+
     @days = (@routine.period_start..@routine.period_end).to_a
 
     @categories = @routine

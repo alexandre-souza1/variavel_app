@@ -59,7 +59,8 @@
 
       <span class="badge text-bg-warning">
         Parcial —
-        <%= calculation[:filled_days] %>/<%= calculation[:total_days] %> dias
+        <%= calculation[:filled_days] %>/<%= calculation[:total_days] %>
+        <%= calculation[:progress_label] %>
       </span>
 
     <% elsif calculation[:status] == :no_data %>

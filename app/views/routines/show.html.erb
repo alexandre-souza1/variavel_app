@@ -59,7 +59,13 @@
           <% @days.each do |day| %>
 
             <th class="text-center">
-              <%= day.day %>
+              <div>
+                <%= day.day %>
+              </div>
+
+              <small class="text-muted">
+                <%= routine_weekday_abbr(day) %>
+              </small>
             </th>
 
           <% end %>
@@ -151,7 +157,8 @@
 
                     <span class="badge text-bg-warning">
                       Parcial —
-                      <%= calculation[:filled_days] %>/<%= calculation[:total_days] %> dias
+                      <%= calculation[:filled_days] %>/<%= calculation[:total_days] %>
+                      <%= calculation[:progress_label] %>
                     </span>
 
                   <% elsif calculation[:status] == :no_data %>
@@ -181,41 +188,56 @@
               <% @days.each_with_index do |day, column_index| %>
 
                 <% value = @values_index[[indicator.id, day]] %>
+                <% expected = indicator.expects_value_on?(
+                      day,
+                      @routine.period_start,
+                      @routine.period_end
+                    ) %>
 
-                <td
-                  class="routine-cell text-center"
-                  data-controller="routine-cell"
-                  data-action="click->routine-cell#edit"
-                  data-routine-cell-id-value="<%= value.id %>"
-                  data-routine-cell-raw-value-value="<%= value.value %>"
-                  data-routine-cell-type-value="<%= indicator.value_type %>"
-                  data-indicator-id="<%= indicator.id %>"
-                  data-row="<%= @row_index[indicator.id] %>"
-                  data-column="<%= column_index %>">
+                <% if expected && value.present? %>
 
-                  <span
-                    class="routine-cell__display"
-                    id="routine-value-display-<%= value.id %>"
-                    data-routine-cell-target="display">
-                    <%= routine_value_display(
-                          indicator,
-                          value&.value
-                        ) %>
-                  </span>
+                  <td
+                    class="routine-cell text-center"
+                    data-controller="routine-cell"
+                    data-action="click->routine-cell#edit"
+                    data-routine-cell-id-value="<%= value.id %>"
+                    data-routine-cell-raw-value-value="<%= value.value %>"
+                    data-routine-cell-type-value="<%= indicator.value_type %>"
+                    data-indicator-id="<%= indicator.id %>"
+                    data-row="<%= @row_index[indicator.id] %>"
+                    data-column="<%= column_index %>">
 
-                  <span
-                    class="routine-cell__presence d-none"
-                    data-routine-presence-badge
-                    aria-hidden="true">
-                  </span>
+                    <span
+                      class="routine-cell__display"
+                      id="routine-value-display-<%= value.id %>"
+                      data-routine-cell-target="display">
+                      <%= routine_value_display(
+                            indicator,
+                            value.value
+                          ) %>
+                    </span>
 
-                  <input
-                    type="text"
-                    class="routine-cell__input d-none"
-                    data-routine-cell-target="input"
-                    autocomplete="off">
+                    <span
+                      class="routine-cell__presence d-none"
+                      data-routine-presence-badge
+                      aria-hidden="true">
+                    </span>
 
-                </td>
+                    <input
+                      type="text"
+                      class="routine-cell__input d-none"
+                      data-routine-cell-target="input"
+                      autocomplete="off">
+
+                  </td>
+
+                <% else %>
+
+                  <td class="text-center text-muted bg-light">
+                    -
+                  </td>
+
+                <% end %>
 
               <% end %>
 

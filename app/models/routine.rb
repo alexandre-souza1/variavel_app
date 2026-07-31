@@ -25,6 +25,25 @@ class Routine < ApplicationRecord
 
   validate :period_end_after_start
 
+  def ensure_expected_values!
+    routine_template
+      .routine_categories
+      .includes(:routine_indicators)
+      .flat_map(&:routine_indicators)
+      .each do |indicator|
+
+      indicator
+        .reference_dates_between(period_start, period_end)
+        .each do |date|
+
+        routine_values.find_or_create_by!(
+          routine_indicator: indicator,
+          reference_date: date
+        )
+      end
+    end
+  end
+
   private
 
   def period_end_after_start

@@ -1,5 +1,9 @@
 module RoutinesHelper
 
+  def routine_weekday_abbr(date)
+    %w[Dom Seg Ter Qua Qui Sex Sab][date.wday]
+  end
+
   def routine_value_display(indicator, value)
 
     return "-" if value.blank?

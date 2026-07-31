@@ -257,7 +257,7 @@ export default class extends Controller {
       case "partial":
         statusElement.innerHTML = `
           <span class="badge text-bg-warning">
-            Parcial — ${data.filled_days}/${data.total_days} dias
+            Parcial — ${data.filled_days}/${data.total_days} ${data.progress_label}
           </span>
         `
         break

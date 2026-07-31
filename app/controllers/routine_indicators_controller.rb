@@ -76,6 +76,7 @@ class RoutineIndicatorsController < ApplicationController
         :calculation_type,
         :value_type,
         :goal_direction,
+        :response_frequency,
         :required,
         :active
       )

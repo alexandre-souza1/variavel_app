@@ -68,6 +68,9 @@ class RoutineValuesController < ApplicationController
       total_days:
         calculation[:total_days],
 
+      progress_label:
+        calculation[:progress_label],
+
       completion:
         calculation[:completion],
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_30_140451) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_31_161200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -482,6 +482,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_30_140451) do
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "response_frequency", default: 0, null: false
     t.index ["routine_category_id", "position"], name: "index_routine_indicators_on_routine_category_id_and_position"
     t.index ["routine_category_id"], name: "index_routine_indicators_on_routine_category_id"
   end
