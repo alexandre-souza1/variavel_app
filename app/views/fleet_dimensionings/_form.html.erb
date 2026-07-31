@@ -1,51 +1,45 @@
+<%# app/views/fleet_dimensionings/_form.html.erb %>
 <%= form_with model: @fleet_dimensioning,
-              class: "card shadow-sm border-0",
-              data: {
-                controller: "fleet-dimensioning-form"
-              } do |f| %>
-  <div class="card-header bg-primary text-white">
-    <h5 class="mb-0">Dimensionamento da Quinzena</h5>
+              data: { controller: "fleet-dimensioning-form" },
+              html: { novalidate: true } do |f| %>
+  <% if @fleet_dimensioning.errors.any? %>
+    <div class="alert alert-danger">
+      <h6 class="mb-2">Não foi possível salvar:</h6>
+      <ul class="mb-0">
+        <% @fleet_dimensioning.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%# Seção: dados básicos %>
+  <div class="bg-light rounded border p-4 mb-4">
+    <h5 class="mb-3">Informações da quinzena</h5>
+    <div class="row g-3">
+      <div class="col-12">
+        <%= f.label :label, "Nome", class: "form-label" %>
+        <%= f.text_field :label,
+                         class: "form-control",
+                         placeholder: "Ex: 1ª quinzena de julho",
+                         required: true %>
+      </div>
+      <div class="col-md-6">
+        <%= f.label :start_date, "Data inicial", class: "form-label" %>
+        <%= f.date_field :start_date, class: "form-control", required: true %>
+      </div>
+      <div class="col-md-6">
+        <%= f.label :end_date, "Data final", class: "form-label" %>
+        <%= f.date_field :end_date, class: "form-control", required: true %>
+      </div>
+    </div>
   </div>
 
-  <div class="card-body">
-    <% if @fleet_dimensioning.errors.any? %>
-      <div class="alert alert-danger">
-        <h6 class="mb-2">Não foi possível salvar:</h6>
-
-        <ul class="mb-0">
-          <% @fleet_dimensioning.errors.full_messages.each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-        </ul>
-      </div>
-    <% end %>
-
-    <div class="mb-3">
-      <%= f.label :label, "Nome", class: "form-label" %>
-      <%= f.text_field :label,
-                       class: "form-control",
-                       placeholder: "Ex: 1a quinzena de julho",
-                       required: true %>
-    </div>
-
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        <%= f.label :start_date, "Data inicial", class: "form-label" %>
-        <%= f.date_field :start_date,
-                         class: "form-control",
-                         required: true %>
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <%= f.label :end_date, "Data final", class: "form-label" %>
-        <%= f.date_field :end_date,
-                         class: "form-control",
-                         required: true %>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-md-3 mb-3">
+  <%# Seção: quantidades %>
+  <div class="bg-light rounded border p-4 mb-4">
+    <h5 class="mb-3">Frota</h5>
+    <div class="row g-3">
+      <div class="col-sm-6 col-md-3">
         <%= f.label :route_quantity, "Carros", class: "form-label" %>
         <%= f.number_field :route_quantity,
                            class: "form-control",
@@ -56,24 +50,21 @@
                            },
                            required: true %>
       </div>
-
-      <div class="col-md-3 mb-3">
+      <div class="col-sm-6 col-md-3">
         <%= f.label :van_quantity, "Vans", class: "form-label" %>
         <%= f.number_field :van_quantity,
                            class: "form-control",
                            min: 0,
                            required: true %>
       </div>
-
-      <div class="col-md-3 mb-3">
+      <div class="col-sm-6 col-md-3">
         <%= f.label :vespertina_quantity, "Vespertinas", class: "form-label" %>
         <%= f.number_field :vespertina_quantity,
                            class: "form-control",
                            min: 0,
                            required: true %>
       </div>
-
-      <div class="col-md-3 mb-3">
+      <div class="col-sm-6 col-md-3">
         <%= f.label :as_quantity, "AS", class: "form-label" %>
         <%= f.number_field :as_quantity,
                            class: "form-control",
@@ -81,106 +72,102 @@
                            required: true %>
       </div>
     </div>
+  </div>
 
-    <div class="border rounded p-3 mt-2">
-      <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-        <div>
-          <h6 class="mb-1">Placas padrão</h6>
-          <small class="text-muted">
-            Defina a placa referência de cada posição da disponibilidade.
-          </small>
+  <%# Seção: placas padrão %>
+  <div class="bg-light rounded border p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+      <div>
+        <h5 class="mb-1">Placas padrão</h5>
+        <small class="text-body-secondary">
+          Arraste uma placa para cada posição. Para remover, devolva a placa para a lista.
+        </small>
+      </div>
+    </div>
+
+    <% selected_plate_ids =
+         @fleet_dimensioning.fleet_dimensioning_standard_plates
+                            .map(&:plate_id)
+                            .compact %>
+    <% selected_by_position =
+         @fleet_dimensioning.fleet_dimensioning_standard_plates
+                            .select { |sp| sp.plate_id.present? }
+                            .index_by(&:position) %>
+    <% rota_plates = Plate.where(setor: "ROTA").ordered %>
+
+    <div class="fleet-dimensioning-board">
+      <%# Lista de placas disponíveis %>
+      <section class="mb-3">
+        <h6 class="mb-2">Todas as placas</h6>
+        <div class="fleet-dimensioning-plate-list d-flex flex-wrap gap-2"
+             data-fleet-dimensioning-form-target="sourceList">
+          <% rota_plates.reject { |plate| selected_plate_ids.include?(plate.id) }.each do |plate| %>
+            <div class="fleet-dimensioning-plate bg-body-secondary border rounded p-2"
+                 data-plate-id="<%= plate.id %>"
+                 data-plate-label="<%= plate.placa %>">
+              <strong><%= plate.placa %></strong>
+              <small class="d-block text-body-secondary"><%= plate.perfil.presence || plate.tipo.presence || "Ativa" %></small>
+            </div>
+          <% end %>
         </div>
-      </div>
+      </section>
 
-      <% selected_plate_ids =
-           @fleet_dimensioning.fleet_dimensioning_standard_plates
-                              .map(&:plate_id)
-                              .compact %>
-      <% selected_by_position =
-           @fleet_dimensioning.fleet_dimensioning_standard_plates
-                              .select { |standard_plate| standard_plate.plate_id.present? }
-                              .index_by(&:position) %>
-      <% rota_plates = Plate.where(setor: "ROTA").ordered %>
+      <%# Slots das posições %>
+      <section>
+        <h6 class="mb-2">Posições padrão</h6>
+        <div class="fleet-dimensioning-slots"
+             style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
+          <%= f.fields_for :fleet_dimensioning_standard_plates do |standard_plate_form| %>
+            <% position = standard_plate_form.object.position.to_i %>
+            <% standard_plate = selected_by_position[position] %>
+            <% plate = standard_plate&.plate %>
 
-      <div class="fleet-dimensioning-board">
-        <section>
-          <h6 class="mb-2">Todas as placas</h6>
-
-          <div class="fleet-dimensioning-plate-list"
-               data-fleet-dimensioning-form-target="sourceList">
-            <% rota_plates.reject { |plate| selected_plate_ids.include?(plate.id) }.each do |plate| %>
-              <div class="fleet-dimensioning-plate"
-                   data-plate-id="<%= plate.id %>"
-                   data-plate-label="<%= plate.placa %>">
-                <strong><%= plate.placa %></strong>
-                <small><%= plate.perfil.presence || plate.tipo.presence || "Ativa" %></small>
+            <div class="fleet-dimensioning-slot border rounded bg-body"
+                 data-fleet-dimensioning-form-target="slot"
+                 data-position="<%= position %>">
+              <div class="fleet-dimensioning-slot__header px-2 py-1 bg-secondary bg-opacity-10 fw-semibold small">
+                Posição <%= position + 1 %>
               </div>
-            <% end %>
-          </div>
-        </section>
 
-        <section>
-          <h6 class="mb-2">Posições padrão</h6>
+              <%= standard_plate_form.hidden_field :position %>
+              <%= standard_plate_form.hidden_field :plate_id,
+                                                   value: plate&.id,
+                                                   data: {
+                                                     fleet_dimensioning_form_target: "plateInput"
+                                                   } %>
+              <%= standard_plate_form.hidden_field :_destroy,
+                                                   value: plate.present? ? "0" : "1",
+                                                   data: {
+                                                     fleet_dimensioning_form_target: "destroyInput"
+                                                   } %>
 
-          <div class="fleet-dimensioning-slots">
-            <%= f.fields_for :fleet_dimensioning_standard_plates do |standard_plate_form| %>
-              <% position = standard_plate_form.object.position.to_i %>
-              <% standard_plate = selected_by_position[position] %>
-              <% plate = standard_plate&.plate %>
-
-              <div class="fleet-dimensioning-slot"
-                   data-fleet-dimensioning-form-target="slot"
-                   data-position="<%= position %>">
-                <div class="fleet-dimensioning-slot__header">
-                  Posição <%= position + 1 %>
-                </div>
-
-                <%= standard_plate_form.hidden_field :position %>
-                <%= standard_plate_form.hidden_field :plate_id,
-                                                     value: plate&.id,
-                                                     data: {
-                                                       fleet_dimensioning_form_target: "plateInput"
-                                                     } %>
-                <%= standard_plate_form.hidden_field :_destroy,
-                                                     value: plate.present? ? "0" : "1",
-                                                     data: {
-                                                       fleet_dimensioning_form_target: "destroyInput"
-                                                     } %>
-
-                <div class="fleet-dimensioning-slot__body"
-                     data-fleet-dimensioning-form-target="slotList">
-                  <% if plate.present? %>
-                    <div class="fleet-dimensioning-plate"
-                         data-plate-id="<%= plate.id %>"
-                         data-plate-label="<%= plate.placa %>">
-                      <strong><%= plate.placa %></strong>
-                      <small><%= plate.perfil.presence || plate.tipo.presence || "Ativa" %></small>
-                    </div>
-                  <% else %>
-                    <div class="fleet-dimensioning-placeholder">
-                      Arraste uma placa
-                    </div>
-                  <% end %>
-                </div>
+              <div class="fleet-dimensioning-slot__body p-2"
+                   data-fleet-dimensioning-form-target="slotList">
+                <% if plate.present? %>
+                  <div class="fleet-dimensioning-plate bg-body-secondary border rounded p-2"
+                       data-plate-id="<%= plate.id %>"
+                       data-plate-label="<%= plate.placa %>">
+                    <strong><%= plate.placa %></strong>
+                    <small class="d-block text-body-secondary"><%= plate.perfil.presence || plate.tipo.presence || "Ativa" %></small>
+                  </div>
+                <% else %>
+                  <div class="fleet-dimensioning-placeholder text-body-secondary p-2 text-center">
+                    Arraste uma placa
+                  </div>
+                <% end %>
               </div>
-            <% end %>
-          </div>
-        </section>
-      </div>
-
-      <small class="text-muted d-block mt-2">
-        Arraste uma placa para cada posição padrão. Para remover, arraste a placa de volta para a lista da esquerda.
-      </small>
+            </div>
+          <% end %>
+        </div>
+      </section>
     </div>
   </div>
 
-  <div class="card-footer d-flex justify-content-between">
+  <div class="d-flex justify-content-end gap-2">
     <%= link_to fleet_dimensionings_path,
                 class: "btn btn-outline-secondary" do %>
-      <i class="bi bi-arrow-left"></i>
-      Voltar
+      <i class="bi bi-arrow-left"></i> Voltar
     <% end %>
-
     <%= f.submit "Salvar", class: "btn btn-primary" %>
   </div>
 <% end %>
