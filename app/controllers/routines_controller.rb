@@ -1,6 +1,9 @@
 class RoutinesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_routine, only: :show
+  before_action :set_routine, only: %i[
+    show
+    destroy
+  ]
 
   def index
     @routines = Routine
@@ -47,6 +50,13 @@ class RoutinesController < ApplicationController
           )
       end
     end
+  end
+
+  def destroy
+    @routine.destroy!
+
+    redirect_to routines_path,
+                notice: "Rotina removida com sucesso."
   end
 
   private

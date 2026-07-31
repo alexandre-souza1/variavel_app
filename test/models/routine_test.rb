@@ -45,4 +45,15 @@ class RoutineTest < ActiveSupport::TestCase
       reference_date: Date.new(2026, 7, 31)
     )
   end
+
+  test "destroy removes routine values" do
+    routine = routines(:one)
+    value_ids = routine.routine_values.pluck(:id)
+
+    assert value_ids.any?
+
+    routine.destroy!
+
+    assert_empty RoutineValue.where(id: value_ids)
+  end
 end

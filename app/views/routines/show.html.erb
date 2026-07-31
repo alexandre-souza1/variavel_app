@@ -22,17 +22,33 @@
 
     </div>
 
-    <button
-      type="button"
-      class="btn btn-outline-secondary"
-      data-bs-toggle="offcanvas"
-      data-bs-target="#routineActivitiesOffcanvas"
-      aria-controls="routineActivitiesOffcanvas">
+    <div class="d-flex gap-2">
 
-      <i class="bi bi-clock-history me-1"></i>
-      Atividades
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#routineActivitiesOffcanvas"
+        aria-controls="routineActivitiesOffcanvas">
 
-    </button>
+        <i class="bi bi-clock-history me-1"></i>
+        Atividades
+
+      </button>
+
+      <%= button_to routine_path(@routine),
+                    method: :delete,
+                    class: "btn btn-outline-danger",
+                    form: {
+                      data: {
+                        turbo_confirm: "Tem certeza que deseja excluir esta rotina? Os preenchimentos também serão apagados."
+                      }
+                    } do %>
+        <i class="bi bi-trash3 me-1"></i>
+        Excluir
+      <% end %>
+
+    </div>
 
   </div>
 

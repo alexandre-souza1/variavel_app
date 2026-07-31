@@ -84,7 +84,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :routines, only: %i[index show] do
+  resources :routines, only: %i[index show destroy] do
     resources :activities,
               only: :index,
               controller: :routine_activities

@@ -51,9 +51,24 @@
 
             <td class="text-end">
 
-              <%= link_to "Abrir",
-                          routine,
-                          class: "btn btn-sm btn-primary" %>
+              <div class="d-flex justify-content-end gap-2">
+
+                <%= link_to "Abrir",
+                            routine,
+                            class: "btn btn-sm btn-primary" %>
+
+                <%= button_to routine_path(routine),
+                              method: :delete,
+                              class: "btn btn-sm btn-outline-danger",
+                              form: {
+                                data: {
+                                  turbo_confirm: "Tem certeza que deseja excluir esta rotina? Os preenchimentos também serão apagados."
+                                }
+                              } do %>
+                  <i class="bi bi-trash3"></i>
+                <% end %>
+
+              </div>
 
             </td>
 
