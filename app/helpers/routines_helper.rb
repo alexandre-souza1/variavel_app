@@ -38,4 +38,20 @@ module RoutinesHelper
 
   end
 
+  def routine_cell_status(indicator, value, goal)
+    return nil if value.blank?
+    return nil if goal.blank?
+    return nil if indicator.manual_calculation?
+
+    case indicator.goal_direction
+
+    when "greater_or_equal"
+      value >= goal ? :success : :danger
+
+    when "less_or_equal"
+      value <= goal ? :success : :danger
+
+    end
+  end
+
 end

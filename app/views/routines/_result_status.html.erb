@@ -1,0 +1,51 @@
+<span
+  id="routine-result-status-<%= indicator.id %>"
+  data-routine-result-status>
+
+  <% value_class = "text-secondary" %>
+
+  <% if calculation[:status] == :success %>
+
+    <% value_class = "text-success" %>
+    <i class="bi bi-check-circle-fill text-success me-1"></i>
+
+  <% elsif calculation[:status] == :danger %>
+
+    <% value_class = "text-danger" %>
+    <i class="bi bi-x-circle-fill text-danger me-1"></i>
+
+  <% elsif calculation[:status] == :partial %>
+
+    <% value_class = "text-warning" %>
+    <i class="bi bi-hourglass-split text-warning me-1"></i>
+
+  <% elsif calculation[:status] == :no_data %>
+
+    <% value_class = "text-secondary" %>
+    <i class="bi bi-dash-circle-fill text-secondary me-1"></i>
+
+  <% elsif calculation[:status] == :no_goal %>
+
+    <% value_class = "text-info" %>
+    <i class="bi bi-flag-fill text-info me-1"></i>
+
+  <% elsif calculation[:status] == :manual %>
+
+    <% value_class = "text-secondary" %>
+    <i class="bi bi-pencil-fill text-secondary me-1"></i>
+
+  <% end %>
+
+</span>
+
+<span
+  id="routine-result-value-<%= indicator.id %>"
+  data-routine-result-value
+  class="<%= value_class %> fw-semibold">
+
+  <%= routine_value_display(
+        indicator,
+        calculation[:value]
+      ) %>
+
+</span>

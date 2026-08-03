@@ -180,3 +180,11 @@
   color: var(--bs-success-text-emphasis);
   font-weight: 600;
 }
+
+.routine-cell--success {
+  box-shadow: inset 4px 0 0 var(--bs-success);
+}
+
+.routine-cell--danger {
+  box-shadow: inset 4px 0 0 var(--bs-danger);
+}

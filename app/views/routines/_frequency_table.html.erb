@@ -94,60 +94,9 @@
               class="text-center"
               data-routine-result-indicator-id="<%= indicator.id %>">
 
-              <div
-                id="routine-result-value-<%= indicator.id %>"
-                data-routine-result-value>
-                <%= routine_value_display(
-                      indicator,
-                      calculation[:value]
-                    ) %>
-              </div>
-
-              <span
-                id="routine-result-status-<%= indicator.id %>"
-                data-routine-result-status>
-
-                <% if calculation[:status] == :success %>
-
-                  <span class="badge text-bg-success">
-                    Meta atingida
-                  </span>
-
-                <% elsif calculation[:status] == :danger %>
-
-                  <span class="badge text-bg-danger">
-                    Meta não atingida
-                  </span>
-
-                <% elsif calculation[:status] == :partial %>
-
-                  <span class="badge text-bg-warning">
-                    Parcial —
-                    <%= calculation[:filled_days] %>/<%= calculation[:total_days] %>
-                    <%= calculation[:progress_label] %>
-                  </span>
-
-                <% elsif calculation[:status] == :no_data %>
-
-                  <span class="badge text-bg-secondary">
-                    Sem dados
-                  </span>
-
-                <% elsif calculation[:status] == :no_goal %>
-
-                  <span class="badge text-bg-info">
-                    Sem meta
-                  </span>
-
-                <% elsif calculation[:status] == :manual %>
-
-                  <span class="badge text-bg-secondary">
-                    Manual
-                  </span>
-
-                <% end %>
-
-              </span>
+              <%= render "routines/result_status",
+                        indicator: indicator,
+                        calculation: calculation %>
 
             </td>
 
