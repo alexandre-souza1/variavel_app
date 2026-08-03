@@ -15,6 +15,14 @@
 
       <% end %>
 
+      <% if @has_more %>
+        <div class="text-center mt-3">
+          <%= button_tag "Ver histórico completo (em desenvolvimento)",
+                         type: "button",
+                         class: "btn btn-outline-primary" %>
+        </div>
+      <% end %>
+
     </div>
 
   <% else %>

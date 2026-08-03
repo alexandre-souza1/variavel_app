@@ -10,7 +10,10 @@ class RoutineActivitiesController < ApplicationController
         routine_value: :routine_indicator
       )
       .order(created_at: :desc)
-      .limit(100)
+      .limit(10)
+
+    @has_more =
+      @routine.routine_activities.count > 10
   end
 
   private
