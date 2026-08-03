@@ -4,9 +4,11 @@ module Routines
       new(...).call
     end
 
-    def initialize(routine:, indicator:)
+    def initialize(routine:, indicator:, values: nil, expected_reference_dates: nil)
       @routine = routine
       @indicator = indicator
+      @preloaded_values = values
+      @expected_reference_dates = expected_reference_dates
     end
 
     def call
@@ -28,11 +30,22 @@ module Routines
     attr_reader :routine, :indicator
 
     def values
-      @values ||= routine
-        .routine_values
-        .where(routine_indicator: indicator)
-        .where(reference_date: expected_reference_dates)
-        .where.not(value: nil)
+      @values ||= begin
+        if @preloaded_values
+          @preloaded_values.select do |routine_value|
+            routine_value.value.present? &&
+              expected_reference_dates.include?(
+                routine_value.reference_date
+              )
+          end
+        else
+          routine
+            .routine_values
+            .where(routine_indicator: indicator)
+            .where(reference_date: expected_reference_dates)
+            .where.not(value: nil)
+        end
+      end
     end
 
     def calculated_value
@@ -44,19 +57,41 @@ module Routines
           nil
 
         when "plus"
-          values.sum(:value)
+          if @preloaded_values
+            values.sum(&:value)
+          else
+            values.sum(:value)
+          end
 
         when "ranged"
-          values.average(:value)
+          if @preloaded_values
+            return nil if values.empty?
+
+            values.sum(&:value) / values.count
+          else
+            values.average(:value)
+          end
 
         when "minimal"
-          values.minimum(:value)
+          if @preloaded_values
+            values.map(&:value).min
+          else
+            values.minimum(:value)
+          end
 
         when "maximal"
-          values.maximum(:value)
+          if @preloaded_values
+            values.map(&:value).max
+          else
+            values.maximum(:value)
+          end
 
         when "last_value"
-          values.order(:reference_date).last&.value
+          if @preloaded_values
+            values.max_by(&:reference_date)&.value
+          else
+            values.order(:reference_date).last&.value
+          end
         end
     end
 

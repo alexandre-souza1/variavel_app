@@ -52,220 +52,78 @@
 
   </div>
 
-  <div class="table-responsive">
+  <div
+    class="accordion"
+    id="routineFrequencyAccordion">
 
-    <table class="table table-bordered align-middle">
+    <% opened_section = false %>
 
-      <thead>
+    <% @frequency_sections.each do |frequency, title| %>
 
-        <tr>
+      <% indicator_count = @categories.sum do |category|
+           @indicators_by_frequency_and_category[
+             [frequency, category.id]
+           ].count
+         end %>
 
-          <th style="min-width:250px;">
-            Indicador
-          </th>
+      <% next if indicator_count.zero? %>
 
-          <th style="width:120px;">
-            Meta
-          </th>
+      <% section_open = !opened_section %>
+      <% opened_section = true %>
+      <% section_id = "routine-frequency-#{frequency}" %>
 
-          <th style="width:120px;">
-            Resultado
-          </th>
+      <div class="accordion-item">
 
-          <% @days.each do |day| %>
+        <h2
+          class="accordion-header"
+          id="<%= section_id %>-heading">
 
-            <th class="text-center">
-              <div>
-                <%= day.day %>
-              </div>
+          <button
+            class="accordion-button <%= 'collapsed' unless section_open %>"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#<%= section_id %>-body"
+            aria-expanded="<%= section_open %>"
+            aria-controls="<%= section_id %>-body">
 
-              <small class="text-muted">
-                <%= routine_weekday_abbr(day) %>
-              </small>
-            </th>
+            <span class="fw-semibold">
+              <%= title %>
+            </span>
 
-          <% end %>
+            <span class="badge text-bg-secondary ms-2">
+              <%= indicator_count %>
+            </span>
 
-        </tr>
+          </button>
 
-      </thead>
+        </h2>
 
-      <tbody>
+        <div
+          id="<%= section_id %>-body"
+          class="accordion-collapse collapse <%= 'show' if section_open %>"
+          aria-labelledby="<%= section_id %>-heading"
+          data-bs-parent="#routineFrequencyAccordion">
 
-        <% @categories.each do |category| %>
+          <div class="accordion-body p-0">
 
-          <tr class="table-light">
+            <%= render "frequency_table",
+                       frequency: frequency,
+                       days: @days,
+                       categories: @categories,
+                       indicators_by_category:
+                         @indicators_by_frequency_and_category,
+                       values_index: @values_index,
+                       expected_dates_index: @expected_dates_index,
+                       row_index: @row_index,
+                       calculation_results: @calculation_results %>
 
-            <td colspan="<%= @days.count + 3 %>">
+          </div>
 
-              <strong>
-                <%= category.name %>
-              </strong>
+        </div>
 
-            </td>
+      </div>
 
-          </tr>
-
-          <% category.routine_indicators.each do |indicator| %>
-
-            <% calculation = @calculation_results[indicator.id] %>
-
-            <tr>
-
-              <td>
-
-                <strong>
-                  <%= indicator.name %>
-                </strong>
-
-                <% if indicator.description.present? %>
-
-                  <br>
-
-                  <small class="text-muted">
-                    <%= indicator.description %>
-                  </small>
-
-                <% end %>
-
-              </td>
-
-              <td class="text-center">
-
-                <%= routine_value_display(
-                      indicator,
-                      calculation[:goal]
-                    ) %>
-
-              </td>
-
-              <td
-                id="routine-result-<%= indicator.id %>"
-                class="text-center"
-                data-routine-result-indicator-id="<%= indicator.id %>">
-
-                <div
-                  id="routine-result-value-<%= indicator.id %>"
-                  data-routine-result-value>
-                  <%= routine_value_display(
-                        indicator,
-                        calculation[:value]
-                      ) %>
-                </div>
-
-                <span
-                  id="routine-result-status-<%= indicator.id %>"
-                  data-routine-result-status>
-
-                  <% if calculation[:status] == :success %>
-
-                    <span class="badge text-bg-success">
-                      Meta atingida
-                    </span>
-
-                  <% elsif calculation[:status] == :danger %>
-
-                    <span class="badge text-bg-danger">
-                      Meta não atingida
-                    </span>
-
-                  <% elsif calculation[:status] == :partial %>
-
-                    <span class="badge text-bg-warning">
-                      Parcial —
-                      <%= calculation[:filled_days] %>/<%= calculation[:total_days] %>
-                      <%= calculation[:progress_label] %>
-                    </span>
-
-                  <% elsif calculation[:status] == :no_data %>
-
-                    <span class="badge text-bg-secondary">
-                      Sem dados
-                    </span>
-
-                  <% elsif calculation[:status] == :no_goal %>
-
-                    <span class="badge text-bg-info">
-                      Sem meta
-                    </span>
-
-                  <% elsif calculation[:status] == :manual %>
-
-                    <span class="badge text-bg-secondary">
-                      Manual
-                    </span>
-
-                  <% end %>
-
-                </span>
-
-              </td>
-
-              <% @days.each_with_index do |day, column_index| %>
-
-                <% value = @values_index[[indicator.id, day]] %>
-                <% expected = indicator.expects_value_on?(
-                      day,
-                      @routine.period_start,
-                      @routine.period_end
-                    ) %>
-
-                <% if expected && value.present? %>
-
-                  <td
-                    class="routine-cell text-center"
-                    data-controller="routine-cell"
-                    data-action="click->routine-cell#edit"
-                    data-routine-cell-id-value="<%= value.id %>"
-                    data-routine-cell-raw-value-value="<%= value.value %>"
-                    data-routine-cell-type-value="<%= indicator.value_type %>"
-                    data-indicator-id="<%= indicator.id %>"
-                    data-row="<%= @row_index[indicator.id] %>"
-                    data-column="<%= column_index %>">
-
-                    <span
-                      class="routine-cell__display"
-                      id="routine-value-display-<%= value.id %>"
-                      data-routine-cell-target="display">
-                      <%= routine_value_display(
-                            indicator,
-                            value.value
-                          ) %>
-                    </span>
-
-                    <span
-                      class="routine-cell__presence d-none"
-                      data-routine-presence-badge
-                      aria-hidden="true">
-                    </span>
-
-                    <input
-                      type="text"
-                      class="routine-cell__input d-none"
-                      data-routine-cell-target="input"
-                      autocomplete="off">
-
-                  </td>
-
-                <% else %>
-
-                  <td class="text-center text-muted bg-light">
-                    -
-                  </td>
-
-                <% end %>
-
-              <% end %>
-
-            </tr>
-
-          <% end %>
-
-        <% end %>
-
-      </tbody>
-
-    </table>
+    <% end %>
 
   </div>
 

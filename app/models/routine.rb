@@ -1,3 +1,5 @@
+require "set"
+
 class Routine < ApplicationRecord
   belongs_to :routine_template
 
@@ -25,23 +27,39 @@ class Routine < ApplicationRecord
 
   validate :period_end_after_start
 
-  def ensure_expected_values!
-    routine_template
+  def ensure_expected_values!(indicators: nil)
+    indicators ||= routine_template
       .routine_categories
       .includes(:routine_indicators)
       .flat_map(&:routine_indicators)
-      .each do |indicator|
 
-      indicator
-        .reference_dates_between(period_start, period_end)
-        .each do |date|
+    existing_keys = routine_values
+      .where(routine_indicator_id: indicators.map(&:id))
+      .pluck(:routine_indicator_id, :reference_date)
+      .to_set
 
-        routine_values.find_or_create_by!(
-          routine_indicator: indicator,
-          reference_date: date
-        )
+    now = Time.current
+    rows = []
+
+    indicators.each do |indicator|
+      indicator.reference_dates_between(period_start, period_end).each do |date|
+        key = [indicator.id, date]
+        next if existing_keys.include?(key)
+
+        rows << {
+          routine_id: id,
+          routine_indicator_id: indicator.id,
+          reference_date: date,
+          created_at: now,
+          updated_at: now
+        }
       end
     end
+
+    RoutineValue.insert_all(
+      rows,
+      unique_by: :idx_unique_routine_value
+    ) if rows.any?
   end
 
   private
