@@ -10,17 +10,24 @@ export default class extends Controller {
   static values = {
     id: Number,
     rawValue: String,
-    type: String
+    type: String,
+    sunday: Boolean
   }
 
   connect() {
     this.saving = false
+    this.sundayLocked = this.sundayValue
 
     this.inputTarget.addEventListener("keydown", this.keydown.bind(this))
     this.inputTarget.addEventListener("blur", this.blur.bind(this))
   }
 
   edit() {
+    if (this.sundayLocked) {
+      this.unlockSunday()
+      return
+    }
+
     this.inputTarget.value = this.rawValueValue || ""
 
     this.displayTarget.classList.add("d-none")
@@ -32,6 +39,12 @@ export default class extends Controller {
     this.inputTarget.select()
 
     this.notifyEditingStart()
+  }
+
+  unlockSunday() {
+    this.sundayLocked = false
+    this.element.classList.remove("routine-cell--sunday-locked")
+    this.element.classList.add("routine-cell--sunday-unlocked")
   }
 
   notifyEditingStart() {
@@ -180,6 +193,9 @@ export default class extends Controller {
   }
 
   validate(value) {
+    if (value === "") {
+      return true
+    }
 
     switch (this.typeValue) {
 
@@ -358,7 +374,9 @@ export default class extends Controller {
 
     const data = await response.json()
 
-    this.rawValueValue = data.value
+    this.rawValueValue =
+      data.value === null ? "" : String(data.value)
+
     this.displayTarget.textContent = data.formatted_value
 
     this.updateCalculationResult(data)

@@ -5,7 +5,7 @@ class RoutineValuesController < ApplicationController
   def update
     ActiveRecord::Base.transaction do
       @routine_value.assign_attributes(
-        routine_value_params.merge(
+        normalized_routine_value_params.merge(
           updated_by: current_user
         )
       )
@@ -87,5 +87,11 @@ class RoutineValuesController < ApplicationController
 
   def routine_value_params
     params.require(:routine_value).permit(:value)
+  end
+
+  def normalized_routine_value_params
+    routine_value_params.tap do |permitted_params|
+      permitted_params[:value] = nil if permitted_params[:value].blank?
+    end
   end
 end

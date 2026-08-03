@@ -20,7 +20,7 @@
 
         <% days.each do |day| %>
 
-          <th class="text-center">
+          <th class="text-center <%= 'routine-day--sunday' if day.sunday? %>">
             <div>
               <%= day.day %>
             </div>
@@ -159,12 +159,13 @@
               <% if expected && value.present? %>
 
                 <td
-                  class="routine-cell text-center"
+                  class="routine-cell text-center <%= 'routine-cell--sunday routine-cell--sunday-locked' if day.sunday? %>"
                   data-controller="routine-cell"
                   data-action="click->routine-cell#edit"
                   data-routine-cell-id-value="<%= value.id %>"
                   data-routine-cell-raw-value-value="<%= value.value %>"
                   data-routine-cell-type-value="<%= indicator.value_type %>"
+                  data-routine-cell-sunday-value="<%= day.sunday? %>"
                   data-indicator-id="<%= indicator.id %>"
                   data-row="<%= row_index[indicator.id] %>"
                   data-column="<%= column_index %>">
@@ -195,7 +196,7 @@
 
               <% else %>
 
-                <td class="text-center text-muted bg-light">
+                <td class="text-center text-muted bg-light <%= 'routine-day--sunday' if day.sunday? %>">
                   -
                 </td>
 

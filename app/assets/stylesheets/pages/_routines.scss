@@ -18,6 +18,34 @@
   }
 }
 
+.routine-day--sunday {
+  background: rgba(var(--bs-danger-rgb), .05) !important;
+  color: var(--bs-danger-text-emphasis);
+}
+
+.routine-cell--sunday {
+  background: rgba(var(--bs-danger-rgb), .05);
+}
+
+.routine-cell--sunday:hover {
+  background: rgba(var(--bs-danger-rgb), .08);
+}
+
+.routine-cell--sunday-locked {
+  opacity: .45;
+  filter: grayscale(.25);
+}
+
+.routine-cell--sunday-locked:hover {
+  cursor: pointer;
+  outline: 2px dashed rgba(var(--bs-danger-rgb), .35);
+  outline-offset: -2px;
+}
+
+.routine-cell--sunday-unlocked {
+  opacity: 1;
+}
+
 // Apenas o texto da célula.
 // Não afeta o badge de presença.
 .routine-cell__display {
