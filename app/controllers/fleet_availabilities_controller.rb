@@ -1,10 +1,12 @@
 class FleetAvailabilitiesController < ApplicationController
   before_action :authenticate_user!
   before_action :auto_lock_expired_fleet_availabilities
-  before_action :set_fleet_availability, only: %i[show destroy lock unlock]
+  before_action :set_fleet_availability, only: %i[show destroy lock unlock restore_standard_layout]
   before_action :require_admin!, only: %i[destroy unlock]
-  before_action :require_creator_edit_access!, only: :lock
-
+  before_action :require_creator_edit_access!, only: %i[
+    lock
+    restore_standard_layout
+  ]
   def index
     @dimensioning_periods = FleetDimensioning.recent
     @selected_dimensioning = selected_dimensioning_period
@@ -125,6 +127,12 @@ class FleetAvailabilitiesController < ApplicationController
 
     redirect_to @fleet_availability,
                 notice: "Disponibilidade destravada com sucesso."
+  end
+
+  def restore_standard_layout
+    FleetAvailability::RestoreStandardLayout.call(@fleet_availability)
+
+    head :ok
   end
 
   private

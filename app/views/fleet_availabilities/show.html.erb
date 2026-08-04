@@ -81,6 +81,18 @@
         PDF
       <% end %>
 
+      <% if @editable %>
+        <button
+          class="btn btn-outline-primary"
+          data-action="fleet-availability#restoreStandardLayout">
+
+          <i class="bi bi-magic"></i>
+
+          Ajustar placas padrão
+
+        </button>
+      <% end %>
+
       <%= link_to fleet_availabilities_path,
                   class: "btn btn-outline-secondary" do %>
 
@@ -192,11 +204,13 @@
             <div class="fleet-special-route-card__header">
               <strong><%= route_label %></strong>
 
-              <% if route_key == "van" %>
-                <small>Somente placa VAN</small>
-              <% else %>
-                <small>Qualquer carro da rota</small>
-              <% end %>
+              <small>
+                <% if route_key == "van" %>
+                  Somente placa VAN
+                <% else %>
+                  Qualquer carro da rota
+                <% end %>
+              </small>
 
               <span class="fleet-count-badge"
                     data-special-route-count="<%= route_key %>">
@@ -209,7 +223,7 @@
                  data-special-route="<%= route_key %>"
                  data-max-items="<%= route_quantity %>">
               <% route_items.each do |route_item| %>
-            <%= render "fleet_availability_items/item",
+                <%= render "fleet_availability_items/item",
                        item: route_item,
                        variant: :special_route,
                        editable: @editable %>
@@ -402,100 +416,100 @@
 
 
 <% if @editable %>
-<div class="modal fade"
+  <div class="modal fade"
      id="unavailableModal"
      tabindex="-1">
 
-  <div class="modal-dialog">
+    <div class="modal-dialog">
 
-    <div class="modal-content">
+      <div class="modal-content">
 
-      <div class="modal-header">
+        <div class="modal-header">
 
-        <h5 class="modal-title">
-          Defeito da placa
-        </h5>
+          <h5 class="modal-title">
+            Defeito da placa
+          </h5>
 
-        <button type="button"
+          <button type="button"
                 class="btn-close"
                 data-bs-dismiss="modal">
-        </button>
-
-      </div>
-
-      <div class="modal-body">
-
-        <div class="mb-3">
-
-          <label class="form-label">
-            Defeito
-          </label>
-
-          <select id="unavailableReason"
-                  class="form-select">
-
-            <option value="maintenance">
-              Manutenção
-            </option>
-
-            <option value="breakdown">
-              Quebra
-            </option>
-
-            <option value="accident">
-              Acidente
-            </option>
-
-            <option value="document">
-              Documentação
-            </option>
-
-            <option value="other">
-              Outro
-            </option>
-
-          </select>
+          </button>
 
         </div>
 
-        <div>
+        <div class="modal-body">
 
-          <label class="form-label">
-            Observação
-          </label>
+          <div class="mb-3">
 
-          <textarea id="unavailableObservation"
+            <label class="form-label">
+              Defeito
+            </label>
+
+            <select id="unavailableReason"
+                  class="form-select">
+
+              <option value="maintenance">
+                Manutenção
+              </option>
+
+              <option value="breakdown">
+                Quebra
+              </option>
+
+              <option value="accident">
+                Acidente
+              </option>
+
+              <option value="document">
+                Documentação
+              </option>
+
+              <option value="other">
+                Outro
+              </option>
+
+            </select>
+
+          </div>
+
+          <div>
+
+            <label class="form-label">
+              Observação
+            </label>
+
+            <textarea id="unavailableObservation"
                     rows="4"
                     class="form-control"></textarea>
 
+          </div>
+
         </div>
 
-      </div>
+        <div class="modal-footer">
 
-      <div class="modal-footer">
-
-        <button type="button"
+          <button type="button"
                 class="btn btn-secondary"
                 data-bs-dismiss="modal">
 
-          Cancelar
+            Cancelar
 
-        </button>
+          </button>
 
-        <button type="button"
+          <button type="button"
                 id="confirmUnavailable"
                 class="btn btn-danger">
 
-          Confirmar
+            Confirmar
 
-        </button>
+          </button>
+
+        </div>
 
       </div>
 
     </div>
 
   </div>
-
-</div>
 
 <% end %>

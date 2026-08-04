@@ -281,6 +281,28 @@ export default class extends Controller {
     })
   }
 
+  async restoreStandardLayout(event) {
+    event.preventDefault()
+
+    const response = await fetch(
+      `/fleet_availabilities/${this.element.dataset.availabilityId}/restore_standard_layout`,
+      {
+        method: "PATCH",
+        headers: {
+          "X-CSRF-Token": document.querySelector("[name='csrf-token']").content,
+          "Accept": "application/json"
+        }
+      }
+    )
+
+    if (!response.ok) {
+      alert("Erro ao restaurar o layout.")
+      return
+    }
+
+    Turbo.visit(window.location.href)
+  }
+
 
   async updateItem(
     itemId,

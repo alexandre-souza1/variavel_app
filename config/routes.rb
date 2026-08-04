@@ -104,6 +104,7 @@ Rails.application.routes.draw do
 
   resources :fleet_availabilities do
     member do
+      patch :restore_standard_layout
       patch :lock
       patch :unlock
     end
