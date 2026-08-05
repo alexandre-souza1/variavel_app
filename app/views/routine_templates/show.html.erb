@@ -35,6 +35,36 @@
     </div>
   </div>
 
+<div class="card mb-4">
+  <div class="card-header">
+    Nova Categoria
+  </div>
+
+  <div class="card-body">
+    <%= form_with model: [@routine_template, RoutineCategory.new] do |f| %>
+
+      <div class="row">
+
+        <div class="col-md-8">
+          <%= f.label :name %>
+          <%= f.text_field :name, class: "form-control" %>
+        </div>
+
+        <div class="col-md-2">
+          <%= f.label :position, "Posição" %>
+          <%= f.number_field :position, class: "form-control" %>
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+          <%= f.submit "Adicionar", class: "btn btn-primary w-100" %>
+        </div>
+
+      </div>
+
+    <% end %>
+  </div>
+</div>
+
   <!-- ========== LISTA DE CATEGORIAS ========== -->
   <% if @routine_template.routine_categories.any? %>
 
@@ -139,9 +169,40 @@
 
             <!-- Rodapé com ação rápida (opcional) -->
             <div class="card-footer bg-transparent border-top-0 py-2 d-flex justify-content-end">
-              <small class="text-muted">
-                <i class="bi bi-arrows-expand me-1"></i> Posição: <%= category.position || '—' %>
-              </small>
+              <div data-controller="inline-edit">
+
+                <div data-inline-edit-target="display">
+                  <a href="#"
+                    data-action="click->inline-edit#edit"
+                    class="text-decoration-none text-muted">
+                    <i class="bi bi-arrows-expand me-1"></i>
+                    Posição: <%= category.position %>
+                  </a>
+                </div>
+
+                <div
+                  data-inline-edit-target="form"
+                  class="d-none">
+
+                  <%= form_with model: [@routine_template, category] do |f| %>
+
+                    <div class="input-group input-group-sm">
+
+                      <%= f.number_field :position,
+                            class: "form-control",
+                            min: 1 %>
+
+                      <button class="btn btn-primary">
+                        Salvar
+                      </button>
+
+                    </div>
+
+                  <% end %>
+
+                </div>
+
+              </div>
             </div>
 
           </div>

@@ -59,6 +59,6 @@ class RoutineCategoriesController < ApplicationController
 
   def category_params
     params.require(:routine_category)
-          .permit(:name)
+          .permit(:name, :position)
   end
 end
