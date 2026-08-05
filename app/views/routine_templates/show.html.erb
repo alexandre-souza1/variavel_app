@@ -16,17 +16,23 @@
         <p class="subtitle">
           <%= @routine_template.description.presence || 'Sem descrição' %>
         </p>
-        <div class="meta-info">
+        <div class="meta-info text-muted">
           <span><i class="bi bi-calendar3"></i> Criado em <%= l(@routine_template.created_at.to_date, format: :long) %></span>
+          <br>
           <span><i class="bi bi-folder"></i> <%= @routine_template.routine_categories.count %> categorias</span>
+          <br>
           <span><i class="bi bi-clock-history"></i> <%= @routine_template.routines.count %> rotinas geradas</span>
         </div>
       </div>
       <div class="header-actions">
+        <%= link_to routine_templates_path, class: "btn-outline" do %>
+          <i class="bi bi-arrow-left me-1"></i>
+          Voltar
+        <% end %>
         <%= link_to new_routine_template_generator_path(@routine_template), class: "btn-primary-solid" do %>
           <i class="bi bi-play-fill"></i> Gerar Rotina
         <% end %>
-        <%= link_to edit_routine_template_path(@routine_template), class: "btn-outline" do %>
+        <%= link_to edit_routine_template_path(@routine_template), class: "btn-primary-solid" do %>
           <i class="bi bi-pencil"></i> Editar
         <% end %>
       </div>

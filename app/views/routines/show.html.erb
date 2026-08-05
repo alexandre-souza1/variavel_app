@@ -19,6 +19,10 @@
         </p>
       </div>
       <div class="header-actions">
+        <%= link_to routines_path, class: "btn-outline" do %>
+          <i class="bi bi-arrow-left me-1"></i>
+          Voltar
+        <% end %>
         <button
           type="button"
           class="btn-outline"
@@ -129,5 +133,9 @@
       <% end %>
     </div>
   </div>
-
+  <div class="back-link">
+    <%= link_to routines_path do %>
+      <i class="bi bi-arrow-left"></i> Voltar para Rotinas
+    <% end %>
+  </div>
 </div>

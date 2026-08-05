@@ -11,8 +11,12 @@
         <p class="subtitle">Histórico de rotinas geradas a partir dos templates</p>
       </div>
       <div class="header-actions">
+        <%= link_to dashboard_path, class: "btn-outline" do %>
+          <i class="bi bi-arrow-left me-1"></i>
+          Voltar
+        <% end %>
         <%= link_to routine_templates_path, class: "btn-primary-solid" do %>
-          <i class="bi bi-plus-lg"></i> Gerar Nova
+          <i class="bi bi-pie-chart-fill"></i> Painel de Gerots
         <% end %>
       </div>
     </div>
