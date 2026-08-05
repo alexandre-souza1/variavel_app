@@ -26,44 +26,55 @@
       <%= link_to new_routine_template_generator_path(@routine_template), class: "btn btn-success d-flex align-items-center gap-1" do %>
         <i class="bi bi-play-fill"></i> Gerar Rotina
       <% end %>
-      <%= link_to new_routine_template_routine_category_path(@routine_template), class: "btn btn-primary d-flex align-items-center gap-1" do %>
-        <i class="bi bi-plus-lg"></i> Nova Categoria
-      <% end %>
       <%= link_to edit_routine_template_path(@routine_template), class: "btn btn-outline-secondary d-flex align-items-center gap-1" do %>
         <i class="bi bi-pencil"></i> Editar
       <% end %>
     </div>
   </div>
 
-<div class="card mb-4">
-  <div class="card-header">
-    Nova Categoria
-  </div>
+  <div data-controller="collapsible">
 
-  <div class="card-body">
-    <%= form_with model: [@routine_template, RoutineCategory.new] do |f| %>
+    <button
+      type="button"
+      class="btn btn-outline-primary mb-3 d-flex align-items-center gap-1"
+      data-action="click->collapsible#toggle">
+      <i class="bi bi-plus-lg"></i> Adicionar Nova Categoria
+    </button>
 
-      <div class="row">
+    <div class="category-form"
+        data-collapsible-target="content">
+      <div class="card shadow-sm border-0 mb-4">
 
-        <div class="col-md-8">
-          <%= f.label :name %>
-          <%= f.text_field :name, class: "form-control" %>
+        <div class="card-header">
+          Nova Categoria
         </div>
 
-        <div class="col-md-2">
-          <%= f.label :position, "Posição" %>
-          <%= f.number_field :position, class: "form-control" %>
-        </div>
+        <div class="card-body">
+          <%= form_with model: [@routine_template, RoutineCategory.new] do |f| %>
 
-        <div class="col-md-2 d-flex align-items-end">
-          <%= f.submit "Adicionar", class: "btn btn-primary w-100" %>
-        </div>
+            <div class="row">
 
+              <div class="col-md-8">
+                <%= f.label :name %>
+                <%= f.text_field :name, class: "form-control" %>
+              </div>
+
+              <div class="col-md-2">
+                <%= f.label :position, "Posição" %>
+                <%= f.select :position, options_for_select(0..(@routine_template.routine_categories.count + 1)), { prompt: "Selecione a posição" }, { class: "form-control" } %>
+              </div>
+
+              <div class="col-md-2 d-flex align-items-end">
+                <%= f.submit "Adicionar", class: "btn btn-primary w-100" %>
+              </div>
+
+            </div>
+
+          <% end %>
+        </div>
       </div>
-
-    <% end %>
+    </div>
   </div>
-</div>
 
   <!-- ========== LISTA DE CATEGORIAS ========== -->
   <% if @routine_template.routine_categories.any? %>
@@ -172,12 +183,12 @@
               <div data-controller="inline-edit">
 
                 <div data-inline-edit-target="display">
-                  <a href="#"
+                  <button type="button"
                     data-action="click->inline-edit#edit"
-                    class="text-decoration-none text-muted">
+                    class="btn btn-link text-decoration-none text-muted p-0">
                     <i class="bi bi-arrows-expand me-1"></i>
                     Posição: <%= category.position %>
-                  </a>
+                  </button>
                 </div>
 
                 <div
@@ -188,9 +199,7 @@
 
                     <div class="input-group input-group-sm">
 
-                      <%= f.number_field :position,
-                            class: "form-control",
-                            min: 1 %>
+                      <%= f.select :position, options_for_select(0..(@routine_template.routine_categories.count)), { prompt: "Selecione a posição" }, { class: "form-control" } %>
 
                       <button class="btn btn-primary">
                         Salvar

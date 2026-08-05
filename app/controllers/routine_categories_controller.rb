@@ -15,9 +15,6 @@ class RoutineCategoriesController < ApplicationController
     @routine_category =
       @template.routine_categories.new(category_params)
 
-    @routine_category.position =
-      @template.routine_categories.count
-
     if @routine_category.save
       redirect_to @template,
                   notice: "Categoria criada."

@@ -188,3 +188,16 @@
 .routine-cell--danger {
   box-shadow: inset 4px 0 0 var(--bs-danger);
 }
+
+.category-form {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition:
+    max-height .45s cubic-bezier(.22,1,.36,1),
+    opacity .35s ease;
+}
+
+.category-form.open {
+  opacity: 1;
+}
