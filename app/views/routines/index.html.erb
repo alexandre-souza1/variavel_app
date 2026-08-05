@@ -1,97 +1,72 @@
-<div class="container py-4">
+<div class="routines-page">
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-
-    <div>
-      <h2 class="fw-bold mb-0">
-        Rotinas
-      </h2>
-
-      <small class="text-muted">
-        Histórico de rotinas geradas.
-      </small>
-    </div>
-        <%= link_to routine_templates_path, class: "btn btn-outline-danger me-2" do %>
-          <i class="fa-solid fa-table"></i> Gerot
+  <!-- ========== CABEÇALHO ========== -->
+  <header class="routines-header">
+    <div class="header-content">
+      <div>
+        <h1>
+          <i class="bi bi-calendar-check"></i>
+          Rotinas
+        </h1>
+        <p class="subtitle">Histórico de rotinas geradas a partir dos templates</p>
+      </div>
+      <div class="header-actions">
+        <%= link_to routine_templates_path, class: "btn-primary-solid" do %>
+          <i class="bi bi-plus-lg"></i> Gerar Nova
         <% end %>
-  </div>
+      </div>
+    </div>
+  </header>
 
+  <!-- ========== LISTAGEM ========== -->
   <% if @routines.any? %>
 
-    <table class="table table-hover">
-
+    <table class="routines-table">
       <thead>
-
         <tr>
           <th>Título</th>
           <th>Período</th>
           <th>Status</th>
-          <th></th>
+          <th class="text-end">Ações</th>
         </tr>
-
       </thead>
-
       <tbody>
-
         <% @routines.each do |routine| %>
-
           <tr>
-
+            <td><%= routine.title %></td>
+            <td><%= l(routine.period_start) %> até <%= l(routine.period_end) %></td>
             <td>
-              <%= routine.title %>
+              <% badge_class = routine.status.in?(['completed', 'active']) ? 'active' : 'inactive' %>
+              <span class="status-badge <%= badge_class %>">
+                <%= routine.status.humanize %>
+              </span>
             </td>
-
             <td>
-              <%= l(routine.period_start) %> até <%= l(routine.period_end) %>
-            </td>
-
-            <td>
-              <%= routine.status.humanize %>
-            </td>
-
-            <td class="text-end">
-
-              <div class="d-flex justify-content-end gap-2">
-
-                <%= link_to "Abrir",
-                            routine,
-                            class: "btn btn-sm btn-primary" %>
-
+              <div class="table-actions">
+                <%= link_to "Abrir", routine, class: "btn-primary-solid btn-sm" %>
                 <%= button_to routine_path(routine),
                               method: :delete,
-                              class: "btn btn-sm btn-outline-danger",
-                              form: {
-                                data: {
-                                  turbo_confirm: "Tem certeza que deseja excluir esta rotina? Os preenchimentos também serão apagados."
-                                }
-                              } do %>
+                              class: "icon-btn danger",
+                              form: { data: { turbo_confirm: "Tem certeza que deseja excluir esta rotina? Os preenchimentos também serão apagados." } } do %>
                   <i class="bi bi-trash3"></i>
                 <% end %>
-
               </div>
-
             </td>
-
           </tr>
-
         <% end %>
-
       </tbody>
-
     </table>
 
   <% else %>
 
-    <div class="text-center py-5">
-
-      <h4>
-        Nenhuma rotina gerada
-      </h4>
-
-      <p class="text-muted">
-        Gere uma rotina a partir de um template.
-      </p>
-
+    <!-- ========== ESTADO VAZIO ========== -->
+    <div class="empty-state">
+      <i class="bi bi-calendar-plus"></i>
+      <h4>Nenhuma rotina gerada</h4>
+      <p>Gere uma rotina a partir de um template disponível.</p>
+      <%= link_to routine_templates_path, class: "btn-primary-solid" do %>
+        <i class="bi bi-plus-lg"></i> Gerar Nova
+      <% end %>
     </div>
 
   <% end %>

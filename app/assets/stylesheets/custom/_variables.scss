@@ -1,0 +1,17 @@
+// ============================================================
+// VARIÁVEIS CUSTOMIZADAS (usadas em todos os componentes)
+// ============================================================
+
+$custom-primary: #4f6ef7 !default;
+$custom-primary-dark: #3a56d4 !default;
+
+// Cores de badges (tema claro/escuro são tratadas com [data-bs-theme])
+$badge-active-bg: #dcfce7;
+$badge-active-color: #166534;
+$badge-inactive-bg: #f1f5f9;
+$badge-inactive-color: #64748b;
+
+$badge-active-dark-bg: #1a3a2a;
+$badge-active-dark-color: #86efac;
+$badge-inactive-dark-bg: #2d3748;
+$badge-inactive-dark-color: #a0aec0;

@@ -1,9 +1,159 @@
+// ============================================================
+// ROTINAS - PÁGINA, TABELA E CÉLULAS
+// ============================================================
+
 @import "../config/bootstrap_variables";
+@import "../custom/variables";
 
 // ============================================================
-// CÉLULA DA ROTINA
+// PÁGINA DE ROTINAS (movido de custom_cards)
 // ============================================================
+.routines-page {
+  padding: 2rem 1.5rem;
+  max-width: 1440px;
+  margin: 0 auto;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--bs-body-color);
+  min-height: 100vh;
+}
 
+.routines-header {
+  margin-bottom: 2.5rem;
+
+  .header-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: -0.01em;
+    color: var(--bs-body-color);
+
+    i {
+      color: var(--bs-primary);
+    }
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+    color: var(--bs-secondary-color);
+    margin: 0.25rem 0 0 0;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+}
+
+.routines-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--bs-body-bg);
+  border-radius: 12px;
+  border: 1px solid var(--bs-border-color);
+  overflow: hidden;
+
+  thead {
+    background: var(--bs-tertiary-bg);
+    border-bottom: 1px solid var(--bs-border-color);
+
+    th {
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--bs-secondary-color);
+      text-align: left;
+    }
+    th.text-end {
+      text-align: right;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid var(--bs-border-color);
+      transition: 0.2s ease;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background: rgba(79, 110, 247, 0.02);
+      }
+
+      td {
+        padding: 0.75rem 1.5rem;
+        vertical-align: middle;
+        color: var(--bs-body-color);
+      }
+    }
+  }
+
+  .table-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-primary-solid.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
+}
+
+// Responsividade da tabela
+@media (max-width: 640px) {
+  .routines-page {
+    padding: 1rem;
+  }
+
+  .routines-header .header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .routines-table {
+    font-size: 0.85rem;
+
+    thead th,
+    tbody td {
+      padding: 0.5rem 0.75rem;
+    }
+
+    .table-actions {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
+    }
+
+    .btn-primary-solid.btn-sm {
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+    }
+  }
+}
+
+// ============================================================
+// CÉLULA DA ROTINA (conteúdo original de routines)
+// ============================================================
 .routine-cell {
   position: relative;
   padding: 0 !important;
@@ -73,7 +223,6 @@
 // ============================================================
 // INPUT
 // ============================================================
-
 .routine-cell__input {
   width: 100%;
   height: 100%;
@@ -97,7 +246,6 @@
 // ============================================================
 // PRESENÇA
 // ============================================================
-
 .routine-cell__presence {
   position: absolute;
 
@@ -134,7 +282,6 @@
 // ============================================================
 // ATIVIDADES
 // ============================================================
-
 .routine-activity {
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--bs-border-color);
@@ -200,4 +347,265 @@
 
 .category-form.open {
   opacity: 1;
+}
+
+// ============================================================
+// TABELA DE ROTINA (estilo melhorado)
+// ============================================================
+
+.routine-table-wrapper {
+  background: var(--bs-body-bg);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  .table-responsive {
+    margin: 0;
+  }
+}
+
+.table-routine {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  thead {
+    background-color: var(--bs-tertiary-bg);
+    border-bottom: 2px solid var(--bs-border-color);
+
+    th {
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--bs-secondary-color);
+      white-space: nowrap;
+
+      &.col-indicator {
+        min-width: 250px;
+        text-align: left;
+      }
+
+      &.col-goal,
+      &.col-result {
+        width: 120px;
+        text-align: center;
+      }
+
+      &.routine-day--sunday {
+        background: rgba(var(--bs-danger-rgb), 0.06);
+        color: var(--bs-danger-text-emphasis);
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid var(--bs-border-color);
+      transition: background-color 0.15s ease;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .indicator-row {
+      &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.02);
+      }
+
+      td {
+        padding: 0.5rem 1rem;
+        vertical-align: middle;
+      }
+
+      .indicator-name {
+        font-size: 0.95rem; // um pouco maior
+        padding: 0.5rem 1rem 0.5rem 1.2rem; // mais espaçamento à esquerda
+
+        strong {
+          color: var(--bs-body-color);
+          font-weight: 600; // já é strong, mas mantemos
+          display: inline-block;
+          margin-bottom: 0.1rem;
+        }
+
+        small {
+          display: block;
+          margin-top: 0.15rem;
+          color: var(--bs-secondary-color);
+          font-size: 0.8rem;
+          line-height: 1.3;
+        }
+      }
+
+      .goal-value,
+      .result-value {
+        font-weight: 500;
+        color: var(--bs-body-color);
+      }
+
+      .empty-cell {
+        color: var(--bs-secondary-color);
+        font-size: 0.85rem;
+        background: var(--bs-tertiary-bg);
+        padding: 0.5rem 0.25rem;
+        text-align: center;
+
+        &.routine-day--sunday {
+          background: rgba(var(--bs-danger-rgb), 0.04);
+        }
+      }
+    }
+  }
+
+  // Células editáveis (routine-cell)
+  .routine-cell {
+    position: relative;
+    padding: 0 !important;
+    min-width: 60px;
+    height: 42px;
+    vertical-align: middle;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover:not(.routine-cell--sunday-locked) {
+      background: rgba(var(--bs-primary-rgb), 0.06);
+    }
+
+    &.routine-cell--sunday {
+      background: rgba(var(--bs-danger-rgb), 0.06);
+      &:hover {
+        background: rgba(var(--bs-danger-rgb), 0.12);
+      }
+    }
+
+    &.routine-cell--sunday-locked {
+      opacity: 0.65;
+      filter: grayscale(0.2);
+      &:hover {
+        outline: 2px dashed rgba(var(--bs-danger-rgb), 0.4);
+        outline-offset: -2px;
+      }
+    }
+
+    .routine-cell__display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      padding: 0.3rem 0.2rem;
+      font-weight: 500;
+      color: var(--bs-body-color);
+    }
+
+    .routine-cell__input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: none;
+      padding: 0 0.35rem;
+      text-align: center;
+      font-size: inherit;
+      background: var(--bs-warning-bg-subtle);
+      &:focus {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+        box-shadow: inset 0 0 0 2px rgba(var(--bs-primary-rgb), 0.35);
+      }
+    }
+
+    .routine-cell__presence {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      z-index: 5;
+      cursor: help;
+      pointer-events: auto;
+    }
+
+    .routine-cell__presence-dot {
+      width: 8px;
+      height: 8px;
+      display: block;
+      border-radius: 50%;
+      background: var(--bs-primary);
+      box-shadow: 0 0 0 2px var(--bs-body-bg);
+      animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+
+    // Estados de salvamento
+    &.routine-cell--saving {
+      background: rgba(var(--bs-warning-rgb), 0.12);
+    }
+    &.routine-cell--saved {
+      background: rgba(var(--bs-success-rgb), 0.18);
+    }
+    &.routine-cell--error {
+      background: rgba(var(--bs-danger-rgb), 0.15);
+      outline: 2px solid var(--bs-danger);
+    }
+    &.routine-cell--success {
+      box-shadow: inset 4px 0 0 var(--bs-success);
+    }
+    &.routine-cell--danger {
+      box-shadow: inset 4px 0 0 var(--bs-danger);
+    }
+  }
+}
+
+// Animação do dot de presença
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.8; }
+}
+
+// Ajuste para telas pequenas
+@media (max-width: 768px) {
+  .table-routine {
+    font-size: 0.8rem;
+
+    thead th {
+      padding: 0.5rem 0.5rem;
+      font-size: 0.7rem;
+    }
+
+    tbody td {
+      padding: 0.3rem 0.5rem;
+    }
+
+    .routine-cell {
+      min-width: 40px;
+      height: 36px;
+    }
+
+    .routine-cell__display {
+      font-size: 0.8rem;
+    }
+
+    .indicator-name strong {
+      font-size: 0.85rem;
+    }
+  }
+}
+
+.table-routine tbody tr.category-row td {
+  background: rgba(var(--bs-primary-rgb, 79, 110, 247), 0.08) !important;
+  border-bottom: 2px solid var(--bs-border-color);
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+  color: var(--bs-body-color);
+  font-size: 0.95rem;
+
+  i {
+    color: var(--bs-primary, #4f6ef7);
+    font-size: 1.1rem;
+  }
 }

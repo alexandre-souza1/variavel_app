@@ -1,166 +1,100 @@
-<div class="table-responsive">
-
-  <table class="table table-bordered align-middle mb-0">
-
-    <thead>
-
-      <tr>
-
-        <th style="min-width:250px;">
-          Indicador
-        </th>
-
-        <th style="width:120px;">
-          Meta
-        </th>
-
-        <th style="width:120px;">
-          Resultado
-        </th>
-
-        <% days.each do |day| %>
-
-          <th class="text-center <%= 'routine-day--sunday' if day.sunday? %>">
-            <div>
-              <%= day.day %>
-            </div>
-
-            <small class="text-muted">
-              <%= routine_weekday_abbr(day) %>
-            </small>
-          </th>
-
-        <% end %>
-
-      </tr>
-
-    </thead>
-
-    <tbody>
-
-      <% categories.each do |category| %>
-
-        <% indicators = indicators_by_category[[frequency, category.id]] %>
-
-        <% next if indicators.blank? %>
-
-        <tr class="table-light">
-
-          <td colspan="<%= days.count + 3 %>">
-
-            <strong>
-              <%= category.name %>
-            </strong>
-
-          </td>
-
+<div class="routine-table-wrapper">
+  <div class="table-responsive">
+    <table class="table table-routine align-middle mb-0">
+      <thead>
+        <tr>
+          <th class="col-indicator">Indicador</th>
+          <th class="col-goal">Meta</th>
+          <th class="col-result">Resultado</th>
+          <% days.each do |day| %>
+            <th class="text-center <%= 'routine-day--sunday' if day.sunday? %>">
+              <div><%= day.day %></div>
+              <small class="text-muted"><%= routine_weekday_abbr(day) %></small>
+            </th>
+          <% end %>
         </tr>
+      </thead>
 
-        <% indicators.each do |indicator| %>
+      <tbody>
+        <% categories.each do |category| %>
+          <% indicators = indicators_by_category[[frequency, category.id]] %>
+          <% next if indicators.blank? %>
 
-          <% calculation = calculation_results[indicator.id] %>
-
-          <tr>
-
-            <td>
-
-              <strong>
-                <%= indicator.name %>
-              </strong>
-
-              <% if indicator.description.present? %>
-
-                <br>
-
-                <small class="text-muted">
-                  <%= indicator.description %>
-                </small>
-
-              <% end %>
-
+          <tr class="category-row" data-category-id="<%= category.id %>">
+            <td colspan="<%= days.count + 3 %>">
+              <i class="bi bi-folder2-open me-2"></i>
+              <strong><%= category.name %></strong>
             </td>
-
-            <td class="text-center">
-
-              <%= routine_value_display(
-                    indicator,
-                    calculation[:goal]
-                  ) %>
-
-            </td>
-
-            <td
-              id="routine-result-<%= indicator.id %>"
-              class="text-center"
-              data-routine-result-indicator-id="<%= indicator.id %>">
-
-              <%= render "routines/result_status",
-                        indicator: indicator,
-                        calculation: calculation %>
-
-            </td>
-
-            <% days.each_with_index do |day, column_index| %>
-
-              <% value = values_index[[indicator.id, day]] %>
-              <% expected = expected_dates_index[indicator][day] %>
-
-              <% if expected && value.present? %>
-
-                <td
-                  class="routine-cell text-center <%= 'routine-cell--sunday routine-cell--sunday-locked' if day.sunday? %>"
-                  data-controller="routine-cell"
-                  data-action="click->routine-cell#edit"
-                  data-routine-cell-id-value="<%= value.id %>"
-                  data-routine-cell-raw-value-value="<%= value.value %>"
-                  data-routine-cell-type-value="<%= indicator.value_type %>"
-                  data-routine-cell-sunday-value="<%= day.sunday? %>"
-                  data-indicator-id="<%= indicator.id %>"
-                  data-row="<%= row_index[indicator.id] %>"
-                  data-column="<%= column_index %>">
-
-                  <span
-                    class="routine-cell__display"
-                    id="routine-value-display-<%= value.id %>"
-                    data-routine-cell-target="display">
-                    <%= routine_value_display(
-                          indicator,
-                          value.value
-                        ) %>
-                  </span>
-
-                  <span
-                    class="routine-cell__presence d-none"
-                    data-routine-presence-badge
-                    aria-hidden="true">
-                  </span>
-
-                  <input
-                    type="text"
-                    class="routine-cell__input d-none"
-                    data-routine-cell-target="input"
-                    autocomplete="off">
-
-                </td>
-
-              <% else %>
-
-                <td class="text-center text-muted bg-light <%= 'routine-day--sunday' if day.sunday? %>">
-                  -
-                </td>
-
-              <% end %>
-
-            <% end %>
-
           </tr>
 
+          <% indicators.each do |indicator| %>
+            <% calculation = calculation_results[indicator.id] %>
+
+            <tr class="indicator-row">
+              <td class="indicator-name">
+                <strong><%= indicator.name %></strong>
+                <% if indicator.description.present? %>
+                  <br>
+                  <small class="text-muted"><%= indicator.description %></small>
+                <% end %>
+              </td>
+
+              <td class="text-center goal-value">
+                <%= routine_value_display(indicator, calculation[:goal]) %>
+              </td>
+
+              <td
+                id="routine-result-<%= indicator.id %>"
+                class="text-center result-value"
+                data-routine-result-indicator-id="<%= indicator.id %>">
+                <%= render "routines/result_status",
+                           indicator: indicator,
+                           calculation: calculation %>
+              </td>
+
+              <% days.each_with_index do |day, column_index| %>
+                <% value = values_index[[indicator.id, day]] %>
+                <% expected = expected_dates_index[indicator][day] %>
+
+                <% if expected && value.present? %>
+                  <td
+                    class="routine-cell text-center <%= 'routine-cell--sunday routine-cell--sunday-locked' if day.sunday? %>"
+                    data-controller="routine-cell"
+                    data-action="click->routine-cell#edit"
+                    data-routine-cell-id-value="<%= value.id %>"
+                    data-routine-cell-raw-value-value="<%= value.value %>"
+                    data-routine-cell-type-value="<%= indicator.value_type %>"
+                    data-routine-cell-sunday-value="<%= day.sunday? %>"
+                    data-indicator-id="<%= indicator.id %>"
+                    data-row="<%= row_index[indicator.id] %>"
+                    data-column="<%= column_index %>">
+                    <span
+                      class="routine-cell__display"
+                      id="routine-value-display-<%= value.id %>"
+                      data-routine-cell-target="display">
+                      <%= routine_value_display(indicator, value.value) %>
+                    </span>
+                    <span
+                      class="routine-cell__presence d-none"
+                      data-routine-presence-badge
+                      aria-hidden="true">
+                    </span>
+                    <input
+                      type="text"
+                      class="routine-cell__input d-none"
+                      data-routine-cell-target="input"
+                      autocomplete="off">
+                  </td>
+                <% else %>
+                  <td class="text-center text-muted empty-cell <%= 'routine-day--sunday' if day.sunday? %>">
+                    —
+                  </td>
+                <% end %>
+              <% end %>
+            </tr>
+          <% end %>
         <% end %>
-
-      <% end %>
-
-    </tbody>
-
-  </table>
-
+      </tbody>
+    </table>
+  </div>
 </div>

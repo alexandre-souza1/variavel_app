@@ -1,65 +1,53 @@
 <div
-  class="container-fluid py-4"
+  class="routine-show-page"
   data-controller="routine-presence"
   data-routine-presence-routine-id-value="<%= @routine.id %>"
   data-routine-presence-current-user-id-value="<%= current_user.id %>">
 
   <%= turbo_stream_from [@routine, :collaboration] %>
 
-  <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
-
-    <div>
-
-      <h2 class="fw-bold">
-        <%= @routine.title %>
-      </h2>
-
-      <p class="text-muted mb-0">
-        <%= l(@routine.period_start) %>
-        até
-        <%= l(@routine.period_end) %>
-      </p>
-
+  <!-- ========== CABEÇALHO ========== -->
+  <header class="routine-show-header">
+    <div class="header-content">
+      <div>
+        <h1>
+          <i class="bi bi-calendar-check"></i>
+          <%= @routine.title %>
+        </h1>
+        <p class="subtitle">
+          <%= l(@routine.period_start) %> até <%= l(@routine.period_end) %>
+        </p>
+      </div>
+      <div class="header-actions">
+        <button
+          type="button"
+          class="btn-outline"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#routineActivitiesOffcanvas"
+          aria-controls="routineActivitiesOffcanvas">
+          <i class="bi bi-clock-history me-1"></i>
+          Atividades
+        </button>
+        <%= button_to routine_path(@routine),
+                      method: :delete,
+                      class: "btn-outline-danger",
+                      form: {
+                        data: {
+                          turbo_confirm: "Tem certeza que deseja excluir esta rotina? Os preenchimentos também serão apagados."
+                        }
+                      } do %>
+          <i class="bi bi-trash3 me-1"></i>
+          Excluir
+        <% end %>
+      </div>
     </div>
+  </header>
 
-    <div class="d-flex gap-2">
-
-      <button
-        type="button"
-        class="btn btn-outline-secondary"
-        data-bs-toggle="offcanvas"
-        data-bs-target="#routineActivitiesOffcanvas"
-        aria-controls="routineActivitiesOffcanvas">
-
-        <i class="bi bi-clock-history me-1"></i>
-        Atividades
-
-      </button>
-
-      <%= button_to routine_path(@routine),
-                    method: :delete,
-                    class: "btn btn-outline-danger",
-                    form: {
-                      data: {
-                        turbo_confirm: "Tem certeza que deseja excluir esta rotina? Os preenchimentos também serão apagados."
-                      }
-                    } do %>
-        <i class="bi bi-trash3 me-1"></i>
-        Excluir
-      <% end %>
-
-    </div>
-
-  </div>
-
-  <div
-    class="accordion"
-    id="routineFrequencyAccordion">
-
+  <!-- ========== ACORDEÃO DE FREQUÊNCIAS ========== -->
+  <div class="accordion" id="routineFrequencyAccordion">
     <% opened_section = false %>
 
     <% @frequency_sections.each do |frequency, title| %>
-
       <% indicator_count = @categories.sum do |category|
            @indicators_by_frequency_and_category[
              [frequency, category.id]
@@ -73,11 +61,7 @@
       <% section_id = "routine-frequency-#{frequency}" %>
 
       <div class="accordion-item">
-
-        <h2
-          class="accordion-header"
-          id="<%= section_id %>-heading">
-
+        <h2 class="accordion-header" id="<%= section_id %>-heading">
           <button
             class="accordion-button <%= 'collapsed' unless section_open %>"
             type="button"
@@ -85,27 +69,16 @@
             data-bs-target="#<%= section_id %>-body"
             aria-expanded="<%= section_open %>"
             aria-controls="<%= section_id %>-body">
-
-            <span class="fw-semibold">
-              <%= title %>
-            </span>
-
-            <span class="badge text-bg-secondary ms-2">
-              <%= indicator_count %>
-            </span>
-
+            <span class="fw-semibold"><%= title %></span>
+            <span class="badge text-bg-secondary ms-2"><%= indicator_count %></span>
           </button>
-
         </h2>
-
         <div
           id="<%= section_id %>-body"
           class="accordion-collapse collapse <%= 'show' if section_open %>"
           aria-labelledby="<%= section_id %>-heading"
           data-bs-parent="#routineFrequencyAccordion">
-
           <div class="accordion-body p-0">
-
             <%= render "frequency_table",
                        frequency: frequency,
                        days: @days,
@@ -116,73 +89,45 @@
                        expected_dates_index: @expected_dates_index,
                        row_index: @row_index,
                        calculation_results: @calculation_results %>
-
           </div>
-
         </div>
-
       </div>
-
     <% end %>
-
   </div>
 
-</div>
+  <!-- ========== OFFCANVAS DE ATIVIDADES ========== -->
+  <div
+    class="offcanvas offcanvas-end"
+    tabindex="-1"
+    id="routineActivitiesOffcanvas"
+    aria-labelledby="routineActivitiesOffcanvasLabel">
 
-<div
-  class="offcanvas offcanvas-end"
-  tabindex="-1"
-  id="routineActivitiesOffcanvas"
-  aria-labelledby="routineActivitiesOffcanvasLabel">
-
-  <div class="offcanvas-header border-bottom">
-
-    <div>
-
-      <h5
-        class="offcanvas-title"
-        id="routineActivitiesOffcanvasLabel">
-        Atividades
-      </h5>
-
-      <div class="small text-muted">
-        <%= @routine.title %>
+    <div class="offcanvas-header border-bottom">
+      <div>
+        <h5 class="offcanvas-title" id="routineActivitiesOffcanvasLabel">
+          Atividades
+        </h5>
+        <div class="small text-muted"><%= @routine.title %></div>
       </div>
-
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="offcanvas"
+        aria-label="Fechar">
+      </button>
     </div>
 
-    <button
-      type="button"
-      class="btn-close"
-      data-bs-dismiss="offcanvas"
-      aria-label="Fechar">
-    </button>
-
-  </div>
-
-  <div class="offcanvas-body">
-
-    <%= turbo_frame_tag "routine_activities_frame",
-                        src: routine_activities_path(@routine) do %>
-
-      <div class="text-center py-5 text-muted">
-
-        <div
-          class="spinner-border spinner-border-sm"
-          role="status">
-          <span class="visually-hidden">
-            Carregando...
-          </span>
+    <div class="offcanvas-body">
+      <%= turbo_frame_tag "routine_activities_frame",
+                          src: routine_activities_path(@routine) do %>
+        <div class="text-center py-5 text-muted">
+          <div class="spinner-border spinner-border-sm" role="status">
+            <span class="visually-hidden">Carregando...</span>
+          </div>
+          <p class="mt-3 mb-0">Carregando atividades...</p>
         </div>
-
-        <p class="mt-3 mb-0">
-          Carregando atividades...
-        </p>
-
-      </div>
-
-    <% end %>
-
+      <% end %>
+    </div>
   </div>
 
 </div>

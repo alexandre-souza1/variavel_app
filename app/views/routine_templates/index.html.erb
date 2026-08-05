@@ -1,113 +1,90 @@
-<div class="container py-4">
+<div class="templates-page">
 
-  <!-- Cabeçalho com busca -->
-  <div class="d-flex flex-wrap flex-md-nowrap justify-content-between align-items-center mb-4 gap-3">
-    <div>
-      <h2 class="fw-bold mb-0 d-flex align-items-center gap-2">
-        <i class="bi bi-layout-text-window"></i>
-        Templates de Rotina
-      </h2>
-      <small class="text-muted">
-        Modelos utilizados para gerar as rotinas diárias
-      </small>
+  <!-- ========== CABEÇALHO ========== -->
+  <header class="templates-header">
+    <div class="header-content">
+      <div>
+        <h1>
+          <i class="bi bi-layout-text-window"></i>
+          Templates de Rotina
+        </h1>
+        <p class="subtitle">Modelos utilizados para gerar as rotinas diárias</p>
+      </div>
+      <div class="header-actions">
+        <%= form_tag routine_templates_path, method: :get, class: "search-form" do %>
+          <%= text_field_tag :search, params[:search], placeholder: "Filtrar templates...", class: "search-input" %>
+          <%= submit_tag "Buscar", name: nil, class: "btn-search" %>
+        <% end %>
+        <%= link_to new_routine_template_path, class: "btn-primary-solid" do %>
+          <i class="bi bi-plus-lg"></i> Novo Template
+        <% end %>
+      </div>
     </div>
+  </header>
 
-    <div class="d-flex gap-2 flex-wrap">
-      <!-- Busca simples (opcional) -->
-      <%= form_tag routine_templates_path, method: :get, class: "d-flex" do %>
-        <%= text_field_tag :search, params[:search], placeholder: "Filtrar templates...", class: "form-control form-control-sm" %>
-        <%= submit_tag "Buscar", name: nil, class: "btn btn-outline-secondary btn-sm ms-1" %>
-      <% end %>
-
-      <%= link_to new_routine_template_path, class: "btn btn-primary btn-sm d-flex align-items-center gap-1" do %>
-        <i class="bi bi-plus-lg"></i> Novo Template
-      <% end %>
-    </div>
-  </div>
-
+  <!-- ========== GRADE DE TEMPLATES ========== -->
   <% if @routine_templates.any? %>
 
-    <div class="row g-4">
-
+    <div class="templates-grid">
       <% @routine_templates.each do |template| %>
 
-        <div class="col-md-6 col-xl-4">
-
-          <!-- Card inteiro clicável -->
-          <%= link_to template, class: "text-decoration-none text-reset" do %>
-            <div class="card shadow-sm h-100 border-0 transition-hover">
-
-              <div class="card-body d-flex flex-column">
-
-                <!-- Linha superior: ícone + status -->
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                  <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-file-earmark-richtext fs-4 text-primary"></i>
-                    <h5 class="card-title fw-semibold mb-0">
-                      <%= template.name %>
-                    </h5>
-                  </div>
-                  <!-- Badge de status (exemplo) -->
-                  <span class="badge <%= template.active? ? 'bg-success' : 'bg-secondary' %>">
-                    <%= template.active? ? 'Ativo' : 'Inativo' %>
-                  </span>
+        <div class="template-card">
+          <%= link_to template, class: "card-link" do %>
+            <div class="card-body">
+              <!-- Cabeçalho do card -->
+              <div class="card-header-row">
+                <div class="card-title-group">
+                  <i class="bi bi-file-earmark-richtext"></i>
+                  <h3><%= template.name %></h3>
                 </div>
-
-                <!-- Descrição -->
-                <p class="text-muted small mb-3 flex-grow-1">
-                  <%= template.description.presence || 'Sem descrição' %>
-                </p>
-
-                <!-- Metadados -->
-                <div class="d-flex flex-wrap justify-content-between align-items-center mt-auto pt-2 border-top">
-                  <div class="d-flex gap-3 small text-muted">
-                    <span>
-                      <i class="bi bi-calendar3 me-1"></i>
-                      <%= l(template.created_at.to_date, format: :short) %>
-                    </span>
-                    <span>
-                      <i class="bi bi-list-task me-1"></i>
-                      <%= template.routines.count %> rotinas
-                    </span>
-                  </div>
-                  <!-- Ações rápidas (não clicáveis, pois o card já leva ao show) -->
-                  <div class="btn-group gap-2" role="group">
-                    <%= link_to edit_routine_template_path(template), class: "btn btn-outline-secondary rounded", data: { turbo_frame: "_top" } do %>
-                      <i class="bi bi-pencil"></i>
-                    <% end %>
-                    <%= button_to routine_template_path(template), method: :delete, class: "btn btn-outline-danger", form: { data: { turbo_confirm: "Tem certeza?" } } do %>
-                      <i class="bi bi-trash3"></i>
-                    <% end %>
-                  </div>
-                </div>
-
+                <span class="status-badge <%= template.active? ? 'active' : 'inactive' %>">
+                  <%= template.active? ? 'Ativo' : 'Inativo' %>
+                </span>
               </div>
 
+              <!-- Descrição -->
+              <p class="card-description">
+                <%= template.description.presence || 'Sem descrição' %>
+              </p>
+
+              <!-- Rodapé do card -->
+              <div class="card-footer-row">
+                <div class="meta-info">
+                  <span><i class="bi bi-calendar3"></i> <%= l(template.created_at.to_date, format: :short) %></span>
+                  <span><i class="bi bi-list-task"></i> <%= template.routines.count %> rotinas</span>
+                </div>
+                <div class="card-actions" onclick="event.stopPropagation();">
+                  <%= link_to edit_routine_template_path(template), class: "icon-btn", title: "Editar" do %>
+                    <i class="bi bi-pencil"></i>
+                  <% end %>
+                  <%= button_to routine_template_path(template), method: :delete, class: "icon-btn danger", form: { data: { turbo_confirm: "Tem certeza?" } }, title: "Excluir" do %>
+                    <i class="bi bi-trash3"></i>
+                  <% end %>
+                </div>
+              </div>
             </div>
           <% end %>
-
         </div>
 
       <% end %>
-
     </div>
 
     <!-- Paginação (caso exista) -->
-    <div class="mt-4">
-      <%= paginate @routine_templates if @routine_templates.respond_to?(:total_pages) %>
-    </div>
+    <% if @routine_templates.respond_to?(:total_pages) && @routine_templates.total_pages > 1 %>
+      <div class="pagination-wrapper">
+        <%= paginate @routine_templates %>
+      </div>
+    <% end %>
 
   <% else %>
 
-    <!-- Empty state melhorado -->
-    <div class="text-center py-5 my-5">
-      <i class="bi bi-file-earmark-plus display-1 text-muted"></i>
-      <h4 class="fw-light mt-3">Nenhum template cadastrado</h4>
-      <p class="text-muted mb-4">
-        Crie seu primeiro modelo de rotina e comece a organizar seus processos.
-      </p>
-      <%= link_to new_routine_template_path, class: "btn btn-primary btn-lg" do %>
-        <i class="bi bi-plus-circle me-1"></i> Criar Template
+    <!-- Estado vazio -->
+    <div class="empty-state">
+      <i class="bi bi-file-earmark-plus"></i>
+      <h4>Nenhum template cadastrado</h4>
+      <p>Crie seu primeiro modelo de rotina e comece a organizar seus processos.</p>
+      <%= link_to new_routine_template_path, class: "btn-primary-solid" do %>
+        <i class="bi bi-plus-circle"></i> Criar Template
       <% end %>
     </div>
 
