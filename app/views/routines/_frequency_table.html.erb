@@ -33,10 +33,9 @@
             <tr class="indicator-row">
               <td class="indicator-name">
                 <strong><%= indicator.name %></strong>
-                <% if indicator.description.present? %>
-                  <br>
-                  <small class="text-muted"><%= indicator.description %></small>
-                <% end %>
+                <small class="text-muted">
+                  <%= indicator.description.presence || "\u00A0" %>
+                </small>
               </td>
 
               <td class="text-center goal-value">
