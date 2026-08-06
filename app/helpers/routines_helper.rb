@@ -26,7 +26,7 @@ module RoutinesHelper
       )}%"
 
     when "currency"
-      number_to_currency(value.to_d)
+      format_brl_currency(value)
 
     when "boolean"
       value.to_s.in?(%w[true 1]) ? "Sim" : "Não"
@@ -78,6 +78,16 @@ module RoutinesHelper
     l(date)
   rescue Date::Error, ArgumentError
     value.to_s
+  end
+
+  def format_brl_currency(value)
+    number_to_currency(
+      value.to_d,
+      unit: "R$ ",
+      delimiter: ".",
+      separator: ",",
+      precision: 2
+    )
   end
 
   def routine_comparable_value(indicator, value)

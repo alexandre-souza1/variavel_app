@@ -104,6 +104,15 @@ pt:
         one: "mais de 1 ano"
         other: "mais de %{count} anos"
 
+  number:
+    currency:
+      format:
+        unit: "R$ "
+        delimiter: "."
+        separator: ","
+        precision: 2
+        format: "%u%n"
+
   simple_calendar:
     previous: "Anterior"
     next: "Próximo"
