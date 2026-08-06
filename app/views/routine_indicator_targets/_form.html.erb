@@ -29,9 +29,44 @@
 
     <%= f.label :goal, "Meta", class: "form-label" %>
 
-    <%= f.number_field :goal,
-                       step: "0.0001",
-                       class: "form-control" %>
+    <% if @indicator.integer? %>
+
+      <%= f.number_field :goal,
+                        step: 1,
+                        class: "form-control" %>
+
+    <% elsif @indicator.decimal? ||
+            @indicator.percentage? ||
+            @indicator.currency? %>
+
+      <%= f.text_field :goal,
+                      class: "form-control",
+                      inputmode: "decimal" %>
+
+    <% elsif @indicator.date? %>
+
+      <%= f.date_field :goal,
+                      class: "form-control" %>
+
+    <% elsif @indicator.time? %>
+
+      <%= f.time_field :goal,
+                      class: "form-control",
+                      step: 60 %>
+
+    <% elsif @indicator.boolean? %>
+
+      <%= f.select :goal,
+                  [["Sim", "true"], ["Não", "false"]],
+                  {},
+                  class: "form-select" %>
+
+    <% else %>
+
+      <%= f.text_field :goal,
+                      class: "form-control" %>
+
+    <% end %>
 
   </div>
 

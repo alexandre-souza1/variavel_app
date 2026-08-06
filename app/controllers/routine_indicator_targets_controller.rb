@@ -23,7 +23,9 @@ class RoutineIndicatorTargetsController < ApplicationController
 
   def create
     @routine_indicator_target =
-      @indicator.routine_indicator_targets.new(target_params)
+      @indicator.routine_indicator_targets.new(
+        normalized_target_params
+      )
 
     if @routine_indicator_target.save
       redirect_to targets_path,
@@ -37,7 +39,7 @@ class RoutineIndicatorTargetsController < ApplicationController
   end
 
   def update
-    if @routine_indicator_target.update(target_params)
+    if @routine_indicator_target.update(normalized_target_params)
       redirect_to targets_path,
                   notice: "Meta atualizada com sucesso."
     else
@@ -84,6 +86,28 @@ class RoutineIndicatorTargetsController < ApplicationController
       :goal,
       :starts_at,
       :ends_at
+    )
+  end
+
+  def normalized_target_params
+    permitted_params = target_params
+    goal = permitted_params[:goal]&.strip
+
+    permitted_params[:goal] =
+      if goal.blank?
+        nil
+      elsif numeric_indicator?
+        goal.tr(",", ".")
+      else
+        goal
+      end
+
+    permitted_params
+  end
+
+  def numeric_indicator?
+    @indicator.value_type.in?(
+      %w[integer decimal percentage currency]
     )
   end
 

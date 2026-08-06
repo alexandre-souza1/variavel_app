@@ -28,15 +28,18 @@ export default class extends Controller {
       return
     }
 
+    this.configureInput()
+
     this.inputTarget.value = this.rawValueValue || ""
 
     this.displayTarget.classList.add("d-none")
     this.inputTarget.classList.remove("d-none")
 
-    this.configureInput()
-
     this.inputTarget.focus()
-    this.inputTarget.select()
+
+    if (!["date", "time"].includes(this.typeValue)) {
+      this.inputTarget.select()
+    }
 
     this.notifyEditingStart()
   }
@@ -169,27 +172,37 @@ export default class extends Controller {
   }
 
   configureInput() {
-
     this.inputTarget.removeAttribute("inputmode")
     this.inputTarget.removeAttribute("step")
 
     switch (this.typeValue) {
 
       case "integer":
+        this.inputTarget.type = "text"
         this.inputTarget.inputMode = "numeric"
         break
 
       case "decimal":
       case "percentage":
       case "currency":
+        this.inputTarget.type = "text"
         this.inputTarget.inputMode = "decimal"
         break
 
+      case "date":
+        this.inputTarget.type = "date"
+        break
+
+      case "time":
+        this.inputTarget.type = "text"
+        this.inputTarget.placeholder = "mm:ss"
+        break
+
       default:
+        this.inputTarget.type = "text"
         this.inputTarget.inputMode = "text"
 
     }
-
   }
 
   focusCell(rowOffset, columnOffset) {
@@ -221,6 +234,11 @@ export default class extends Controller {
       case "percentage":
       case "currency":
         return /^-?\d+([.,]\d+)?$/.test(value)
+      case "date":
+        return /^\d{4}-\d{2}-\d{2}$/.test(value)
+
+      case "time":
+        return /^([01]\d|2[0-3]):[0-5]\d$/.test(value)
 
       default:
         return true

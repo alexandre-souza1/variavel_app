@@ -90,8 +90,28 @@ class RoutineValuesController < ApplicationController
   end
 
   def normalized_routine_value_params
-    routine_value_params.tap do |permitted_params|
-      permitted_params[:value] = nil if permitted_params[:value].blank?
-    end
+    permitted_params = routine_value_params
+    value = permitted_params[:value]&.strip
+
+    permitted_params[:value] =
+      if value.blank?
+        nil
+      elsif numeric_indicator?
+        normalize_numeric_value(value)
+      else
+        value
+      end
+
+    permitted_params
+  end
+
+  def numeric_indicator?
+    @routine_value.routine_indicator.value_type.in?(
+      %w[integer decimal percentage currency]
+    )
+  end
+
+  def normalize_numeric_value(value)
+    value.tr(",", ".")
   end
 end

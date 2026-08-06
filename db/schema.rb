@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_31_161200) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_06_155726) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -425,8 +425,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_31_161200) do
     t.bigint "user_id", null: false
     t.bigint "routine_value_id"
     t.integer "activity_type", default: 0, null: false
-    t.decimal "previous_value", precision: 15, scale: 4
-    t.decimal "new_value", precision: 15, scale: 4
+    t.string "previous_value"
+    t.string "new_value"
     t.jsonb "metadata", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -461,7 +461,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_31_161200) do
 
   create_table "routine_indicator_targets", force: :cascade do |t|
     t.bigint "routine_indicator_id", null: false
-    t.decimal "goal", precision: 15, scale: 4, null: false
+    t.string "goal", null: false
     t.date "starts_at", null: false
     t.date "ends_at"
     t.datetime "created_at", null: false
@@ -500,7 +500,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_31_161200) do
     t.bigint "routine_id", null: false
     t.bigint "routine_indicator_id", null: false
     t.date "reference_date", null: false
-    t.decimal "value", precision: 15, scale: 4
+    t.string "value"
     t.bigint "updated_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
