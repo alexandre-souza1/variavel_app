@@ -58,8 +58,10 @@
 
                 <% if expected && value.present? %>
                   <% comment_count = value.routine_comments.size %>
+                  <% target = indicator.target_for(day)&.goal %>
+                  <% cell_status = routine_cell_status(indicator, value.value, target) %>
                   <td
-                    class="routine-cell text-center <%= 'routine-cell--has-comments' if comment_count.positive? %> <%= 'routine-cell--sunday routine-cell--sunday-locked' if day.sunday? %>"
+                    class="routine-cell text-center <%= "routine-cell--#{cell_status}" if cell_status.present? %> <%= 'routine-cell--has-comments' if comment_count.positive? %> <%= 'routine-cell--sunday routine-cell--sunday-locked' if day.sunday? %>"
                     data-controller="routine-cell"
                     data-action="click->routine-cell#edit"
                     data-routine-cell-id-value="<%= value.id %>"

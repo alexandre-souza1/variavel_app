@@ -125,11 +125,11 @@ export default class extends Controller {
       "routine-cell--danger"
     )
 
-    if (data.status === "success") {
+    if (data.cell_status === "success") {
       this.element.classList.add("routine-cell--success")
     }
 
-    if (data.status === "danger") {
+    if (data.cell_status === "danger") {
       this.element.classList.add("routine-cell--danger")
     }
   }
@@ -396,6 +396,8 @@ export default class extends Controller {
       data.value === null ? "" : String(data.value)
 
     this.displayTarget.textContent = data.formatted_value
+
+    this.updateCellStatus(data)
 
     this.finishEdition()
 

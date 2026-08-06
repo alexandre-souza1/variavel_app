@@ -35,6 +35,12 @@ class RoutineValuesController < ApplicationController
         indicator: @routine_value.routine_indicator
       )
 
+    target =
+      @routine_value
+        .routine_indicator
+        .target_for(@routine_value.reference_date)
+        &.goal
+
     render json: {
       value: @routine_value.value,
 
@@ -61,6 +67,13 @@ class RoutineValuesController < ApplicationController
 
       status:
         calculation[:status],
+
+      cell_status:
+        helpers.routine_cell_status(
+          @routine_value.routine_indicator,
+          @routine_value.value,
+          target
+        ),
 
       filled_days:
         calculation[:filled_days],
