@@ -24,7 +24,8 @@ class RoutineIndicator < ApplicationRecord
     boolean: 4,
     text: 5,
     date: 6,
-    time: 7
+    time: 7,
+    duration: 8
   }
 
   enum :goal_direction, {
@@ -95,7 +96,8 @@ class RoutineIndicator < ApplicationRecord
       "boolean" => "Sim/Não",
       "text" => "Texto",
       "date" => "Data",
-      "time" => "Hora"
+      "time" => "Hora",
+      "duration" => "Duração"
     }[value_type]
   end
 
@@ -133,7 +135,8 @@ class RoutineIndicator < ApplicationRecord
     "boolean"   => "Sim/Não",
     "text"      => "Texto",
     "date"      => "Data",
-    "time"      => "Hora"
+    "time"      => "Hora",
+    "duration"  => "Duração"
   }.freeze
 
   CALCULATION_TYPE_LABELS = {

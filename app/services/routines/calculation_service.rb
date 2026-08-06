@@ -7,6 +7,8 @@ module Routines
       currency
     ].freeze
 
+    DURATION_VALUE_TYPE = "duration".freeze
+
     def self.call(...)
       new(...).call
     end
@@ -103,6 +105,7 @@ module Routines
     end
 
     def average_value
+      return average_duration if duration_indicator?
       return unless numeric_indicator?
 
       numbers = numeric_values
@@ -112,6 +115,7 @@ module Routines
     end
 
     def sum_value
+      return sum_duration if duration_indicator?
       return unless numeric_indicator?
 
       numbers = numeric_values
@@ -168,6 +172,10 @@ module Routines
 
     def numeric_indicator?
       indicator.value_type.in?(NUMERIC_VALUE_TYPES)
+    end
+
+    def duration_indicator?
+      indicator.value_type == DURATION_VALUE_TYPE
     end
 
     def goal
@@ -259,6 +267,9 @@ module Routines
       when "time"
         time_in_minutes(value)
 
+      when "duration"
+        duration_in_seconds(value)
+
       when "boolean"
         boolean_as_number(value)
 
@@ -291,6 +302,46 @@ module Routines
       minute = match[:minute].to_i
 
       (hour * 60) + minute
+    end
+
+    def average_duration
+      seconds = duration_values
+      return if seconds.empty?
+
+      average_seconds = (seconds.sum.to_f / seconds.length).round
+
+      format_duration_seconds(average_seconds)
+    end
+
+    def sum_duration
+      seconds = duration_values
+      return if seconds.empty?
+
+      format_duration_seconds(seconds.sum)
+    end
+
+    def duration_values
+      values.filter_map do |routine_value|
+        duration_in_seconds(routine_value.value)
+      end
+    end
+
+    def duration_in_seconds(value)
+      match = value.to_s.tr(".", ":").match(
+        /\A(?<minute>\d+):(?<second>[0-5]\d)\z/
+      )
+
+      return unless match
+
+      (match[:minute].to_i * 60) + match[:second].to_i
+    end
+
+    def format_duration_seconds(total_seconds)
+      total_seconds = total_seconds.to_i
+      minutes = total_seconds / 60
+      seconds = total_seconds % 60
+
+      format("%<minutes>d:%<seconds>02d", minutes: minutes, seconds: seconds)
     end
 
     def boolean_as_number(value)

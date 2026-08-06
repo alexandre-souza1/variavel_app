@@ -98,6 +98,8 @@ class RoutineValuesController < ApplicationController
         nil
       elsif numeric_indicator?
         normalize_numeric_value(value)
+      elsif duration_indicator?
+        normalize_duration_value(value)
       else
         value
       end
@@ -111,7 +113,15 @@ class RoutineValuesController < ApplicationController
     )
   end
 
+  def duration_indicator?
+    @routine_value.routine_indicator.duration?
+  end
+
   def normalize_numeric_value(value)
     value.tr(",", ".")
+  end
+
+  def normalize_duration_value(value)
+    value.tr(".", ":")
   end
 end

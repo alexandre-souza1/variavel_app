@@ -54,6 +54,13 @@
                       class: "form-control",
                       step: 60 %>
 
+    <% elsif @indicator.duration? %>
+
+      <%= f.text_field :goal,
+                      class: "form-control",
+                      inputmode: "numeric",
+                      placeholder: "mm:ss" %>
+
     <% elsif @indicator.boolean? %>
 
       <%= f.select :goal,

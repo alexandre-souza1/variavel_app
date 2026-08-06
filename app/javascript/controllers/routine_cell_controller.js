@@ -195,6 +195,12 @@ export default class extends Controller {
 
       case "time":
         this.inputTarget.type = "text"
+        this.inputTarget.placeholder = "hh:mm"
+        break
+
+      case "duration":
+        this.inputTarget.type = "text"
+        this.inputTarget.inputMode = "numeric"
         this.inputTarget.placeholder = "mm:ss"
         break
 
@@ -239,6 +245,9 @@ export default class extends Controller {
 
       case "time":
         return /^([01]\d|2[0-3]):[0-5]\d$/.test(value)
+
+      case "duration":
+        return /^\d+[:.][0-5]\d$/.test(value)
 
       default:
         return true

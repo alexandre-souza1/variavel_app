@@ -98,6 +98,8 @@ class RoutineIndicatorTargetsController < ApplicationController
         nil
       elsif numeric_indicator?
         goal.tr(",", ".")
+      elsif duration_indicator?
+        goal.tr(".", ":")
       else
         goal
       end
@@ -109,6 +111,10 @@ class RoutineIndicatorTargetsController < ApplicationController
     @indicator.value_type.in?(
       %w[integer decimal percentage currency]
     )
+  end
+
+  def duration_indicator?
+    @indicator.duration?
   end
 
   def targets_path

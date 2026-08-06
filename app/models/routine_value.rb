@@ -49,6 +49,9 @@ class RoutineValue < ApplicationRecord
     when "time"
       errors.add(:value, "deve ser um horário válido") unless time_value?
 
+    when "duration"
+      errors.add(:value, "deve ser uma duração válida") unless duration_value?
+
     when "boolean"
       errors.add(:value, "deve ser Sim ou Não") unless boolean_value?
     end
@@ -71,6 +74,10 @@ class RoutineValue < ApplicationRecord
 
   def time_value?
     value.match?(/\A(?:[01]\d|2[0-3]):[0-5]\d\z/)
+  end
+
+  def duration_value?
+    value.match?(/\A\d+:[0-5]\d\z/)
   end
 
   def boolean_value?

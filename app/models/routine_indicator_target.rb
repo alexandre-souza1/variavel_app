@@ -31,6 +31,11 @@ class RoutineIndicatorTarget < ApplicationRecord
         errors.add(:goal, "deve ser um horário válido")
       end
 
+    when "duration"
+      unless goal.match?(/\A\d+:[0-5]\d\z/)
+        errors.add(:goal, "deve ser uma duração válida")
+      end
+
     when "boolean"
       unless goal.in?(%w[true false 1 0])
         errors.add(:goal, "deve ser Sim ou Não")

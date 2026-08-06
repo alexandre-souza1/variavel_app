@@ -37,6 +37,9 @@ module RoutinesHelper
     when "time"
       value.to_s[0, 5]
 
+    when "duration"
+      value.to_s.tr(".", ":")
+
     else
       value.to_s
     end
@@ -88,6 +91,18 @@ module RoutinesHelper
     when "time"
       hour, minute = value.to_s.split(":").map(&:to_i)
       (hour * 60) + minute
+
+    when "duration"
+      match = value.to_s.tr(".", ":").match(
+        /\A(?<minutes>\d+):(?<seconds>[0-5]\d)\z/
+      )
+
+      return unless match
+
+      minutes = match[:minutes].to_i
+      seconds = match[:seconds].to_i
+
+      (minutes * 60) + seconds
 
     when "boolean"
       value.to_s.in?(%w[true 1]) ? 1 : 0
