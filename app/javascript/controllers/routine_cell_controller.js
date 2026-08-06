@@ -4,14 +4,18 @@ export default class extends Controller {
 
   static targets = [
     "display",
-    "input"
+    "input",
+    "commentButton",
+    "commentCount"
   ]
 
   static values = {
     id: Number,
     rawValue: String,
     type: String,
-    sunday: Boolean
+    sunday: Boolean,
+    indicatorName: String,
+    referenceDate: String
   }
 
   connect() {
@@ -20,6 +24,19 @@ export default class extends Controller {
 
     this.inputTarget.addEventListener("keydown", this.keydown.bind(this))
     this.inputTarget.addEventListener("blur", this.blur.bind(this))
+
+    this.commentCountUpdated = this.commentCountUpdated.bind(this)
+    document.addEventListener(
+      "routine-comments:count-updated",
+      this.commentCountUpdated
+    )
+  }
+
+  disconnect() {
+    document.removeEventListener(
+      "routine-comments:count-updated",
+      this.commentCountUpdated
+    )
   }
 
   edit() {
@@ -42,6 +59,45 @@ export default class extends Controller {
     }
 
     this.notifyEditingStart()
+  }
+
+  openComments(event) {
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (!this.inputTarget.classList.contains("d-none")) {
+      this.cancel()
+    }
+
+    document.dispatchEvent(
+      new CustomEvent(
+        "routine-comments:open",
+        {
+          detail: {
+            routineValueId: this.idValue,
+            indicatorName: this.indicatorNameValue,
+            referenceDate: this.referenceDateValue,
+            value: this.displayTarget.textContent.trim()
+          }
+        }
+      )
+    )
+  }
+
+  commentCountUpdated(event) {
+    if (Number(event.detail.routineValueId) !== this.idValue) return
+
+    const count = Number(event.detail.count)
+
+    if (this.hasCommentCountTarget) {
+      this.commentCountTarget.textContent = count
+      this.commentCountTarget.classList.toggle("d-none", count === 0)
+    }
+
+    this.element.classList.toggle(
+      "routine-cell--has-comments",
+      count > 0
+    )
   }
 
   unlockSunday() {

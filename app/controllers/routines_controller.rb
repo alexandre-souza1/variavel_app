@@ -39,6 +39,7 @@ class RoutinesController < ApplicationController
 
     routine_values = @routine
                       .routine_values
+                      .includes(routine_comments: :user)
                       .where(routine_indicator_id: @indicators.map(&:id))
                       .to_a
 

@@ -89,7 +89,10 @@ Rails.application.routes.draw do
               only: :index,
               controller: :routine_activities
   end
-  resources :routine_values, only: :update
+  resources :routine_values, only: :update do
+    resources :routine_comments,
+              only: %i[index create destroy]
+  end
 
   resources :autonomies do
     collection do

@@ -57,14 +57,17 @@
                 <% expected = expected_dates_index[indicator][day] %>
 
                 <% if expected && value.present? %>
+                  <% comment_count = value.routine_comments.size %>
                   <td
-                    class="routine-cell text-center <%= 'routine-cell--sunday routine-cell--sunday-locked' if day.sunday? %>"
+                    class="routine-cell text-center <%= 'routine-cell--has-comments' if comment_count.positive? %> <%= 'routine-cell--sunday routine-cell--sunday-locked' if day.sunday? %>"
                     data-controller="routine-cell"
                     data-action="click->routine-cell#edit"
                     data-routine-cell-id-value="<%= value.id %>"
                     data-routine-cell-raw-value-value="<%= value.value %>"
                     data-routine-cell-type-value="<%= indicator.value_type %>"
                     data-routine-cell-sunday-value="<%= day.sunday? %>"
+                    data-routine-cell-indicator-name-value="<%= indicator.name %>"
+                    data-routine-cell-reference-date-value="<%= l(day) %>"
                     data-indicator-id="<%= indicator.id %>"
                     data-row="<%= row_index[indicator.id] %>"
                     data-column="<%= column_index %>">
@@ -79,6 +82,20 @@
                       data-routine-presence-badge
                       aria-hidden="true">
                     </span>
+                    <button
+                      type="button"
+                      class="routine-cell__comment-button"
+                      title="Comentários"
+                      aria-label="Comentários da célula"
+                      data-routine-cell-target="commentButton"
+                      data-action="click->routine-cell#openComments">
+                      <i class="bi bi-chat-left-text-fill"></i>
+                      <span
+                        class="routine-cell__comment-count <%= 'd-none' unless comment_count.positive? %>"
+                        data-routine-cell-target="commentCount">
+                        <%= comment_count %>
+                      </span>
+                    </button>
                     <input
                       type="text"
                       class="routine-cell__input d-none"

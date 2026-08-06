@@ -1,0 +1,63 @@
+<div
+  class="modal fade routine-comments-modal"
+  id="routineCommentsModal"
+  tabindex="-1"
+  aria-labelledby="routineCommentsModalLabel"
+  aria-hidden="true"
+  data-controller="routine-comments">
+
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="routineCommentsModalLabel">
+            Comentários
+          </h5>
+          <div
+            class="small text-muted"
+            data-routine-comments-target="subtitle">
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Fechar">
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div
+          class="routine-comments-list"
+          data-routine-comments-target="list">
+        </div>
+
+        <div
+          class="text-muted small py-3 d-none"
+          data-routine-comments-target="empty">
+          Nenhum comentário nesta célula.
+        </div>
+      </div>
+
+      <form
+        class="modal-footer routine-comments-form"
+        data-action="submit->routine-comments#create">
+
+        <textarea
+          class="form-control"
+          rows="3"
+          placeholder="Adicionar comentário"
+          data-routine-comments-target="body"
+          required></textarea>
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          data-routine-comments-target="submit">
+          Comentar
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

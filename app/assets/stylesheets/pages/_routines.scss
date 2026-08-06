@@ -279,6 +279,94 @@
   box-shadow: 0 0 0 2px var(--bs-body-bg);
 }
 
+.routine-cell__comment-button {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+
+  min-width: 18px;
+  height: 18px;
+  padding: 0 3px;
+
+  border: 0;
+  border-radius: 4px;
+  background: rgba(var(--bs-warning-rgb), .95);
+  color: var(--bs-dark);
+  font-size: .65rem;
+  line-height: 1;
+
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity .15s ease, transform .15s ease;
+  z-index: 6;
+}
+
+.routine-cell:hover .routine-cell__comment-button,
+.routine-cell:focus-within .routine-cell__comment-button,
+.routine-cell--has-comments .routine-cell__comment-button {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.routine-cell__comment-button:hover {
+  background: var(--bs-warning);
+}
+
+.routine-cell__comment-count {
+  font-weight: 700;
+  font-size: .6rem;
+}
+
+.routine-comments-form {
+  align-items: stretch;
+  flex-direction: column;
+
+  textarea {
+    resize: vertical;
+  }
+
+  .btn {
+    align-self: flex-end;
+  }
+}
+
+.routine-comment {
+  padding: .75rem 0;
+  border-bottom: 1px solid var(--bs-border-color);
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.routine-comment__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .35rem;
+}
+
+.routine-comment__time {
+  display: block;
+  color: var(--bs-secondary-color);
+  font-size: .75rem;
+}
+
+.routine-comment__body {
+  white-space: pre-wrap;
+  color: var(--bs-body-color);
+}
+
 // ============================================================
 // ATIVIDADES
 // ============================================================
@@ -539,6 +627,11 @@
       background: var(--bs-primary);
       box-shadow: 0 0 0 2px var(--bs-body-bg);
       animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+
+    .routine-cell__comment-button {
+      top: 2px;
+      left: 2px;
     }
 
     // Estados de salvamento
