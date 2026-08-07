@@ -98,6 +98,7 @@
       padding: 0;
       overflow: hidden;
       min-height: 0;
+      max-height: 580px; // <--- TAMANHO MÁXIMO PADRÃO (ajuste conforme necessário)
 
       .plans-scroll {
         height: 100%;
@@ -284,6 +285,7 @@
       overflow-y: auto;
       padding: 1rem 1.25rem;
       min-height: 0;
+      max-height: 400px; // <--- TAMANHO MÁXIMO PADRÃO (ajuste conforme necessário)
 
       &.calendar-body {
         padding: 0.5rem;
@@ -585,10 +587,15 @@
 
     .chart-card .chart-body {
       padding: 0.75rem;
+      max-height: 300px; // reduz um pouco no mobile
     }
 
     .plan-item {
       padding: 0.6rem 0.8rem;
+    }
+
+    .plans-card-body {
+      max-height: 400px; // reduz no mobile
     }
   }
 }
