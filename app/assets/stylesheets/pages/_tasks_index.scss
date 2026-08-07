@@ -98,12 +98,16 @@
       padding: 0;
       overflow: hidden;
       min-height: 0;
-      max-height: 580px;
+      // Removido max-height para desktop para permitir layout fluido
 
       .plans-scroll {
         height: 100%;
         overflow-y: auto;
         padding: 0.5rem 0;
+
+        /* Suporte Firefox */
+        scrollbar-width: thin;
+        scrollbar-color: var(--bs-border-color) var(--bs-tertiary-bg);
 
         &::-webkit-scrollbar {
           width: 4px;
@@ -195,7 +199,7 @@
 
     &:hover {
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
-      border-color: rgba(79, 110, 247, 0.15);
+      border-color: rgba(var(--bs-primary-rgb), 0.15); // Correção da cor fixa
       transform: translateY(-2px);
     }
 
@@ -285,16 +289,20 @@
       padding: 1rem 1.25rem;
       min-height: 0;
 
-      // CALENDÁRIO - sem scroll
+      // CALENDÁRIO - sem scroll, ele dita a altura
       &.calendar-body {
         padding: 0.5rem;
       }
 
-      // PRÓXIMAS AÇÕES - com scroll
+      // PRÓXIMAS AÇÕES - com scroll adaptativo
       &.tasks-list-body {
         padding: 0;
-        max-height: 400px;
         overflow-y: auto;
+        // max-height removido para alinhar perfeitamente com o calendário no desktop
+
+        /* Suporte Firefox */
+        scrollbar-width: thin;
+        scrollbar-color: var(--bs-border-color) var(--bs-tertiary-bg);
 
         &::-webkit-scrollbar {
           width: 4px;
@@ -426,6 +434,7 @@
     padding: 2rem 1rem;
     color: var(--bs-secondary-color);
     text-align: center;
+    height: 100%; // Adicionado para centralizar no espaço todo
 
     i {
       font-size: 2.5rem;
@@ -568,6 +577,17 @@
       flex-direction: column;
       align-items: stretch;
     }
+
+    // No mobile/tablet os grids quebram para colunas inteiras,
+    // então precisamos reativar o max-height para as listas não
+    // ficarem infinitamente compridas e empurrarem o scroll da página.
+    .chart-body.tasks-list-body {
+      max-height: 400px;
+    }
+
+    .plans-card-body {
+      max-height: 500px;
+    }
   }
 }
 
@@ -591,7 +611,7 @@
     }
 
     .chart-body.tasks-list-body {
-      max-height: 300px; // reduz no mobile
+      max-height: 300px; // Reduz mais um pouco no mobile
     }
 
     .plan-item {
@@ -599,7 +619,7 @@
     }
 
     .plans-card-body {
-      max-height: 400px; // reduz no mobile
+      max-height: 400px; // Reduz no mobile
     }
   }
 }
