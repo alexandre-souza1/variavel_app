@@ -1,131 +1,571 @@
+// ============================================================
+// NAVBAR PRINCIPAL
+// ============================================================
+
 .app-navbar {
-  background: #3f8efc;
+  background: var(--bs-navbar-bg, #3f8efc);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.5rem 0;
+  transition: background 0.2s ease;
+
+  .navbar-brand {
+    color: var(--bs-navbar-color, #172033);
+
+    .brand-text {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    &:hover,
+    &:focus {
+      color: var(--bs-navbar-hover-color, #0b1220);
+    }
+  }
+
+  .navbar-toggler {
+    border-color: rgba(23, 32, 51, 0.25);
+    padding: 0.25rem 0.5rem;
+
+    .navbar-toggler-icon {
+      background-image: var(--bs-navbar-toggler-icon-bg);
+      filter: invert(0);
+    }
+  }
+
+  .nav-link {
+    color: var(--bs-navbar-color, #172033);
+    font-weight: 500;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+
+    i {
+      font-size: 1.15rem;
+      color: inherit;
+    }
+
+    &:hover,
+    &:focus {
+      color: var(--bs-navbar-hover-color, #0b1220);
+      background: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  // Dropdown toggle customizado
+  .app-dropdown-toggle {
+    cursor: pointer;
+    border: none;
+    background: transparent;
+
+    &::after {
+      margin-left: 0.3rem;
+      vertical-align: middle;
+    }
+  }
+
+  // Dropdown menu
+  .app-dropdown-menu {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 12px;
+    padding: 0.5rem 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    min-width: 200px;
+    backdrop-filter: blur(4px);
+
+    .dropdown-header {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--bs-secondary-color);
+      padding: 0.3rem 1rem;
+    }
+
+    .app-dropdown-item {
+      padding: 0.4rem 1rem;
+      font-size: 0.875rem;
+      color: var(--bs-body-color);
+      transition: background 0.1s ease;
+      display: flex;
+      align-items: center;
+
+      i {
+        font-size: 1.1rem;
+        width: 1.4rem;
+        text-align: center;
+        color: var(--bs-secondary-color);
+        transition: color 0.1s ease;
+      }
+
+      &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+        color: var(--bs-primary);
+
+        i {
+          color: var(--bs-primary);
+        }
+      }
+    }
+
+    .dropdown-divider {
+      margin: 0.3rem 0;
+      border-color: var(--bs-border-color);
+    }
+  }
+
+  // Avatar
+  .avatar-btn {
+    padding: 0;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    transition: transform 0.15s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    .avatar-placeholder {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: var(--bs-navbar-color, #172033);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  // Botão de ação (login / tema)
+  .app-navbar-action {
+    --bs-btn-color: var(--bs-navbar-color, #172033);
+    --bs-btn-border-color: var(--bs-navbar-color, #172033);
+    --bs-btn-hover-bg: var(--bs-navbar-color, #172033);
+    --bs-btn-hover-border-color: var(--bs-navbar-color, #172033);
+    --bs-btn-hover-color: #ffffff;
+    --bs-btn-active-bg: var(--bs-navbar-color, #172033);
+    --bs-btn-active-border-color: var(--bs-navbar-color, #172033);
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  // Tema toggle no dropdown
+  .theme-toggle-group {
+    .btn {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-color: var(--bs-border-color);
+      color: var(--bs-body-color);
+
+      &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+      }
+    }
+  }
 }
 
-.app-navbar .navbar-brand,
-.app-navbar .nav-link {
-  color: #172033;
-}
-
-.app-navbar .navbar-brand:hover,
-.app-navbar .navbar-brand:focus,
-.app-navbar .nav-link:hover,
-.app-navbar .nav-link:focus {
-  color: #0b1220;
-}
-
-.app-navbar .navbar-toggler {
-  border-color: rgba(23, 32, 51, 0.35);
-}
-
-.app-navbar .navbar-toggler-icon {
-  background-image: var(--bs-navbar-toggler-icon-bg);
-  filter: invert(0);
-}
-
-.app-navbar .app-navbar-action {
-  --bs-btn-color: #172033;
-  --bs-btn-border-color: #172033;
-  --bs-btn-hover-bg: #172033;
-  --bs-btn-hover-border-color: #172033;
-  --bs-btn-hover-color: #ffffff;
-}
+// ============================================================
+// SUB-NAVBAR (Admin / Finance / Fleet)
+// ============================================================
 
 .app-admin-nav {
-  background: rgba(255, 255, 255, 0.94);
-  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  background: var(--bs-admin-nav-bg, #f1f5f9);
+  border-bottom: 1px solid var(--bs-border-color);
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 
+  // Wrapper para alinhamento consistente
+  .nav-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 1.5rem;
+    gap: 0.5rem;
+  }
+
+  // Brand / título
   .navbar-brand {
-    color: #1d4ed8;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    text-decoration: none;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    i {
+      color: var(--bs-primary);
+      font-size: 1.3rem;
+    }
+
+    &:hover {
+      color: var(--bs-primary);
+    }
   }
 
-  .nav-link {
-    color: #334155;
+  // Links e dropdowns
+  .navbar-nav {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+
+    .nav-link {
+      border-radius: 6px;
+      padding: 0.4rem 0.8rem;
+      color: var(--bs-secondary-color);
+      font-weight: 500;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      text-decoration: none;
+      font-size: 0.85rem;
+
+      i {
+        font-size: 1.1rem;
+        color: var(--bs-secondary-color);
+        transition: color 0.15s ease;
+      }
+
+      &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+        color: var(--bs-primary);
+
+        i {
+          color: var(--bs-primary);
+        }
+      }
+
+      &.highlight {
+        background: var(--bs-primary);
+        color: #fff;
+
+        i {
+          color: #fff;
+        }
+
+        &:hover {
+          background: var(--bs-primary-dark);
+          color: #fff;
+
+          i {
+            color: #fff;
+          }
+        }
+      }
+    }
+
+    // Dropdown
+    .dropdown {
+      .app-dropdown-toggle {
+        @extend .nav-link;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+
+        &::after {
+          margin-left: 0.3rem;
+          vertical-align: middle;
+        }
+      }
+
+      .app-dropdown-menu {
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 10px;
+        padding: 0.25rem 0;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        min-width: 180px;
+
+        .app-dropdown-item {
+          padding: 0.4rem 1rem;
+          font-size: 0.85rem;
+          color: var(--bs-body-color);
+          transition: background 0.1s ease;
+          display: flex;
+          align-items: center;
+
+          i {
+            font-size: 1rem;
+            width: 1.4rem;
+            text-align: center;
+            color: var(--bs-secondary-color);
+          }
+
+          &:hover {
+            background: rgba(var(--bs-primary-rgb), 0.05);
+            color: var(--bs-primary);
+
+            i {
+              color: var(--bs-primary);
+            }
+          }
+        }
+      }
+    }
   }
 
-  .nav-link:hover,
-  .nav-link:focus,
-  .navbar-brand:hover,
-  .navbar-brand:focus {
-    color: #0f172a;
+  // Botões específicos (ex: "Novo Lançamento")
+  .btn-success-custom {
+    background: var(--bs-success);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+
+    i {
+      color: #fff;
+    }
+
+    &:hover {
+      background: var(--bs-success-dark, #15803d);
+      color: #fff;
+
+      i {
+        color: #fff;
+      }
+    }
   }
 }
 
-.navbar-lewagon {
-  justify-content: space-between;
-  background: #0d6efd;
-  padding: 0;
+// ============================================================
+// TEMAS (claro / escuro)
+// ============================================================
+
+// Tema claro (padrão)
+:root {
+  --bs-navbar-bg: #3f8efc;
+  --bs-navbar-color: #172033;
+  --bs-navbar-hover-color: #0b1220;
+  --bs-admin-nav-bg: #f1f5f9; // cinza claro
 }
 
-.navbar-lewagon .navbar-collapse {
-  flex-grow: 0;
-}
+// Tema escuro
+[data-bs-theme="dark"] {
+  --bs-navbar-bg: #1a365d; // azul escuro (mantendo identidade)
+  --bs-navbar-color: #f9fafb;
+  --bs-navbar-hover-color: #ffffff;
+  --bs-admin-nav-bg: #1e293b; // cinza escuro
 
-.navbar-lewagon .navbar-brand img {
-  width: 40px;
-}
+  .app-navbar {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
 
-.navbar-lewagon .navbar-brand .img-logo {
-  width: 60px;
-  height: 60px;
-}
+    .navbar-toggler {
+      border-color: rgba(255, 255, 255, 0.25);
+    }
 
-.navbar-lewagon .navbar-brand .name-logo {
-  width: 110px;
-  height: 60px;
-}
+    .navbar-toggler-icon {
+      filter: invert(1) grayscale(1);
+    }
 
-[data-bs-theme="dark"] .app-navbar {
-  background: #111827;
-}
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
 
-[data-bs-theme="dark"] .app-navbar .navbar-brand,
-[data-bs-theme="dark"] .app-navbar .nav-link {
-  color: #f9fafb;
-}
+    .avatar-placeholder {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: #e5e7eb;
+    }
 
-[data-bs-theme="dark"] .app-navbar .navbar-brand:hover,
-[data-bs-theme="dark"] .app-navbar .navbar-brand:focus,
-[data-bs-theme="dark"] .app-navbar .nav-link:hover,
-[data-bs-theme="dark"] .app-navbar .nav-link:focus {
-  color: #ffffff;
-}
-
-[data-bs-theme="dark"] .app-navbar .navbar-toggler {
-  border-color: rgba(249, 250, 251, 0.35);
-}
-
-[data-bs-theme="dark"] .app-navbar .navbar-toggler-icon {
-  filter: invert(1) grayscale(1);
-}
-
-[data-bs-theme="dark"] .app-navbar .app-navbar-action {
-  --bs-btn-color: #f9fafb;
-  --bs-btn-border-color: #f9fafb;
-  --bs-btn-hover-bg: #f9fafb;
-  --bs-btn-hover-border-color: #f9fafb;
-  --bs-btn-hover-color: #111827;
-}
-
-[data-bs-theme="dark"] .app-admin-nav {
-  background: rgba(17, 24, 39, 0.86);
-  border-top: 1px solid rgba(96, 165, 250, 0.16);
-  border-bottom: 1px solid rgba(96, 165, 250, 0.2);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
-
-  .navbar-brand {
-    color: #93c5fd;
+    .app-navbar-action {
+      --bs-btn-color: #f9fafb;
+      --bs-btn-border-color: #f9fafb;
+      --bs-btn-hover-bg: #f9fafb;
+      --bs-btn-hover-border-color: #f9fafb;
+      --bs-btn-hover-color: #111827;
+    }
   }
 
-  .nav-link {
-    color: #cbd5e1;
+  .app-admin-nav {
+    border-top: 1px solid rgba(96, 165, 250, 0.12);
+    border-bottom: 1px solid rgba(96, 165, 250, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+
+    .nav-link {
+      color: #cbd5e1;
+
+      &:hover {
+        color: #ffffff;
+      }
+    }
+
+    .navbar-brand {
+      color: #e5e7eb;
+
+      i {
+        color: #93c5fd;
+      }
+
+      &:hover {
+        color: #ffffff;
+      }
+    }
+
+    .btn-success-custom {
+      background: #059669;
+
+      &:hover {
+        background: #047857;
+      }
+    }
+  }
+}
+
+// ============================================================
+// RESPONSIVIDADE
+// ============================================================
+
+// Tablets e telas médias (até 992px)
+@media (max-width: 992px) {
+  .app-navbar {
+    .navbar-nav {
+      gap: 0.2rem;
+    }
+
+    .nav-link {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.85rem;
+    }
+
+    .app-dropdown-menu {
+      min-width: 180px;
+    }
   }
 
-  .nav-link:hover,
-  .nav-link:focus,
-  .navbar-brand:hover,
-  .navbar-brand:focus {
-    color: #ffffff;
+  .app-admin-nav {
+    .nav-wrapper {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 0 1rem;
+      gap: 0.75rem;
+    }
+
+    .navbar-brand {
+      justify-content: center;
+      font-size: 1rem;
+    }
+
+    .navbar-nav {
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.2rem;
+
+      .nav-link {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+      }
+    }
+
+    .btn-success-custom {
+      font-size: 0.8rem;
+      padding: 0.25rem 0.7rem;
+    }
+  }
+}
+
+// Smartphones (até 768px)
+@media (max-width: 768px) {
+  .app-navbar {
+    .navbar-brand .brand-text {
+      font-size: 1rem;
+    }
+
+    .navbar-nav {
+      margin-top: 0.5rem;
+    }
+
+    .nav-link {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .app-dropdown-menu {
+      min-width: 160px;
+    }
+  }
+
+  .app-admin-nav {
+    .nav-wrapper {
+      padding: 0 0.75rem;
+    }
+
+    .navbar-nav {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.3rem;
+      width: 100%;
+
+      .nav-link {
+        justify-content: center;
+        padding: 0.4rem 0.6rem;
+        width: 100%;
+      }
+
+      .dropdown {
+        width: 100%;
+
+        .app-dropdown-toggle {
+          justify-content: center;
+          width: 100%;
+        }
+
+        .app-dropdown-menu {
+          min-width: 100%;
+          position: static;
+          box-shadow: none;
+          border-radius: 8px;
+          margin-top: 0.25rem;
+        }
+      }
+    }
+
+    .btn-success-custom {
+      justify-content: center;
+      width: 100%;
+      padding: 0.4rem 0.7rem;
+    }
+  }
+}
+
+// Telas muito pequenas (até 480px)
+@media (max-width: 480px) {
+  .app-admin-nav {
+    .nav-wrapper {
+      padding: 0 0.5rem;
+    }
+
+    .navbar-brand {
+      font-size: 0.9rem;
+    }
+
+    .navbar-nav .nav-link {
+      font-size: 0.75rem;
+      padding: 0.3rem 0.4rem;
+    }
+
+    .btn-success-custom {
+      font-size: 0.75rem;
+      padding: 0.3rem 0.5rem;
+    }
   }
 }

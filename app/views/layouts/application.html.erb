@@ -37,12 +37,7 @@
 
   <body>
   <%= render "shared/navbar" %>
-  <% if request.path.start_with?('/admin/budget_categories') ||
-      request.path.start_with?('/admin/cost_centers') ||
-      controller_name == 'suppliers' ||
-      controller_name == 'invoices' %>
-  <%= render 'layouts/admin_nav' %>
-<% end %>
+  <%= render "layouts/#{secondary_nav}" if secondary_nav.present? %>
   <div id="flash-container">
     <%= render 'shared/flashes' %>
   </div>

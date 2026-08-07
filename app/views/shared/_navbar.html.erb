@@ -1,91 +1,47 @@
-<div class="navbar navbar-expand-lg shadow-sm sticky-top app-navbar" data-controller="theme">
-  <div class="container-fluid">
+<nav class="navbar navbar-expand-lg app-navbar shadow-sm sticky-top" data-controller="theme">
+  <div class="container-fluid px-3 px-md-4">
     <!-- Logo -->
-    <%= link_to root_path, class: "navbar-brand d-flex align-items-center" do %>
+    <%= link_to root_path, class: "navbar-brand d-flex align-items-center gap-2" do %>
       <%= image_tag "logo.png", alt: "Workstation Logo", height: "40" %>
-      <span class="ms-2 fw-bold">Workstation</span>
+      <span class="fw-bold brand-text">Workstation</span>
     <% end %>
 
     <!-- Toggle (Mobile) -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <!-- Links -->
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto">
+      <ul class="navbar-nav me-auto gap-1">
         <% if user_signed_in? %>
           <% if current_user.admin? || current_user.supervisor? %>
             <!-- Dropdown DU -->
             <li class="nav-item dropdown">
-              <button class="nav-link dropdown-toggle" id="duDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-truck"></i> DU
+              <button class="nav-link dropdown-toggle app-dropdown-toggle" id="duDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-truck me-1"></i> DU
               </button>
-              <ul class="dropdown-menu">
-                <li>
-                  <%= link_to drivers_path, class: "dropdown-item" do %>
-                    <i class="bi bi-truck-front me-2"></i> Motoristas
-                  <% end %>
-                </li>
-                <li>
-                  <%= link_to ajudantes_path, class: "dropdown-item" do %>
-                    <i class="bi bi-people me-2"></i> Ajudantes
-                  <% end %>
-                </li>
-                <li>
-                  <%= link_to mapas_todos_path, class: "dropdown-item" do %>
-                    <i class="bi bi-map me-2"></i> Mapas
-                  <% end %>
-                </li>
-                <li>
-                  <%= link_to dashboard_mapas_path, class: "dropdown-item" do %>
-                    <i class="bi bi-speedometer2 me-2"></i> Dashboard de Mapas
-                  <% end %>
-                </li>
-                <li>
-                  <%= link_to fuel_consumptions_path, class: "dropdown-item" do %>
-                    <i class="bi bi-fuel-pump me-2"></i> Consumo de Combustível
-                  <% end %>
-                </li>
-                <li>
-                  <%= link_to mapas_path, class: "dropdown-item" do %>
-                    <i class="bi bi-download me-2"></i> Importar 2Art
-                  <% end %>
-                </li>
+              <ul class="dropdown-menu app-dropdown-menu">
+                <li><%= link_to drivers_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-truck-front me-2"></i> Motoristas<% end %></li>
+                <li><%= link_to ajudantes_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-people me-2"></i> Ajudantes<% end %></li>
+                <li><%= link_to mapas_todos_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-map me-2"></i> Mapas<% end %></li>
+                <li><%= link_to dashboard_mapas_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-speedometer2 me-2"></i> Dashboard de Mapas<% end %></li>
+                <li><%= link_to fuel_consumptions_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-fuel-pump me-2"></i> Consumo<% end %></li>
+                <li><%= link_to mapas_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-download me-2"></i> Importar 2Art<% end %></li>
               </ul>
             </li>
 
             <!-- Dropdown AZ -->
             <li class="nav-item dropdown">
-              <button class="nav-link dropdown-toggle" id="azDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-house-door"></i> AZ
+              <button class="nav-link dropdown-toggle app-dropdown-toggle" id="azDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-house-door me-1"></i> AZ
               </button>
-              <ul class="dropdown-menu">
-                <li>
-                  <%= link_to operators_path, class: "dropdown-item" do %>
-                    <i class="bi bi-person-workspace me-2"></i> Operadores
-                  <% end %>
-                </li>
-                <li>
-                  <%= link_to az_ajudantes_path, class: "dropdown-item" do %>
-                    <i class="bi bi-people-fill me-2"></i> Ajudantes
-                  <% end %>
-                </li>
-                <li>
-                  <%= link_to az_mapas_path, class: "dropdown-item" do %>
-                    <i class="bi bi-calendar-check me-2"></i> Resultados Diários
-                  <% end %>
-                </li>
-                <li>
-                  <%= link_to wms_tasks_path, class: "dropdown-item" do %>
-                    <i class="bi bi-bar-chart-line me-2"></i> Resultados WMS
-                  <% end %>
-                </li>
-                <li>
-                  <%= link_to new_import_wms_tasks_path, class: "dropdown-item" do %>
-                    <i class="bi bi-download me-2"></i> Importar WMS
-                  <% end %>
-                </li>
+              <ul class="dropdown-menu app-dropdown-menu">
+                <li><%= link_to operators_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-person-workspace me-2"></i> Operadores<% end %></li>
+                <li><%= link_to az_ajudantes_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-people-fill me-2"></i> Ajudantes<% end %></li>
+                <li><%= link_to az_mapas_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-calendar-check me-2"></i> Resultados Diários<% end %></li>
+                <li><%= link_to wms_tasks_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-bar-chart-line me-2"></i> Resultados WMS<% end %></li>
+                <li><%= link_to new_import_wms_tasks_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-download me-2"></i> Importar WMS<% end %></li>
               </ul>
             </li>
           <% end %>
@@ -96,97 +52,88 @@
       <% if user_signed_in? %>
         <ul class="navbar-nav">
           <li class="nav-item dropdown">
-            <button class="nav-link" id="navbarDropdown" type="button" data-bs-toggle="dropdown" style="border: none; background: none;">
-            <% if current_user.photo.attached? %>
-              <%= user_avatar(current_user, 40) %>
-            <% else %>
-              <div class="d-flex align-items-center justify-content-center rounded-circle shadow-sm border border-2 border-white bg-light"
-                  style="width: 40px; height: 40px;">
-                <i class="bi bi-person-fill text-secondary"></i>
-              </div>
-            <% end %>
+            <button class="nav-link p-0 avatar-btn" id="navbarDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <% if current_user.photo.attached? %>
+                <%= user_avatar(current_user, 40) %>
+              <% else %>
+                <div class="avatar-placeholder">
+                  <i class="bi bi-person-fill"></i>
+                </div>
+              <% end %>
             </button>
 
-            <div class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="navbarDropdown">
-
+            <div class="dropdown-menu dropdown-menu-end app-dropdown-menu shadow-lg" aria-labelledby="navbarDropdown">
               <% if current_user.admin? || current_user.supervisor? %>
-                <h6 class="dropdown-header text-uppercase small text-muted">Módulos</h6>
-                <%= link_to dashboard_invoices_path, class: "dropdown-item" do %>
+                <h6 class="dropdown-header">Módulos</h6>
+                <%= link_to dashboard_invoices_path, class: "dropdown-item app-dropdown-item" do %>
                   <i class="bi bi-cash-coin me-2"></i> Finanças
                 <% end %>
-                <%= link_to dashboard_path, class: "dropdown-item fw-bold text-primary" do %>
+                <%= link_to dashboard_path, class: "dropdown-item app-dropdown-item fw-bold text-primary" do %>
                   <i class="bi bi-truck me-2"></i> Painel Frota
-                  <span class="badge bg-success">New</span>
+                  <span class="badge bg-success ms-1">New</span>
                 <% end %>
-                <%= link_to action_plans_path, class: "dropdown-item fw-bold text-primary" do %>
+                <%= link_to action_plans_path, class: "dropdown-item app-dropdown-item fw-bold text-primary" do %>
                   <i class="bi bi-list-task me-2"></i> Tarefas
-                  <span class="badge bg-success">New</span>
+                  <span class="badge bg-success ms-1">New</span>
                 <% end %>
-                <%= link_to root_path, class: "dropdown-item" do %>
+                <%= link_to root_path, class: "dropdown-item app-dropdown-item" do %>
                   <i class="bi bi-kanban me-2"></i> Variáveis
                 <% end %>
-                <%= link_to checklists_path, class: "dropdown-item" do %>
+                <%= link_to checklists_path, class: "dropdown-item app-dropdown-item" do %>
                   <i class="bi bi-ui-checks me-2"></i> Formulários
                 <% end %>
+                <div class="dropdown-divider"></div>
               <% end %>
+
               <% if current_user.mechanical? %>
-              <h6 class="dropdown-header text-uppercase small text-muted">Módulos</h6>
-                <%= link_to action_plans_path, class: "dropdown-item fw-bold text-primary" do %>
+                <h6 class="dropdown-header">Módulos</h6>
+                <%= link_to action_plans_path, class: "dropdown-item app-dropdown-item fw-bold text-primary" do %>
                   <i class="bi bi-list-task me-2"></i> Workstation ToDo
-                  <span class="badge bg-success">New</span>
+                  <span class="badge bg-success ms-1">New</span>
                 <% end %>
+                <div class="dropdown-divider"></div>
               <% end %>
-              <div class="dropdown-divider"></div>
 
-
-              <h6 class="dropdown-header text-uppercase small text-muted">Geral</h6>
-              <%= link_to downloads_path, class: "dropdown-item" do %>
+              <h6 class="dropdown-header">Geral</h6>
+              <%= link_to downloads_path, class: "dropdown-item app-dropdown-item" do %>
                 <i class="bi bi-book me-2"></i> Padrões e LUP's
               <% end %>
-              <%= link_to autonomies_path, class: "dropdown-item text-decoration-line-through text-muted" do %>
+              <%= link_to autonomies_path, class: "dropdown-item app-dropdown-item text-decoration-line-through text-muted" do %>
                 <i class="bi bi-truck me-2"></i> Autonomia de Frota
               <% end %>
-              <%= link_to parametro_calculos_path, class: "dropdown-item" do %>
+              <%= link_to parametro_calculos_path, class: "dropdown-item app-dropdown-item" do %>
                 <i class="bi bi-sliders me-2"></i> Parâmetros
               <% end %>
               <% if current_user.admin? %>
-                <%= link_to plates_path, class: "dropdown-item" do %>
+                <%= link_to plates_path, class: "dropdown-item app-dropdown-item" do %>
                   <i class="bi bi-car-front me-2"></i> Placas Cadastradas
                 <% end %>
-                <%= link_to import_parametro_calculos_path, class: "dropdown-item" do %>
+                <%= link_to import_parametro_calculos_path, class: "dropdown-item app-dropdown-item" do %>
                   <i class="bi bi-download me-2"></i> Importar Parâmetros
                 <% end %>
-                <%= link_to admin_users_path, class: "dropdown-item" do %>
+                <%= link_to admin_users_path, class: "dropdown-item app-dropdown-item" do %>
                   <i class="bi bi-person-lines-fill me-2"></i> Usuários
                 <% end %>
               <% end %>
               <div class="dropdown-divider"></div>
 
-              <h6 class="dropdown-header text-uppercase small text-muted">Aparência</h6>
+              <h6 class="dropdown-header">Aparência</h6>
               <div class="px-3 pb-2">
-                <div class="btn-group w-100" role="group" aria-label="Selecionar tema">
-                  <button type="button"
-                          class="btn btn-sm btn-outline-secondary"
-                          data-theme-target="button"
-                          data-theme-value-param="light"
-                          data-action="theme#set">
+                <div class="btn-group w-100 theme-toggle-group" role="group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-theme-target="button" data-theme-value-param="light" data-action="theme#set">
                     <i class="bi bi-sun me-1"></i> Claro
                   </button>
-                  <button type="button"
-                          class="btn btn-sm btn-outline-secondary"
-                          data-theme-target="button"
-                          data-theme-value-param="dark"
-                          data-action="theme#set">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-theme-target="button" data-theme-value-param="dark" data-action="theme#set">
                     <i class="bi bi-moon-stars me-1"></i> Escuro
                   </button>
                 </div>
               </div>
               <div class="dropdown-divider"></div>
 
-              <%= link_to edit_user_registration_path, class: "dropdown-item" do %>
+              <%= link_to edit_user_registration_path, class: "dropdown-item app-dropdown-item" do %>
                 <i class="bi bi-person-circle me-2"></i> Editar cadastro
               <% end %>
-              <%= link_to destroy_user_session_path, data: {turbo_method: :delete}, class: "dropdown-item text-danger fw-bold" do %>
+              <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "dropdown-item app-dropdown-item text-danger fw-bold" do %>
                 <i class="bi bi-box-arrow-right me-2"></i> Log out
               <% end %>
             </div>
@@ -195,22 +142,14 @@
       <% else %>
         <div class="d-flex align-items-center gap-2" data-controller="theme">
           <div class="dropdown">
-            <button class="btn btn-sm dropdown-toggle app-navbar-action" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <button class="btn btn-sm app-navbar-action dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi bi-circle-half me-1"></i> Tema
             </button>
-            <div class="dropdown-menu dropdown-menu-end shadow">
-              <button type="button"
-                      class="dropdown-item"
-                      data-theme-target="button"
-                      data-theme-value-param="light"
-                      data-action="theme#set">
+            <div class="dropdown-menu dropdown-menu-end app-dropdown-menu shadow">
+              <button type="button" class="dropdown-item app-dropdown-item" data-theme-target="button" data-theme-value-param="light" data-action="theme#set">
                 <i class="bi bi-sun me-2"></i> Claro
               </button>
-              <button type="button"
-                      class="dropdown-item"
-                      data-theme-target="button"
-                      data-theme-value-param="dark"
-                      data-action="theme#set">
+              <button type="button" class="dropdown-item app-dropdown-item" data-theme-target="button" data-theme-value-param="dark" data-action="theme#set">
                 <i class="bi bi-moon-stars me-2"></i> Escuro
               </button>
             </div>
@@ -220,4 +159,4 @@
       <% end %>
     </div>
   </div>
-</div>
+</nav>

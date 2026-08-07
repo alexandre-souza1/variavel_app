@@ -1,29 +1,52 @@
 <nav class="navbar navbar-expand-lg app-admin-nav">
-  <div class="mx-5 d-flex justify-content-between align-items-center w-100">
-    <%= link_to 'Workstation Fin', dashboard_invoices_path, class: 'navbar-brand fw-semibold' %>
+  <div class="container-fluid px-4">
+    <!-- Logo / Título -->
+    <%= link_to dashboard_invoices_path, class: "navbar-brand d-flex align-items-center gap-2" do %>
+      <i class="bi bi-coin text-primary fs-3"></i>
+      <span class="fw-semibold">Workstation Fin</span>
+    <% end %>
 
-    <div class="navbar-nav gap-2">
+    <!-- Toggle para mobile -->
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#financeNavbar" aria-controls="financeNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-      <!-- Dropdown Cadastros -->
-      <div class="nav-item dropdown">
-        <button class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          Cadastros
-        </button>
-        <ul class="dropdown-menu">
-          <li><%= link_to 'Centros de Custo', admin_cost_centers_path, class: 'dropdown-item' %></li>
-          <li><%= link_to 'Categorias', admin_budget_categories_path, class: 'dropdown-item' %></li>
-          <li><%= link_to 'Fornecedores', suppliers_path, class: 'dropdown-item' %></li>
-        </ul>
-      </div>
+    <!-- Links -->
+    <div class="collapse navbar-collapse" id="financeNavbar">
+      <ul class="navbar-nav ms-auto gap-1 align-items-center">
 
-      <!-- Outros links da barra -->
-      <%= link_to 'Consulta Lançamentos', invoices_path, class: 'nav-link' %>
-      <%= link_to dashboard_invoices_path, class: "btn btn-primary btn-sm" do %>
-       <i class="bi bi-bar-chart-fill"></i> Dashboard
-      <% end %>
-      <%= link_to new_invoice_path, class: "btn btn-success btn-sm" do %>
-       <i class="bi bi-plus-circle-dotted"></i> Novo Lançamento
-      <% end %>
+        <!-- Dropdown Cadastros -->
+        <li class="nav-item dropdown">
+          <button class="nav-link dropdown-toggle app-dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-database me-1"></i> Cadastros
+          </button>
+          <ul class="dropdown-menu app-dropdown-menu">
+            <li><%= link_to 'Centros de Custo', admin_cost_centers_path, class: 'dropdown-item app-dropdown-item' %></li>
+            <li><%= link_to 'Categorias', admin_budget_categories_path, class: 'dropdown-item app-dropdown-item' %></li>
+            <li><%= link_to 'Fornecedores', suppliers_path, class: 'dropdown-item app-dropdown-item' %></li>
+          </ul>
+        </li>
+
+        <!-- Links rápidos -->
+        <li class="nav-item">
+          <%= link_to invoices_path, class: "nav-link app-nav-link" do %>
+            <i class="bi bi-list-ul me-1"></i> Lançamentos
+          <% end %>
+        </li>
+
+        <li class="nav-item">
+          <%= link_to dashboard_invoices_path, class: "nav-link app-nav-link highlight" do %>
+            <i class="bi bi-bar-chart-fill me-1"></i> Dashboard
+          <% end %>
+        </li>
+
+        <li class="nav-item">
+          <%= link_to new_invoice_path, class: "nav-link app-nav-link btn-success-custom" do %>
+            <i class="bi bi-plus-circle-dotted me-1"></i> Novo Lançamento
+          <% end %>
+        </li>
+
+      </ul>
     </div>
   </div>
 </nav>
