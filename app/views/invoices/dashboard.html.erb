@@ -1,182 +1,161 @@
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1><i class="bi bi-graph-up-arrow me-2"></i>
-          Dashboard Financeiro</h1>
+<div class="dashboard-finance">
 
-  <div class="d-flex align-items-center gap-2">
-    <%= form_with url: dashboard_invoices_path, method: :get, local: true, class: "d-flex justify-content-between gap-2" do %>
-      <%= select_tag :month,
-          options_for_select((1..12).map { |m| [I18n.t("date.month_names")[m], m] }, params[:month]),
-          include_blank: "Mês",
-          class: "form-select" %>
-
-      <%= select_tag :year,
-          options_for_select((2022..Date.today.year).to_a.reverse, params[:year]),
-          include_blank: "Ano",
-          class: "form-select" %>
-
-      <%= submit_tag "Filtrar", class: "btn btn-outline-primary" %>
-    <% end %>
-
-        <!-- Botão para mês atual -->
-    <%= link_to "Mês Atual", dashboard_invoices_path(month: Date.today.month, year: Date.today.year), class: "btn btn-outline-success" %>
-
-    <%= link_to "Limpar filtros", dashboard_invoices_path, class: "btn btn-outline-primary" %>
-  </div>
-</div>
-
-<!-- Cards de Resumo -->
-<div class="row mb-4">
-  <!-- Primeiro conjunto: Total Ano e Média Mensal -->
-  <div class="col-md-6">
-    <div class="text-muted small mx-2">Resumo Anual</div>
-    <div class="d-flex gap-2 border rounded p-2">
-      <div class="flex-fill">
-        <div class="card bg-primary text-white shadow-sm h-100">
-          <div class="card-body text-center">
-            <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
-            <h5>Total Ano (YTD)</h5>
-            <p class="fs-4 fw-bold">R$ <%= number_to_currency(@total_spent, unit: "", separator: ",", delimiter: ".") %></p>
-            <small><%= @invoices_count %> notas fiscais</small>
-          </div>
-        </div>
+  <!-- ========== CABEÇALHO ========== -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div>
+        <h1>
+          <i class="bi bi-graph-up-arrow"></i>
+          Dashboard Financeiro
+        </h1>
+        <p class="subtitle">
+          Visão consolidada dos gastos e indicadores financeiros
+        </p>
       </div>
-      <div class="flex-fill">
-        <div class="card bg-warning text-white shadow-sm h-100">
-          <div class="card-body text-center">
-            <i class="fas fa-chart-line fa-2x mb-2"></i>
-            <h5>Média Mensal</h5>
-            <p class="fs-4 fw-bold">R$ <%= number_to_currency(@monthly_average, unit: "", separator: ",", delimiter: ".") %></p>
-            <small>média dos últimos 6 meses</small>
+      <div class="header-actions">
+        <!-- Filtros -->
+        <%= form_with url: dashboard_invoices_path, method: :get, local: true, class: "filter-form" do %>
+          <div class="filter-group">
+            <%= select_tag :month,
+                options_for_select((1..12).map { |m| [I18n.t("date.month_names")[m], m] }, params[:month]),
+                include_blank: "Mês",
+                class: "form-select form-select-sm" %>
+            <%= select_tag :year,
+                options_for_select((2022..Date.today.year).to_a.reverse, params[:year]),
+                include_blank: "Ano",
+                class: "form-select form-select-sm" %>
+            <%= submit_tag "Filtrar", class: "btn btn-primary-solid btn-sm" %>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Segundo conjunto: Mês selecionado e Fornecedores -->
-  <div class="col-md-6">
-    <div class="text-muted small mx-2">Período Atual</div>
-    <div class="d-flex gap-2 border rounded p-2">
-      <div class="flex-fill">
-        <div class="card bg-success text-white shadow-sm h-100">
-          <div class="card-body text-center">
-            <i class="fas fa-calendar-day fa-2x mb-2"></i>
-            <h5><%= @has_period_filter ? @period_display : "Este Mês" %></h5>
-            <p class="fs-4 fw-bold">R$ <%= number_to_currency(@current_month_total, unit: "", separator: ",", delimiter: ".") %></p>
-            <small><%= @current_month_count %> notas <%= @has_period_filter ? "em #{@period_display}" : "este mês" %></small>
-          </div>
-        </div>
-      </div>
-      <div class="flex-fill">
-        <div class="card bg-info text-white shadow-sm h-100">
-          <div class="card-body text-center">
-            <i class="fas fa-building fa-2x mb-2"></i>
-            <h5>Fornecedores</h5>
-            <p class="fs-4 fw-bold"><%= @suppliers_count %></p>
-            <small>ativos</small>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row mb-4">
-  <div class="col-12">
-    <div class="card shadow-sm">
-      <div class="card-header bg-light d-flex justify-content-between align-items-center">
-        <h6 class="mb-0">
-          <i class="fas fa-chart-line me-2"></i>
-          Evolução Mensal por Categoria (<%= Date.current.year %>)
-        </h6>
-        <%= form_with url: dashboard_invoices_path, method: :get, local: true, class: "d-flex gap-2" do %>
-          <%= select_tag :category_id,
-                options_from_collection_for_select(@all_categories, :id, :name, params[:category_id]),
-                include_blank: "Todas as categorias",
-                class: "form-select form-select-sm w-auto",
-                onchange: "this.form.submit()" %>
-          <!-- Repassa os filtros existentes -->
-          <%= hidden_field_tag :month, params[:month] if params[:month].present? %>
-          <%= hidden_field_tag :year, params[:year] if params[:year].present? %>
-          <%= hidden_field_tag :cost_center_id, params[:cost_center_id] if params[:cost_center_id].present? %>
         <% end %>
+        <%= link_to "Mês Atual", dashboard_invoices_path(month: Date.today.month, year: Date.today.year), class: "btn-outline btn-sm" %>
+        <%= link_to "Limpar", dashboard_invoices_path, class: "btn-outline btn-sm" %>
       </div>
-      <div class="card-body">
-        <%= line_chart @category_line_chart,
-              height: "400px",
-              curve: false,
-              points: true,
-              prefix: "R$ ",
-              thousands: ".",
-              decimal: ",",
-              round: 2,
-              legend: "bottom",
-              xtitle: "Meses",
-              ytitle: "Valor gasto (R$)" %>
+    </div>
+  </header>
+
+  <!-- ========== KPI CARDS ========== -->
+  <div class="kpi-grid">
+    <!-- Total Ano -->
+    <div class="kpi-card">
+      <div class="kpi-icon bg-primary-soft">
+        <i class="fas fa-money-bill-wave text-primary"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Total Ano (YTD)</span>
+        <span class="kpi-value">R$ <%= number_to_currency(@total_spent, unit: "", separator: ",", delimiter: ".") %></span>
+        <span class="kpi-sub"><%= @invoices_count %> notas fiscais</span>
+      </div>
+    </div>
+
+    <!-- Média Mensal -->
+    <div class="kpi-card">
+      <div class="kpi-icon bg-warning-soft">
+        <i class="fas fa-chart-line text-warning"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Média Mensal</span>
+        <span class="kpi-value">R$ <%= number_to_currency(@monthly_average, unit: "", separator: ",", delimiter: ".") %></span>
+        <span class="kpi-sub">últimos 6 meses</span>
+      </div>
+    </div>
+
+    <!-- Período Atual -->
+    <div class="kpi-card">
+      <div class="kpi-icon bg-success-soft">
+        <i class="fas fa-calendar-day text-success"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label"><%= @has_period_filter ? @period_display : "Este Mês" %></span>
+        <span class="kpi-value">R$ <%= number_to_currency(@current_month_total, unit: "", separator: ",", delimiter: ".") %></span>
+        <span class="kpi-sub"><%= @current_month_count %> notas</span>
+      </div>
+    </div>
+
+    <!-- Fornecedores -->
+    <div class="kpi-card">
+      <div class="kpi-icon bg-info-soft">
+        <i class="fas fa-building text-info"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Fornecedores</span>
+        <span class="kpi-value"><%= @suppliers_count %></span>
+        <span class="kpi-sub">ativos</span>
       </div>
     </div>
   </div>
-</div>
 
+  <!-- ========== GRÁFICO DE EVOLUÇÃO ========== -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <h5><i class="fas fa-chart-line me-2"></i> Evolução Mensal por Categoria (<%= Date.current.year %>)</h5>
+      <%= form_with url: dashboard_invoices_path, method: :get, local: true, class: "chart-filters" do %>
+        <%= select_tag :category_id,
+              options_from_collection_for_select(@all_categories, :id, :name, params[:category_id]),
+              include_blank: "Todas as categorias",
+              class: "form-select form-select-sm w-auto",
+              onchange: "this.form.submit()" %>
+        <%= hidden_field_tag :month, params[:month] if params[:month].present? %>
+        <%= hidden_field_tag :year, params[:year] if params[:year].present? %>
+        <%= hidden_field_tag :cost_center_id, params[:cost_center_id] if params[:cost_center_id].present? %>
+      <% end %>
+    </div>
+    <div class="chart-body">
+      <%= line_chart @category_line_chart,
+            height: "400px",
+            curve: false,
+            points: true,
+            prefix: "R$ ",
+            thousands: ".",
+            decimal: ",",
+            round: 2,
+            legend: "bottom",
+            xtitle: "Meses",
+            ytitle: "Valor gasto (R$)" %>
+    </div>
+  </div>
 
-  <!-- Gastos por Categoria do Período -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card shadow-sm">
-        <div class="card-header bg-light">
-          <h6 class="mb-0"><i class="fas fa-tags me-2"></i>Gastos por Categoria - <%= @period_display %></h6>
-        </div>
-        <div class="card-body">
-          <% if @has_period_filter %>
-            <div data-controller="category-details">
-              <div class="row">
-                <% @current_month_categories.each do |category_data| %>
-                  <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="card h-100 border-0 shadow-sm category-card"
-                        data-action="click->category-details#show"
-                        data-category-details-id-value="<%= category_data[:category].id %>">
-                      <div class="card-body text-center">
-                        <div class="mb-2">
-                          <span class="badge bg-<%= category_color(category_data[:category]) %> p-2"> <%# herb:disable erb-no-interpolated-class-names %>
-                            <i class="fas fa-<%= category_icon(category_data[:category]) %> fa-lg"></i> <%# herb:disable erb-no-interpolated-class-names %>
-                          </span>
-                        </div>
-                        <h6 class="card-title text-truncate"><%= category_data[:category].name.titleize %></h6>
-                        <p class="card-text fw-bold text-primary fs-5">
-                          R$ <%= number_to_currency(category_data[:total], unit: "", separator: ",", delimiter: ".") %>
-                        </p>
-                        <small class="text-muted">
-                          <%= category_data[:count] %> <%= category_data[:count] == 1 ? 'nota' : 'notas' %>
-                        </small>
-                      </div>
-                    </div>
-                  </div>
-                <% end %>
+  <!-- ========== GASTOS POR CATEGORIA (cards clicáveis) ========== -->
+  <div class="category-grid-wrapper">
+    <h5 class="section-title"><i class="fas fa-tags me-2"></i> Gastos por Categoria - <%= @period_display %></h5>
+    <% if @has_period_filter %>
+      <div data-controller="category-details">
+        <div class="category-grid">
+          <% @current_month_categories.each do |category_data| %>
+            <div class="category-card-clickable"
+                data-action="click->category-details#show"
+                data-category-details-id-value="<%= category_data[:category].id %>">
+              <div class="category-card-inner">
+                <div class="category-icon">
+                  <span class="badge bg-<%= category_color(category_data[:category]) %>">
+                    <i class="fas fa-<%= category_icon(category_data[:category]) %>"></i>
+                  </span>
+                </div>
+                <div class="category-info">
+                  <h6 class="category-name"><%= category_data[:category].name.titleize %></h6>
+                  <p class="category-value">R$ <%= number_to_currency(category_data[:total], unit: "", separator: ",", delimiter: ".") %></p>
+                  <small class="category-count"><%= category_data[:count] %> <%= category_data[:count] == 1 ? 'nota' : 'notas' %></small>
+                </div>
               </div>
-
-              <div id="category-details-container" class="mt-4"></div>
             </div>
-        <% else %>
-          <div class="text-center py-5">
-            <i class="fas fa-filter fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">Selecione o mês e ano no filtro</h5>
-            <p class="text-muted">Use os filtros acima para visualizar os gastos por categoria de um período específico.</p>
-          </div>
-        <% end %>
+          <% end %>
+        </div>
+        <div id="category-details-container" class="mt-4"></div>
       </div>
-    </div>
+    <% else %>
+      <div class="empty-state-compact">
+        <i class="fas fa-filter"></i>
+        <span>Selecione o mês e ano no filtro para visualizar os gastos por categoria.</span>
+      </div>
+    <% end %>
   </div>
-</div>
 
-
-<!-- Gráficos em Grid -->
-<div class="row mb-4">
-  <div class="col-md-6">
-    <div class="card shadow-sm">
-      <div class="card-header bg-light">
-        <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Valores por Categoria</h6>
+  <!-- ========== GRÁFICOS EM GRID ========== -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h5><i class="fas fa-chart-pie me-2"></i> Valores por Categoria</h5>
       </div>
-      <div class="card-body">
+      <div class="chart-body">
         <%= pie_chart @spent_per_category,
                       donut: true,
                       prefix: "R$ ",
@@ -186,14 +165,12 @@
                       colors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] %>
       </div>
     </div>
-  </div>
 
-  <div class="col-md-6">
-    <div class="card shadow-sm">
-      <div class="card-header bg-light">
-        <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Manutenções por Centro de Custo (valor total)</h6>
+    <div class="chart-card">
+      <div class="chart-header">
+        <h5><i class="fas fa-chart-bar me-2"></i> Manutenções por Centro de Custo</h5>
       </div>
-      <div class="card-body">
+      <div class="chart-body">
         <%= pie_chart @total_per_cost_center,
                       donut: true,
                       colors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
@@ -203,19 +180,17 @@
       </div>
     </div>
   </div>
-</div>
 
-<!-- Top Fornecedores -->
-<div class="row mb-4">
-  <div class="col-md-6">
-    <div class="card shadow-sm">
-      <div class="card-header bg-light">
-        <h6 class="mb-0"><i class="fas fa-trophy me-2"></i>Top 5 Fornecedores</h6>
+  <!-- ========== TOP FORNECEDORES + ALERTAS ========== -->
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-card-header">
+        <h5><i class="fas fa-trophy me-2"></i> Top 5 Fornecedores</h5>
       </div>
-      <div class="card-body">
-        <div class="list-group">
+      <div class="info-card-body">
+        <div class="supplier-list">
           <% @top_suppliers.each do |supplier| %>
-            <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="supplier-item">
               <div>
                 <strong><%= supplier.name %></strong>
                 <br>
@@ -229,110 +204,114 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-md-6">
-    <div class="card shadow-sm">
-      <div class="card-header bg-light">
-        <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Alertas e Pendências</h6>
+    <div class="info-card">
+      <div class="info-card-header">
+        <h5><i class="fas fa-exclamation-triangle me-2"></i> Alertas e Pendências</h5>
       </div>
-      <div class="card-body">
-        <% if @recent_invoices.any? %>
-          <div class="alert alert-warning">
-            <i class="fas fa-clock me-2"></i>
-            <strong><%= @recent_invoices.count %> notas</strong> dos últimos 7 dias
-          </div>
-        <% end %>
+      <div class="info-card-body">
+        <div class="alert-list">
+          <% if @recent_invoices.any? %>
+            <div class="alert-item alert-warning">
+              <i class="fas fa-clock me-2"></i>
+              <span><strong><%= @recent_invoices.count %> notas</strong> dos últimos 7 dias</span>
+            </div>
+          <% end %>
 
-        <% if @high_value_invoices.any? %>
-          <div class="alert alert-info">
-            <i class="fas fa-money-bill-wave me-2"></i>
-            <strong><%= @high_value_invoices.count %> notas</strong> acima de R$ 10.000
-          </div>
-        <% end %>
+          <% if @high_value_invoices.any? %>
+            <div class="alert-item alert-info">
+              <i class="fas fa-money-bill-wave me-2"></i>
+              <span><strong><%= @high_value_invoices.count %> notas</strong> acima de R$ 10.000</span>
+            </div>
+          <% end %>
 
-        <div class="alert alert-light">
-          <i class="fas fa-chart-line me-2"></i>
-          Variação mensal:
-          <span class="<%= @monthly_variation >= 0 ? 'text-success' : 'text-danger' %>">
-            <%= @monthly_variation %>% em relação ao mês anterior
-          </span>
+          <div class="alert-item alert-light">
+            <i class="fas fa-chart-line me-2"></i>
+            <span>Variação mensal:
+              <span class="<%= @monthly_variation >= 0 ? 'text-success' : 'text-danger' %>">
+                <%= @monthly_variation %>% em relação ao mês anterior
+              </span>
+            </span>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Últimos Lançamentos com Filtros -->
-<div class="card shadow-sm">
-  <div class="card-header bg-light d-flex justify-content-between align-items-center">
-    <h6 class="mb-0"><i class="fas fa-list me-2"></i>Últimos Lançamentos</h6>
-    <div>
-      <small class="text-muted me-3">Mostrando <%= @latest_invoices.count %> de <%= @total_invoices_count %> notas</small>
-      <%= link_to "Ver Todas", invoices_path, class: "btn btn-sm btn-outline-primary" %>
+  <!-- ========== ÚLTIMOS LANÇAMENTOS ========== -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <h5><i class="fas fa-list me-2"></i> Últimos Lançamentos</h5>
+      <div>
+        <small class="text-muted me-3">Mostrando <%= @latest_invoices.count %> de <%= @total_invoices_count %> notas</small>
+        <%= link_to "Ver Todas", invoices_path, class: "btn-primary-solid btn-sm" %>
+      </div>
+    </div>
+    <div class="table-card-body">
+      <div class="table-responsive">
+        <table class="table table-custom">
+          <thead>
+            <tr>
+              <th>Fornecedor</th>
+              <th>NFs</th>
+              <th>Data</th>
+              <th>Categoria</th>
+              <th>Centro de Custo</th>
+              <th class="text-end">Valor</th>
+              <th class="text-end">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @latest_invoices.each do |invoice| %>
+              <tr>
+                <td>
+                  <strong><%= invoice.supplier.name %></strong>
+                  <br>
+                  <small class="text-muted"><%= invoice.supplier.cnpj %></small>
+                </td>
+                <td>
+                  <% invoice.invoice_numbers.each do |num| %>
+                    <span class="badge bg-info"><%= num.number %></span>
+                  <% end %>
+                </td>
+                <td><%= l(invoice.date_issued, format: :short) %></td>
+                <td>
+                  <span class="status-badge" style="background: var(--bs-<%= category_color(invoice.budget_category) %>-bg-subtle, #e5e7eb); color: var(--bs-<%= category_color(invoice.budget_category) %>-text-emphasis, #1f2937);">
+                    <%= invoice.budget_category.name.titleize %>
+                  </span>
+                </td>
+                <td>
+                  <% centers = invoice.invoice_numbers.map { |num| num.cost_center&.name }.compact.uniq %>
+                  <% if centers.any? %>
+                    <span class="badge bg-secondary"><%= centers.first.upcase %></span>
+                    <% if centers.count > 1 %>
+                      <span class="badge bg-secondary" style="cursor: pointer;" data-bs-toggle="tooltip" title="<%= centers[1..-1].join(', ').upcase %>">
+                        +<%= centers.count - 2 %> outros
+                      </span>
+                    <% end %>
+                  <% else %>
+                    <span class="text-muted">—</span>
+                  <% end %>
+                </td>
+                <td class="text-end fw-bold text-success">
+                  R$ <%= number_to_currency(invoice.total, unit: "", separator: ",", delimiter: ".") %>
+                </td>
+                <td class="text-end">
+                  <%= link_to invoice_path(invoice), class: "icon-btn", title: "Ver detalhes" do %>
+                    <i class="fas fa-eye"></i>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-  <div class="card-body">
-    <table class="table table-striped table-hover">
-      <thead class="table-dark">
-        <tr>
-          <th>Fornecedor</th>
-          <th>NFs</th>
-          <th>Data</th>
-          <th>Categoria</th>
-          <th>Centro de Custo</th>
-          <th>Valor</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @latest_invoices.each do |invoice| %>
-          <tr>
-            <td>
-              <strong><%= invoice.supplier.name %></strong>
-              <br>
-              <small class="text-muted"><%= invoice.supplier.cnpj %></small>
-            </td>
-            <td>
-              <% invoice.invoice_numbers.each do |num| %>
-                <span class="badge bg-info"><%= num.number %></span>
-              <% end %>
-            </td>
-            <td><%= l(invoice.date_issued, format: :short) %></td>
-            <td>
-              <span class="badge bg-<%= category_color(invoice.budget_category) %>"> <%# herb:disable erb-no-interpolated-class-names %>
-                <%= invoice.budget_category.name.titleize %>
-              </span>
-            </td>
-            <td>
-              <% centers = invoice.invoice_numbers.map { |num| num.cost_center&.name }.compact.uniq %>
-              <% if centers.any? %>
-                <% centers.first(1).each do |center| %>
-                  <span class="badge bg-secondary d-block mb-1">
-                    <%= center.upcase %>
-                  </span>
-                <% end %>
-                <% if centers.count > 1 %>
-                  <span class="badge bg-secondary d-block mb-1" style="cursor: pointer;" data-bs-toggle="tooltip" title="<%= centers[1..-1].join(', ').upcase %>">
-                    +<%= centers.count - 2 %> outros
-                  </span>
-                <% end %>
-              <% else %>
-                <span class="text-muted">—</span>
-              <% end %>
-            </td>
-            <td class="fw-bold text-success">
-              R$ <%= number_to_currency(invoice.total, unit: "", separator: ",", delimiter: ".") %>
-            </td>
-            <td>
-              <%= link_to invoice_path(invoice), class: "btn btn-sm btn-outline-primary", title: "Ver detalhes" do %>
-                <i class="fas fa-eye"></i>
-              <% end %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+
+  <!-- ========== BOTÃO VOLTAR ========== -->
+  <div class="mt-4">
+    <%= link_to "Voltar", root_path, class: "btn-outline w-100 text-center" %>
   </div>
+
 </div>
-<%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>

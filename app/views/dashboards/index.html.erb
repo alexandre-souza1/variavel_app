@@ -1,284 +1,266 @@
-<div class="container-fluid py-4">
-  <!-- Cabeçalho -->
-  <div class="row mb-4 align-items-center">
-    <div class="col-md-7">
-      <h1 class="display-5 fw-bold mb-1">Gestão de Frotas - ROTA</h1>
-      <p class="text-muted fs-5">
-        <i class="fas fa-calendar-alt me-2"></i>
-        <%= l(Date.current, format: :long) %>
-        &nbsp;|&nbsp; Bem-vindo(a), <strong><%= current_user&.name || "Usuário" %></strong>
-      </p>
-    </div>
-    <div class="col-md-5 text-md-end">
-      <%= link_to dashboard_invoices_path, class: "btn btn-outline-primary me-2" do %>
-        <i class="fas fa-file-invoice"></i> Faturas
-      <% end %>
-      <%= link_to action_plans_path, class: "btn btn-outline-warning me-2" do %>
-        <i class="fas fa-tasks"></i> Ações
-      <% end %>
-      <%= link_to fleet_availabilities_path, class: "btn btn-outline-success me-2" do %>
-        <i class="fas fa-truck"></i> Disponibilidade
-      <% end %>
-      <%= link_to routines_path, class: "btn btn-outline-danger me-2" do %>
-        <i class="fa-solid fa-table"></i> GEROT
-      <% end %>
-    </div>
-  </div>
+<div class="dashboard-page">
 
-  <!-- Cards de Resumo (KPI) -->
-  <div class="row mb-4 g-3">
-    <div class="col-md-3 col-sm-6">
-      <div class="card border-0 shadow-lg rounded-4 h-100">
-        <div class="card-body d-flex align-items-center">
-          <div class="me-3 bg-primary bg-opacity-10 p-3 rounded-circle">
-            <i class="fas fa-truck fa-2x text-primary"></i>
-          </div>
-          <div>
-            <h6 class="text-muted mb-1">Total de Veículos</h6>
-            <h3 class="fw-bold mb-0"><%= @total_vehicles %></h3>
-          </div>
-        </div>
+  <!-- ========== CABEÇALHO ========== -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div>
+        <h1>
+          <i class="bi bi-truck"></i>
+          Gestão de Frotas - ROTA
+        </h1>
+        <p class="subtitle">
+          <i class="bi bi-calendar3 me-1"></i>
+          <%= l(Date.current, format: :long) %>
+          &nbsp;|&nbsp; Bem-vindo(a), <strong><%= current_user&.name || "Usuário" %></strong>
+        </p>
+      </div>
+      <div class="header-actions">
+        <%= link_to dashboard_invoices_path, class: "btn-outline" do %>
+          <i class="bi bi-file-earmark-text"></i> Faturas
+        <% end %>
+        <%= link_to action_plans_path, class: "btn-outline" do %>
+          <i class="bi bi-list-task"></i> Ações
+        <% end %>
+        <%= link_to fleet_availabilities_path, class: "btn-outline" do %>
+          <i class="bi bi-truck"></i> Disponibilidade
+        <% end %>
+        <%= link_to routines_path, class: "btn-primary-solid" do %>
+          <i class="bi bi-table"></i> GEROT
+        <% end %>
       </div>
     </div>
-    <div class="col-md-3 col-sm-6">
-      <div class="card border-0 shadow-lg rounded-4 h-100">
-        <div class="card-body d-flex align-items-center">
-          <div class="me-3 bg-success bg-opacity-10 p-3 rounded-circle">
-            <i class="fas fa-tags fa-2x text-success"></i>
-          </div>
-          <div>
-            <h6 class="text-muted mb-1">Tipos de Veículo</h6>
-            <h3 class="fw-bold mb-0"><%= @vehicles_by_type.keys.size %></h3>
-          </div>
-        </div>
+  </header>
+
+  <!-- ========== CARDS KPI ========== -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon bg-primary-soft">
+        <i class="bi bi-truck text-primary"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Total de Veículos</span>
+        <span class="kpi-value"><%= @total_vehicles %></span>
       </div>
     </div>
-    <div class="col-md-3 col-sm-6">
-      <div class="card border-0 shadow-lg rounded-4 h-100">
-        <div class="card-body d-flex align-items-center">
-          <div class="me-3 bg-warning bg-opacity-10 p-3 rounded-circle">
-            <i class="fas fa-calendar-times fa-2x text-warning"></i>
-          </div>
-          <div>
-            <h6 class="text-muted mb-1">Parados no Mês</h6>
-            <h3 class="fw-bold mb-0"><%= @vehicles_not_used_this_month&.count || 0 %></h3>
-          </div>
-        </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon bg-success-soft">
+        <i class="bi bi-tags text-success"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Tipos de Veículo</span>
+        <span class="kpi-value"><%= @vehicles_by_type.keys.size %></span>
       </div>
     </div>
-    <div class="col-md-3 col-sm-6">
-      <div class="card border-0 shadow-lg rounded-4 h-100">
-        <div class="card-body d-flex align-items-center">
-          <div class="me-3 bg-danger bg-opacity-10 p-3 rounded-circle">
-            <i class="fas fa-clock fa-2x text-danger"></i>
-          </div>
-          <div>
-            <h6 class="text-muted mb-1">Tarefas Pendentes</h6>
-            <h3 class="fw-bold mb-0"><%= @pending_tasks&.count || 0 %></h3>
-          </div>
-        </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon bg-warning-soft">
+        <i class="bi bi-calendar-x text-warning"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Parados no Mês</span>
+        <span class="kpi-value"><%= @vehicles_not_used_this_month&.count || 0 %></span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon bg-danger-soft">
+        <i class="bi bi-clock text-danger"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Tarefas Pendentes</span>
+        <span class="kpi-value"><%= @pending_tasks&.count || 0 %></span>
       </div>
     </div>
   </div>
 
-  <!-- Linha com dois gráficos -->
-  <div class="row mb-4 g-3">
-    <!-- Gráfico de custos mensais (evolução) -->
-    <div class="col-lg-6">
-      <div class="card border-0 shadow-lg rounded-4 h-100">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-          <h5 class="mb-0"><i class="fas fa-chart-line text-primary me-2"></i> Evolução dos Custos</h5>
-          <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-primary"><%= @total_invoices %> faturas</span>
-            <div class="dropdown">
-              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="categoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <%= @selected_category_id.present? ? @categories.find { |c| c.id == @selected_category_id }&.name : "Todas" %>
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="categoryDropdown">
-                <li><%= link_to "Todas", dashboard_path, class: "dropdown-item" %></li>
-                <% @categories.each do |category| %>
-                  <li><%= link_to category.name, dashboard_path(category_id: category.id), class: "dropdown-item" %></li>
-                <% end %>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <% if @monthly_costs.present? %>
-            <%= column_chart @monthly_costs,
-                  colors: ["#3b82f6"],
-                  suffix: " R$",
-                  thousands: ".",
-                  decimal: ",",
-                  library: {
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
-                  } %>
-          <% else %>
-            <p class="text-muted text-center py-4">Nenhum dado de custo disponível para esta categoria.</p>
-          <% end %>
-        </div>
-      </div>
-    </div>
-
-    <!-- Gráfico de gastos por categoria (donut) -->
-    <div class="col-lg-6">
-      <div class="card border-0 shadow-lg rounded-4 h-100">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-          <h5 class="mb-0"><i class="fas fa-chart-pie text-success me-2"></i> Gastos por Categoria (Mês)</h5>
-        </div>
-        <div class="card-body d-flex flex-column justify-content-center">
-          <% if @expenses_by_category.present? %>
-            <%= pie_chart @expenses_by_category,
-                  donut: true,
-                  colors: ["#3b82f6", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6", "#ec4899"],
-                  library: {
-                    plugins: {
-                      legend: { position: 'bottom' }
-                    }
-                  } %>
-          <% else %>
-            <p class="text-muted text-center py-4">Nenhuma despesa categorizada neste mês.</p>
-          <% end %>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Cards de informações específicas -->
-  <div class="row g-3 mb-4">
-    <!-- Card: Veículos que não rodaram no mês (limitado a 10) -->
-    <div class="col-lg-6">
-      <div class="card border-0 shadow-lg rounded-4 h-100">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-          <h5 class="mb-0"><i class="fas fa-pause-circle text-danger me-2"></i> Veículos sem Movimentação no Mês</h5>
-          <!-- Indicador de atualização dos mapas -->
-          <div class="mt-1">
-            <% if @last_map_date.present? %>
-              <% days_ago = (Date.current - @last_map_date).to_i %>
-              <% if days_ago == 0 %>
-                <span class="badge bg-success">
-                  <i class="fas fa-sync-alt me-1"></i> Dados atualizados hoje
-                </span>
-              <% elsif days_ago <= 2 %>
-                <span class="badge bg-warning text-dark">
-                  <i class="fas fa-clock me-1"></i> Última atualização: há <%= days_ago %> dia(s)
-                </span>
-              <% else %>
-                <span class="badge bg-danger">
-                  <i class="fas fa-exclamation-triangle me-1"></i> Último mapa: <%= l(@last_map_date, format: :short) %>
-                </span>
+  <!-- ========== GRÁFICOS ========== -->
+  <div class="charts-grid">
+    <!-- Evolução dos Custos -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h5><i class="bi bi-graph-up-arrow text-primary me-2"></i> Evolução dos Custos</h5>
+        <div class="chart-actions">
+          <span class="badge bg-primary-soft text-primary"><%= @total_invoices %> faturas</span>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <%= @selected_category_id.present? ? @categories.find { |c| c.id == @selected_category_id }&.name : "Todas" %>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><%= link_to "Todas", dashboard_path, class: "dropdown-item" %></li>
+              <% @categories.each do |category| %>
+                <li><%= link_to category.name, dashboard_path(category_id: category.id), class: "dropdown-item" %></li>
               <% end %>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="chart-body">
+        <% if @monthly_costs.present? %>
+          <%= column_chart @monthly_costs,
+                colors: ["#3b82f6"],
+                suffix: " R$",
+                thousands: ".",
+                decimal: ",",
+                library: {
+                  plugins: { legend: { display: false } },
+                  scales: { y: { beginAtZero: true } }
+                } %>
+        <% else %>
+          <div class="empty-chart">
+            <i class="bi bi-bar-chart"></i>
+            <p>Nenhum dado de custo disponível para esta categoria.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Gastos por Categoria -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h5><i class="bi bi-pie-chart text-success me-2"></i> Gastos por Categoria (Mês)</h5>
+      </div>
+      <div class="chart-body">
+        <% if @expenses_by_category.present? %>
+          <%= pie_chart @expenses_by_category,
+                donut: true,
+                colors: ["#3b82f6", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6", "#ec4899"],
+                library: {
+                  plugins: { legend: { position: 'bottom' } }
+                } %>
+        <% else %>
+          <div class="empty-chart">
+            <i class="bi bi-pie-chart"></i>
+            <p>Nenhuma despesa categorizada neste mês.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== CARDS DE INFORMAÇÕES ========== -->
+  <div class="info-grid">
+    <!-- Veículos sem movimentação -->
+    <div class="info-card">
+      <div class="info-card-header">
+        <h5><i class="bi bi-pause-circle text-danger me-2"></i> Veículos sem Movimentação no Mês</h5>
+        <div class="info-badges">
+          <% if @last_map_date.present? %>
+            <% days_ago = (Date.current - @last_map_date).to_i %>
+            <% if days_ago == 0 %>
+              <span class="status-badge active">
+                <i class="bi bi-check-circle"></i> Dados atualizados hoje
+              </span>
+            <% elsif days_ago <= 2 %>
+              <span class="status-badge inactive">
+                <i class="bi bi-clock"></i> Última atualização: há <%= days_ago %> dia(s)
+              </span>
             <% else %>
-              <span class="badge bg-secondary">
-                <i class="fas fa-times me-1"></i> Nenhum mapa encontrado
+              <span class="status-badge" style="background: #fee2e2; color: #991b1b;">
+                <i class="bi bi-exclamation-triangle"></i> Último mapa: <%= l(@last_map_date, format: :short) %>
               </span>
             <% end %>
-          </div>
+          <% else %>
+            <span class="status-badge" style="background: #e5e7eb; color: #6b7280;">
+              <i class="bi bi-x-circle"></i> Nenhum mapa encontrado
+            </span>
+          <% end %>
           <span class="badge bg-danger"><%= @vehicles_not_used_this_month&.count || 0 %></span>
         </div>
-        <div class="card-body">
-          <% vehicles = @vehicles_not_used_this_month.take(10) %>
-          <% if vehicles.present? %>
-            <ul class="list-group list-group-flush">
-              <% vehicles.each do |vehicle| %>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span>
-                    <strong><%= vehicle.placa %></strong>
-                    <span class="text-muted ms-2"><%= vehicle.tipo || "Sem tipo" %></span>
-                  </span>
-                  <span class="badge bg-secondary"><%= vehicle.perfil || "Sem perfil" %></span>
-                </li>
-              <% end %>
-            </ul>
-            <% if @vehicles_not_used_this_month.count > 10 %>
-              <p class="text-muted small mt-2">Exibindo 10 de <%= @vehicles_not_used_this_month.count %></p>
+      </div>
+      <div class="info-card-body">
+        <% vehicles = @vehicles_not_used_this_month.take(10) %>
+        <% if vehicles.present? %>
+          <ul class="vehicle-list">
+            <% vehicles.each do |vehicle| %>
+              <li>
+                <span class="vehicle-placa"><%= vehicle.placa %></span>
+                <span class="vehicle-tipo"><%= vehicle.tipo || "Sem tipo" %></span>
+                <span class="vehicle-perfil"><%= vehicle.perfil || "Sem perfil" %></span>
+              </li>
             <% end %>
-            <div class="mt-3 text-center">
-              <%= link_to "Ver todos os veículos", placas_por_setor_path, class: "btn btn-outline-danger btn-sm" %>
-            </div>
-          <% else %>
-            <p class="text-success text-center py-3">
-              <i class="fas fa-check-circle me-2"></i> Todos os veículos ROTA já rodaram este mês!
-            </p>
+          </ul>
+          <% if @vehicles_not_used_this_month.count > 10 %>
+            <p class="text-muted small mt-2">Exibindo 10 de <%= @vehicles_not_used_this_month.count %></p>
           <% end %>
-        </div>
+          <div class="text-center mt-3">
+            <%= link_to "Ver todos os veículos", placas_por_setor_path, class: "btn-outline btn-sm" %>
+          </div>
+        <% else %>
+          <div class="empty-state-compact">
+            <i class="bi bi-check-circle-fill text-success"></i>
+            <span>Todos os veículos ROTA já rodaram este mês!</span>
+          </div>
+        <% end %>
       </div>
     </div>
 
-    <!-- Card: Resumo de Custos e Tarefas (com vencimento) -->
-    <div class="col-lg-6">
-      <div class="card border-0 shadow-lg rounded-4 h-100">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-          <h5 class="mb-0"><i class="fas fa-info-circle text-secondary me-2"></i> Resumo Rápido</h5>
-        </div>
-        <div class="card-body">
-          <div class="row g-3">
-            <!-- Custo do mês -->
-            <div class="col-sm-6">
-              <div class="p-3 bg-light rounded-3 h-100 d-flex flex-column">
-                <span class="text-muted small">Custo Total do Mês</span>
-                <span class="fs-3 fw-bold text-success">
-                  R$ <%= number_with_precision(@current_month_cost || 0, precision: 2, delimiter: ".") %>
-                </span>
-                <%= link_to "Ver detalhes", dashboard_invoices_path, class: "btn btn-sm btn-success mt-2" %>
-              </div>
-            </div>
-            <!-- Tarefas com vencimento próximo -->
-            <div class="col-sm-6">
-              <div class="p-3 bg-light rounded-3 h-100 d-flex flex-column">
-                <span class="text-muted small">Vencendo em breve</span>
-                <% if @tasks_due_soon.present? %>
-                  <ul class="list-unstyled mb-0">
-                    <% @tasks_due_soon.limit(3).each do |task| %>
-                      <li class="mb-1">
-                        <i class="fas fa-exclamation-circle text-warning me-1" style="font-size: 8px;"></i>
-                        <%= link_to truncate(task.title, length: 20), action_plan_path(task.bucket.action_plan), class: "text-decoration-none" %>
-                        <br><small class="text-muted"><%= l(task.due_at.to_date, format: :short) if task.due_at %></small>
-                      </li>
-                    <% end %>
-                  </ul>
-                  <%= link_to "Ver todas", action_plans_path, class: "btn btn-sm btn-warning mt-2" %>
-                <% else %>
-                  <p class="text-muted mb-0">Nenhuma tarefa próxima do vencimento.</p>
+    <!-- Resumo Rápido -->
+    <div class="info-card">
+      <div class="info-card-header">
+        <h5><i class="bi bi-info-circle text-secondary me-2"></i> Resumo Rápido</h5>
+      </div>
+      <div class="info-card-body">
+        <div class="summary-grid">
+          <!-- Custo do mês -->
+          <div class="summary-item">
+            <span class="summary-label">Custo Total do Mês</span>
+            <span class="summary-value text-success">
+              R$ <%= number_with_precision(@current_month_cost || 0, precision: 2, delimiter: ".") %>
+            </span>
+            <%= link_to "Ver detalhes", dashboard_invoices_path, class: "btn-primary-solid btn-sm" %>
+          </div>
+
+          <!-- Tarefas com vencimento -->
+          <div class="summary-item">
+            <span class="summary-label">Vencendo em breve</span>
+            <% if @tasks_due_soon.present? %>
+              <ul class="task-list-compact">
+                <% @tasks_due_soon.limit(3).each do |task| %>
+                  <li>
+                    <i class="bi bi-exclamation-circle text-warning"></i>
+                    <%= link_to truncate(task.title, length: 25), action_plan_path(task.bucket.action_plan), class: "task-link" %>
+                    <span class="task-date"><%= l(task.due_at.to_date, format: :short) if task.due_at %></span>
+                  </li>
                 <% end %>
-              </div>
-            </div>
+              </ul>
+              <%= link_to "Ver todas", action_plans_path, class: "btn-outline btn-sm" %>
+            <% else %>
+              <p class="text-muted mb-0">Nenhuma tarefa próxima do vencimento.</p>
+            <% end %>
           </div>
-          <!-- Últimas atividades -->
-          <% if @recent_activities.present? %>
-            <hr class="my-3">
-            <h6 class="text-muted"><i class="fas fa-history me-1"></i> Últimas Atividades</h6>
-            <ul class="list-unstyled small">
-              <% @recent_activities.each do |activity| %>
-                <li><%= activity %></li>
-              <% end %>
-            </ul>
-          <% end %>
         </div>
+
+        <!-- Últimas atividades -->
+        <% if @recent_activities.present? %>
+          <hr>
+          <h6 class="text-muted"><i class="bi bi-clock-history me-1"></i> Últimas Atividades</h6>
+          <ul class="activity-list">
+            <% @recent_activities.each do |activity| %>
+              <li><%= activity %></li>
+            <% end %>
+          </ul>
+        <% end %>
       </div>
     </div>
   </div>
 
-  <!-- Links de Acesso Rápido -->
-  <div class="row">
-    <div class="col-12">
-      <div class="card border-0 shadow-lg rounded-4">
-        <div class="card-body">
-          <h6 class="mb-3"><i class="fas fa-rocket me-2"></i> Acesso Rápido</h6>
-          <div class="d-flex flex-wrap gap-2">
-            <%= link_to placas_por_setor_path, class: "btn btn-outline-primary" do %>
-              <i class="fas fa-list me-1"></i> Placas por Setor
-            <% end %>
-            <%= link_to dashboard_invoices_path, class: "btn btn-outline-success" do %>
-              <i class="fas fa-file-invoice-dollar me-1"></i> Faturas
-            <% end %>
-            <%= link_to action_plans_path, class: "btn btn-outline-warning" do %>
-              <i class="fas fa-clipboard-list me-1"></i> Planos de Ação
-            <% end %>
-          </div>
-        </div>
+  <!-- ========== ACESSO RÁPIDO ========== -->
+  <div class="quick-access">
+    <div class="quick-access-inner">
+      <span class="quick-access-label"><i class="bi bi-rocket me-2"></i> Acesso Rápido</span>
+      <div class="quick-access-links">
+        <%= link_to placas_por_setor_path, class: "btn-outline" do %>
+          <i class="bi bi-list-ul"></i> Placas por Setor
+        <% end %>
+        <%= link_to dashboard_invoices_path, class: "btn-outline" do %>
+          <i class="bi bi-file-earmark-dollar"></i> Faturas
+        <% end %>
+        <%= link_to action_plans_path, class: "btn-outline" do %>
+          <i class="bi bi-clipboard-check"></i> Planos de Ação
+        <% end %>
       </div>
     </div>
   </div>
+
 </div>
