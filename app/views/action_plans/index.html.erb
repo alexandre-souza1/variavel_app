@@ -1,172 +1,138 @@
-<div class="container-fluid">
+<div class="dashboard-tasks">
 
-  <!-- HEADER -->
-  <!-- Cabeçalho -->
-  <div class="mb-4">
-    <div class="card-header py-3">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div>
-          <h1 class="fw-bold mb-1">
-            <i class="bi bi-house-door-fill me-2"></i>
-            Meu Painel
-          </h1>
-          <small>Acompanhamento das suas tarefas e planos</small>
-        </div>
-
-        <div class="d-flex gap-2">
-          <button class="btn btn-light d-lg-none"
-                  data-bs-toggle="offcanvas"
-                  data-bs-target="#plansOffcanvas">
-            <i class="bi bi-folder2-open me-1"></i>
-            Meus Planos
-          </button>
-
-          <%= link_to new_action_plan_path, class: "btn btn-success" do %>
-            <i class="bi bi-plus-circle-fill me-1"></i>
-            Novo Plano
-          <% end %>
-        </div>
+  <!-- ========== CABEÇALHO ========== -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div>
+        <h1>
+          <i class="bi bi-house-door-fill"></i>
+          Meu Painel
+        </h1>
+        <p class="subtitle">Acompanhamento das suas tarefas e planos</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-outline d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#plansOffcanvas">
+          <i class="bi bi-folder2-open me-1"></i> Meus Planos
+        </button>
+        <%= link_to new_action_plan_path, class: "btn-primary-solid" do %>
+          <i class="bi bi-plus-circle-fill me-1"></i> Novo Plano
+        <% end %>
       </div>
     </div>
-  </div>
+  </header>
 
-  <!-- ROW PRINCIPAL: coluna de planos (desktop) + conteúdo -->
-  <div class="row align-items-stretch">
+  <!-- ========== ROW PRINCIPAL (Bootstrap Grid) ========== -->
+  <div class="row g-4 align-items-stretch">
 
-    <!-- COLUNA LATERAL – PLANOS (desktop apenas) -->
+    <!-- COLUNA LATERAL – PLANOS (desktop) -->
     <div class="col-lg-3 d-none d-lg-flex">
-      <div class="card border-0 shadow-lg h-100 w-100">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-          <h5 class="mb-0 fw-bold">
-            <i class="bi bi-kanban-fill me-2"></i>
-            Meus Planos
-          </h5>
+      <div class="plans-card w-100">
+        <div class="plans-card-header">
+          <h5><i class="bi bi-kanban-fill me-2"></i> Meus Planos</h5>
+          <span class="badge bg-primary-soft text-primary"><%= @action_plans.count %></span>
         </div>
-        <div class="card-body p-0">
-          <div style="max-height: 580px; overflow-y: auto;">
+        <div class="plans-card-body">
+          <div class="plans-scroll">
             <%= render "plans_list", action_plans: @action_plans %>
           </div>
         </div>
-        <div class="card-footer text-center">
-          <%= link_to new_action_plan_path, class: "btn btn-sm btn-primary w-100" do %>
-            <i class="fas fa-plus me-1"></i> Novo Plano
+        <div class="plans-card-footer">
+          <%= link_to new_action_plan_path, class: "btn-primary-solid btn-sm w-100" do %>
+            <i class="bi bi-plus-circle me-1"></i> Novo Plano
           <% end %>
         </div>
       </div>
     </div>
 
     <!-- CONTEÚDO PRINCIPAL -->
-    <div class="col-lg-9 d-flex flex-column">
+    <div class="col-lg-9 d-flex flex-column gap-4">
 
-    <!-- Cards resumo -->
-    <div class="row g-3 mb-4">
-      <div class="col-md-3">
-        <div class="card border-0 shadow-lg h-100">
-          <div class="card-body d-flex align-items-center">
-            <div class="display-5 text-primary me-3">
-              <i class="bi bi-list-task"></i>
+      <!-- CARDS DE RESUMO (KPI) -->
+      <div class="row g-3">
+        <div class="col-md-3 col-6">
+          <div class="kpi-card">
+            <div class="kpi-icon bg-primary-soft">
+              <i class="bi bi-list-task text-primary"></i>
             </div>
-            <div>
-              <small class="text-muted">Tarefas abertas</small>
-              <h2 class="fw-bold mb-0"><%= @my_tasks.count %></h2>
+            <div class="kpi-info">
+              <span class="kpi-label">Tarefas abertas</span>
+              <span class="kpi-value"><%= @my_tasks.count %></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-6">
+          <div class="kpi-card clickable" data-bs-toggle="modal" data-bs-target="#overdueTasksModal">
+            <div class="kpi-icon bg-danger-soft">
+              <i class="bi bi-alarm-fill text-danger"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Atrasadas</span>
+              <span class="kpi-value text-danger"><%= @overdue_tasks.count %></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-6">
+          <div class="kpi-card">
+            <div class="kpi-icon bg-success-soft">
+              <i class="bi bi-kanban-fill text-success"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Planos</span>
+              <span class="kpi-value"><%= @action_plans.count %></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-6">
+          <div class="kpi-card clickable" data-bs-toggle="modal" data-bs-target="#todayTasksModal">
+            <div class="kpi-icon bg-warning-soft">
+              <i class="bi bi-calendar-check-fill text-warning"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Hoje</span>
+              <span class="kpi-value"><%= @today_tasks.count %></span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="col-md-3">
-        <div class="card border-0 shadow-lg h-100"
-            role="button"
-            data-bs-toggle="modal"
-            data-bs-target="#overdueTasksModal">
-          <div class="card-body d-flex align-items-center">
-            <div class="display-5 text-danger me-3">
-              <i class="bi bi-alarm-fill"></i>
-            </div>
-            <div>
-              <small class="text-muted">Atrasadas</small>
-              <h2 class="fw-bold text-danger mb-0"><%= @overdue_tasks.count %></h2>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-3">
-        <div class="card border-0 shadow-lg h-100">
-          <div class="card-body d-flex align-items-center">
-            <div class="display-5 text-success me-3">
-              <i class="bi bi-kanban-fill"></i>
-            </div>
-            <div>
-              <small class="text-muted">Planos</small>
-              <h2 class="fw-bold mb-0"><%= @action_plans.count %></h2>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-3">
-        <div class="card border-0 shadow-lg h-100"
-            role="button"
-            data-bs-toggle="modal"
-            data-bs-target="#todayTasksModal">
-          <div class="card-body d-flex align-items-center">
-            <div class="display-5 text-warning me-3">
-              <i class="bi bi-calendar-check-fill"></i>
-            </div>
-            <div>
-              <small class="text-muted">Hoje</small>
-              <h2 class="fw-bold mb-0"><%= @today_tasks.count %></h2>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-      <!-- CALENDÁRIO + PRÓXIMAS AÇÕES (mesma altura) -->
-      <div class="row align-items-stretch">
-
+      <!-- CALENDÁRIO + PRÓXIMAS AÇÕES -->
+      <div class="row g-3">
         <!-- CALENDÁRIO -->
         <div class="col-lg-7 d-flex">
-          <div class="card border-0 shadow-lg w-100 d-flex flex-column">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-
-                <h5 class="mb-0 fw-bold">
-                    <i class="bi bi-calendar3 me-2"></i>
-                    Calendário de Prazos
-                </h5>
-
+          <div class="chart-card w-100">
+            <div class="chart-header">
+              <h5><i class="bi bi-calendar3 me-2"></i> Calendário de Prazos</h5>
             </div>
-            <div class="card-body flex-grow-1 p-2 overflow-y-auto">
+            <div class="chart-body calendar-body">
               <% if @calendar_tasks.any? %>
                 <%= month_calendar(events: @calendar_tasks, attribute: :due_at, start_date: @calendar_start_date) do |date, tasks| %>
-                  <div class="fw-bold"><%= date.day %></div>
-                  <% if tasks.any? %>
-                    <div class="task-list mt-1" style="max-height: 50px; overflow-y: auto; font-size: 0.65rem; line-height: 1.2; max-width: 100%; overflow-x: hidden;">
-                      <% tasks.first(2).each do |task| %>
-                        <div class="task-item" style="max-width: 100%;">
-                          <a href="#" <%# herb:disable html-anchor-require-href %>
-                             class="text-decoration-none d-block text-truncate"
-                             style="max-width: 100%;"
-                             data-bs-toggle="modal"
-                             data-bs-target="#modal-day-<%= date %>">
+                  <div class="calendar-day">
+                    <div class="calendar-day-number"><%= date.day %></div>
+                    <% if tasks.any? %>
+                      <div class="calendar-tasks">
+                        <% tasks.first(2).each do |task| %>
+                          <div class="calendar-task" data-bs-toggle="modal" data-bs-target="#modal-day-<%= date %>">
                             <%= task.title %>
-                          </a>
-                        </div>
+                          </div>
+                        <% end %>
+                      </div>
+                      <% if tasks.size > 2 %>
+                        <span class="calendar-more" data-bs-toggle="modal" data-bs-target="#modal-day-<%= date %>">
+                          +<%= tasks.size - 2 %>
+                        </span>
                       <% end %>
-                    </div>
-                    <% if tasks.size > 2 %>
-                      <span class="badge bg-secondary mt-1" style="cursor: pointer; font-size: 0.65rem;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modal-day-<%= date %>">
-                        +<%= tasks.size - 2 %>
-                      </span>
                     <% end %>
-                  <% end %>
+                  </div>
                   <%= render "calendar_modal", date: date, tasks: tasks %>
                 <% end %>
               <% else %>
-                <p class="text-muted mb-0">Nenhuma tarefa com prazo definido.</p>
+                <div class="empty-state-compact">
+                  <i class="bi bi-calendar2"></i>
+                  <span>Nenhuma tarefa com prazo definido.</span>
+                </div>
               <% end %>
             </div>
           </div>
@@ -174,99 +140,59 @@
 
         <!-- PRÓXIMAS AÇÕES -->
         <div class="col-lg-5 d-flex">
-          <div class="card border-0 shadow-lg w-100 d-flex flex-column">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-
-                <h5 class="mb-0 fw-bold">
-                    <i class="bi bi-lightning-charge-fill me-2"></i>
-                    Próximas ações
-                </h5>
-
+          <div class="chart-card w-100">
+            <div class="chart-header">
+              <h5><i class="bi bi-lightning-charge-fill me-2"></i> Próximas ações</h5>
             </div>
-            <div class="card-body p-0 overflow-y-auto" style="height: 350px;">
-              <div class="list-group list-group-flush">
-                <% @my_tasks.limit(10).each do |task| %>
-                  <div class="list-group-item py-3">
-                    <div class="fw-semibold">
-
-                      <i class="bi bi-check2-circle text-primary me-1"></i>
-
-                      <%= task.title %>
-
-                    </div>
-
-                    <div class="small text-muted mt-2">
-
-                      <i class="bi bi-kanban me-1"></i>
-
-                      <%= task.bucket.action_plan.name %>
-
-                    </div>
-
-                    <% if task.due_at %>
-
-                      <div class="small text-muted">
-
-                        <i class="bi bi-calendar-event me-1"></i>
-
-                        <%= l(task.due_at, format: :short) %>
-
+            <div class="chart-body tasks-list-body">
+              <% if @my_tasks.any? %>
+                <div class="tasks-list">
+                  <% @my_tasks.limit(10).each do |task| %>
+                    <div class="task-item">
+                      <div class="task-item-header">
+                        <i class="bi bi-check2-circle text-primary me-1"></i>
+                        <span class="task-title"><%= task.title %></span>
                       </div>
-                    <% end %>
-                  </div>
-                <% end %>
-                <% if @my_tasks.empty? %>
-                  <div class="text-center py-5">
-                    <i class="bi bi-check-circle display-4 text-success"></i>
-
-                    <h5 class="mt-3">
-                      Tudo em dia!
-                    </h5>
-
-                    <p class="text-muted mb-0">
-                      Você não possui tarefas pendentes.
-                    </p>
-
-                  </div>
-                <% end %>
-              </div>
+                      <div class="task-item-meta">
+                        <span><i class="bi bi-kanban me-1"></i> <%= task.bucket.action_plan.name %></span>
+                        <% if task.due_at %>
+                          <span><i class="bi bi-calendar-event me-1"></i> <%= l(task.due_at, format: :short) %></span>
+                        <% end %>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="empty-state-compact">
+                  <i class="bi bi-check-circle-fill text-success"></i>
+                  <span>Tudo em dia! Você não possui tarefas pendentes.</span>
+                </div>
+              <% end %>
             </div>
           </div>
         </div>
+      </div>
 
-      </div> <!-- fim row calendário+próximas -->
+    </div>
+  </div>
 
-    </div> <!-- fim coluna conteúdo principal -->
-
-  </div> <!-- fim row principal -->
-
-  <!-- OFFCANVAS – PLANOS (mobile) -->
+  <!-- ========== OFFCANVAS – PLANOS (mobile) ========== -->
   <div class="offcanvas offcanvas-end d-lg-none" tabindex="-1" id="plansOffcanvas">
-    <div class="offcanvas-header bg-light d-flex justify-content-between align-items-center">
-        <h5 class="offcanvas-title">
-
-            <i class="bi bi-kanban-fill me-2"></i>
-
-            Meus Planos
-
-        </h5>
-        <button
-            type="button"
-            class="btn-close btn-close"
-            data-bs-dismiss="offcanvas">
-        </button>
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title"><i class="bi bi-kanban-fill me-2"></i> Meus Planos</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body">
       <%= render "plans_list", action_plans: @action_plans %>
       <div class="mt-3">
-        <%= link_to new_action_plan_path, class: "btn btn-primary w-100" do %>
-          <i class="fas fa-plus me-1"></i> Novo Plano
+        <%= link_to new_action_plan_path, class: "btn-primary-solid w-100" do %>
+          <i class="bi bi-plus-circle me-1"></i> Novo Plano
         <% end %>
       </div>
     </div>
   </div>
 
-  <!-- MODAIS (excluir, hoje, atrasadas) -->
+  <!-- ========== MODAIS ========== -->
   <% @action_plans.each do |plan| %>
     <%= render "delete_modal", plan: plan %>
   <% end %>

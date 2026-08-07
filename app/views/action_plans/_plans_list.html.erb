@@ -1,19 +1,15 @@
 <% if action_plans.any? %>
-  <div class="list-group list-group-flush">
+  <div class="plans-list">
     <% action_plans.each do |plan| %>
-      <div class="list-group-item">
-        <h6 class="mb-1"><%= plan.name %></h6>
-        <p class="text-muted small mb-1">
-          <%= plan.description&.truncate(80) %>
-        </p>
-        <div class="d-flex gap-2 flex-wrap">
-          <%= link_to "Abrir", action_plan_path(plan), class: "btn btn-sm btn-primary" %>
-          <% if plan.user == current_user or current_user.admin? %>
-            <%= link_to "Editar", edit_action_plan_path(plan), class: "btn btn-sm btn-outline-secondary" %>
-            <button class="btn btn-sm btn-outline-danger"
-                    data-bs-toggle="modal"
-                    data-bs-target="#deleteModal-<%= plan.id %>">
-              Excluir
+      <div class="plan-item">
+        <h6 class="plan-name"><%= plan.name %></h6>
+        <p class="plan-description"><%= plan.description&.truncate(80) %></p>
+        <div class="plan-actions">
+          <%= link_to "Abrir", action_plan_path(plan), class: "btn-primary-solid btn-sm" %>
+          <% if plan.user == current_user || current_user.admin? %>
+            <%= link_to "Editar", edit_action_plan_path(plan), class: "btn-outline btn-sm" %>
+            <button class="icon-btn danger" data-bs-toggle="modal" data-bs-target="#deleteModal-<%= plan.id %>">
+              <i class="bi bi-trash3"></i>
             </button>
           <% end %>
         </div>
@@ -21,7 +17,8 @@
     <% end %>
   </div>
 <% else %>
-  <div class="p-3 text-muted text-center">
-    Nenhum plano criado ainda.
+  <div class="empty-state-compact">
+    <i class="bi bi-folder-plus"></i>
+    <span>Nenhum plano criado ainda.</span>
   </div>
 <% end %>

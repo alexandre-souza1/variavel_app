@@ -1,76 +1,37 @@
 <div class="modal fade" id="modal-day-<%= date %>" tabindex="-1">
-
   <div class="modal-dialog modal-lg">
-
     <div class="modal-content">
-
       <div class="modal-header">
         <h5 class="modal-title">
-          📅 Tarefas do dia <%= l(date, format: "%d de %B") %>
+          <i class="bi bi-calendar3 me-2"></i>
+          Tarefas do dia <%= l(date, format: "%d de %B") %>
         </h5>
-
-        <button class="btn-close"
-                data-bs-dismiss="modal">
-        </button>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-
-
       <div class="modal-body">
-
         <% tasks.each do |task| %>
-
-        <div class="border-bottom py-2 d-flex justify-content-between align-items-start">
-
-          <div>
-
-            <div class="fw-bold">
-              <%= task.title %>
+          <div class="modal-task-item">
+            <div class="modal-task-info">
+              <div class="modal-task-title"><%= task.title %></div>
+              <div class="modal-task-meta">
+                <span><i class="bi bi-folder me-1"></i> <%= task.bucket.name %></span>
+                <span><i class="bi bi-kanban me-1"></i> <%= task.bucket.action_plan.name %></span>
+              </div>
+              <div class="modal-task-users">
+                <% task.users.each do |user| %>
+                  <span class="user-badge"><%= user.name.split.first %></span>
+                <% end %>
+              </div>
             </div>
-
-            <small class="text-muted">
-              Bucket:
-              <%= task.bucket.name %>
-            </small>
-            <br>
-            <small class="text-muted">
-              Plano:
-              <%= task.bucket.action_plan.name %>
-            </small>
-
-            <div class="mt-1">
-              <% task.users.each do |user| %>
-                <span class="badge bg-secondary text-dark me-1">
-                  <%= user.name.split.first %>
-                </span>
+            <div class="modal-task-action">
+              <%= link_to action_plan_path(task.bucket.action_plan, task_id: task.id),
+                          class: "btn-primary-solid btn-sm" do %>
+                <i class="bi bi-arrow-right me-1"></i> Abrir
               <% end %>
             </div>
-
           </div>
-
-
-          <div class="ms-3">
-
-          <%= link_to action_plan_path(
-                task.bucket.action_plan,
-                task_id: task.id
-              ),
-              class: "btn btn-sm btn-outline-primary" do %>
-
-              <i class="fas fa-arrow-right me-1"></i>
-              Abrir tarefa no plano
-
-            <% end %>
-
-          </div>
-
-        </div>
-
         <% end %>
-
       </div>
-
     </div>
-
   </div>
-
 </div>

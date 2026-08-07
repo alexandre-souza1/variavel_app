@@ -1,91 +1,46 @@
 <div class="modal fade" id="todayTasksModal" tabindex="-1">
-
   <div class="modal-dialog modal-lg">
-
     <div class="modal-content">
-
       <div class="modal-header">
         <h5 class="modal-title">
-          📅 Tarefas para hoje
+          <i class="bi bi-calendar-check me-2"></i>
+          Tarefas para hoje
         </h5>
-
-        <button class="btn-close"
-                data-bs-dismiss="modal">
-        </button>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-
-
       <div class="modal-body">
-
         <% if today_tasks.any? %>
-
           <% today_tasks.each do |task| %>
-
-            <div class="border-bottom py-2 d-flex justify-content-between align-items-start">
-
-              <div>
-
-                <div class="fw-bold">
-                  <%= task.title %>
+            <div class="modal-task-item">
+              <div class="modal-task-info">
+                <div class="modal-task-title"><%= task.title %></div>
+                <div class="modal-task-meta">
+                  <span><i class="bi bi-folder me-1"></i> <%= task.bucket.name %></span>
+                  <span><i class="bi bi-kanban me-1"></i> <%= task.bucket.action_plan.name %></span>
                 </div>
-
-                <small class="text-muted">
-                  Bucket:
-                  <%= task.bucket.name %>
-                </small>
-                <br>
-                <small class="text-muted">
-                  Plano:
-                  <%= task.bucket.action_plan.name %>
-                </small>
-
                 <% if task.due_at %>
-                  <div class="small mt-1">
-                    📅 <%= l(task.due_at, format: :short) %>
+                  <div class="modal-task-due">
+                    <i class="bi bi-clock me-1"></i> <%= l(task.due_at, format: :short) %>
                   </div>
                 <% end %>
-
-                <div class="mt-1">
+                <div class="modal-task-users">
                   <% task.users.each do |user| %>
-                    <span class="badge bg-secondary text-dark me-1">
-                      <%= user.name.split.first %>
-                    </span>
+                    <span class="user-badge"><%= user.name.split.first %></span>
                   <% end %>
                 </div>
-
               </div>
-
-
-              <div class="ms-3">
-
-              <%= link_to action_plan_path(
-                    task.bucket.action_plan,
-                    task_id: task.id
-                  ),
-                  class: "btn btn-sm btn-outline-primary" do %>
-
-                  <i class="fas fa-arrow-right me-1"></i>
-                  Abrir tarefa no plano
-
+              <div class="modal-task-action">
+                <%= link_to action_plan_path(task.bucket.action_plan, task_id: task.id),
+                            class: "btn-primary-solid btn-sm" do %>
+                  <i class="bi bi-arrow-right me-1"></i> Abrir
                 <% end %>
-
               </div>
             </div>
-
           <% end %>
-
         <% else %>
-
-          <p class="text-muted mb-0">
-            Nenhuma tarefa vence hoje 🎉
-          </p>
-
+          <p class="text-muted text-center py-4">Nenhuma tarefa vence hoje 🎉</p>
         <% end %>
-
       </div>
-
     </div>
-
   </div>
-
 </div>
