@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg app-navbar shadow-sm sticky-top" data-controller="theme">
+<nav class="navbar navbar-expand-lg app-navbar app-admin-nav shadow-sm sticky-top" data-controller="theme">
   <div class="container-fluid px-3 px-md-4">
     <!-- Logo -->
     <%= link_to root_path, class: "navbar-brand d-flex align-items-center gap-2" do %>
@@ -6,157 +6,199 @@
       <span class="fw-bold brand-text">Workstation</span>
     <% end %>
 
-    <!-- Toggle (Mobile) -->
-    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+    <!-- Toggler mobile -->
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <!-- Links -->
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto gap-1">
+    <div class="collapse navbar-collapse" id="navbarMain">
+      <ul class="navbar-nav me-auto gap-1 flex-wrap">
         <% if user_signed_in? %>
-          <% if current_user.admin? || current_user.supervisor? %>
-            <!-- Dropdown DU -->
+          <!-- Menus DU e AZ (condicionais) -->
+          <% if can_view_du_menu?(current_user) %>
             <li class="nav-item dropdown">
               <button class="nav-link dropdown-toggle app-dropdown-toggle" id="duDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-truck me-1"></i> DU
               </button>
               <ul class="dropdown-menu app-dropdown-menu">
-                <li><%= link_to drivers_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-truck-front me-2"></i> Motoristas<% end %></li>
-                <li><%= link_to ajudantes_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-people me-2"></i> Ajudantes<% end %></li>
-                <li><%= link_to mapas_todos_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-map me-2"></i> Mapas<% end %></li>
-                <li><%= link_to dashboard_mapas_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-speedometer2 me-2"></i> Dashboard de Mapas<% end %></li>
-                <li><%= link_to fuel_consumptions_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-fuel-pump me-2"></i> Consumo<% end %></li>
-                <li><%= link_to mapas_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-download me-2"></i> Importar 2Art<% end %></li>
+                <li><%= link_to 'Motoristas', drivers_path, class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Ajudantes', ajudantes_path, class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Mapas', mapas_todos_path, class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Dashboard de Mapas', dashboard_mapas_path, class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Consumo', fuel_consumptions_path, class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Importar 2Art', mapas_path, class: 'dropdown-item app-dropdown-item' %></li>
               </ul>
             </li>
+          <% end %>
 
-            <!-- Dropdown AZ -->
+          <% if can_view_az_menu?(current_user) %>
             <li class="nav-item dropdown">
               <button class="nav-link dropdown-toggle app-dropdown-toggle" id="azDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-house-door me-1"></i> AZ
               </button>
               <ul class="dropdown-menu app-dropdown-menu">
-                <li><%= link_to operators_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-person-workspace me-2"></i> Operadores<% end %></li>
-                <li><%= link_to az_ajudantes_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-people-fill me-2"></i> Ajudantes<% end %></li>
-                <li><%= link_to az_mapas_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-calendar-check me-2"></i> Resultados Diários<% end %></li>
-                <li><%= link_to wms_tasks_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-bar-chart-line me-2"></i> Resultados WMS<% end %></li>
-                <li><%= link_to new_import_wms_tasks_path, class: "dropdown-item app-dropdown-item" do %><i class="bi bi-download me-2"></i> Importar WMS<% end %></li>
+                <li><%= link_to 'Operadores', operators_path, class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Ajudantes', az_ajudantes_path, class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Resultados Diários', az_mapas_path, class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Resultados WMS', wms_tasks_path, class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Importar WMS', new_import_wms_tasks_path, class: 'dropdown-item app-dropdown-item' %></li>
+              </ul>
+            </li>
+          <% end %>
+
+          <!-- Links rápidos (exceto Cadastros) -->
+          <% NavbarHelper::NAVBAR_LINKS.each do |key, link| %>
+            <% if can_view_nav_link?(key, current_user) %>
+              <%= link_to send(link[:path]), class: "nav-link app-nav-link" do %>
+                <i class="bi <%= link[:icon] %> me-1"></i> <%= link[:label] %>
+              <% end %>
+            <% end %>
+          <% end %>
+
+          <!-- Dropdown Cadastros (condicional) -->
+          <% if can_view_registration_dropdown?(current_user) %>
+            <li class="nav-item dropdown">
+              <button class="nav-link dropdown-toggle app-dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-database me-1"></i> Cadastros
+              </button>
+              <ul class="dropdown-menu app-dropdown-menu">
+                <% NavbarHelper::REGISTRATION_SUBITEMS.each do |sub_key, sub| %>
+                  <% if can_view_subitem?(sub_key, current_user) %>
+                    <li><%= link_to sub[:label], send(sub[:path]), class: 'dropdown-item app-dropdown-item' %></li>
+                  <% end %>
+                <% end %>
               </ul>
             </li>
           <% end %>
         <% end %>
       </ul>
 
-      <!-- Avatar Dropdown -->
-      <% if user_signed_in? %>
-        <ul class="navbar-nav">
-          <li class="nav-item dropdown">
-            <button class="nav-link p-0 avatar-btn" id="navbarDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <% if current_user.photo.attached? %>
-                <%= user_avatar(current_user, 40) %>
-              <% else %>
-                <div class="avatar-placeholder">
-                  <i class="bi bi-person-fill"></i>
-                </div>
-              <% end %>
-            </button>
-
-            <div class="dropdown-menu dropdown-menu-end app-dropdown-menu shadow-lg" aria-labelledby="navbarDropdown">
-              <% if current_user.admin? || current_user.supervisor? %>
-                <h6 class="dropdown-header">Módulos</h6>
-                <%= link_to dashboard_invoices_path, class: "dropdown-item app-dropdown-item" do %>
-                  <i class="bi bi-cash-coin me-2"></i> Finanças
-                <% end %>
-                <%= link_to dashboard_path, class: "dropdown-item app-dropdown-item fw-bold text-primary" do %>
-                  <i class="bi bi-truck me-2"></i> Painel Frota
-                  <span class="badge bg-success ms-1">New</span>
-                <% end %>
-                <%= link_to action_plans_path, class: "dropdown-item app-dropdown-item fw-bold text-primary" do %>
-                  <i class="bi bi-list-task me-2"></i> Tarefas
-                  <span class="badge bg-success ms-1">New</span>
-                <% end %>
-                <%= link_to root_path, class: "dropdown-item app-dropdown-item" do %>
-                  <i class="bi bi-kanban me-2"></i> Variáveis
-                <% end %>
-                <%= link_to checklists_path, class: "dropdown-item app-dropdown-item" do %>
-                  <i class="bi bi-ui-checks me-2"></i> Formulários
-                <% end %>
-                <div class="dropdown-divider"></div>
-              <% end %>
-
-              <% if current_user.mechanical? %>
-                <h6 class="dropdown-header">Módulos</h6>
-                <%= link_to action_plans_path, class: "dropdown-item app-dropdown-item fw-bold text-primary" do %>
-                  <i class="bi bi-list-task me-2"></i> Workstation ToDo
-                  <span class="badge bg-success ms-1">New</span>
-                <% end %>
-                <div class="dropdown-divider"></div>
-              <% end %>
-
-              <h6 class="dropdown-header">Geral</h6>
-              <%= link_to downloads_path, class: "dropdown-item app-dropdown-item" do %>
-                <i class="bi bi-book me-2"></i> Padrões e LUP's
-              <% end %>
-              <%= link_to autonomies_path, class: "dropdown-item app-dropdown-item text-decoration-line-through text-muted" do %>
-                <i class="bi bi-truck me-2"></i> Autonomia de Frota
-              <% end %>
-              <%= link_to parametro_calculos_path, class: "dropdown-item app-dropdown-item" do %>
-                <i class="bi bi-sliders me-2"></i> Parâmetros
-              <% end %>
-              <% if current_user.admin? %>
-                <%= link_to plates_path, class: "dropdown-item app-dropdown-item" do %>
-                  <i class="bi bi-car-front me-2"></i> Placas Cadastradas
-                <% end %>
-                <%= link_to import_parametro_calculos_path, class: "dropdown-item app-dropdown-item" do %>
-                  <i class="bi bi-download me-2"></i> Importar Parâmetros
-                <% end %>
-                <%= link_to admin_users_path, class: "dropdown-item app-dropdown-item" do %>
-                  <i class="bi bi-person-lines-fill me-2"></i> Usuários
-                <% end %>
-              <% end %>
-              <div class="dropdown-divider"></div>
-
-              <h6 class="dropdown-header">Aparência</h6>
-              <div class="px-3 pb-2">
-                <div class="btn-group w-100 theme-toggle-group" role="group">
-                  <button type="button" class="btn btn-sm btn-outline-secondary" data-theme-target="button" data-theme-value-param="light" data-action="theme#set">
-                    <i class="bi bi-sun me-1"></i> Claro
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" data-theme-target="button" data-theme-value-param="dark" data-action="theme#set">
-                    <i class="bi bi-moon-stars me-1"></i> Escuro
-                  </button>
-                </div>
-              </div>
-              <div class="dropdown-divider"></div>
-
-              <%= link_to edit_user_registration_path, class: "dropdown-item app-dropdown-item" do %>
-                <i class="bi bi-person-circle me-2"></i> Editar cadastro
-              <% end %>
-              <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "dropdown-item app-dropdown-item text-danger fw-bold" do %>
-                <i class="bi bi-box-arrow-right me-2"></i> Log out
-              <% end %>
-            </div>
-          </li>
-        </ul>
-      <% else %>
-        <div class="d-flex align-items-center gap-2" data-controller="theme">
-          <div class="dropdown">
-            <button class="btn btn-sm app-navbar-action dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-circle-half me-1"></i> Tema
-            </button>
-            <div class="dropdown-menu dropdown-menu-end app-dropdown-menu shadow">
-              <button type="button" class="dropdown-item app-dropdown-item" data-theme-target="button" data-theme-value-param="light" data-action="theme#set">
-                <i class="bi bi-sun me-2"></i> Claro
-              </button>
-              <button type="button" class="dropdown-item app-dropdown-item" data-theme-target="button" data-theme-value-param="dark" data-action="theme#set">
-                <i class="bi bi-moon-stars me-2"></i> Escuro
-              </button>
-            </div>
+      <!-- Lado direito: informações do usuário + avatar -->
+      <div class="d-flex align-items-center gap-3">
+        <% if user_signed_in? %>
+          <!-- Nome e setor (oculto em mobile) -->
+          <div class="user-info d-none d-md-block">
+            <%= link_to dashboard_path, class: "navbar-brand fw-semibold user-name" do %>
+              Olá, <%= current_user.name&.split&.first %>
+            <% end %>
+            <span class="user-sector">
+              <i class="bi bi-briefcase me-1"></i>
+              <%= User::USER_SECTORS.invert[current_user.sector.to_sym] %>
+            </span>
           </div>
-          <%= link_to "Login", new_user_session_path, class: "btn app-navbar-action" %>
-        </div>
-      <% end %>
+
+          <!-- Avatar dropdown (já existente) -->
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <button class="nav-link p-0 avatar-btn" id="navbarDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <% if current_user.photo.attached? %>
+                  <%= user_avatar(current_user, 40) %>
+                <% else %>
+                  <div class="avatar-placeholder">
+                    <i class="bi bi-person-fill"></i>
+                  </div>
+                <% end %>
+              </button>
+
+              <div class="dropdown-menu dropdown-menu-end app-dropdown-menu shadow-lg" aria-labelledby="navbarDropdown">
+                <!-- Módulos (apenas Admin) -->
+                <% if current_user.admin? %>
+                  <h6 class="dropdown-header">Módulos</h6>
+                  <%= link_to dashboard_invoices_path, class: "dropdown-item app-dropdown-item" do %>
+                    <i class="bi bi-cash-coin me-2"></i> Finanças
+                  <% end %>
+                  <%= link_to dashboard_path, class: "dropdown-item app-dropdown-item fw-bold text-primary" do %>
+                    <i class="bi bi-truck me-2"></i> Painel Frota
+                    <span class="badge bg-success ms-1">New</span>
+                  <% end %>
+                  <%= link_to action_plans_path, class: "dropdown-item app-dropdown-item fw-bold text-primary" do %>
+                    <i class="bi bi-list-task me-2"></i> Tarefas
+                    <span class="badge bg-success ms-1">New</span>
+                  <% end %>
+                  <%= link_to root_path, class: "dropdown-item app-dropdown-item" do %>
+                    <i class="bi bi-kanban me-2"></i> Variáveis
+                  <% end %>
+                  <%= link_to checklists_path, class: "dropdown-item app-dropdown-item" do %>
+                    <i class="bi bi-ui-checks me-2"></i> Formulários
+                  <% end %>
+                  <div class="dropdown-divider"></div>
+                <% end %>
+
+                <!-- Módulo para mecânicos -->
+                <% if current_user.mechanical? %>
+                  <h6 class="dropdown-header">Módulos</h6>
+                  <%= link_to action_plans_path, class: "dropdown-item app-dropdown-item fw-bold text-primary" do %>
+                    <i class="bi bi-list-task me-2"></i> Workstation ToDo
+                    <span class="badge bg-success ms-1">New</span>
+                  <% end %>
+                  <div class="dropdown-divider"></div>
+                <% end %>
+
+                <h6 class="dropdown-header">Geral</h6>
+                <%= link_to downloads_path, class: "dropdown-item app-dropdown-item" do %>
+                  <i class="bi bi-book me-2"></i> Padrões e LUP's
+                <% end %>
+                <%= link_to autonomies_path, class: "dropdown-item app-dropdown-item text-decoration-line-through text-muted" do %>
+                  <i class="bi bi-truck me-2"></i> Autonomia de Frota
+                <% end %>
+                <%= link_to parametro_calculos_path, class: "dropdown-item app-dropdown-item" do %>
+                  <i class="bi bi-sliders me-2"></i> Parâmetros
+                <% end %>
+                <% if current_user.admin? %>
+                  <%= link_to plates_path, class: "dropdown-item app-dropdown-item" do %>
+                    <i class="bi bi-car-front me-2"></i> Placas Cadastradas
+                  <% end %>
+                  <%= link_to import_parametro_calculos_path, class: "dropdown-item app-dropdown-item" do %>
+                    <i class="bi bi-download me-2"></i> Importar Parâmetros
+                  <% end %>
+                  <%= link_to admin_users_path, class: "dropdown-item app-dropdown-item" do %>
+                    <i class="bi bi-person-lines-fill me-2"></i> Usuários
+                  <% end %>
+                <% end %>
+                <div class="dropdown-divider"></div>
+
+                <h6 class="dropdown-header">Aparência</h6>
+                <div class="px-3 pb-2">
+                  <div class="btn-group w-100 theme-toggle-group" role="group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-theme-target="button" data-theme-value-param="light" data-action="theme#set">
+                      <i class="bi bi-sun me-1"></i> Claro
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-theme-target="button" data-theme-value-param="dark" data-action="theme#set">
+                      <i class="bi bi-moon-stars me-1"></i> Escuro
+                    </button>
+                  </div>
+                </div>
+                <div class="dropdown-divider"></div>
+
+                <%= link_to edit_user_registration_path, class: "dropdown-item app-dropdown-item" do %>
+                  <i class="bi bi-person-circle me-2"></i> Editar cadastro
+                <% end %>
+                <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "dropdown-item app-dropdown-item text-danger fw-bold" do %>
+                  <i class="bi bi-box-arrow-right me-2"></i> Log out
+                <% end %>
+              </div>
+            </li>
+          </ul>
+        <% else %>
+          <!-- Usuário não logado: tema + login -->
+          <div class="d-flex align-items-center gap-2">
+            <div class="dropdown">
+              <button class="btn btn-sm app-navbar-action dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-circle-half me-1"></i> Tema
+              </button>
+              <div class="dropdown-menu dropdown-menu-end app-dropdown-menu shadow">
+                <button type="button" class="dropdown-item app-dropdown-item" data-theme-target="button" data-theme-value-param="light" data-action="theme#set">
+                  <i class="bi bi-sun me-2"></i> Claro
+                </button>
+                <button type="button" class="dropdown-item app-dropdown-item" data-theme-target="button" data-theme-value-param="dark" data-action="theme#set">
+                  <i class="bi bi-moon-stars me-2"></i> Escuro
+                </button>
+              </div>
+            </div>
+            <%= link_to "Login", new_user_session_path, class: "btn app-navbar-action" %>
+          </div>
+        <% end %>
+      </div>
     </div>
   </div>
 </nav>

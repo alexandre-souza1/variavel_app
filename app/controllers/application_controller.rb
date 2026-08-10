@@ -5,7 +5,6 @@ class ApplicationController < ActionController::Base
 
   def secondary_nav
     return "admin_nav" if finance_module?
-    return "fleet_nav" if fleet_module?
   end
 
   protected
@@ -16,17 +15,6 @@ class ApplicationController < ActionController::Base
       "suppliers",
       "admin/budget_categories",
       "admin/cost_centers"
-    ])
-  end
-
-  def fleet_module?
-    controller_path.in?([
-      "fleet_availabilities",
-      "action_plans",
-      "routines",
-      "dashboards",
-      "placas_por_setor",
-      "plates",
     ])
   end
 
