@@ -11,6 +11,12 @@
          data-reason="<%= item.reason %>"
          data-observation="<%= item.observation %>"
          data-van-plate="<%= item.van_plate? %>"
+         data-mobile-plate-label="<%= plate.placa %>"
+         <% if editable %>
+         data-action="click->fleet-availability#selectPlateForMobile keydown.enter->fleet-availability#selectPlateForMobile"
+         role="button"
+         tabindex="0"
+         <% end %>
          title="<%= "#{item.reason_label}#{item.observation.present? ? " - #{item.observation}" : ""}" if variant == :unavailable %>">
 
   <span class="fleet-plate-item__line text-muted" data-line-label>

@@ -7,6 +7,7 @@ export default class extends Controller {
   connect() {
     this.sortables = []
     this.pendingEvent = null
+    this.selectedMobileItem = null
     this.modalConfirmed = false
     this.editable = this.element.dataset.editable === "true"
 
@@ -54,6 +55,300 @@ export default class extends Controller {
     this.setupModal()
     this.setupObservationModal()
 
+  }
+
+  selectPlateForMobile(event) {
+    if (!this.editable) return
+    if (!this.mobileMode()) return
+    if (event.target.closest("[data-observation-edit]")) return
+
+    const item = event.currentTarget
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (this.selectedMobileItem === item) {
+      this.clearMobileSelection()
+      return
+    }
+
+    this.clearMobileSelection()
+
+    this.selectedMobileItem = item
+    item.classList.add("fleet-plate-item--mobile-selected")
+    this.refreshMobileTransferIsland()
+  }
+
+
+  clearMobileSelection() {
+    if (this.selectedMobileItem) {
+      this.selectedMobileItem.classList.remove("fleet-plate-item--mobile-selected")
+    }
+
+    this.selectedMobileItem = null
+    this.refreshMobileTransferIsland()
+  }
+
+
+  moveSelectedToDestination(event) {
+    if (!this.editable) return
+    if (!this.mobileMode()) return
+    if (!this.selectedMobileItem) return
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    const destination = event.currentTarget.dataset.mobileDestination
+    const specialRoute = event.currentTarget.dataset.mobileSpecialRoute || null
+    const targetList = this.mobileTargetList(destination, specialRoute, event.currentTarget)
+
+    if (!targetList) return
+
+    const item = this.selectedMobileItem
+    const from = item.closest(".sortable-list")
+    const oldIndex = from ? Array.from(from.children).indexOf(item) : 0
+    const syntheticEvent = {
+      item,
+      from,
+      to: targetList,
+      oldIndex
+    }
+
+    if (!this.canMoveSelectedItemTo(targetList, item, specialRoute)) return
+
+    this.removeAvailabilitySlotPlaceholder(this.availableSlotFor(targetList))
+    targetList.appendChild(item)
+    this.ensureAvailabilitySlotPlaceholder(this.availableSlotFor(from))
+
+    if (destination === "unavailable") {
+      this.pendingEvent = syntheticEvent
+      this.openModal()
+      return
+    }
+
+    const itemId = item.id.replace("fleet_availability_item_", "")
+    const targetSlot = this.availableSlotFor(targetList)
+    const status = specialRoute ? "special_route" : destination
+
+    this.updateItem(
+      itemId,
+      status,
+      targetSlot ? this.positionForAvailableSlot(targetSlot) : this.itemPositionFromElement(item),
+      null,
+      null,
+      item,
+      specialRoute
+    )
+
+    this.clearMobileSelection()
+  }
+
+
+  async moveSelectedToAvailabilityPosition(event) {
+    if (!this.editable) return
+    if (!this.mobileMode()) return
+    if (!this.selectedMobileItem) return
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    const position = Number(event.currentTarget.value)
+
+    if (!Number.isInteger(position)) return
+
+    const targetList = this.element.querySelector(
+      `[data-availability-slot][data-position='${position}'] .sortable-list`
+    )
+
+    if (!targetList) return
+
+    const item = this.selectedMobileItem
+    const originList = item.closest(".sortable-list")
+    const occupiedItem = targetList.querySelector(":scope > .sortable-item")
+
+    if (occupiedItem && occupiedItem !== item) {
+      const occupiedPlate = occupiedItem.dataset.mobilePlateLabel || "A placa atual"
+      const confirmed = window.confirm(
+        `A posição escolhida já está ocupada por ${occupiedPlate}. Se continuar, essa placa será enviada para o depósito.`
+      )
+
+      if (!confirmed) {
+        event.currentTarget.value = ""
+        return
+      }
+    }
+
+    const select = event.currentTarget
+
+    select.disabled = true
+
+    try {
+      await this.placeSelectedItemInAvailability({
+        item,
+        originList,
+        targetList,
+        occupiedItem,
+        position
+      })
+
+      select.value = ""
+      select.blur()
+      this.clearMobileSelection()
+    } finally {
+      select.disabled = false
+    }
+  }
+
+
+  async placeSelectedItemInAvailability({
+    item,
+    originList,
+    targetList,
+    occupiedItem,
+    position
+  }) {
+    const exchangeList = document.getElementById("exchange-list")
+
+    if (occupiedItem && occupiedItem !== item) {
+      exchangeList.appendChild(occupiedItem)
+
+      await this.persistItemMove({
+        item: occupiedItem,
+        status: "exchange",
+        position: this.itemPositionFromElement(occupiedItem)
+      })
+    }
+
+    this.removeAvailabilitySlotPlaceholder(this.availableSlotFor(targetList))
+    targetList.appendChild(item)
+    this.ensureAvailabilitySlotPlaceholder(this.availableSlotFor(originList))
+
+    await this.persistItemMove({
+      item,
+      status: "available",
+      position
+    })
+  }
+
+
+  async persistItemMove({
+    item,
+    status,
+    position,
+    reason = null,
+    observation = null,
+    specialRoute = null
+  }) {
+    const itemId = item.id.replace("fleet_availability_item_", "")
+
+    return this.updateItem(
+      itemId,
+      status,
+      position,
+      reason,
+      observation,
+      item,
+      specialRoute
+    )
+  }
+
+
+  mobileMode() {
+    return window.matchMedia("(max-width: 767.98px)").matches
+  }
+
+
+  mobileTargetList(destination, specialRoute, sourceElement) {
+    if (destination === "available") {
+      return sourceElement.closest(".sortable-list")
+    }
+
+    if (destination === "exchange") {
+      return document.getElementById("exchange-list")
+    }
+
+    if (destination === "unavailable") {
+      return document.getElementById("unavailable-list")
+    }
+
+    if (destination === "special_route" && specialRoute) {
+      return this.element.querySelector(`[data-special-route='${specialRoute}']`)
+    }
+
+    return null
+  }
+
+
+  canMoveSelectedItemTo(targetList, item, specialRoute = null) {
+    const targetSlot = this.availableSlotFor(targetList)
+
+    if (targetSlot && !this.slotCanReceiveItem(targetSlot, item)) {
+      this.showAlert("Essa linha já possui uma placa. Escolha uma linha vazia.")
+      return false
+    }
+
+    if (specialRoute && this.specialRouteListIsFull(targetList)) {
+      this.showAlert("Essa rota especial já atingiu a quantidade dimensionada.")
+      return false
+    }
+
+    if (specialRoute === "van" && item.dataset.vanPlate !== "true") {
+      this.showAlert("A rota Van só pode ser roteirizada com uma placa VAN.")
+      return false
+    }
+
+    return true
+  }
+
+
+  refreshMobileTransferIsland() {
+    const emptyState = this.element.querySelector("[data-mobile-transfer-empty]")
+    const activeState = this.element.querySelector("[data-mobile-transfer-active]")
+    const plateLabel = this.element.querySelector("[data-mobile-selected-plate]")
+
+    if (!emptyState || !activeState) return
+
+    const hasSelection = Boolean(this.selectedMobileItem)
+
+    this.element.classList.toggle(
+      "fleet-availability-page--mobile-selecting",
+      hasSelection
+    )
+
+    emptyState.classList.toggle("d-none", hasSelection)
+    activeState.classList.toggle("d-none", !hasSelection)
+
+    if (hasSelection && plateLabel) {
+      plateLabel.textContent = this.selectedMobileItem.dataset.mobilePlateLabel || "Placa"
+    }
+
+    this.refreshMobileTransferActions()
+  }
+
+
+  refreshMobileTransferActions() {
+    const status = this.selectedMobileItem?.dataset.status
+
+    this.element
+      .querySelectorAll("[data-mobile-action-button]")
+      .forEach((button) => {
+        button.classList.toggle(
+          "d-none",
+          button.dataset.mobileActionButton === status
+        )
+      })
+
+    this.element
+      .querySelectorAll("[data-mobile-position-select]")
+      .forEach((select) => {
+        const visible = select.dataset.mobilePositionSelect === status
+
+        select.classList.toggle("d-none", !visible)
+
+        if (!visible) {
+          select.value = ""
+        }
+      })
   }
 
 
@@ -166,6 +461,7 @@ export default class extends Controller {
 
       if (this.pendingEvent && !this.modalConfirmed) {
         this.restoreItem(this.pendingEvent)
+        this.clearMobileSelection()
         this.pendingEvent = null
       }
 
@@ -222,6 +518,7 @@ export default class extends Controller {
 
 
       this.pendingEvent = null
+      this.clearMobileSelection()
 
     })
 
@@ -239,6 +536,9 @@ export default class extends Controller {
       const button = event.target.closest("[data-observation-edit]")
 
       if (!button) return
+
+      event.preventDefault()
+      event.stopPropagation()
 
       this.pendingObservationItem = button.closest(".sortable-item")
 
@@ -283,6 +583,12 @@ export default class extends Controller {
 
   async restoreStandardLayout(event) {
     event.preventDefault()
+
+    const confirmed = window.confirm(
+      "Ajustar as placas padrão pode movimentar várias placas automaticamente. Deseja continuar?"
+    )
+
+    if (!confirmed) return
 
     const response = await fetch(
       `/fleet_availabilities/${this.element.dataset.availabilityId}/restore_standard_layout`,
@@ -358,7 +664,7 @@ export default class extends Controller {
 
     if (!response.ok) {
       window.location.reload()
-      return
+      return null
     }
 
 
@@ -369,6 +675,8 @@ export default class extends Controller {
     }
 
     this.refreshBoard()
+
+    return item
 
   }
 

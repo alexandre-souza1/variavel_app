@@ -2,12 +2,23 @@
   <div class="plans-list">
     <% action_plans.each do |plan| %>
       <div class="plan-item">
-        <h6 class="plan-name"><%= plan.name %></h6>
-        <p class="plan-description"><%= plan.description&.truncate(80) %></p>
+        <div class="plan-item-content">
+          <h6 class="plan-name"><%= plan.name %></h6>
+          <p class="plan-description"><%= plan.description&.truncate(80) %></p>
+        </div>
+
         <div class="plan-actions">
-          <%= link_to "Abrir", action_plan_path(plan), class: "btn-primary-solid btn-sm" %>
+          <%= link_to action_plan_path(plan), class: "btn-primary-solid btn-sm plan-open-link" do %>
+            <i class="bi bi-box-arrow-up-right"></i>
+            <span>Abrir</span>
+          <% end %>
+
           <% if plan.user == current_user || current_user.admin? %>
-            <%= link_to "Editar", edit_action_plan_path(plan), class: "btn-outline btn-sm" %>
+            <%= link_to edit_action_plan_path(plan), class: "btn-outline btn-sm plan-edit-link" do %>
+              <i class="bi bi-pencil-square"></i>
+              <span>Editar</span>
+            <% end %>
+
             <button class="icon-btn danger" data-bs-toggle="modal" data-bs-target="#deleteModal-<%= plan.id %>">
               <i class="bi bi-trash3"></i>
             </button>

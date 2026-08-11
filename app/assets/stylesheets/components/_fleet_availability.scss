@@ -137,11 +137,19 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    position: fixed;
+    top: 5rem;
+    right: 1rem;
+    z-index: 1060;
+    max-width: 28rem;
+    width: calc(100vw - 2rem);
     padding: 0.65rem 1rem;
     border: 1px solid rgba(var(--bs-warning-rgb), 0.35);
     border-radius: 0.5rem;
-    background: rgba(var(--bs-warning-rgb), 0.14);
+    backdrop-filter: blur(12px);
+    background: rgba(var(--bs-body-bg-rgb), 0.94);
     color: var(--bs-warning-text-emphasis);
+    box-shadow: 0 0.75rem 1.8rem rgba(15, 23, 42, 0.18);
     font-size: 0.88rem;
     font-weight: 600;
     opacity: 0;
@@ -822,29 +830,299 @@
 // ─── Responsivo ──────────────────────────────────────────────────
 @media (max-width: 767.98px) {
   .fleet-availability-page {
+    padding: 0.75rem 0.75rem 7.5rem !important;
+
     .fleet-availability-header {
       align-items: stretch;
       flex-direction: column;
+      gap: 0.85rem;
+      margin-bottom: 0.9rem !important;
     }
 
+    .fleet-availability-header h2 {
+      font-size: 1.25rem;
+      line-height: 1.25;
+    }
+
+    .fleet-availability-header > .d-flex {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem !important;
+      justify-content: stretch !important;
+    }
+
+    .fleet-availability-header .btn,
+    .fleet-availability-header form,
+    .fleet-availability-header .badge {
+      width: 100%;
+    }
+
+    .fleet-availability-header .btn,
+    .fleet-availability-header .badge {
+      align-items: center;
+      display: inline-flex;
+      justify-content: center;
+      min-height: 42px;
+      white-space: normal;
+    }
+
+    .fleet-availability-header .fleet-kpi-panel,
+    .fleet-availability-header .fleet-profile-panel {
+      grid-column: span 1;
+    }
+
+    .fleet-kpi-panel,
+    .fleet-profile-panel,
     .fleet-coverage-panel {
+      min-width: 0;
       width: 100%;
       text-align: left;
     }
 
+    .fleet-kpi-panel {
+      padding: 0.65rem 0.75rem;
+
+      strong {
+        font-size: 1.55rem;
+      }
+    }
+
+    .fleet-profile-panel {
+      grid-column: 1 / -1 !important;
+      padding: 0.65rem 0.75rem;
+
+      div {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      small {
+        display: grid;
+        gap: 0.1rem;
+        justify-items: start;
+      }
+    }
+
+    .fleet-limit-alert,
+    .fleet-readonly-alert {
+      align-items: flex-start;
+      border-radius: 0.65rem;
+      font-size: 0.84rem;
+      margin-bottom: 0.75rem !important;
+      padding: 0.7rem 0.8rem;
+    }
+
+    .fleet-limit-alert {
+      right: 0.75rem;
+      left: 0.75rem;
+      top: 4.75rem;
+      max-width: none;
+      margin-bottom: 0 !important;
+    }
+
+    .fleet-board {
+      --bs-gutter-y: 0.8rem;
+    }
+
+    .fleet-board-card {
+      border-radius: 0.75rem;
+      overflow: hidden;
+    }
+
+    .fleet-board-card__header {
+      padding: 0.75rem 0.85rem;
+    }
+
+    .fleet-board-card__title {
+      font-size: 0.95rem;
+    }
+
+    .fleet-board-card__header small {
+      font-size: 0.72rem;
+    }
+
     .fleet-list--availability {
-      min-height: 18rem;
-      max-height: 28rem;
+      min-height: 24rem;
+      max-height: 62vh;
+      padding: 0.65rem;
     }
 
     .fleet-list--deposit {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      min-height: 18rem;
-      max-height: 28rem;
+      min-height: 14rem;
+      max-height: 38vh;
+      padding: 0.65rem;
+    }
+
+    .fleet-list--unavailable-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      min-height: 10rem;
+      max-height: 32vh;
+      padding: 0.65rem;
     }
 
     .fleet-special-routes__body {
       grid-template-columns: 1fr;
+      padding: 0.65rem;
+    }
+
+    .fleet-special-route-card {
+      border-radius: 0.65rem;
+    }
+
+    .fleet-special-route-list {
+      min-height: 4.5rem;
+    }
+
+    .fleet-empty-slot {
+      align-items: flex-start;
+      border-radius: 0.65rem;
+      flex-direction: column;
+      gap: 0.2rem;
+      min-height: 4.25rem;
+      padding: 0.75rem;
+
+      small {
+        text-align: left;
+      }
+    }
+
+    .fleet-availability-slot__body {
+      min-height: 4.25rem;
+    }
+
+    .fleet-plate-item {
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .fleet-plate-item--availability {
+      grid-template-columns: 2rem minmax(0, 1fr);
+      gap: 0.45rem;
+      min-height: 4.25rem;
+    }
+
+    .fleet-plate-item .fleet-plate-card,
+    .fleet-list--deposit .fleet-plate-item .fleet-plate-card,
+    .fleet-list--unavailable-grid .fleet-plate-item .fleet-plate-card {
+      border-radius: 0.65rem;
+      min-height: 4.25rem;
+    }
+
+    .fleet-plate-item--availability .fleet-plate-card {
+      height: auto;
+      min-height: 4.25rem;
+      padding: 0.55rem 0.7rem;
+    }
+
+    .fleet-plate-card__plate,
+    .fleet-list--deposit .fleet-plate-item .fleet-plate-card .fleet-plate-card__plate,
+    .fleet-list--unavailable-grid .fleet-plate-item .fleet-plate-card__plate {
+      font-size: 1rem;
+    }
+
+    .fleet-plate-card__meta,
+    .fleet-plate-item--availability .fleet-plate-card__meta {
+      font-size: 0.7rem;
+    }
+
+    .fleet-plate-card__observation {
+      font-size: 0.68rem;
+    }
+
+    .fleet-plate-item--mobile-selected .fleet-plate-card {
+      border-color: var(--bs-primary) !important;
+      box-shadow: 0 0 0 0.18rem rgba(var(--bs-primary-rgb), 0.16);
+      transform: translateY(-1px);
+    }
+
+    &--mobile-selecting [data-mobile-destination] {
+      outline: 2px dashed rgba(var(--bs-primary-rgb), 0.26);
+      outline-offset: -0.35rem;
+    }
+
+    &--mobile-selecting .fleet-empty-slot,
+    &--mobile-selecting .fleet-special-route-placeholder {
+      background: rgba(var(--bs-primary-rgb), 0.08);
+      border-color: rgba(var(--bs-primary-rgb), 0.38);
+      color: var(--bs-primary);
+    }
+
+    .fleet-mobile-transfer-island {
+      position: fixed;
+      right: 0.75rem;
+      bottom: 0.75rem;
+      left: 0.75rem;
+      z-index: 1030;
+      border: 1px solid var(--bs-border-color);
+      border-radius: 0.9rem;
+      background: var(--bs-body-bg);
+      box-shadow: 0 0.85rem 2.2rem rgba(15, 23, 42, 0.18);
+      padding: 0.7rem;
+    }
+
+    .fleet-mobile-transfer-island__empty {
+      align-items: center;
+      color: var(--bs-secondary-color);
+      display: flex;
+      font-size: 0.88rem;
+      font-weight: 700;
+      gap: 0.5rem;
+      justify-content: center;
+      min-height: 42px;
+    }
+
+    .fleet-mobile-transfer-island__active {
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .fleet-mobile-transfer-island__plate {
+      align-items: center;
+      display: flex;
+      gap: 0.6rem;
+      justify-content: space-between;
+      min-width: 0;
+
+      span {
+        color: var(--bs-secondary-color);
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      strong {
+        color: var(--bs-emphasis-color);
+        font-size: 1rem;
+      }
+    }
+
+    .fleet-mobile-transfer-island__actions,
+    .fleet-mobile-transfer-island__routes {
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .fleet-mobile-transfer-island__actions {
+      grid-template-columns: 1fr 1fr auto;
+    }
+
+    .fleet-mobile-transfer-island__routes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .fleet-mobile-transfer-island .btn {
+      align-items: center;
+      display: inline-flex;
+      gap: 0.35rem;
+      justify-content: center;
+      min-height: 38px;
+      white-space: normal;
+    }
+
+    .fleet-mobile-transfer-island .form-select {
+      min-height: 38px;
+      min-width: 0;
+      width: 100%;
     }
   }
 }

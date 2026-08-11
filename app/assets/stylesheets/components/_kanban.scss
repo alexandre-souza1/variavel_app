@@ -302,6 +302,14 @@
   margin-bottom: 1.5rem !important;
 }
 
+.action-plan-header__title {
+  min-width: 0;
+}
+
+.action-plan-header__title h1 {
+  overflow-wrap: anywhere;
+}
+
 .action-plan-show .btn-outline {
   align-items: center;
   background: var(--bs-body-bg);
@@ -323,6 +331,42 @@
   background: rgba(var(--bs-primary-rgb), 0.08);
   border-color: rgba(var(--bs-primary-rgb), 0.24);
   color: var(--bs-primary);
+}
+
+.action-plan-mobile-summary {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: -0.55rem 0 1rem;
+}
+
+.action-plan-mobile-summary__item {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 10px;
+  min-width: 0;
+  padding: 0.75rem 0.45rem;
+  text-align: center;
+}
+
+.action-plan-mobile-summary__value,
+.action-plan-mobile-summary__label {
+  display: block;
+  line-height: 1.1;
+}
+
+.action-plan-mobile-summary__value {
+  color: var(--bs-body-color);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.action-plan-mobile-summary__label {
+  color: var(--bs-secondary-color);
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+  text-transform: uppercase;
 }
 
 .kanban-container {
@@ -759,31 +803,33 @@
 
 .action-plan-status-badge--open {
   background: rgba(var(--bs-primary-rgb), 0.12);
-  color: var(--bs-primary);
+  color: var(--bs-primary) !important;
 }
 
 .action-plan-status-badge--done {
   background: rgba(var(--bs-success-rgb), 0.13);
-  color: var(--bs-success);
+  color: var(--bs-success) !important;
 }
 
 .action-plan-bucket-badge {
   background: var(--bs-tertiary-bg);
   border: 1px solid var(--bs-border-color);
-  color: var(--bs-body-color);
+  color: var(--bs-body-color) !important;
   max-width: 100%;
 }
 
 .action-plan-user-badge {
   background: var(--bs-body-bg);
   border: 1px solid var(--bs-border-color);
-  color: var(--bs-body-color);
+  color: var(--bs-body-color) !important;
   margin: 0.12rem 0.15rem 0.12rem 0;
 }
 
 .action-plan-label-badge {
+  color: #111827 !important;
   margin: 0.12rem 0.15rem 0.12rem 0;
   max-width: 8rem;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.35);
 }
 
 .action-plan-date {
@@ -824,6 +870,12 @@
   width: 100%;
 }
 
+.action-plan-mobile-task:focus-visible {
+  border-color: rgba(var(--bs-primary-rgb), 0.45);
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.14);
+  outline: 0;
+}
+
 .action-plan-mobile-task__top,
 .action-plan-mobile-task__meta {
   align-items: center;
@@ -834,11 +886,46 @@
 }
 
 .action-plan-mobile-task__top {
-  justify-content: flex-start;
+  justify-content: space-between;
 }
 
 .action-plan-mobile-task__status {
   max-width: 100%;
+}
+
+.action-plan-mobile-task__badges {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.action-plan-mobile-task__due {
+  align-items: center;
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 999px;
+  color: var(--bs-secondary-color);
+  display: inline-flex;
+  font-size: 0.76rem;
+  font-weight: 700;
+  gap: 0.3rem;
+  line-height: 1.2;
+  padding: 0.32rem 0.55rem;
+  white-space: nowrap;
+}
+
+.action-plan-mobile-task__due--overdue {
+  background: rgba(var(--bs-danger-rgb), 0.1);
+  border-color: rgba(var(--bs-danger-rgb), 0.24);
+  color: var(--bs-danger);
+}
+
+.action-plan-mobile-task__open-icon {
+  color: var(--bs-secondary-color);
+  flex: 0 0 auto;
+  font-size: 1rem;
 }
 
 .action-plan-mobile-task__bucket {
@@ -899,9 +986,11 @@
 }
 
 .action-plan-mobile-task__labels .badge {
+  color: #111827 !important;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.35);
 }
 
 .action-plan-mobile-empty {
@@ -922,13 +1011,66 @@
 }
 
 @media (max-width: 767.98px) {
+  .action-plan-show.dashboard-page {
+    padding: 1rem 0.75rem 1.5rem;
+  }
+
+  .action-plan-header {
+    margin-bottom: 1rem !important;
+  }
+
   .action-plan-show .dashboard-header .header-content {
     align-items: stretch;
     flex-direction: column;
+    gap: 0.9rem;
   }
 
-  .action-plan-view-link--kanban {
-    display: none;
+  .action-plan-show .dashboard-header h1 {
+    align-items: flex-start;
+    font-size: 1.28rem;
+    line-height: 1.25;
+  }
+
+  .action-plan-show .dashboard-header .subtitle {
+    font-size: 0.82rem;
+  }
+
+  .action-plan-show .dashboard-header .header-actions {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 10px;
+    display: grid;
+    gap: 0.35rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 42px;
+    padding: 0.25rem;
+    width: 100%;
+  }
+
+  .action-plan-show .header-actions .btn-outline {
+    border-color: transparent;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0.55rem 0.5rem;
+    width: 100%;
+  }
+
+  .action-plan-show .header-actions .action-plan-back-link {
+    flex: 0 0 42px;
+    font-size: 0;
+    gap: 0;
+    height: 42px;
+    max-width: 42px;
+    min-width: 42px;
+    padding: 0;
+    width: 42px;
+  }
+
+  .action-plan-show .header-actions .action-plan-back-link .me-1 {
+    margin-right: 0 !important;
+  }
+
+  .action-plan-show .header-actions .action-plan-back-link i {
+    font-size: 0.95rem;
   }
 
   .action-plan-show--auto-view .action-plan-auto-list {
@@ -951,15 +1093,17 @@
   }
 
   .action-plan-list-toolbar {
-    background: transparent;
-    border-bottom: 1px solid var(--bs-border-color);
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
-    margin: 0 -0.75rem 0.75rem;
-    padding: 0.65rem 0.75rem;
+    margin: 0 0 0.85rem;
+    padding: 0.65rem;
     position: sticky;
-    top: 0;
+    top: 0.5rem;
     z-index: 5;
   }
 
@@ -970,7 +1114,52 @@
   }
 
   .action-plan-list-completed-toggle {
+    align-items: center;
+    background: var(--bs-tertiary-bg);
+    border-radius: 8px;
+    display: flex;
+    min-height: 42px;
+    padding: 0.55rem 0.7rem 0.55rem 2.55rem;
     width: 100%;
+  }
+
+  .action-plan-list-completed-toggle .form-check-input {
+    margin-left: -1.85rem;
+    margin-top: 0;
+  }
+
+  .action-plan-list-completed-toggle .form-check-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  .action-plan-mobile-task-list {
+    gap: 0.65rem;
+  }
+
+  .action-plan-mobile-task {
+    border-radius: 12px;
+    padding: 0.9rem;
+  }
+
+  .action-plan-mobile-task__status {
+    padding: 0.38rem 0.56rem;
+  }
+
+  .action-plan-mobile-task__bucket {
+    margin-top: 0.7rem;
+  }
+
+  .action-plan-mobile-task__title {
+    font-size: 0.98rem;
+    margin-top: 0.55rem;
+  }
+
+  .action-plan-mobile-task__description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .action-plan-kanban-filter__content {
@@ -988,6 +1177,27 @@
     flex-basis: auto;
     max-width: none;
     width: 100%;
+  }
+
+  .kanban-scroll-top {
+    display: none;
+  }
+
+  .kanban-scroll-bottom {
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+    padding-left: 0.75rem;
+    scroll-padding-left: 0.75rem;
+  }
+
+  .action-plan-kanban-board {
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .action-plan-kanban-column {
+    flex-basis: 86vw;
+    max-width: 320px;
   }
 
   .task-modal-dialog {
@@ -1068,6 +1278,12 @@
 [data-bs-theme="dark"] .action-plan-user-badge {
   background: #0b1220;
   border-color: #334155;
+}
+
+[data-bs-theme="dark"] .action-plan-label-badge,
+[data-bs-theme="dark"] .action-plan-mobile-task__labels .badge {
+  color: #fff !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
 }
 
 [data-bs-theme="dark"] .action-plan-kanban-card {

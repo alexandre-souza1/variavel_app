@@ -11,11 +11,13 @@
         <p class="subtitle">Acompanhamento das suas tarefas e planos</p>
       </div>
       <div class="header-actions">
-        <button class="btn-outline d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#plansOffcanvas">
-          <i class="bi bi-folder2-open me-1"></i> Meus Planos
+        <button class="btn-outline action-plans-mobile-menu d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#plansOffcanvas">
+          <i class="bi bi-folder2-open"></i>
+          <span>Meus Planos</span>
         </button>
-        <%= link_to new_action_plan_path, class: "btn-primary-solid" do %>
-          <i class="bi bi-plus-circle-fill me-1"></i> Novo Plano
+        <%= link_to new_action_plan_path, class: "btn-primary-solid action-plans-new-link" do %>
+          <i class="bi bi-plus-circle-fill"></i>
+          <span>Novo Plano</span>
         <% end %>
       </div>
     </div>
@@ -48,7 +50,7 @@
     <div class="col-lg-9 d-flex flex-column gap-4">
 
       <!-- CARDS DE RESUMO (KPI) -->
-      <div class="row g-3">
+      <div class="row g-3 action-plans-kpi-grid">
         <div class="col-md-3 col-6">
           <div class="kpi-card">
             <div class="kpi-icon bg-primary-soft">
@@ -99,7 +101,7 @@
       </div>
 
       <!-- CALENDÁRIO + PRÓXIMAS AÇÕES -->
-      <div class="row g-3">
+      <div class="row g-3 action-plans-content-grid">
         <!-- CALENDÁRIO -->
         <div class="col-lg-7 d-flex">
           <div class="chart-card w-100">

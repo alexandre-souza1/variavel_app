@@ -69,6 +69,19 @@ class ActionPlansController < ApplicationController
       .includes(tasks: :users)
       .order(:position)
 
+    visible_tasks = Task
+      .joins(:bucket)
+      .where(buckets: { action_plan_id: @action_plan.id })
+      .visible_for(current_user)
+
+    @open_tasks_count = visible_tasks.where(completed: false).count
+    @done_tasks_count = visible_tasks.where(completed: true).count
+    @overdue_tasks_count = visible_tasks
+      .where(completed: false)
+      .where.not(due_at: nil)
+      .where("due_at < ?", Time.current)
+      .count
+
     @task_to_open = Task.find_by(id: params[:task_id])
   end
 

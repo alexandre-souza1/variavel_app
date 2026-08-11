@@ -18,7 +18,7 @@
              data-action="input->action-plan-filter#filter">
     </div>
 
-    <div class="form-check action-plan-list-completed-toggle">
+    <div class="form-check form-switch action-plan-list-completed-toggle">
       <input class="form-check-input"
              type="checkbox"
              id="showCompleted"
@@ -168,21 +168,39 @@
           data-action-plan-filter-target="item"
           data-search-text="<%= search_text %>"
           data-controller="task-modal"
-          data-action="click->task-modal#open"
+          data-action="click->task-modal#open keydown.enter->task-modal#open"
           data-task-id="<%= task.id %>"
           data-bucket-id="<%= bucket.id %>"
           data-plan-id="<%= action_plan.id %>"
+          role="button"
+          tabindex="0"
+          aria-label="Abrir tarefa <%= task.title %>"
         >
         <div class="action-plan-mobile-task__top">
-          <span class="badge <%= task.completed ? 'bg-success' : 'bg-primary' %> action-plan-mobile-task__status">
-            <% if task.completed %>
-              <i class="bi bi-check-circle"></i>
-              Concluída
-            <% else %>
-              <i class="bi bi-circle"></i>
-              Aberta
+          <div class="action-plan-mobile-task__badges">
+            <span class="badge <%= task.completed ? 'bg-success' : 'bg-primary' %> action-plan-mobile-task__status">
+              <% if task.completed %>
+                <i class="bi bi-check-circle"></i>
+                Concluída
+              <% else %>
+                <i class="bi bi-circle"></i>
+                Aberta
+              <% end %>
+            </span>
+
+            <% if task.due_at.present? %>
+              <span class="action-plan-mobile-task__due <%= overdue ? 'action-plan-mobile-task__due--overdue' : '' %>">
+                <% if overdue %>
+                  <i class="bi bi-alarm"></i>
+                <% else %>
+                  <i class="bi bi-calendar"></i>
+                <% end %>
+                <%= l(task.due_at.to_date, format: :short) %>
+              </span>
             <% end %>
-          </span>
+          </div>
+
+          <i class="bi bi-chevron-right action-plan-mobile-task__open-icon"></i>
         </div>
 
         <div class="action-plan-mobile-task__bucket">
@@ -201,19 +219,12 @@
         <% end %>
 
         <div class="action-plan-mobile-task__meta">
-          <span class="<%= overdue ? 'text-danger fw-bold' : 'text-muted' %>">
-            <% if task.due_at.present? %>
-              <% if overdue %>
-                <i class="bi bi-alarm"></i>
-              <% else %>
-                <i class="bi bi-calendar"></i>
-              <% end %>
-              <%= l(task.due_at.to_date, format: :short) %>
-            <% else %>
+          <% unless task.due_at.present? %>
+            <span class="text-muted">
               <i class="bi bi-calendar-x"></i>
               Sem prazo
-            <% end %>
-          </span>
+            </span>
+          <% end %>
 
           <% if users.any? %>
             <span class="text-muted">

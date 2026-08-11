@@ -6,7 +6,7 @@
 
     <div class="header-content">
 
-      <div>
+      <div class="action-plan-header__title">
         <h1>
           <i class="fas fa-file-invoice me-2"></i>
           <%= @action_plan.name %>
@@ -18,16 +18,39 @@
       </div>
 
       <div class="header-actions">
-        <%= link_to "Kanban", action_plan_path(@action_plan, view: "kanban"),
-            class: "btn-outline action-plan-view-link action-plan-view-link--kanban #{params[:view] != 'list' ? 'active' : ''}" %>
+        <%= link_to action_plan_path(@action_plan, view: "kanban"),
+            class: "btn-outline action-plan-view-link action-plan-view-link--kanban #{params[:view] != 'list' ? 'active' : ''}" do %>
+          <i class="bi bi-kanban"></i>
+          <span>Kanban</span>
+        <% end %>
 
-        <%= link_to "Lista", action_plan_path(@action_plan, view: "list"),
-            class: "btn-outline action-plan-view-link action-plan-view-link--list #{params[:view] == 'list' ? 'active' : ''}" %>
+        <%= link_to action_plan_path(@action_plan, view: "list"),
+            class: "btn-outline action-plan-view-link action-plan-view-link--list #{params[:view] == 'list' ? 'active' : ''}" do %>
+          <i class="bi bi-list-check"></i>
+          <span>Lista</span>
+        <% end %>
 
-        <%= link_to action_plans_path, class: "btn-outline" do %>
+        <%= link_to action_plans_path, class: "btn-outline action-plan-back-link", aria: { label: "Voltar para planos" } do %>
           <i class="fas fa-arrow-left me-1"></i> Voltar
         <% end %>
       </div>
+    </div>
+  </div>
+
+  <div class="action-plan-mobile-summary d-md-none">
+    <div class="action-plan-mobile-summary__item">
+      <span class="action-plan-mobile-summary__value"><%= @open_tasks_count %></span>
+      <span class="action-plan-mobile-summary__label">Abertas</span>
+    </div>
+
+    <div class="action-plan-mobile-summary__item">
+      <span class="action-plan-mobile-summary__value"><%= @overdue_tasks_count %></span>
+      <span class="action-plan-mobile-summary__label">Atrasadas</span>
+    </div>
+
+    <div class="action-plan-mobile-summary__item">
+      <span class="action-plan-mobile-summary__value"><%= @done_tasks_count %></span>
+      <span class="action-plan-mobile-summary__label">Concluídas</span>
     </div>
   </div>
 
