@@ -1,39 +1,65 @@
 <div data-controller="action-plan-filter">
-  <div class="action-plan-list-toolbar action-plan-kanban-filter">
-    <div class="action-plan-list-search">
-      <i class="bi bi-search"></i>
-      <input class="form-control"
-             type="search"
-             placeholder="Filtrar por tarefa, bucket, label ou responsável..."
-             autocomplete="off"
-             data-action-plan-filter-target="query"
-             data-action="input->action-plan-filter#filter">
+  <div class="action-plan-kanban-filter">
+    <div class="action-plan-kanban-filter__content">
+      <div class="action-plan-kanban-filter__label">
+        <span class="action-plan-kanban-filter__icon">
+          <i class="bi bi-search"></i>
+        </span>
+        <div>
+          <strong>Filtrar Kanban</strong>
+          <span>Busque por tarefa, bucket, label ou responsável</span>
+        </div>
+      </div>
+
+      <div class="action-plan-list-search action-plan-kanban-filter__search">
+        <i class="bi bi-search"></i>
+        <input class="form-control"
+               type="search"
+               placeholder="Digite para filtrar..."
+               autocomplete="off"
+               data-action-plan-filter-target="query"
+               data-action="input->action-plan-filter#filter">
+      </div>
     </div>
   </div>
 
   <div id="kanban-<%= action_plan.id %>"
-       class="row flex-nowrap overflow-auto"
+       class="row flex-nowrap overflow-auto action-plan-kanban-board"
        data-controller="drag-scroll bucket-sortable"
        data-bucket-sortable-action-plan-id-value="<%= action_plan.id %>">
 
   <% buckets.each do |bucket| %>
+    <% open_tasks = bucket.tasks
+                          .visible_for(current_user)
+                          .includes(:users, :labels)
+                          .where(completed: false)
+                          .order(:position) %>
+    <% done_tasks_count = bucket.tasks.visible_for(current_user)
+                           .where(completed: true)
+                           .count %>
 
     <div id="bucket_<%= bucket.id %>"
-     class="kanban-column col-12 col-md-4 col-lg-3"
+     class="kanban-column col-12 col-md-4 col-lg-3 action-plan-kanban-column"
      data-action-plan-filter-target="group"
      data-bucket-id="<%= bucket.id %>">
 
-      <div class="card bg-light mb-3">
+      <div class="card action-plan-kanban-card mb-3">
 
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-header action-plan-kanban-card__header d-flex justify-content-between align-items-center">
 
-          <div data-controller="bucket-edit" data-bucket-id="<%= bucket.id %>" data-action-plan-id="<%= action_plan.id %>" class="flex-grow-1">
-              <i class="bi bi-grip-vertical drag-handle" style="cursor: grab;"></i>
-            <span data-bucket-edit-target="title"
-                  data-action="click->bucket-edit#edit"
-                  style="cursor: pointer;">
-              <%= bucket.name %>
-            </span>
+          <div data-controller="bucket-edit" data-bucket-id="<%= bucket.id %>" data-action-plan-id="<%= action_plan.id %>" class="action-plan-kanban-card__heading">
+            <i class="bi bi-grip-vertical drag-handle"></i>
+            <div class="action-plan-kanban-card__title-group">
+              <span data-bucket-edit-target="title"
+                    data-action="click->bucket-edit#edit"
+                    class="action-plan-kanban-card__title">
+                <%= bucket.name %>
+              </span>
+
+              <span class="action-plan-kanban-card__count">
+                <%= open_tasks.size %> abertas
+              </span>
+            </div>
 
             <input type="text"
                    value="<%= bucket.name %>"
@@ -50,7 +76,7 @@
                   turbo_method: :delete,
                   turbo_confirm: "Tem certeza?"
                 },
-                class: "btn btn-sm" do %>
+                class: "btn btn-sm action-plan-kanban-card__remove" do %>
 
               <i class="bi bi-x-lg text-danger"></i>
 
@@ -59,19 +85,20 @@
         </div>
 
         <% unless current_user.mechanical? %>
-        <div class="card-footer" data-controller="new-task">
+        <div class="card-footer action-plan-kanban-card__composer" data-controller="new-task">
 
           <button
-            class="btn btn-sm btn-outline-primary w-100"
+            class="action-plan-kanban-add-task"
             data-action="click->new-task#toggle"
             data-new-task-target="button">
-            + Adicionar tarefa
+            <i class="bi bi-plus-lg"></i>
+            Adicionar tarefa
           </button>
 
 
           <div class="collapse mt-2" data-new-task-target="wrapper">
 
-            <div class="task-card mb-2 p-2 shadow-sm">
+            <div class="action-plan-kanban-new-task">
 
               <%= form_with model: [action_plan, bucket, Task.new],
                   data: {
@@ -91,7 +118,7 @@
 
                   <button
                     type="button"
-                    class="btn btn-light text-dark btn-sm w-100 align-items-start d-flex gap-1"
+                    class="btn btn-light text-dark btn-sm w-100 align-items-start d-flex gap-1 action-plan-kanban-form-toggle"
                     data-toggle-field-target="button"
                     data-action="click->toggle-field#toggle">
                     📅 Definir data
@@ -115,7 +142,7 @@
 
                   <button
                     type="button"
-                    class="btn btn-light text-dark btn-sm w-100 align-items-start d-flex gap-1"
+                    class="btn btn-light text-dark btn-sm w-100 align-items-start d-flex gap-1 action-plan-kanban-form-toggle"
                     data-toggle-field-target="button"
                     data-action="click->toggle-field#toggle">
                     👤 Atribuir responsável
@@ -172,24 +199,14 @@
         <% end %>
 
 
-        <div class="card-body"
+        <div class="card-body action-plan-kanban-card__body"
              data-sortable-bucket-id-value="<%= bucket.id %>"
              data-bucket-id="<%= bucket.id %>"
              style="min-height:300px;">
 
 
-          <% open_tasks = bucket.tasks
-                                .visible_for(current_user)
-                                .includes(:users, :labels)
-                                .where(completed: false)
-                                .order(:position) %>
-          <% done_tasks_count = bucket.tasks.visible_for(current_user)
-                                 .where(completed: true)
-                                 .count %>
-
-
           <div id="open-tasks-<%= bucket.id %>"
-               class="mb-3"
+               class="action-plan-kanban-task-list"
                data-controller="sortable">
 
             <% open_tasks.each do |task| %>
@@ -213,20 +230,20 @@
               data-bucket-id="<%= bucket.id %>">
 
 
-              <div class="d-flex justify-content-between align-items-center mt-3 mb-2"
-                   style="cursor:pointer;"
+              <div class="action-plan-kanban-done-toggle"
                    data-action="click->toggle-done#toggle">
 
 
                 <small id="done-count-<%= bucket.id %>"
-                       class="text-muted">
+                       class="text-muted action-plan-kanban-done-count">
 
-                  ✔️ Tarefas concluídas (<%= done_tasks_count %>)
+                  <i class="bi bi-check2-circle"></i>
+                  Tarefas concluídas (<%= done_tasks_count %>)
 
                 </small>
 
 
-                <span data-toggle-done-target="icon">
+                <span data-toggle-done-target="icon" class="action-plan-kanban-done-icon">
                   ▼
                 </span>
 
@@ -258,19 +275,18 @@
 
   <!-- NOVO BUCKET -->
   <% unless current_user.mechanical? %>
-    <div class="col-12 col-md-4 col-lg-3">
+    <div class="col-12 col-md-4 col-lg-3 action-plan-kanban-column">
 
       <div class="h-100 d-flex align-items-start">
 
-        <div class="border border-2 border-dashed rounded p-3 w-100"
-            style="min-height:120px;">
+        <div class="action-plan-kanban-new-bucket">
 
           <%= form_with model: [action_plan, Bucket.new] do |f| %>
 
-            <div class="text-center text-muted mb-3">
-              <i class="bi bi-plus-lg fs-4"></i>
+            <div class="action-plan-kanban-new-bucket__header">
+              <i class="bi bi-plus-lg"></i>
 
-              <div class="mt-2">
+              <div>
                 Novo bucket
               </div>
             </div>

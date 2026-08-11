@@ -1,40 +1,34 @@
-<div class="container-fluid action-plan-show <%= 'action-plan-show--auto-view' if params[:view].blank? %>"
+<div class="container-fluid action-plan-show dashboard-page <%= 'action-plan-show--auto-view' if params[:view].blank? %>"
      data-controller="open-task"
      data-open-task-task-id-value="<%= @task_to_open&.id %>">
   <%= turbo_stream_from "tasks_action_plan_#{@action_plan.id}" %>
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="dashboard-header action-plan-header">
 
-    <!-- LEFT -->
-    <div class="d-flex align-items-center gap-3">
+    <div class="header-content">
 
       <div>
-        <h3 class="mb-0">
+        <h1>
           <i class="fas fa-file-invoice me-2"></i>
           <%= @action_plan.name %>
-        </h3>
+        </h1>
 
-        <small class="text-muted">
+        <p class="subtitle">
           Criado em <%= l(@action_plan.created_at, format: :long) %>
-        </small>
+        </p>
       </div>
 
+      <div class="header-actions">
+        <%= link_to "Kanban", action_plan_path(@action_plan, view: "kanban"),
+            class: "btn-outline action-plan-view-link action-plan-view-link--kanban #{params[:view] != 'list' ? 'active' : ''}" %>
+
+        <%= link_to "Lista", action_plan_path(@action_plan, view: "list"),
+            class: "btn-outline action-plan-view-link action-plan-view-link--list #{params[:view] == 'list' ? 'active' : ''}" %>
+
+        <%= link_to action_plans_path, class: "btn-outline" do %>
+          <i class="fas fa-arrow-left me-1"></i> Voltar
+        <% end %>
+      </div>
     </div>
-
-    <!-- RIGHT -->
-    <div class="d-flex gap-2">
-      <%= link_to action_plans_path, class: "btn btn-outline-secondary" do %>
-        <i class="fas fa-arrow-left me-1"></i> Voltar
-      <% end %>
-    </div>
-
-  </div>
-
-  <div class="mb-3">
-    <%= link_to "Kanban", action_plan_path(@action_plan, view: "kanban"),
-        class: "btn btn-outline-primary action-plan-view-link action-plan-view-link--kanban #{params[:view] != 'list' ? 'active' : ''}" %>
-
-    <%= link_to "Lista", action_plan_path(@action_plan, view: "list"),
-        class: "btn btn-outline-primary action-plan-view-link action-plan-view-link--list #{params[:view] == 'list' ? 'active' : ''}" %>
   </div>
 
   <% if params[:view] == "list" %>
@@ -55,7 +49,7 @@
         data-kanban-scroll-target="bottom"
         class="kanban-scroll-bottom"
       >
-        <div class="border rounded p-1 my-1">
+        <div class="action-plan-kanban-panel">
           <%= render "kanban_view", buckets: @buckets, action_plan: @action_plan %>
         </div>
       </div>
@@ -80,7 +74,7 @@
         data-kanban-scroll-target="bottom"
         class="kanban-scroll-bottom"
       >
-        <div class="border rounded p-1 my-1">
+        <div class="action-plan-kanban-panel">
           <%= render "kanban_view", buckets: @buckets, action_plan: @action_plan %>
         </div>
       </div>

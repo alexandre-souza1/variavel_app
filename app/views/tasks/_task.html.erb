@@ -1,5 +1,5 @@
 <div id="<%= dom_id(task) %>"
-    class="task-card mb-2 p-2 shadow-sm"
+    class="task-card action-plan-task-card"
     data-id="<%= task.id %>"
     data-controller="task-modal"
     data-action="click->task-modal#open"
@@ -11,9 +11,8 @@
     data-bucket-id="<%= task.bucket.id %>"
     data-task-id="<%= task.id %>">
 
-  <!-- Labels -->
   <% if task.labels.any? %>
-    <div class="task-labels mb-1">
+    <div class="task-labels action-plan-task-card__labels">
       <% task.labels.each do |label| %>
         <span class="badge" style="background-color: <%= label.color %>">
           <%= label.name %>
@@ -22,14 +21,12 @@
     </div>
   <% end %>
 
-  <!-- HEADER (check + título) -->
-  <div class="d-flex align-items-start gap-2">
+  <div class="action-plan-task-card__header">
 
-    <!-- BOTÃO ✔ -->
     <%= button_to toggle_complete_action_plan_bucket_task_path(task.bucket.action_plan, task.bucket, task),
       method: :patch,
       data: { turbo_stream: true },
-      class: "btn btn-sm p-0 border-0",
+      class: "action-plan-task-card__check",
       onclick: "event.stopPropagation();" do %>
 
       <% if task.completed %>
@@ -40,35 +37,30 @@
 
     <% end %>
 
-    <!-- Título -->
-    <div class="task-title <%= 'text-decoration-line-through opacity-50' if task.completed %>">
+    <div class="task-title action-plan-task-card__title <%= 'text-decoration-line-through opacity-50' if task.completed %>">
       <%= task.title %>
     </div>
 
   </div>
 
-  <!-- Descrição -->
   <% if task.description.present? %>
-    <div class="task-desc">
+    <div class="task-desc action-plan-task-card__description">
       <%= truncate(task.description, length: 80) %>
     </div>
   <% end %>
 
-  <!-- Footer -->
-  <div class="task-footer d-flex justify-content-between align-items-center mt-2">
+  <div class="task-footer action-plan-task-card__footer">
 
-    <!-- ESQUERDA -->
-    <div class="task-meta">
+    <div class="task-meta action-plan-task-card__meta">
       <% overdue = task.due_at.present? && task.due_at < Time.current && !task.completed %>
       <% if task.due_at.present? %>
-        <small class="task-date <%= 'overdue' if overdue %>">
+        <small class="task-date action-plan-task-card__date <%= 'overdue' if overdue %>">
           <i class="bi bi-calendar-date"></i> <%= task.due_at.strftime("%d/%m") %>
         </small>
       <% end %>
     </div>
 
-    <!-- DIREITA -->
-    <div class="task-icons d-flex align-items-center gap-2">
+    <div class="task-icons action-plan-task-card__icons">
 
       <% if task.tasklist.tasklist_items.exists? %>
         <small class="task-icon"><i class="bi bi-list-check"></i></small>
@@ -84,7 +76,7 @@
         </small>
       <% end %>
       <% users = task.users.to_a %>
-      <div class="avatar-group">
+      <div class="avatar-group action-plan-task-card__avatars">
         <% users.first(3).each do |user| %>
           <div class="avatar-circle-sm">
             <%= user.name.first.upcase %>

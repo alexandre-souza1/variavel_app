@@ -236,10 +236,14 @@
 
 
   .simple-calendar table {
+    border: 0 !important;
+    border-collapse: separate;
+    border-spacing: 0;
     table-layout: fixed;
     width: 100%;
   }
   .simple-calendar td, .simple-calendar th {
+    border: 0 !important;
     overflow: hidden;
     word-wrap: break-word;
     word-break: break-word;
