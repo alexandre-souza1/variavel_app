@@ -1,12 +1,26 @@
-<div id="kanban-<%= action_plan.id %>"
-     class="row flex-nowrap overflow-auto"
-     data-controller="drag-scroll bucket-sortable"
-     data-bucket-sortable-action-plan-id-value="<%= action_plan.id %>">
+<div data-controller="action-plan-filter">
+  <div class="action-plan-list-toolbar action-plan-kanban-filter">
+    <div class="action-plan-list-search">
+      <i class="bi bi-search"></i>
+      <input class="form-control"
+             type="search"
+             placeholder="Filtrar por tarefa, bucket, label ou responsável..."
+             autocomplete="off"
+             data-action-plan-filter-target="query"
+             data-action="input->action-plan-filter#filter">
+    </div>
+  </div>
+
+  <div id="kanban-<%= action_plan.id %>"
+       class="row flex-nowrap overflow-auto"
+       data-controller="drag-scroll bucket-sortable"
+       data-bucket-sortable-action-plan-id-value="<%= action_plan.id %>">
 
   <% buckets.each do |bucket| %>
 
     <div id="bucket_<%= bucket.id %>"
      class="kanban-column col-12 col-md-4 col-lg-3"
+     data-action-plan-filter-target="group"
      data-bucket-id="<%= bucket.id %>">
 
       <div class="card bg-light mb-3">
@@ -164,7 +178,11 @@
              style="min-height:300px;">
 
 
-          <% open_tasks = bucket.tasks.visible_for(current_user).where(completed: false).order(:position) %>
+          <% open_tasks = bucket.tasks
+                                .visible_for(current_user)
+                                .includes(:users, :labels)
+                                .where(completed: false)
+                                .order(:position) %>
           <% done_tasks_count = bucket.tasks.visible_for(current_user)
                                  .where(completed: true)
                                  .count %>
@@ -175,7 +193,15 @@
                data-controller="sortable">
 
             <% open_tasks.each do |task| %>
-              <%= render "tasks/task", task: task %>
+              <% search_text = [
+                   task.title,
+                   task.description,
+                   bucket.name,
+                   task.labels.map(&:name),
+                   task.users.map(&:name)
+                 ].flatten.compact.join(" ") %>
+
+              <%= render "tasks/task", task: task, search_text: search_text %>
             <% end %>
 
           </div>
@@ -273,4 +299,9 @@
     </div>
   <% end %>
 
+  </div>
+
+  <div class="action-plan-list-empty d-none" data-action-plan-filter-target="empty">
+    Nenhuma tarefa encontrada para esse filtro.
+  </div>
 </div>

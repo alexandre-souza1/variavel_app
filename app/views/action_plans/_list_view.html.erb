@@ -1,177 +1,249 @@
-<div class="d-flex justify-content-end mb-3">
-  <div class="form-check">
-    <input class="form-check-input"
-           type="checkbox"
-           id="showCompleted"
-           data-controller="completed-tasks"
-           data-action="change->completed-tasks#toggle">
+<% task_rows = buckets.flat_map do |bucket|
+     bucket.tasks
+           .visible_for(current_user)
+           .includes(:users, :labels)
+           .order(:position)
+           .map { |task| [bucket, task] }
+   end %>
 
-    <label class="form-check-label" for="showCompleted">
-      Mostrar tarefas concluídas
-    </label>
+<div data-controller="action-plan-filter">
+  <div class="action-plan-list-toolbar">
+    <div class="action-plan-list-search">
+      <i class="bi bi-search"></i>
+      <input class="form-control"
+             type="search"
+             placeholder="Filtrar por tarefa, bucket, label ou responsável..."
+             autocomplete="off"
+             data-action-plan-filter-target="query"
+             data-action="input->action-plan-filter#filter">
+    </div>
+
+    <div class="form-check action-plan-list-completed-toggle">
+      <input class="form-check-input"
+             type="checkbox"
+             id="showCompleted"
+             data-controller="completed-tasks"
+             data-action="change->completed-tasks#toggle change->action-plan-filter#filter">
+
+      <label class="form-check-label" for="showCompleted">
+        Mostrar tarefas concluídas
+      </label>
+    </div>
   </div>
-</div>
 
-<div class="table-responsive"
-     style="max-height: 500px; overflow-y: auto;">
+  <div class="action-plan-list-table table-responsive d-none d-md-block">
+    <table class="table table-hover align-middle action-plan-desktop-table">
+      <thead class="table-light">
+        <tr>
+          <th class="action-plan-desktop-table__status">Status</th>
+          <th>Tarefa</th>
+          <th>Bucket</th>
+          <th>Responsáveis</th>
+          <th>Prazo</th>
+          <th>Labels</th>
+          <th class="action-plan-desktop-table__action"></th>
+        </tr>
+      </thead>
 
-  <table class="table table-hover align-middle">
+      <tbody>
+        <% task_rows.each do |bucket, task| %>
+          <% overdue = task.due_at.present? && task.due_at < Time.current && !task.completed %>
+          <% users = task.users.to_a %>
+          <% search_text = [
+               task.title,
+               task.description,
+               bucket.name,
+               task.labels.map(&:name),
+               users.map(&:name)
+             ].flatten.compact.join(" ") %>
 
-
-    <thead class="table-light">
-
-      <tr>
-        <th>Status</th>
-        <th>Tarefa</th>
-        <th>Bucket</th>
-        <th>Responsáveis</th>
-        <th>Prazo</th>
-        <th>Labels</th>
-        <th></th>
-      </tr>
-
-    </thead>
-
-
-    <tbody>
-
-
-      <% buckets.each do |bucket| %>
-
-
-        <% bucket.tasks
-        .visible_for(current_user)
-        .includes(:users, :labels)
-        .order(:position)
-        .each do |task| %>
-
-
-          <% overdue = task.due_at.present? &&
-                       task.due_at < Time.current &&
-                       !task.completed %>
-
-
-            <tr
-              class="<%= 'completed-task d-none' if task.completed %>"
-              data-controller="task-modal"
-              data-action="click->task-modal#open"
-              data-task-id="<%= task.id %>"
-              data-plan-id="<%= action_plan.id %>"
-              style="cursor:pointer;"
-            >
-
-            <!-- STATUS -->
-
-            <td>
-              <% if task.completed %>
-                <span class="badge bg-success">
-                  <i class="bi bi-check-circle"></i>
-                  Concluída
-                </span>
-
-              <% else %>
-
-                <span class="badge bg-primary">
-                  <i class="bi bi-circle"></i>
-                  Aberta
-                </span>
-
-              <% end %>
-
-            </td>
-
-
-            <!-- TAREFA -->
-
-            <td style="max-width:250px;">
-              <strong class="text-truncate d-block">
-                <%= task.title %>
-              </strong>
-
-              <% if task.description.present? %>
-                <small class="text-muted text-truncate d-block">
-                  <%= task.description %>
-                </small>
-              <% end %>
-            </td>
-
-
-            <!-- BUCKET -->
-
-            <td>
-              <span class="badge bg-secondary">
-                <%= bucket.name %>
+          <tr
+            class="<%= 'completed-task d-none' if task.completed %>"
+            data-action-plan-filter-target="item"
+            data-search-text="<%= search_text %>"
+            data-controller="task-modal"
+            data-action="click->task-modal#open"
+            data-task-id="<%= task.id %>"
+            data-bucket-id="<%= bucket.id %>"
+            data-plan-id="<%= action_plan.id %>"
+            style="cursor:pointer;"
+          >
+          <td class="action-plan-desktop-table__status">
+            <% if task.completed %>
+              <span class="badge action-plan-status-badge action-plan-status-badge--done">
+                <i class="bi bi-check-circle"></i>
+                Concluída
               </span>
-            </td>
+            <% else %>
+              <span class="badge action-plan-status-badge action-plan-status-badge--open">
+                <i class="bi bi-circle"></i>
+                Aberta
+              </span>
+            <% end %>
+          </td>
 
+          <td class="action-plan-desktop-table__task">
+            <strong class="action-plan-desktop-task-title">
+              <%= task.title %>
+            </strong>
 
-            <!-- USUÁRIOS -->
+            <% if task.description.present? %>
+              <small class="action-plan-desktop-task-description">
+                <%= task.description %>
+              </small>
+            <% end %>
+          </td>
 
-            <td>
-              <% task.users.limit(3).each do |user| %>
-                <span class="badge bg-light text-dark border">
-                  <i class="bi bi-person"></i>
-                  <%= user.name.split.first %>
-                </span>
-              <% end %>
+          <td class="action-plan-desktop-table__bucket">
+            <span class="badge action-plan-bucket-badge">
+              <%= bucket.name %>
+            </span>
+          </td>
 
-              <% if task.users.count > 3 %>
-                <span class="badge bg-light text-dark border">
-                  +<%= task.users.count - 3 %>
-                </span>
-              <% end %>
-            </td>
+          <td class="action-plan-desktop-table__users">
+            <% users.first(3).each do |user| %>
+              <span class="badge action-plan-user-badge">
+                <i class="bi bi-person"></i>
+                <%= user.name.split.first %>
+              </span>
+            <% end %>
 
+            <% if users.size > 3 %>
+              <span class="badge action-plan-user-badge">
+                +<%= users.size - 3 %>
+              </span>
+            <% end %>
+          </td>
 
-            <!-- DATA -->
+          <td class="action-plan-desktop-table__date">
+            <% if task.due_at.present? %>
+              <span class="action-plan-date <%= overdue ? 'action-plan-date--overdue' : '' %>">
+                <% if overdue %>
+                  <i class="bi bi-alarm"></i>
+                <% else %>
+                  <i class="bi bi-calendar"></i>
+                <% end %>
+                <%= l(task.due_at.to_date, format: :short) %>
+              </span>
+            <% else %>
+              <span class="text-muted">
+                Sem prazo
+              </span>
+            <% end %>
+          </td>
 
-            <td>
-              <% if task.due_at.present? %>
-                <span class="<%= overdue ? 'text-danger fw-bold' : '' %>">
-                  <% if overdue %>
-                    <i class="bi bi-alarm"></i>
-                  <% else %>
-                    <i class="bi bi-calendar"></i>
-                  <% end %>
-                  <%= l(task.due_at.to_date, format: :short) %>
-                </span>
-              <% else %>
-                <span class="text-muted">
-                  Sem prazo
-                </span>
-              <% end %>
-            </td>
+          <td class="action-plan-desktop-table__labels">
+            <% task.labels.each do |label| %>
+              <span class="badge action-plan-label-badge"
+                    style="background-color:<%= label.color %>">
+                <%= label.name %>
+              </span>
+            <% end %>
+          </td>
 
-
-            <!-- LABELS -->
-
-            <td>
-              <% task.labels.each do |label| %>
-                <span class="badge"
-                      style="background-color:<%= label.color %>">
-                  <%= label.name %>
-                </span>
-              <% end %>
-            </td>
-
-
-            <!-- AÇÃO -->
-            <td>
-              <button
-                class="btn btn-sm btn-outline-primary"
-                data-controller="task-modal"
-                data-action="click->task-modal#open click->stop"
-                data-task-id="<%= task.id %>"
-                data-plan-id="<%= action_plan.id %>"
-              >
-                <i class="bi bi-pencil"></i>
-              </button>
-            </td>
-
+          <td class="text-end action-plan-desktop-table__action">
+            <i class="bi bi-chevron-right text-muted"></i>
+          </td>
           </tr>
-
         <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="action-plan-mobile-task-list d-md-none">
+    <% if task_rows.any? %>
+      <% task_rows.each do |bucket, task| %>
+        <% overdue = task.due_at.present? && task.due_at < Time.current && !task.completed %>
+        <% users = task.users.to_a %>
+        <% search_text = [
+             task.title,
+             task.description,
+             bucket.name,
+             task.labels.map(&:name),
+             users.map(&:name)
+           ].flatten.compact.join(" ") %>
+
+        <article
+          class="action-plan-mobile-task <%= 'completed-task d-none' if task.completed %>"
+          data-action-plan-filter-target="item"
+          data-search-text="<%= search_text %>"
+          data-controller="task-modal"
+          data-action="click->task-modal#open"
+          data-task-id="<%= task.id %>"
+          data-bucket-id="<%= bucket.id %>"
+          data-plan-id="<%= action_plan.id %>"
+        >
+        <div class="action-plan-mobile-task__top">
+          <span class="badge <%= task.completed ? 'bg-success' : 'bg-primary' %> action-plan-mobile-task__status">
+            <% if task.completed %>
+              <i class="bi bi-check-circle"></i>
+              Concluída
+            <% else %>
+              <i class="bi bi-circle"></i>
+              Aberta
+            <% end %>
+          </span>
+        </div>
+
+        <div class="action-plan-mobile-task__bucket">
+          <i class="bi bi-folder2-open"></i>
+          <span><%= bucket.name %></span>
+        </div>
+
+        <h5 class="action-plan-mobile-task__title">
+          <%= task.title %>
+        </h5>
+
+        <% if task.description.present? %>
+          <p class="action-plan-mobile-task__description">
+            <%= truncate(task.description, length: 120) %>
+          </p>
+        <% end %>
+
+        <div class="action-plan-mobile-task__meta">
+          <span class="<%= overdue ? 'text-danger fw-bold' : 'text-muted' %>">
+            <% if task.due_at.present? %>
+              <% if overdue %>
+                <i class="bi bi-alarm"></i>
+              <% else %>
+                <i class="bi bi-calendar"></i>
+              <% end %>
+              <%= l(task.due_at.to_date, format: :short) %>
+            <% else %>
+              <i class="bi bi-calendar-x"></i>
+              Sem prazo
+            <% end %>
+          </span>
+
+          <% if users.any? %>
+            <span class="text-muted">
+              <i class="bi bi-person"></i>
+              <%= users.first.name.split.first %>
+              <%= "+#{users.size - 1}" if users.size > 1 %>
+            </span>
+          <% end %>
+        </div>
+
+        <% if task.labels.any? %>
+          <div class="action-plan-mobile-task__labels">
+            <% task.labels.each do |label| %>
+              <span class="badge"
+                    style="background-color:<%= label.color %>">
+                <%= label.name %>
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+        </article>
       <% end %>
-    </tbody>
-  </table>
+    <% else %>
+      <div class="action-plan-mobile-empty text-muted">
+        Nenhuma tarefa encontrada.
+      </div>
+    <% end %>
+  </div>
+
+  <div class="action-plan-list-empty d-none" data-action-plan-filter-target="empty">
+    Nenhuma tarefa encontrada para esse filtro.
+  </div>
 </div>

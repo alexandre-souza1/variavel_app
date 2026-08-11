@@ -3,6 +3,10 @@
     data-id="<%= task.id %>"
     data-controller="task-modal"
     data-action="click->task-modal#open"
+    <% if local_assigns[:search_text].present? %>
+      data-action-plan-filter-target="item"
+      data-search-text="<%= local_assigns[:search_text] %>"
+    <% end %>
     data-plan-id="<%= task.bucket.action_plan.id %>"
     data-bucket-id="<%= task.bucket.id %>"
     data-task-id="<%= task.id %>">

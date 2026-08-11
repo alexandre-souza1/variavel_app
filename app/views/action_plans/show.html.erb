@@ -1,4 +1,4 @@
-<div class="container-fluid"
+<div class="container-fluid action-plan-show <%= 'action-plan-show--auto-view' if params[:view].blank? %>"
      data-controller="open-task"
      data-open-task-task-id-value="<%= @task_to_open&.id %>">
   <%= turbo_stream_from "tasks_action_plan_#{@action_plan.id}" %>
@@ -31,16 +31,41 @@
 
   <div class="mb-3">
     <%= link_to "Kanban", action_plan_path(@action_plan, view: "kanban"),
-        class: "btn btn-outline-primary #{params[:view] != 'list' ? 'active' : ''}" %>
+        class: "btn btn-outline-primary action-plan-view-link action-plan-view-link--kanban #{params[:view] != 'list' ? 'active' : ''}" %>
 
     <%= link_to "Lista", action_plan_path(@action_plan, view: "list"),
-        class: "btn btn-outline-primary #{params[:view] == 'list' ? 'active' : ''}" %>
+        class: "btn btn-outline-primary action-plan-view-link action-plan-view-link--list #{params[:view] == 'list' ? 'active' : ''}" %>
   </div>
 
   <% if params[:view] == "list" %>
     <%= render "list_view", buckets: @buckets, action_plan: @action_plan %>
-  <% else %>
+  <% elsif params[:view] == "kanban" %>
     <div data-controller="kanban-scroll">
+
+      <!-- SCROLL TOP -->
+      <div
+        data-kanban-scroll-target="top"
+        class="kanban-scroll-top"
+      >
+        <div data-kanban-scroll-target="spacer"></div>
+      </div>
+
+      <!-- KANBAN -->
+      <div
+        data-kanban-scroll-target="bottom"
+        class="kanban-scroll-bottom"
+      >
+        <div class="border rounded p-1 my-1">
+          <%= render "kanban_view", buckets: @buckets, action_plan: @action_plan %>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <div class="action-plan-auto-list">
+      <%= render "list_view", buckets: @buckets, action_plan: @action_plan %>
+    </div>
+
+    <div class="action-plan-auto-kanban" data-controller="kanban-scroll">
 
       <!-- SCROLL TOP -->
       <div
