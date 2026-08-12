@@ -6,12 +6,7 @@
       <span class="fw-bold brand-text">Workstation</span>
     <% end %>
 
-    <!-- Toggler mobile -->
-    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarMain">
+    <div class="collapse navbar-collapse d-none d-lg-flex" id="navbarMain">
       <ul class="navbar-nav me-auto gap-1 flex-wrap">
         <% if user_signed_in? %>
           <!-- Menus DU e AZ (condicionais) -->
@@ -93,9 +88,10 @@
           <% end %>
         <% end %>
       </ul>
+    </div>
 
       <!-- Lado direito: informações do usuário + avatar -->
-      <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2 gap-md-3 ms-auto">
         <% if user_signed_in? %>
           <%= turbo_stream_from "notifications_user_#{current_user.id}" %>
           <%= render "notifications/menu", user: current_user %>
@@ -181,6 +177,10 @@
               </div>
             </li>
           </ul>
+
+          <button class="btn app-mobile-menu-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNavOffcanvas" aria-controls="mobileNavOffcanvas" aria-label="Abrir menu">
+            <i class="bi bi-grid-3x3-gap"></i>
+          </button>
         <% else %>
           <!-- Usuário não logado: tema + login -->
           <div class="d-flex align-items-center gap-2">
@@ -201,6 +201,84 @@
           </div>
         <% end %>
       </div>
-    </div>
   </div>
 </nav>
+
+<% if user_signed_in? %>
+  <div class="offcanvas offcanvas-start app-mobile-offcanvas d-lg-none" tabindex="-1" id="mobileNavOffcanvas" aria-labelledby="mobileNavOffcanvasLabel">
+    <div class="offcanvas-header">
+      <div>
+        <h5 class="offcanvas-title" id="mobileNavOffcanvasLabel">Menu</h5>
+        <span class="app-mobile-offcanvas__subtitle">Workstation</span>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
+    </div>
+
+    <div class="offcanvas-body">
+      <% if can_view_du_menu?(current_user) %>
+        <div class="app-mobile-nav-section">
+          <div class="app-mobile-nav-section__title">
+            <i class="bi bi-truck"></i> DU
+          </div>
+          <%= link_to 'Motoristas', drivers_path, class: 'app-mobile-nav-link' %>
+          <%= link_to 'Ajudantes', ajudantes_path, class: 'app-mobile-nav-link' %>
+          <%= link_to 'Mapas', mapas_todos_path, class: 'app-mobile-nav-link' %>
+          <%= link_to 'Dashboard de Mapas', dashboard_mapas_path, class: 'app-mobile-nav-link' %>
+          <%= link_to 'Consumo', fuel_consumptions_path, class: 'app-mobile-nav-link' %>
+          <%= link_to 'Importar 2Art', mapas_path, class: 'app-mobile-nav-link' %>
+        </div>
+      <% end %>
+
+      <% if can_view_az_menu?(current_user) %>
+        <div class="app-mobile-nav-section">
+          <div class="app-mobile-nav-section__title">
+            <i class="bi bi-house-door"></i> AZ
+          </div>
+          <%= link_to 'Operadores', operators_path, class: 'app-mobile-nav-link' %>
+          <%= link_to 'Ajudantes', az_ajudantes_path, class: 'app-mobile-nav-link' %>
+          <%= link_to 'Resultados Diários', az_mapas_path, class: 'app-mobile-nav-link' %>
+          <%= link_to 'Resultados WMS', wms_tasks_path, class: 'app-mobile-nav-link' %>
+          <%= link_to 'Importar WMS', new_import_wms_tasks_path, class: 'app-mobile-nav-link' %>
+        </div>
+      <% end %>
+
+      <div class="app-mobile-nav-section">
+        <div class="app-mobile-nav-section__title">
+          <i class="bi bi-compass"></i> Atalhos
+        </div>
+        <% NavbarHelper::NAVBAR_LINKS.each do |key, link| %>
+          <% if can_view_nav_link?(key, current_user) %>
+            <%= link_to send(link[:path]), class: "app-mobile-nav-link" do %>
+              <i class="bi <%= link[:icon] %>"></i> <%= link[:label] %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <% if can_view_registration_dropdown?(current_user) %>
+        <div class="app-mobile-nav-section">
+          <div class="app-mobile-nav-section__title">
+            <i class="bi bi-database"></i> Cadastros
+          </div>
+
+          <%
+            visible_items = NavbarHelper::REGISTRATION_SUBITEMS.select do |key, sub|
+              can_view_subitem?(key, current_user)
+            end
+            grouped = visible_items.group_by { |_key, sub| sub[:group] }
+          %>
+
+          <% NavbarHelper::GROUP_ORDER.each do |group_name| %>
+            <% items = grouped[group_name] %>
+            <% next if items.blank? %>
+
+            <div class="app-mobile-nav-group"><%= group_name %></div>
+            <% items.each do |_key, sub| %>
+              <%= link_to sub[:label], send(sub[:path]), class: 'app-mobile-nav-link' %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

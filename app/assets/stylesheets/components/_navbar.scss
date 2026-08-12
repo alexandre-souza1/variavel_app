@@ -158,6 +158,28 @@
     font-size: 0.85rem;
   }
 
+  .app-mobile-menu-btn {
+    align-items: center;
+    border: 1px solid rgba(23, 32, 51, 0.18);
+    border-radius: 8px;
+    color: var(--bs-navbar-color, #172033);
+    display: inline-flex;
+    height: 38px;
+    justify-content: center;
+    padding: 0;
+    width: 38px;
+
+    i {
+      font-size: 1.1rem;
+    }
+
+    &:hover,
+    &:focus {
+      background: rgba(255, 255, 255, 0.14);
+      color: var(--bs-navbar-hover-color, #0b1220);
+    }
+  }
+
   // Tema toggle no dropdown
   .theme-toggle-group {
     .btn {
@@ -169,6 +191,93 @@
       &:hover {
         background: rgba(var(--bs-primary-rgb), 0.06);
       }
+    }
+  }
+}
+
+.app-mobile-offcanvas {
+  --bs-offcanvas-width: 340px;
+  background: var(--bs-body-bg);
+  max-width: 84vw;
+
+  .offcanvas-header {
+    border-bottom: 1px solid var(--bs-border-color);
+    padding: 1rem;
+  }
+
+  .offcanvas-title {
+    color: var(--bs-body-color);
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .app-mobile-offcanvas__subtitle {
+    color: var(--bs-secondary-color);
+    display: block;
+    font-size: 0.78rem;
+    margin-top: 0.1rem;
+  }
+
+  .offcanvas-body {
+    padding: 0.75rem;
+  }
+}
+
+.app-mobile-nav-section {
+  border-bottom: 1px solid var(--bs-border-color);
+  padding: 0.75rem 0;
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+}
+
+.app-mobile-nav-section__title,
+.app-mobile-nav-group {
+  color: var(--bs-secondary-color);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+  padding: 0 0.35rem;
+  text-transform: uppercase;
+}
+
+.app-mobile-nav-section__title {
+  align-items: center;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.app-mobile-nav-link {
+  align-items: center;
+  border-radius: 8px;
+  color: var(--bs-body-color);
+  display: flex;
+  gap: 0.55rem;
+  min-height: 40px;
+  padding: 0.5rem 0.6rem;
+  text-decoration: none;
+
+  i {
+    color: var(--bs-secondary-color);
+    font-size: 1rem;
+    width: 1.25rem;
+  }
+
+  &:hover,
+  &:focus {
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    color: var(--bs-primary);
+
+    i {
+      color: var(--bs-primary);
     }
   }
 }
