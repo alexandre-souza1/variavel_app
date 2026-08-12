@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_12_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_12_123000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -649,9 +649,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_12_120000) do
     t.integer "status", default: 0, null: false
     t.boolean "completed"
     t.string "recurrence"
+    t.boolean "due_notification_enabled", default: false, null: false
+    t.datetime "due_notification_sent_at"
     t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
     t.index ["bucket_id"], name: "index_tasks_on_bucket_id"
     t.index ["creator_id"], name: "index_tasks_on_creator_id"
+    t.index ["due_notification_enabled", "due_notification_sent_at", "due_at"], name: "index_tasks_on_due_notification_status"
   end
 
   create_table "users", force: :cascade do |t|

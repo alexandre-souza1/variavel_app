@@ -43,4 +43,32 @@ class NotificationTest < ActiveSupport::TestCase
     ),
                  notification.action_url
   end
+
+  test "due soon service creates one notification for enabled task" do
+    task = tasks(:one)
+    recipient = users(:one)
+
+    task.update_columns(
+      completed: false,
+      due_at: 12.hours.from_now,
+      due_notification_enabled: true,
+      due_notification_sent_at: nil
+    )
+
+    assert_difference -> { recipient.notifications.count }, 1 do
+      TaskDueNotificationService.call
+    end
+
+    notification = recipient.notifications.recent.first
+
+    assert_equal "task_due_soon", notification.kind
+    assert_equal "Tarefa prestes a vencer", notification.title
+    assert_equal "Abrir tarefa", notification.action_text
+    assert_equal task, notification.notifiable
+    assert task.reload.due_notification_sent_at.present?
+
+    assert_no_difference -> { recipient.notifications.count } do
+      TaskDueNotificationService.call
+    end
+  end
 end

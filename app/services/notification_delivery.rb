@@ -12,6 +12,10 @@ class NotificationDelivery
     )
   end
 
+  def self.task_due_soon(task:)
+    new.task_due_soon(task: task)
+  end
+
   def task_assigned(task:, user:, actor:)
     Notification.create!(
       user: user,
@@ -44,6 +48,21 @@ class NotificationDelivery
     end
   end
 
+  def task_due_soon(task:)
+    recipients_for_task_due_soon(task).find_each do |user|
+      Notification.create!(
+        user: user,
+        actor: task.creator,
+        notifiable: task,
+        kind: "task_due_soon",
+        title: "Tarefa prestes a vencer",
+        body: "#{task.title} vence em #{I18n.l(task.due_at, format: :short)}.",
+        action_text: "Abrir tarefa",
+        action_url: action_plan_path(task.bucket.action_plan)
+      )
+    end
+  end
+
   private
 
   def recipients_for_fleet_availability(actor)
@@ -52,5 +71,12 @@ class NotificationDelivery
       .or(User.where(role: User.roles[:admin]))
       .where.not(id: actor&.id)
       .distinct
+  end
+
+  def recipients_for_task_due_soon(task)
+    recipients = task.users
+    return recipients.distinct if recipients.exists?
+
+    User.where(id: task.creator_id)
   end
 end

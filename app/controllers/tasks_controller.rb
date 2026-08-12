@@ -188,6 +188,7 @@ class TasksController < ApplicationController
       :start_at, :due_at,
       :comment, :assignee_id,
       :recurrence, :completed,
+      :due_notification_enabled,
       label_ids: [], user_ids: [],
       tasklist_attributes: [
         :id, :title, :_destroy,

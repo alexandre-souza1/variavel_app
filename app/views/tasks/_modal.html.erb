@@ -9,6 +9,25 @@
 
         <div class="d-flex gap-2 align-items-center">
 
+          <%= form_with model: [task.bucket.action_plan, task.bucket, task],
+              class: "task-reminder-toggle-form",
+              data: {
+                controller: "autosave-form",
+                action: "change->autosave-form#change"
+              } do |reminder_form| %>
+            <div class="task-reminder-toggle task-reminder-toggle--header">
+              <div class="form-check form-switch task-reminder-toggle__control">
+                <%= reminder_form.check_box :due_notification_enabled,
+                  class: "form-check-input",
+                  role: "switch" %>
+                <%= reminder_form.label :due_notification_enabled,
+                  class: "form-check-label task-reminder-toggle__label" do %>
+                  <i class="bi bi-bell"></i>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+
           <div id="task-status-button">
             <%= button_to toggle_complete_action_plan_bucket_task_path(
                   task.bucket.action_plan,
@@ -31,7 +50,6 @@
 
             <% end %>
           </div>
-
 
           <button class="btn-close" data-bs-dismiss="modal"></button>
 
@@ -99,13 +117,13 @@
                 <div class="row">
                   <div class="col-md-6">
                     <%= f.label :start_at, class: "d-none" %>
-                    <p class="text-muted small mb-1">Data e hora de início da tarefa</p>
+                    <p class="text-muted small mb-1">Data e hora de início</p>
                     <%= f.datetime_local_field :start_at, class: "form-control" %>
                   </div>
 
                   <div class="col-md-6">
                     <%= f.label :due_at, class: "d-none" %>
-                    <p class="text-muted small mb-1">Data e hora de término da tarefa</p>
+                    <p class="text-muted small mb-1">Data e hora de Conclusão</p>
                     <%= f.datetime_local_field :due_at, class: "form-control" %>
                   </div>
                 </div>
@@ -130,6 +148,7 @@
                     <%= f.select :bucket_id, options_from_collection_for_select(task.bucket.action_plan.buckets, :id, :name, task.bucket_id), {}, class: "form-control" %>
                   </div>
                 </div>
+
               </div>
 
               <div class="mb-3 users-field">

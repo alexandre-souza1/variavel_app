@@ -9,7 +9,11 @@
   <% end %>
 
   <div class="notification-icon">
-    <i class="bi <%= notification.kind == "fleet_availability_sent" ? "bi-file-earmark-pdf" : "bi-list-task" %>"></i>
+    <i class="bi <%= case notification.kind
+                    when "fleet_availability_sent" then "bi-file-earmark-pdf"
+                    when "task_due_soon" then "bi-alarm"
+                    else "bi-list-task"
+                    end %>"></i>
   </div>
 
   <div class="notification-content">

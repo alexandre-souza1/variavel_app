@@ -129,3 +129,74 @@
   text-align: center;
   font-size: 0.9rem;
 }
+
+@media (max-width: 575.98px) {
+  #notifications-menu {
+    position: static;
+  }
+
+  .notification-toggle {
+    width: 36px;
+    height: 36px;
+  }
+
+  .notification-menu {
+    position: fixed !important;
+    top: 4.25rem !important;
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    width: auto;
+    max-width: none;
+    max-height: calc(100vh - 5.25rem);
+    margin: 0;
+    transform: none !important;
+    z-index: 1080;
+  }
+
+  .notification-menu-header {
+    padding: 0.65rem 0.8rem;
+  }
+
+  .notification-list {
+    max-height: calc(100vh - 9rem);
+  }
+
+  .notification-item {
+    grid-template-columns: 30px 1fr;
+    gap: 0.6rem;
+    padding: 0.75rem 2rem 0.75rem 0.75rem;
+  }
+
+  .notification-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    font-size: 0.9rem;
+  }
+
+  .notification-delete-form {
+    top: 0.35rem;
+    right: 0.4rem;
+  }
+
+  .notification-delete-btn {
+    width: 26px;
+    height: 26px;
+  }
+
+  .notification-title {
+    font-size: 0.9rem;
+    padding-right: 0.25rem;
+  }
+
+  .notification-body,
+  .notification-meta {
+    font-size: 0.78rem;
+  }
+
+  .notification-action {
+    max-width: 100%;
+    padding: 0.25rem 0.55rem;
+    white-space: normal;
+  }
+}

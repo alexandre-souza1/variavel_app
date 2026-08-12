@@ -27,8 +27,10 @@ class Task < ApplicationRecord
     self.start_at ||= Time.current
   end
 
+  before_save :reset_due_notification_sent_at, if: :should_reset_due_notification?
   after_update_commit :create_next_task_if_completed
   after_create :ensure_tasklist
+  after_commit :notify_due_soon_if_needed, on: %i[create update]
 
 
   def create_next_task_if_completed
@@ -50,6 +52,7 @@ class Task < ApplicationRecord
       start_at: Time.current,
       due_at: next_date,
       recurrence: recurrence,
+      due_notification_enabled: due_notification_enabled,
       creator: creator,
       user_ids: user_ids,      # ← usa os IDs
       label_ids: label_ids || []
@@ -110,5 +113,19 @@ class Task < ApplicationRecord
 
   def end_time
     due_at&.to_date
+  end
+
+  private
+
+  def should_reset_due_notification?
+    will_save_change_to_due_at? || will_save_change_to_due_notification_enabled?
+  end
+
+  def reset_due_notification_sent_at
+    self.due_notification_sent_at = nil
+  end
+
+  def notify_due_soon_if_needed
+    TaskDueNotificationService.notify_if_due_soon(self)
   end
 end

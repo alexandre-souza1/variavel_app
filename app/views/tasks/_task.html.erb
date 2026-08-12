@@ -75,6 +75,13 @@
           <i class="bi bi-arrow-repeat"></i>
         </small>
       <% end %>
+
+      <% if task.due_notification_enabled? %>
+        <small class="task-icon task-icon--reminder" title="Aviso de vencimento ativo">
+          <i class="bi bi-bell"></i>
+        </small>
+      <% end %>
+
       <% users = task.users.to_a %>
       <div class="avatar-group action-plan-task-card__avatars">
         <% users.first(3).each do |user| %>
