@@ -91,7 +91,7 @@ class FleetAvailabilitiesController < ApplicationController
         send_data pdf.render,
                   filename: "disponibilidade_frota_#{@fleet_availability.date}.pdf",
                   type: "application/pdf",
-                  disposition: "inline"
+                  disposition: params[:download].present? ? "attachment" : "inline"
       end
     end
   end
@@ -111,6 +111,10 @@ class FleetAvailabilitiesController < ApplicationController
     end
 
     @fleet_availability.lock_availability!(current_user)
+    NotificationDelivery.fleet_availability_sent(
+      fleet_availability: @fleet_availability,
+      actor: current_user
+    )
 
     redirect_to @fleet_availability,
                 notice: "Disponibilidade travada com sucesso."

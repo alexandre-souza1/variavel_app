@@ -1,0 +1,30 @@
+<div class="notification-item <%= "is-unread" unless notification.read? %>">
+  <%= button_to notification_path(notification),
+                method: :delete,
+                class: "notification-delete-btn",
+                form: { class: "notification-delete-form" },
+                aria: { label: "Apagar notificação" },
+                title: "Apagar notificação" do %>
+    <i class="bi bi-x"></i>
+  <% end %>
+
+  <div class="notification-icon">
+    <i class="bi <%= notification.kind == "fleet_availability_sent" ? "bi-file-earmark-pdf" : "bi-list-task" %>"></i>
+  </div>
+
+  <div class="notification-content">
+    <div class="notification-title"><%= notification.title %></div>
+    <% if notification.body.present? %>
+      <div class="notification-body"><%= notification.body %></div>
+    <% end %>
+    <div class="notification-meta"><%= time_ago_in_words(notification.created_at) %> atrás</div>
+
+    <% if notification.action_text.present? %>
+      <%= button_to notification.action_text,
+                    read_notification_path(notification),
+                    method: :patch,
+                    class: "btn btn-sm btn-primary notification-action",
+                    form: { data: { turbo: false } } %>
+    <% end %>
+  </div>
+</div>

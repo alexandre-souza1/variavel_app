@@ -97,6 +97,9 @@
       <!-- Lado direito: informações do usuário + avatar -->
       <div class="d-flex align-items-center gap-3">
         <% if user_signed_in? %>
+          <%= turbo_stream_from "notifications_user_#{current_user.id}" %>
+          <%= render "notifications/menu", user: current_user %>
+
           <!-- Nome e setor (oculto em mobile) -->
           <div class="user-info d-none d-md-block">
             <%= link_to dashboard_path, class: "navbar-brand fw-semibold user-name" do %>

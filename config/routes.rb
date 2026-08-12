@@ -41,6 +41,10 @@ Rails.application.routes.draw do
 
   resources :downloads
 
+  resources :notifications, only: :destroy do
+    patch :read, on: :member
+  end
+
   resources :checklists do
     patch :autosave, on: :collection
 

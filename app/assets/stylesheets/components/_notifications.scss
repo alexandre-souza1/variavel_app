@@ -1,0 +1,131 @@
+.notification-toggle {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  justify-content: center;
+  padding: 0;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #dc3545;
+  color: #fff;
+  font-size: 0.7rem;
+  line-height: 18px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.notification-menu {
+  width: 360px;
+  max-width: calc(100vw - 2rem);
+  padding: 0;
+  overflow: hidden;
+}
+
+.notification-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  font-weight: 700;
+}
+
+.notification-list {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 0.75rem;
+  padding: 0.85rem 2.25rem 0.85rem 1rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  background: var(--bs-body-bg);
+}
+
+.notification-delete-form {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.55rem;
+  margin: 0;
+}
+
+.notification-delete-btn {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: var(--bs-secondary-color);
+  background: transparent;
+}
+
+.notification-delete-btn:hover,
+.notification-delete-btn:focus {
+  color: var(--bs-danger);
+  background: rgba(var(--bs-danger-rgb), 0.1);
+}
+
+.notification-item.is-unread {
+  background: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+.notification-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: rgba(var(--bs-primary-rgb), 0.12);
+  color: var(--bs-primary);
+}
+
+.notification-title {
+  font-weight: 700;
+  color: var(--bs-body-color);
+  line-height: 1.25;
+}
+
+.notification-body,
+.notification-meta {
+  color: var(--bs-secondary-color);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.notification-body {
+  margin-top: 0.15rem;
+}
+
+.notification-meta {
+  margin-top: 0.25rem;
+}
+
+.notification-action {
+  margin-top: 0.55rem;
+  border-radius: 6px;
+}
+
+.notification-content form {
+  margin: 0;
+}
+
+.notification-empty {
+  padding: 1.25rem;
+  color: var(--bs-secondary-color);
+  text-align: center;
+  font-size: 0.9rem;
+}

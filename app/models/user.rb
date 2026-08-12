@@ -13,6 +13,11 @@ class User < ApplicationRecord
   has_many :tasks, through: :task_assignments
   has_many :stress_test_imports, dependent: :destroy
   has_many :fleet_availabilities, dependent: :destroy
+  has_many :notifications, dependent: :destroy
+  has_many :sent_notifications,
+           class_name: "Notification",
+           foreign_key: :actor_id,
+           dependent: :nullify
 
   scope :active, -> { where.not(confirmed_at: nil) }
 

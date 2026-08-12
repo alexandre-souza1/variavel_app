@@ -1,0 +1,32 @@
+<div id="notifications-menu" class="dropdown">
+  <% unread_count = user.notifications.unread.count %>
+  <% notifications = user.notifications.recent.limit(10) %>
+
+  <button class="nav-link notification-toggle" id="notificationsDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notificações">
+    <i class="bi bi-bell"></i>
+    <% if unread_count.positive? %>
+      <span id="notifications-count" class="notification-badge"><%= unread_count %></span>
+    <% end %>
+  </button>
+
+  <div class="dropdown-menu dropdown-menu-end app-dropdown-menu notification-menu shadow-lg" aria-labelledby="notificationsDropdown">
+    <div class="notification-menu-header">
+      <span>Notificações</span>
+      <% if unread_count.positive? %>
+        <span class="badge text-bg-primary"><%= unread_count %> nova<%= "s" if unread_count > 1 %></span>
+      <% end %>
+    </div>
+
+    <% if notifications.any? %>
+      <div class="notification-list">
+        <% notifications.each do |notification| %>
+          <%= render "notifications/notification", notification: notification %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="notification-empty">
+        Nenhuma notificação por enquanto.
+      </div>
+    <% end %>
+  </div>
+</div>
