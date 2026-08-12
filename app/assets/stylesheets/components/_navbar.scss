@@ -195,6 +195,10 @@
   }
 }
 
+// ============================================================
+// OFF CANVAS MOBILE – ACORDEÃO
+// ============================================================
+
 .app-mobile-offcanvas {
   --bs-offcanvas-width: 340px;
   background: var(--bs-body-bg);
@@ -224,9 +228,10 @@
   }
 }
 
+// Seções do menu mobile
 .app-mobile-nav-section {
   border-bottom: 1px solid var(--bs-border-color);
-  padding: 0.75rem 0;
+  padding: 0.5rem 0;
 
   &:first-child {
     padding-top: 0;
@@ -238,23 +243,81 @@
   }
 }
 
-.app-mobile-nav-section__title,
+// Título do acordeão (botão)
+.app-mobile-nav-section__title {
+  background: none;
+  border: none;
+  color: var(--bs-body-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.35rem;
+  width: 100%;
+  text-align: left;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+
+  // Ícone
+  i {
+    font-size: 1.1rem;
+    color: var(--bs-secondary-color);
+    width: 1.4rem;
+  }
+
+  // Seta indicadora
+  &::after {
+    content: "▼";
+    margin-left: auto;
+    font-size: 0.7rem;
+    transition: transform 0.2s ease;
+    color: var(--bs-secondary-color);
+  }
+
+  // Estado expandido: seta para cima
+  &[aria-expanded="true"]::after {
+    transform: rotate(180deg);
+  }
+
+  &:hover {
+    background: rgba(var(--bs-primary-rgb), 0.04);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Título estático (ex: "Atalhos")
+.app-mobile-nav-section__title-static {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.35rem;
+  color: var(--bs-body-color);
+
+  i {
+    font-size: 1.1rem;
+    color: var(--bs-secondary-color);
+    width: 1.4rem;
+  }
+}
+
+// Grupo dentro do cadastro (ex: "Configurações", "Pessoas")
 .app-mobile-nav-group {
   color: var(--bs-secondary-color);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  margin-bottom: 0.4rem;
-  padding: 0 0.35rem;
+  padding: 0.5rem 0.35rem 0.25rem 1.2rem;
   text-transform: uppercase;
 }
 
-.app-mobile-nav-section__title {
-  align-items: center;
-  display: flex;
-  gap: 0.4rem;
-}
-
+// Links do menu mobile
 .app-mobile-nav-link {
   align-items: center;
   border-radius: 8px;
@@ -262,8 +325,9 @@
   display: flex;
   gap: 0.55rem;
   min-height: 40px;
-  padding: 0.5rem 0.6rem;
+  padding: 0.4rem 0.6rem 0.4rem 1.8rem; // indentado para hierarquia
   text-decoration: none;
+  transition: background 0.1s ease;
 
   i {
     color: var(--bs-secondary-color);
@@ -538,6 +602,45 @@
       }
     }
   }
+
+  // Ajustes para o mobile offcanvas no tema escuro
+  .app-mobile-nav-section__title {
+    color: #e5e7eb;
+    i {
+      color: #94a3b8;
+    }
+    &::after {
+      color: #94a3b8;
+    }
+    &:hover {
+      background: rgba(255,255,255,0.05);
+    }
+  }
+
+  .app-mobile-nav-section__title-static {
+    color: #e5e7eb;
+    i {
+      color: #94a3b8;
+    }
+  }
+
+  .app-mobile-nav-link {
+    color: #e5e7eb;
+    i {
+      color: #94a3b8;
+    }
+    &:hover {
+      background: rgba(255,255,255,0.06);
+      color: #93c5fd;
+      i {
+        color: #93c5fd;
+      }
+    }
+  }
+
+  .app-mobile-nav-group {
+    color: #94a3b8;
+  }
 }
 
 // ============================================================
@@ -640,7 +743,7 @@
 
         .app-dropdown-menu {
           min-width: 100%;
-          position: static;
+          position: absolute;
           box-shadow: none;
           border-radius: 8px;
           margin-top: 0.25rem;
