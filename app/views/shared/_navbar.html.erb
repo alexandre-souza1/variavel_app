@@ -62,11 +62,32 @@
                 <i class="bi bi-database me-1"></i> Cadastros
               </button>
               <ul class="dropdown-menu app-dropdown-menu">
-                <% NavbarHelper::REGISTRATION_SUBITEMS.each do |sub_key, sub| %>
-                  <% if can_view_subitem?(sub_key, current_user) %>
-                    <li><%= link_to sub[:label], send(sub[:path]), class: 'dropdown-item app-dropdown-item' %></li>
-                  <% end %>
-                <% end %>
+                <% 
+                  # Filtra apenas os itens que o usuário pode ver
+                  visible_items = NavbarHelper::REGISTRATION_SUBITEMS.select do |key, sub|
+                    can_view_subitem?(key, current_user)
+                  end
+
+                  # Agrupa por grupo
+                  grouped = visible_items.group_by { |_key, sub| sub[:group] }
+
+                  # Itera na ordem definida
+                  NavbarHelper::GROUP_ORDER.each do |group_name|
+                    items = grouped[group_name]
+                    next if items.blank? # pula grupos sem itens visíveis
+
+                    # Cabeçalho do grupo
+                    concat content_tag(:li, content_tag(:h6, group_name, class: 'dropdown-header'), class: 'dropdown-header-li')
+
+                    # Itens do grupo
+                    items.each do |key, sub|
+                      concat content_tag(:li, link_to(sub[:label], send(sub[:path]), class: 'dropdown-item app-dropdown-item'))
+                    end
+
+                    # Divisor após o grupo (exceto após o último grupo com itens)
+                    concat content_tag(:li, '', class: 'dropdown-divider') unless group_name == NavbarHelper::GROUP_ORDER.last
+                  end
+                %>
               </ul>
             </li>
           <% end %>
@@ -101,28 +122,6 @@
               </button>
 
               <div class="dropdown-menu dropdown-menu-end app-dropdown-menu shadow-lg" aria-labelledby="navbarDropdown">
-                <!-- Módulos (apenas Admin) -->
-                <% if current_user.admin? %>
-                  <h6 class="dropdown-header">Módulos</h6>
-                  <%= link_to dashboard_invoices_path, class: "dropdown-item app-dropdown-item" do %>
-                    <i class="bi bi-cash-coin me-2"></i> Finanças
-                  <% end %>
-                  <%= link_to dashboard_path, class: "dropdown-item app-dropdown-item fw-bold text-primary" do %>
-                    <i class="bi bi-truck me-2"></i> Painel Frota
-                    <span class="badge bg-success ms-1">New</span>
-                  <% end %>
-                  <%= link_to action_plans_path, class: "dropdown-item app-dropdown-item fw-bold text-primary" do %>
-                    <i class="bi bi-list-task me-2"></i> Tarefas
-                    <span class="badge bg-success ms-1">New</span>
-                  <% end %>
-                  <%= link_to root_path, class: "dropdown-item app-dropdown-item" do %>
-                    <i class="bi bi-kanban me-2"></i> Variáveis
-                  <% end %>
-                  <%= link_to checklists_path, class: "dropdown-item app-dropdown-item" do %>
-                    <i class="bi bi-ui-checks me-2"></i> Formulários
-                  <% end %>
-                  <div class="dropdown-divider"></div>
-                <% end %>
 
                 <!-- Módulo para mecânicos -->
                 <% if current_user.mechanical? %>

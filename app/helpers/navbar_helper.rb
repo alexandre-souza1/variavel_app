@@ -30,6 +30,12 @@ module NavbarHelper
       icon: 'bi-coin',
       label: 'Financeiro',
       sectors: [:fleet, :hr, :finance, :planning, :safety]
+    },
+    du: {
+      path: :variaveis_path,
+      icon: 'bi-cash-stack',
+      label: 'Variáveis',
+      sectors: [:du, :hr, :safety]
     }
   }
 
@@ -37,29 +43,67 @@ module NavbarHelper
     cost_centers: {
       label: 'Centros de Custo',
       path: :admin_cost_centers_path,
-      sectors: [:fleet, :finance, :planning, :safety]
+      sectors: [:fleet, :finance, :planning, :safety],
+      group: 'Finanças'
     },
     budget_categories: {
       label: 'Categorias',
       path: :admin_budget_categories_path,
-      sectors: [:fleet, :finance, :planning, :safety]
+      sectors: [:fleet, :finance, :planning, :safety],
+      group: 'Finanças'
     },
     suppliers: {
       label: 'Fornecedores',
       path: :suppliers_path,
-      sectors: [:fleet, :finance, :planning, :safety]
+      sectors: [:fleet, :finance, :planning, :safety],
+      group: 'Finanças'
+    },
+    drivers: {
+      label: 'Motoristas',
+      path: :drivers_path,
+      sectors: [:du, :hr, :safety],
+      group: 'DU'
+    },
+    ajudantes: {
+      label: 'Ajudantes',
+      path: :ajudantes_path,
+      sectors: [:du, :hr, :safety],
+      group: 'DU'
+    },
+    operators: {
+      label: 'Operadores',
+      path: :operators_path,
+      sectors: [:warehouse, :hr, :safety],
+      group: 'AZ'
+    },
+    az_ajudantes: {
+      label: 'Ajudantes AZ',
+      path: :az_ajudantes_path,
+      sectors: [:warehouse, :hr, :safety],
+      group: 'AZ'
     },
     plates: {
       label: 'Placas',
       path: :plates_path,
-      sectors: [:fleet, :du]
+      sectors: [:fleet, :du],
+      group: 'Geral'
     },
     routine_templates: {
       label: 'Modelos de Gerot',
       path: :routine_templates_path,
-      sectors: [:fleet, :du, :warehouse, :hr, :finance, :planning, :safety]
+      sectors: [:fleet, :du, :warehouse, :hr, :finance, :planning, :safety],
+      group: 'Geral'
+    },
+    action_plans: {
+      label: 'Planos de Ação',
+      path: :action_plans_path,
+      sectors: [:fleet, :du, :warehouse, :hr, :finance, :planning, :safety],
+      group: 'Geral'
     }
   }
+
+  # Ordem de exibição dos grupos (caso queira personalizar)
+  GROUP_ORDER = ['Finanças', 'DU', 'AZ', 'Geral'].freeze
 
   # Apenas admin vê tudo; supervisor e usuários comuns seguem as regras do setor
   def can_view_nav_link?(link_key, user)

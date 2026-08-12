@@ -35,6 +35,7 @@ Rails.application.routes.draw do
   get "mapas/show_todos", to: "mapas#show_todos", as: :mapas_todos
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   root "common#home"
+  get 'variaveis', to: 'common#home', defaults: { force_home: 'true' }, as: :variaveis
   get "consulta", to: "consultas#show"
   get "az_consulta", to: "az_consultas#show"
 
