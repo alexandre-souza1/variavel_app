@@ -32,7 +32,7 @@
       </div>
     </div>
 
-    <div class="d-flex align-items-center gap-3 flex-wrap justify-content-end">
+    <div class="fleet-availability-actions d-flex align-items-center gap-3 flex-wrap justify-content-end">
       <% if @locking_enabled %>
         <% if @fleet_availability.locked? %>
           <span class="badge text-bg-secondary">
@@ -88,7 +88,7 @@
 
           <i class="bi bi-magic"></i>
 
-          Ajustar placas padrão
+          Padrão
 
         </button>
       <% end %>
@@ -346,7 +346,7 @@
 
   </div>
 
-  <div class="mt-4 d-flex justify-content-between">
+  <div class="fleet-availability-footer-actions mt-4 d-flex justify-content-between">
 
     <%= link_to fleet_availabilities_path,
                 class: "btn btn-outline-secondary" do %>

@@ -24,6 +24,8 @@ export default class extends Controller {
 
         animation: 150,
 
+        disabled: this.mobileMode(),
+
         sort: !availabilitySlot,
 
         draggable: ".sortable-item",

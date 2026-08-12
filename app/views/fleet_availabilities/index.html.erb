@@ -1,6 +1,6 @@
-<div class="container py-4">
+<div class="container-fluid py-4 fleet-availability-index">
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="fleet-availability-index__header mb-4">
 
     <div>
 
@@ -14,7 +14,7 @@
 
     </div>
 
-    <div class="d-flex gap-2">
+    <div class="fleet-availability-index__actions">
       <%= link_to fleet_dimensionings_path,
                   class: "btn btn-outline-primary" do %>
         <i class="bi bi-calendar-range"></i>
@@ -24,14 +24,14 @@
       <%= link_to new_fleet_availability_path,
                   class: "btn btn-primary" do %>
         <i class="bi bi-plus-circle"></i>
-        Nova Disponibilidade
+        <span>Nova <span class="fleet-action-text-optional">Disponibilidade</span></span>
       <% end %>
 
     </div>
 
   </div>
 
-  <div class="card shadow-sm border-0 mb-4">
+  <div class="card shadow-sm border-0 mb-4 fleet-filter-card">
     <div class="card-body">
       <%= form_with url: fleet_availabilities_path,
                     method: :get,
@@ -75,10 +75,10 @@
     </div>
   </div>
 
-  <div class="row g-3 mb-4">
+  <div class="row g-3 mb-4 fleet-summary-grid">
 
     <div class="col-md-3">
-      <div class="card shadow-sm border-0 h-100">
+      <div class="card shadow-sm border-0 h-100 fleet-summary-card">
         <div class="card-body">
           <span class="text-muted small">Dias registrados na quinzena</span>
           <strong class="d-block fs-3">
@@ -92,7 +92,7 @@
     </div>
 
     <div class="col-md-3">
-      <div class="card shadow-sm border-0 h-100">
+      <div class="card shadow-sm border-0 h-100 fleet-summary-card fleet-summary-card--success">
         <div class="card-body">
           <span class="text-muted small">Cobertura média</span>
           <strong class="d-block fs-3">
@@ -106,7 +106,7 @@
     </div>
 
     <div class="col-md-3">
-      <div class="card shadow-sm border-0 h-100">
+      <div class="card shadow-sm border-0 h-100 fleet-summary-card fleet-summary-card--danger">
         <div class="card-body">
           <span class="text-muted small">Média de indisponibilidade</span>
           <strong class="d-block fs-3">
@@ -120,7 +120,7 @@
     </div>
 
     <div class="col-md-3">
-      <div class="card shadow-sm border-0 h-100">
+      <div class="card shadow-sm border-0 h-100 fleet-summary-card">
         <div class="card-body">
           <span class="text-muted small">Placa mais indisponível</span>
           <strong class="d-block fs-4 text-truncate" title="<%= @fleet_summary[:most_unavailable_plate] %>">
@@ -135,7 +135,7 @@
 
   </div>
 
-  <div class="card shadow-sm border-0">
+  <div class="card shadow-sm border-0 fleet-history-card">
 
     <div class="card-body p-0">
 
@@ -143,7 +143,7 @@
 
         <div class="table-responsive">
 
-          <table class="table table-hover align-middle mb-0">
+          <table class="table table-hover align-middle mb-0 fleet-availability-table">
 
             <thead class="table-light">
 
@@ -177,15 +177,15 @@
 
                 <tr>
 
-                  <td>
+                  <td data-label="Data" class="fleet-availability-table__date">
                     <%= l(availability.date) %>
                   </td>
 
-                  <td class="text-muted">
+                  <td data-label="Iniciada por" class="text-muted">
                     <%= availability.user.name.presence || availability.user.email %>
                   </td>
 
-                  <td class="text-center">
+                  <td data-label="Status" class="text-center">
                     <% if availability.locked? %>
                       <span class="badge text-bg-secondary">Enviada</span>
                     <% else %>
@@ -193,29 +193,29 @@
                     <% end %>
                   </td>
 
-                  <td class="text-center">
+                  <td data-label="Dimensionamento" class="text-center">
                     <%= availability.agreed_quantity %>
                   </td>
 
-                  <td class="text-center">
+                  <td data-label="Disponibilizados" class="text-center">
                     <span class="badge bg-success">
                       <%= availability.available_count %>
                     </span>
                   </td>
 
-                  <td class="text-center">
+                  <td data-label="Troca" class="text-center">
                     <span class="badge bg-warning text-dark">
                       <%= availability.exchange_count %>
                     </span>
                   </td>
 
-                  <td class="text-center">
+                  <td data-label="Indisponíveis" class="text-center">
                     <span class="badge bg-danger">
                       <%= availability.unavailable_count %>
                     </span>
                   </td>
 
-                  <td class="text-center">
+                  <td data-label="Cobertura" class="text-center">
 
                     <% percentage = availability.coverage_percentage %>
 
@@ -235,9 +235,9 @@
 
                   </td>
 
-                  <td class="text-end">
+                  <td class="text-end fleet-availability-table__actions">
 
-                    <div class="d-flex justify-content-end gap-2">
+                    <div class="fleet-availability-row-actions">
                       <%= link_to availability,
                                   class: "btn btn-sm btn-outline-primary" do %>
 
@@ -275,7 +275,7 @@
 
       <% else %>
 
-        <div class="text-center py-5">
+        <div class="text-center py-5 fleet-empty-state">
 
           <i class="bi bi-truck display-4 text-muted"></i>
 
