@@ -43,6 +43,25 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
 
+  if ENV["SMTP_ADDRESS"].present?
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.raise_delivery_errors = true
+    config.action_mailer.smtp_settings = {
+      address: ENV.fetch("SMTP_ADDRESS"),
+      port: ENV.fetch("SMTP_PORT", 587).to_i,
+      domain: ENV.fetch("SMTP_DOMAIN", "localhost"),
+      user_name: ENV["SMTP_USERNAME"],
+      password: ENV["SMTP_PASSWORD"],
+      authentication: ENV.fetch("SMTP_AUTHENTICATION", "plain").to_sym,
+      ssl: ActiveModel::Type::Boolean.new.cast(
+        ENV.fetch("SMTP_SSL", "false")
+      ),
+      enable_starttls_auto: ActiveModel::Type::Boolean.new.cast(
+        ENV.fetch("SMTP_ENABLE_STARTTLS_AUTO", "true")
+      )
+    }
+  end
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 

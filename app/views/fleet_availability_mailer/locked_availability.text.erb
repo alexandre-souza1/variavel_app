@@ -1,0 +1,8 @@
+<%= @body %>
+
+Disponibilidade enviada por <%= @actor&.name.presence || @actor&.email || "Sistema" %>.
+
+Data: <%= l(@fleet_availability.date) %>
+Disponíveis: <%= @fleet_availability.available_count %>
+Indisponíveis: <%= @fleet_availability.unavailable_count %>
+Cobertura: <%= @fleet_availability.coverage_percentage %>%

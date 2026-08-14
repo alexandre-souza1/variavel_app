@@ -32,76 +32,84 @@
       </div>
     </div>
 
-    <div class="fleet-availability-actions d-flex align-items-center gap-3 flex-wrap justify-content-end">
-      <% if @locking_enabled %>
-        <% if @fleet_availability.locked? %>
-          <span class="badge text-bg-secondary">
-            <i class="bi bi-lock-fill"></i>
-            Enviada
-          </span>
-        <% else %>
-          <span class="badge text-bg-light border text-muted">
+    <div class="fleet-availability-command-center">
+      <div class="fleet-availability-command-center__top">
+        <% if @locking_enabled %>
+          <% if @fleet_availability.locked? %>
+            <span class="fleet-status-pill fleet-status-pill--locked">
+              <i class="bi bi-lock-fill"></i>
+              Enviada
+            </span>
+          <% else %>
+            <span class="fleet-status-pill fleet-status-pill--open">
+              <i class="bi bi-unlock"></i>
+              Aberta
+            </span>
+          <% end %>
+        <% end %>
+      </div>
+
+      <div class="fleet-availability-actions">
+        <% if @editable && @locking_enabled %>
+          <%= button_to lock_fleet_availability_path(@fleet_availability),
+                        method: :patch,
+                        class: "btn btn-outline-secondary",
+                        form: {
+                          data: {
+                            turbo_confirm: "Depois de enviar, a disponibilidade ficará travada. Confirma?"
+                          }
+                        } do %>
+            <i class="bi bi-send"></i>
+            Enviar
+          <% end %>
+        <% elsif @locking_enabled && @fleet_availability.locked? && current_user.admin? %>
+          <%= button_to unlock_fleet_availability_path(@fleet_availability),
+                        method: :patch,
+                        class: "btn btn-outline-secondary",
+                        form: {
+                          data: {
+                            turbo_confirm: "Destravar esta disponibilidade para edição do criador?"
+                          }
+                        } do %>
             <i class="bi bi-unlock"></i>
-            Aberta
-          </span>
+            Destravar
+          <% end %>
         <% end %>
-      <% end %>
 
-      <% if @editable && @locking_enabled %>
-        <%= button_to lock_fleet_availability_path(@fleet_availability),
-                      method: :patch,
-                      class: "btn btn-outline-secondary",
-                      form: {
-                        data: {
-                          turbo_confirm: "Depois de enviar, a disponibilidade ficará travada. Confirma?"
-                        }
-                      } do %>
-          <i class="bi bi-send"></i>
-          Enviar
+        <%= link_to fleet_availability_path(@fleet_availability, format: :pdf),
+                    class: "btn btn-outline-danger",
+                    target: "_blank",
+                    rel: "noopener" do %>
+          <i class="bi bi-file-earmark-pdf"></i>
+          PDF
         <% end %>
-      <% elsif @locking_enabled && @fleet_availability.locked? && current_user.admin? %>
-        <%= button_to unlock_fleet_availability_path(@fleet_availability),
-                      method: :patch,
-                      class: "btn btn-outline-secondary",
-                      form: {
-                        data: {
-                          turbo_confirm: "Destravar esta disponibilidade para edição do criador?"
-                        }
-                      } do %>
-          <i class="bi bi-unlock"></i>
-          Destravar
+
+        <% if current_user.admin? || current_user.sector_fleet? %>
+          <%= link_to edit_fleet_availability_email_setting_path,
+                      class: "btn btn-outline-secondary" do %>
+            <i class="bi bi-envelope"></i>
+            E-mail
+          <% end %>
         <% end %>
-      <% end %>
 
-      <%= link_to fleet_availability_path(@fleet_availability, format: :pdf),
-                  class: "btn btn-outline-danger",
-                  target: "_blank",
-                  rel: "noopener" do %>
-        <i class="bi bi-file-earmark-pdf"></i>
-        PDF
-      <% end %>
+        <% if @editable %>
+          <button
+            class="btn btn-outline-primary"
+            data-action="fleet-availability#restoreStandardLayout">
+            <i class="bi bi-magic"></i>
+            Padrão
+          </button>
+        <% end %>
 
-      <% if @editable %>
-        <button
-          class="btn btn-outline-primary"
-          data-action="fleet-availability#restoreStandardLayout">
+        <%= link_to fleet_availabilities_path,
+                    class: "btn btn-outline-secondary" do %>
+          <i class="bi bi-arrow-left"></i>
+          Voltar
+        <% end %>
+      </div>
 
-          <i class="bi bi-magic"></i>
-
-          Padrão
-
-        </button>
-      <% end %>
-
-      <%= link_to fleet_availabilities_path,
-                  class: "btn btn-outline-secondary" do %>
-
-        <i class="bi bi-arrow-left"></i>
-        Voltar
-
-      <% end %>
-
-      <div class="fleet-kpi-panel">
+      <div class="fleet-availability-metrics">
+        <div class="fleet-kpi-panel">
 
         <span class="text-muted">
           Cobertura
@@ -116,37 +124,38 @@
           <%= @fleet_availability.agreed_quantity %> linhas
         </small>
 
-      </div>
+        </div>
 
-      <div class="fleet-kpi-panel fleet-kpi-panel--danger">
-        <span class="text-muted">
-          Manutenção
-        </span>
+        <div class="fleet-kpi-panel fleet-kpi-panel--danger">
+          <span class="text-muted">
+            Manutenção
+          </span>
 
-        <strong data-maintenance-percentage>
-          <%= maintenance_percentage %>%
-        </strong>
+          <strong data-maintenance-percentage>
+            <%= maintenance_percentage %>%
+          </strong>
 
-        <small data-maintenance-ratio>
-          <%= maintenance_count %> /
-          <%= @items.size %> veículos
-        </small>
-      </div>
+          <small data-maintenance-ratio>
+            <%= maintenance_count %> /
+            <%= @items.size %> veículos
+          </small>
+        </div>
 
-      <div class="fleet-profile-panel">
-        <span class="text-muted">
-          Em uso por perfil
-        </span>
+        <div class="fleet-profile-panel">
+          <span class="text-muted">
+            Em uso por perfil
+          </span>
 
-        <div data-used-profile-counts>
-          <% %w[VUC TOCO TRUCK BITRUCK].each do |profile| %>
-            <small data-used-profile="<%= profile %>">
-              <strong><%= profile %></strong>
-              <span data-used-profile-count>
-                <%= used_profile_counts[profile] %>
-              </span>
-            </small>
-          <% end %>
+          <div data-used-profile-counts>
+            <% %w[VUC TOCO TRUCK BITRUCK].each do |profile| %>
+              <small data-used-profile="<%= profile %>">
+                <strong><%= profile %></strong>
+                <span data-used-profile-count>
+                  <%= used_profile_counts[profile] %>
+                </span>
+              </small>
+            <% end %>
+          </div>
         </div>
       </div>
 

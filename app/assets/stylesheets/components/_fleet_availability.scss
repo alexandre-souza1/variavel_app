@@ -4,7 +4,49 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 1.25rem;
+  }
+
+  .fleet-availability-command-center {
+    width: 100%;
+    max-width: 42rem;
+    display: grid;
+    gap: 0.75rem;
+    justify-items: end;
+  }
+
+  .fleet-availability-command-center__top {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .fleet-status-pill {
+    align-items: center;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 0.82rem;
+    font-weight: 700;
+    gap: 0.35rem;
+    line-height: 1;
+    min-height: 2rem;
+    padding: 0.45rem 0.8rem;
+    white-space: nowrap;
+
+    i {
+      line-height: 1;
+    }
+  }
+
+  .fleet-status-pill--locked {
+    background: var(--bs-secondary-bg);
+    color: var(--bs-secondary-color);
+  }
+
+  .fleet-status-pill--open {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    color: var(--bs-secondary-color);
   }
 
   .fleet-availability-actions,
@@ -94,10 +136,30 @@
   }
 
   .fleet-availability-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+    gap: 0.5rem;
+    width: 100%;
+
     form {
-      display: inline-flex;
+      display: flex;
       margin: 0;
+
+      .btn {
+        width: 100%;
+      }
     }
+
+    .btn {
+      width: 100%;
+    }
+  }
+
+  .fleet-availability-metrics {
+    display: grid;
+    grid-template-columns: minmax(8.5rem, 0.8fr) minmax(8.5rem, 0.8fr) minmax(13rem, 1.4fr);
+    gap: 0.5rem;
+    width: 100%;
   }
 
   .fleet-availability-footer-actions {
@@ -124,12 +186,12 @@
 
   .fleet-kpi-panel,
   .fleet-profile-panel {
-    min-width: 10rem;
+    min-width: 0;
     padding: 0.75rem 1rem;
     border: 1px solid var(--bs-border-color);
     border-radius: 0.5rem;
     background: var(--bs-body-bg);
-    text-align: right;
+    text-align: left;
   }
 
   .fleet-kpi-panel {
@@ -141,7 +203,7 @@
     strong {
       display: block;
       color: var(--bs-primary);
-      font-size: 2rem;
+      font-size: 1.65rem;
       line-height: 1;
     }
   }
@@ -151,8 +213,6 @@
   }
 
   .fleet-profile-panel {
-    min-width: 14rem;
-
     span {
       display: block;
       margin-bottom: 0.35rem;
@@ -1307,6 +1367,20 @@
       line-height: 1.25;
     }
 
+    .fleet-availability-command-center {
+      width: 100%;
+      justify-items: stretch;
+    }
+
+    .fleet-availability-command-center__top {
+      justify-content: stretch;
+    }
+
+    .fleet-status-pill {
+      justify-content: center;
+      width: 100%;
+    }
+
     .fleet-availability-actions {
       display: grid !important;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1320,12 +1394,12 @@
 
     .fleet-availability-actions .btn,
     .fleet-availability-actions form,
-    .fleet-availability-header .badge {
+    .fleet-status-pill {
       width: 100%;
     }
 
     .fleet-availability-actions .btn,
-    .fleet-availability-header .badge {
+    .fleet-status-pill {
       align-items: center;
       display: inline-flex;
       justify-content: center;
@@ -1348,10 +1422,14 @@
       text-overflow: ellipsis;
     }
 
-    .fleet-availability-header .badge {
+    .fleet-status-pill {
       border-radius: 0.5rem;
       font-size: 0.86rem;
       font-weight: 700;
+    }
+
+    .fleet-availability-metrics {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .fleet-kpi-panel,

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_12_123000) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_14_124500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -231,7 +231,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_12_123000) do
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.json "special_routes", default: [], null: false
+    t.json "special_routes", default: {}, null: false
     t.datetime "locked_at"
     t.bigint "locked_by_id"
     t.datetime "auto_lock_exempted_at"
@@ -250,6 +250,17 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_12_123000) do
     t.datetime "updated_at", null: false
     t.index ["fleet_availability_item_id"], name: "index_fleet_availability_changes_on_fleet_availability_item_id"
     t.index ["user_id"], name: "index_fleet_availability_changes_on_user_id"
+  end
+
+  create_table "fleet_availability_email_settings", force: :cascade do |t|
+    t.boolean "enabled", default: true, null: false
+    t.text "recipients", default: "", null: false
+    t.text "cc", default: "", null: false
+    t.text "bcc", default: "", null: false
+    t.string "subject", default: "Disponibilidade da frota - %{date}", null: false
+    t.text "body", default: "Segue em anexo a disponibilidade da frota do dia %{date}.", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "fleet_availability_items", force: :cascade do |t|
@@ -555,7 +566,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_12_123000) do
     t.string "destino"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "stress_test_import_id", null: false
+    t.bigint "stress_test_import_id"
     t.index ["plate_id"], name: "index_stress_test_events_on_plate_id"
     t.index ["stress_test_import_id"], name: "index_stress_test_events_on_stress_test_import_id"
   end

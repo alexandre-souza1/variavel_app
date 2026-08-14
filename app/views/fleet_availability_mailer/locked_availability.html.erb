@@ -1,0 +1,21 @@
+<%= simple_format(@body) %>
+
+<p>
+  Disponibilidade enviada por
+  <strong><%= @actor&.name.presence || @actor&.email || "Sistema" %></strong>.
+</p>
+
+<p>
+  Data: <strong><%= l(@fleet_availability.date) %></strong><br>
+  Disponíveis: <strong><%= @fleet_availability.available_count %></strong><br>
+  Indisponíveis: <strong><%= @fleet_availability.unavailable_count %></strong><br>
+  Cobertura: <strong><%= @fleet_availability.coverage_percentage %>%</strong>
+</p>
+
+<% if @signature_filename.present? %>
+  <p style="margin-top: 24px;">
+    <%= image_tag attachments[@signature_filename].url,
+                  alt: "Assinatura",
+                  style: "max-width: 520px; width: 100%; height: auto;" %>
+  </p>
+<% end %>

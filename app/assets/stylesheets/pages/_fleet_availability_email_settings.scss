@@ -1,0 +1,163 @@
+.fleet-email-settings-page {
+  padding: 2rem 1.5rem;
+  max-width: 1180px;
+  margin: 0 auto;
+  color: var(--bs-body-color);
+
+  .fleet-email-settings-header {
+    margin-bottom: 2rem;
+
+    .header-content {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      i {
+        color: var(--bs-primary);
+      }
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: var(--bs-secondary-color);
+      margin: 0.25rem 0 0;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+  }
+
+  .settings-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+    gap: 1.5rem;
+  }
+
+  .settings-card {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  .settings-card-header {
+    padding: 1rem 1.5rem;
+    background: var(--bs-tertiary-bg);
+    border-bottom: 1px solid var(--bs-border-color);
+
+    h5 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+
+  .settings-card-body {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .email-chip-field {
+    min-height: 46px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    background: var(--bs-body-bg);
+    padding: 0.45rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    transition: 0.2s ease;
+
+    &:focus-within {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+  }
+
+  .email-chip-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .email-chip {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    gap: 0.35rem;
+    padding: 0.28rem 0.35rem 0.28rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+    font-size: 0.85rem;
+    font-weight: 500;
+
+    span {
+      overflow-wrap: anywhere;
+    }
+
+    button {
+      border: 0;
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.16);
+      }
+    }
+  }
+
+  .email-chip-input {
+    min-width: 220px;
+    flex: 1;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--bs-body-color);
+    padding: 0.25rem;
+  }
+
+  .signature-preview {
+    max-width: 100%;
+    max-height: 180px;
+    object-fit: contain;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    background: #fff;
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .fleet-email-settings-page {
+    .settings-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

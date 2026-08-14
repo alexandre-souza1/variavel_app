@@ -115,9 +115,10 @@ class FleetAvailabilitiesController < ApplicationController
       fleet_availability: @fleet_availability,
       actor: current_user
     )
+    email_sent = deliver_locked_availability_email
 
     redirect_to @fleet_availability,
-                notice: "Disponibilidade travada com sucesso."
+                notice: lock_notice(email_sent)
   end
 
   def unlock
@@ -154,6 +155,28 @@ class FleetAvailabilitiesController < ApplicationController
 
     redirect_to @fleet_availability,
                 alert: "Apenas quem iniciou a disponibilidade pode travá-la enquanto ela estiver aberta."
+  end
+
+  def deliver_locked_availability_email
+    setting = FleetAvailabilityEmailSetting.current
+    return false unless setting.deliverable?
+
+    FleetAvailabilityMailer
+      .locked_availability(@fleet_availability, current_user)
+      .deliver_now
+
+    true
+  rescue StandardError => e
+    Rails.logger.error(
+      "Falha ao enviar e-mail da disponibilidade #{@fleet_availability.id}: #{e.class} - #{e.message}"
+    )
+    false
+  end
+
+  def lock_notice(email_sent)
+    return "Disponibilidade travada com sucesso e e-mail enviado." if email_sent
+
+    "Disponibilidade travada com sucesso. Configure os destinatários para enviar o e-mail automaticamente."
   end
 
   def fleet_availability_params

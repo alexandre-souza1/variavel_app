@@ -1,0 +1,163 @@
+<div class="fleet-email-settings-page">
+  <header class="fleet-email-settings-header">
+    <div class="header-content">
+      <div>
+        <h1>
+          <i class="bi bi-envelope"></i>
+          E-mail da disponibilidade
+        </h1>
+        <p class="subtitle">
+          Configure envio, destinatários, mensagem e assinatura do PDF diário.
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <%= link_to fleet_availabilities_path, class: "btn-outline" do %>
+          <i class="bi bi-arrow-left"></i>
+          Voltar
+        <% end %>
+      </div>
+    </div>
+  </header>
+
+  <%= form_with model: @fleet_availability_email_setting,
+                url: fleet_availability_email_setting_path,
+                method: :patch,
+                html: { multipart: true } do |f| %>
+    <% if @fleet_availability_email_setting.errors.any? %>
+      <div class="alert alert-danger">
+        <h6 class="mb-2">Não foi possível salvar:</h6>
+        <ul class="mb-0">
+          <% @fleet_availability_email_setting.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="settings-grid">
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <h5>
+            <i class="bi bi-people text-primary"></i>
+            Destinatários
+          </h5>
+        </div>
+
+        <div class="settings-card-body">
+          <div class="form-check form-switch mb-4">
+            <%= f.check_box :enabled, class: "form-check-input", role: "switch" %>
+            <%= f.label :enabled, "Enviar e-mail ao travar disponibilidade", class: "form-check-label fw-semibold" %>
+          </div>
+
+          <div class="mb-4" data-controller="email-chips">
+            <%= f.label :recipients, "Para", class: "form-label" %>
+            <%= f.hidden_field :recipients, data: { email_chips_target: "hidden" } %>
+            <div class="email-chip-field">
+              <div class="email-chip-list" data-email-chips-target="list"></div>
+              <input type="text"
+                     class="email-chip-input"
+                     placeholder="Digite um e-mail e pressione Tab"
+                     data-email-chips-target="input"
+                     data-action="keydown->email-chips#addFromKeydown blur->email-chips#addFromBlur paste->email-chips#addFromPaste">
+            </div>
+            <div class="form-text">Separe múltiplos e-mails com Tab, Enter, vírgula ou ponto e vírgula.</div>
+            <div class="text-danger small mt-1 d-none" data-email-chips-target="error"></div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6" data-controller="email-chips">
+              <%= f.label :cc, "Cópia", class: "form-label" %>
+              <%= f.hidden_field :cc, data: { email_chips_target: "hidden" } %>
+              <div class="email-chip-field">
+                <div class="email-chip-list" data-email-chips-target="list"></div>
+                <input type="text"
+                       class="email-chip-input"
+                       placeholder="Opcional"
+                       data-email-chips-target="input"
+                       data-action="keydown->email-chips#addFromKeydown blur->email-chips#addFromBlur paste->email-chips#addFromPaste">
+              </div>
+              <div class="text-danger small mt-1 d-none" data-email-chips-target="error"></div>
+            </div>
+
+            <div class="col-md-6" data-controller="email-chips">
+              <%= f.label :bcc, "Cópia oculta", class: "form-label" %>
+              <%= f.hidden_field :bcc, data: { email_chips_target: "hidden" } %>
+              <div class="email-chip-field">
+                <div class="email-chip-list" data-email-chips-target="list"></div>
+                <input type="text"
+                       class="email-chip-input"
+                       placeholder="Opcional"
+                       data-email-chips-target="input"
+                       data-action="keydown->email-chips#addFromKeydown blur->email-chips#addFromBlur paste->email-chips#addFromPaste">
+              </div>
+              <div class="text-danger small mt-1 d-none" data-email-chips-target="error"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <h5>
+            <i class="bi bi-image text-success"></i>
+            Assinatura
+          </h5>
+        </div>
+
+        <div class="settings-card-body">
+          <% if @fleet_availability_email_setting.signature_image.attached? %>
+            <div class="mb-3">
+              <%= image_tag @fleet_availability_email_setting.signature_image,
+                            class: "signature-preview",
+                            alt: "Assinatura atual" %>
+            </div>
+
+            <div class="form-check mb-3">
+              <%= check_box_tag :remove_signature_image, "1", false, class: "form-check-input" %>
+              <%= label_tag :remove_signature_image, "Remover assinatura atual", class: "form-check-label" %>
+            </div>
+          <% else %>
+            <div class="text-muted small mb-3">
+              Nenhuma imagem de assinatura cadastrada.
+            </div>
+          <% end %>
+
+          <%= f.label :signature_image, "Imagem da assinatura", class: "form-label" %>
+          <%= f.file_field :signature_image, class: "form-control", accept: "image/png,image/jpeg,image/gif,image/webp" %>
+          <div class="form-text">Use uma imagem horizontal, de preferência PNG ou JPG.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-card mt-4">
+      <div class="settings-card-header">
+        <h5>
+          <i class="bi bi-chat-left-text text-primary"></i>
+          Mensagem
+        </h5>
+      </div>
+
+      <div class="settings-card-body">
+        <div class="mb-3">
+          <%= f.label :subject, "Assunto", class: "form-label" %>
+          <%= f.text_field :subject, class: "form-control" %>
+          <div class="form-text">Use %{date} para a data formatada ou %{iso_date} para a data no padrão AAAA-MM-DD.</div>
+        </div>
+
+        <div>
+          <%= f.label :body, "Corpo do e-mail", class: "form-label" %>
+          <%= f.text_area :body, class: "form-control", rows: 6 %>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <%= link_to "Cancelar", fleet_availabilities_path, class: "btn-outline" %>
+      <%= f.button class: "btn-primary-solid" do %>
+        <i class="bi bi-save"></i>
+        Salvar configuração
+      <% end %>
+    </div>
+  <% end %>
+</div>

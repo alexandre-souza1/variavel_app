@@ -110,6 +110,10 @@ Rails.application.routes.draw do
 
   resources :task_imports, only: [:new, :create]
 
+  resource :fleet_availability_email_setting,
+           only: %i[edit update],
+           path: "fleet_availabilities/email_setting"
+
   resources :fleet_availabilities do
     member do
       patch :restore_standard_layout

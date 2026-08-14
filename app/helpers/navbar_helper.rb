@@ -88,6 +88,12 @@ module NavbarHelper
       sectors: [:fleet, :du],
       group: 'Geral'
     },
+    fleet_availability_email_setting: {
+      label: 'E-mail da disponibilidade',
+      path: :edit_fleet_availability_email_setting_path,
+      sectors: [:fleet],
+      group: 'Geral'
+    },
     routine_templates: {
       label: 'Modelos de Gerot',
       path: :routine_templates_path,
