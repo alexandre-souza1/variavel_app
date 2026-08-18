@@ -1,4 +1,4 @@
-<%= form_with model: @fleet_availability,
+<%= form_with model: fleet_availability,
               class: "card shadow-sm border-0" do |f| %>
 
   <div class="card-header bg-primary text-white">
@@ -9,7 +9,7 @@
 
   <div class="card-body">
 
-    <% if @fleet_availability.errors.any? %>
+    <% if fleet_availability.errors.any? %>
 
       <div class="alert alert-danger">
 
@@ -19,7 +19,7 @@
 
         <ul class="mb-0">
 
-          <% @fleet_availability.errors.full_messages.each do |message| %>
+          <% fleet_availability.errors.full_messages.each do |message| %>
 
             <li><%= message %></li>
 
@@ -49,7 +49,7 @@
     <div class="form-check mt-3">
       <%= check_box_tag "fleet_availability[copy_previous_day]",
                         "1",
-                        false,
+                        true,
                         id: "fleet_availability_copy_previous_day",
                         class: "form-check-input" %>
 
@@ -72,7 +72,7 @@
 
     <%= f.submit "Salvar",
                  class: "btn btn-primary",
-                 disabled: @dimensioning_period.blank? %>
+                 disabled: dimensioning_period.blank? %>
 
   </div>
 

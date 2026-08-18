@@ -7,6 +7,7 @@ class FleetAvailabilitiesController < ApplicationController
     lock
     restore_standard_layout
   ]
+
   def index
     @dimensioning_periods = FleetDimensioning.recent
     @selected_dimensioning = selected_dimensioning_period
@@ -17,8 +18,15 @@ class FleetAvailabilitiesController < ApplicationController
     @fleet_summary = fleet_summary(@fleet_availabilities)
   end
 
+  # ========== ALTERADO AQUI ==========
   def new
-    date = params[:date].presence || Date.current
+    # Se houver parâmetro ?date=, usa ele; senão, calcula o próximo dia útil
+    date = if params[:date].present?
+             Date.parse(params[:date])
+           else
+             default_start_date
+           end
+
     @dimensioning_period = FleetAvailability.dimensioning_period_for(date)
     @dimensioning_quantities = dimensioning_quantities(@dimensioning_period)
 
@@ -267,5 +275,12 @@ class FleetAvailabilitiesController < ApplicationController
     return 0 if total_dimensioning.zero?
 
     ((total_available.to_f / total_dimensioning) * 100).round
+  end
+
+  # ========== NOVO MÉTODO ==========
+  def default_start_date
+    date = Date.tomorrow
+    date = date.next_week(:monday) if date.sunday?
+    date
   end
 end
