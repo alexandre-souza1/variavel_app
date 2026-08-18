@@ -1,6 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
+  static values = {
+    handle: { type: String, default: "" } // default vazio = sem restrição
+  }
+
   connect() {
     this.isDown = false
     this.isDragging = false
@@ -11,7 +15,6 @@ export default class extends Controller {
     this.lastTime = 0
     this.raf = null
 
-    // Bind
     this.mouseDown = this.mouseDown.bind(this)
     this.mouseMove = this.mouseMove.bind(this)
     this.mouseUp = this.mouseUp.bind(this)
@@ -21,17 +24,31 @@ export default class extends Controller {
     this.element.addEventListener("mouseup", this.mouseUp)
     this.element.addEventListener("mouseleave", this.mouseUp)
 
-    // Mobile
     this.element.addEventListener("touchstart", this.mouseDown, { passive: true })
     this.element.addEventListener("touchmove", this.mouseMove, { passive: false })
     this.element.addEventListener("touchend", this.mouseUp)
   }
 
-  // =============================
-  // START
-  // =============================
+  disconnect() {
+    this.element.removeEventListener("mousedown", this.mouseDown)
+    this.element.removeEventListener("mousemove", this.mouseMove)
+    this.element.removeEventListener("mouseup", this.mouseUp)
+    this.element.removeEventListener("mouseleave", this.mouseUp)
+    this.element.removeEventListener("touchstart", this.mouseDown)
+    this.element.removeEventListener("touchmove", this.mouseMove)
+    this.element.removeEventListener("touchend", this.mouseUp)
+    cancelAnimationFrame(this.raf)
+  }
+
   mouseDown(e) {
-    // ignora clique em elementos interativos
+    // Só restringe o clique se um handle foi DEFINIDO
+    const handleSelector = this.handleValue
+    if (handleSelector) {
+      const handleElement = e.target.closest(handleSelector)
+      if (!handleElement) return
+    }
+
+    // Ignora elementos interativos (comum pros dois casos)
     if (e.target.closest("input, textarea, select, button, a, .task-card, .drag-handle, .card")) return
 
     this.isDown = true
@@ -51,9 +68,6 @@ export default class extends Controller {
     this.element.classList.add("dragging")
   }
 
-  // =============================
-  // MOVE
-  // =============================
   mouseMove(e) {
     if (!this.isDown) return
 
@@ -65,12 +79,10 @@ export default class extends Controller {
     const walk = (x - this.startX) * 1.2
     this.element.scrollLeft = this.scrollLeft - walk
 
-    // detectar drag real
     if (Math.abs(walk) > 5) {
       this.isDragging = true
     }
 
-    // calcular velocidade
     const now = Date.now()
     const dx = pageX - this.lastX
     const dt = now - this.lastTime
@@ -81,9 +93,6 @@ export default class extends Controller {
     this.lastTime = now
   }
 
-  // =============================
-  // END
-  // =============================
   mouseUp() {
     if (!this.isDown) return
 
@@ -95,15 +104,12 @@ export default class extends Controller {
     }
   }
 
-  // =============================
-  // MOMENTUM (inércia)
-  // =============================
   startMomentum() {
-    let velocity = this.velocity * 20 // força inicial
+    let velocity = this.velocity * 20
 
     const step = () => {
       this.element.scrollLeft -= velocity
-      velocity *= 0.95 // atrito
+      velocity *= 0.95
 
       if (Math.abs(velocity) > 0.5) {
         this.raf = requestAnimationFrame(step)

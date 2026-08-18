@@ -732,3 +732,23 @@
     font-size: 1.1rem;
   }
 }
+
+/* Container que tem o controller */
+[data-controller="drag-scroll"] .category-row {
+  cursor: grab;
+}
+
+/* Quando estiver arrastando (classe .dragging adicionada pelo controller) */
+[data-controller="drag-scroll"].dragging .category-row {
+  cursor: grabbing;
+}
+
+/* Opcional: se quiser que o cursor mude também ao passar o mouse sobre a linha */
+[data-controller="drag-scroll"] .category-row:hover {
+  cursor: grab;
+}
+
+/* E durante o arraste, força grabbing mesmo com hover */
+[data-controller="drag-scroll"].dragging .category-row:hover {
+  cursor: grabbing;
+}
