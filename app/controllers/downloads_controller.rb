@@ -1,6 +1,7 @@
 class DownloadsController < ApplicationController
-  before_action :authenticate_user!
+
   before_action :set_download, only: [:edit, :update, :destroy]
+  before_action :authenticate_user!, only: [:new, :create, :edit, :update, :destroy]
 
   def index
     @downloads = Download.all.order(:category, :title)
@@ -12,10 +13,11 @@ class DownloadsController < ApplicationController
 
   def create
     @download = Download.new(download_params)
+
     if @download.save
-      redirect_to downloads_path, notice: 'Link adicionado com sucesso!'
+      redirect_to downloads_path, notice: "Link adicionado com sucesso!"
     else
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 
@@ -24,15 +26,15 @@ class DownloadsController < ApplicationController
 
   def update
     if @download.update(download_params)
-      redirect_to downloads_path, notice: 'Link atualizado com sucesso!'
+      redirect_to downloads_path, notice: "Link atualizado com sucesso!"
     else
-      render :edit
+      render :edit, status: :unprocessable_entity
     end
   end
 
   def destroy
     @download.destroy
-    redirect_to downloads_path, notice: 'Link removido com sucesso!'
+    redirect_to downloads_path, notice: "Link removido com sucesso!"
   end
 
   private
@@ -42,6 +44,14 @@ class DownloadsController < ApplicationController
   end
 
   def download_params
-    params.require(:download).permit(:title, :description, :category, :file_type, :sector, :url)
+    params.require(:download).permit(
+      :title,
+      :description,
+      :category,
+      :file_type,
+      :sector,
+      :url
+    )
   end
+
 end
