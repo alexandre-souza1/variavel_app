@@ -4,28 +4,31 @@ export default class extends Controller {
   static targets = ["filterButton", "category"]
 
   connect() {
-    // Inicializa mostrando todos os itens
-    this.filter("all")
+    this.setFilter("all")
   }
 
   filter(event) {
-    const filterValue = typeof event === 'string' ? event : event.currentTarget.dataset.filter
+    const filterValue = event.currentTarget.dataset.filter
 
-    // Remove active class de todos os botões
-    this.filterButtonTargets.forEach(btn => btn.classList.remove('active'))
+    this.setFilter(filterValue)
+  }
 
-    // Adiciona active class ao botão clicado
-    if (typeof event !== 'string') {
-      event.currentTarget.classList.add('active')
-    }
+  setFilter(filterValue) {
+    // Atualiza botão ativo
+    this.filterButtonTargets.forEach((button) => {
+      const isActive = button.dataset.filter === filterValue
 
-    // Mostra/esconde documentos baseado no filtro
-    this.categoryTargets.forEach(item => {
-      if (filterValue === 'all') {
-        item.style.display = 'block'
-      } else {
-        item.style.display = item.dataset.category === filterValue ? 'block' : 'none'
-      }
+      button.classList.toggle("active", isActive)
+      button.setAttribute("aria-pressed", isActive)
+    })
+
+    // Mostra/esconde categorias
+    this.categoryTargets.forEach((category) => {
+      const shouldShow =
+        filterValue === "all" ||
+        category.dataset.category === filterValue
+
+      category.hidden = !shouldShow
     })
   }
 }
