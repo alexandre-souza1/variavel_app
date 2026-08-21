@@ -27,11 +27,7 @@ module DownloadsHelper
   end
 
   def download_url(download)
-    if download.file.attached?
-      url_for(download.file)
-    else
-      download.url
-    end
+    open_download_url(download)
   end
 
 end

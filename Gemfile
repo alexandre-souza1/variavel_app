@@ -42,6 +42,7 @@ gem "caxlsx_rails"
 gem "mini_magick"
 gem 'image_processing', '~> 1.2'
 gem "simple_calendar"
+gem "rqrcode"
 
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
 gem "importmap-rails"

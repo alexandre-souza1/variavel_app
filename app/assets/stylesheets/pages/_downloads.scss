@@ -579,6 +579,49 @@
   }
 }
 
+// ============================================================
+// QR CODE
+// ============================================================
+
+.qr-modal {
+  border: 0;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.qr-modal .modal-header {
+  background: var(--bs-tertiary-bg);
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.qr-modal .modal-footer {
+  border-top: 1px solid var(--bs-border-color);
+}
+
+.qr-code-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 280px;
+  padding: 1rem;
+}
+
+.qr-code-image {
+  width: 260px;
+  max-width: 100%;
+  height: auto;
+
+  display: block;
+
+  padding: 12px;
+
+  background: #fff;
+
+  border-radius: 10px;
+}
+
 
 // ============================================================
 // TABLET

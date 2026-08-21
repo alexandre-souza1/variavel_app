@@ -12,6 +12,7 @@
 
           <div>
             <h1>Central de Padrões</h1>
+
             <p class="subtitle">
               Acesse e gerencie os documentos padrão da empresa
             </p>
@@ -19,13 +20,16 @@
         </div>
       </div>
 
+
       <% if current_user&.admin? || current_user&.supervisor? %>
+
         <div class="header-actions">
           <%= link_to new_download_path, class: "btn-primary-solid" do %>
             <i class="bi bi-plus-circle-fill"></i>
-            <span>Novo Link</span>
+            <span>Novo Documento</span>
           <% end %>
         </div>
+
       <% end %>
 
     </div>
@@ -43,7 +47,11 @@
     </div>
 
     <div class="filters-body">
-      <div class="filter-buttons" role="group" aria-label="Filtrar documentos">
+
+      <div
+        class="filter-buttons"
+        role="group"
+        aria-label="Filtrar documentos">
 
         <button
           type="button"
@@ -55,17 +63,22 @@
         </button>
 
         <% Download::CATEGORIES.each do |category| %>
+
           <button
             type="button"
             class="btn-filter"
             data-filter="<%= category %>"
             data-action="click->filter#filter"
             data-filter-target="filterButton">
+
             <%= category_title(category) %>
+
           </button>
+
         <% end %>
 
       </div>
+
     </div>
   </section>
 
@@ -74,6 +87,7 @@
   <main class="downloads-list-wrapper">
 
     <% Download::CATEGORIES.each do |category| %>
+
       <% downloads = Download.where(category: category) %>
 
       <% next if downloads.empty? %>
@@ -84,26 +98,38 @@
         data-filter-target="category">
 
         <!-- Cabeçalho da categoria -->
+
         <div class="category-header">
 
           <div class="category-title-wrapper">
+
             <div class="category-icon">
               <i class="<%= category_icon(category) %>"></i>
             </div>
 
             <div class="category-heading">
-              <h2><%= category_title(category) %></h2>
+
+              <h2>
+                <%= category_title(category) %>
+              </h2>
+
               <span class="category-count">
+
                 <%= downloads.count %>
+
                 <%= downloads.count == 1 ? "documento" : "documentos" %>
+
               </span>
+
             </div>
+
           </div>
 
         </div>
 
 
         <!-- Documentos -->
+
         <div class="download-list">
 
           <% downloads.each do |download| %>
@@ -116,19 +142,20 @@
                   <i class="bi bi-file-earmark-pdf"></i>
                 </div>
 
+
                 <div class="download-info">
 
-                  <a
-                    href="<%= download.file.attached? ? url_for(download.file) : download.url %>"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="download-link">
+                  <%= link_to download_url(download),
+                              target: "_blank",
+                              rel: "noopener noreferrer",
+                              class: "download-link" do %>
 
                     <strong>
                       <%= download.title %>
                     </strong>
 
-                  </a>
+                  <% end %>
+
 
                   <div class="download-meta">
 
@@ -137,21 +164,30 @@
                       <%= download.file_type %>
                     </span>
 
+
                     <% if download.file.attached? %>
+
                       <span>
                         <i class="bi bi-cloud-check"></i>
                         AWS
                       </span>
+
                     <% end %>
+
 
                     <span>
                       <i class="bi bi-building"></i>
                       <%= download.sector %>
                     </span>
 
+
                     <span>
                       <i class="bi bi-clock"></i>
-                      <%= (download.updated_at || download.created_at).strftime("%d/%m/%Y %H:%M") %>
+
+                      <%= (
+                        download.updated_at || download.created_at
+                      ).strftime("%d/%m/%Y %H:%M") %>
+
                     </span>
 
                   </div>
@@ -161,16 +197,45 @@
               </div>
 
 
+              <!-- ========================== -->
+              <!-- AÇÕES -->
+              <!-- ========================== -->
+
               <div class="download-actions">
 
+
+                <!-- QR CODE -->
+
+                <button
+                  type="button"
+                  class="icon-btn"
+                  title="QR Code"
+                  aria-label="Gerar QR Code de <%= download.title %>"
+                  data-bs-toggle="modal"
+                  data-bs-target="#qrModal<%= download.id %>">
+
+                  <i class="bi bi-qr-code"></i>
+
+                </button>
+
+
                 <% if current_user&.admin? || current_user&.supervisor? %>
+
+                  <!-- EDITAR -->
 
                   <%= link_to edit_download_path(download),
                               class: "icon-btn",
                               title: "Editar",
-                              aria: { label: "Editar #{download.title}" } do %>
+                              aria: {
+                                label: "Editar #{download.title}"
+                              } do %>
+
                     <i class="bi bi-pencil"></i>
+
                   <% end %>
+
+
+                  <!-- EXCLUIR -->
 
                   <%= button_to download_path(download),
                                 method: :delete,
@@ -179,24 +244,33 @@
                                   turbo_confirm: "Tem certeza que deseja excluir este link?"
                                 },
                                 title: "Excluir",
-                                aria: { label: "Excluir #{download.title}" } do %>
+                                aria: {
+                                  label: "Excluir #{download.title}"
+                                } do %>
+
                     <i class="bi bi-trash3"></i>
+
                   <% end %>
+
 
                 <% else %>
 
-                  <a
-                    href="<%= download.file.attached? ? url_for(download.file) : download.url %>"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="download-open-btn"
-                    title="Abrir documento"
-                    aria-label="Abrir <%= download.title %>">
+                  <!-- ABRIR -->
+
+                  <%= link_to download_url(download),
+                              target: "_blank",
+                              rel: "noopener noreferrer",
+                              class: "download-open-btn",
+                              title: "Abrir documento",
+                              aria: {
+                                label: "Abrir #{download.title}"
+                              } do %>
 
                     <i class="bi bi-box-arrow-up-right"></i>
+
                     <span>Abrir</span>
 
-                  </a>
+                  <% end %>
 
                 <% end %>
 
@@ -204,9 +278,105 @@
 
             </article>
 
+
+            <!-- ================================================= -->
+            <!-- MODAL QR CODE -->
+            <!-- ================================================= -->
+
+            <div
+              class="modal fade"
+              id="qrModal<%= download.id %>"
+              tabindex="-1"
+              aria-labelledby="qrModalLabel<%= download.id %>"
+              aria-hidden="true">
+
+              <div class="modal-dialog modal-dialog-centered">
+
+                <div class="modal-content qr-modal">
+
+                  <div class="modal-header">
+
+                    <div>
+                      <h5
+                        class="modal-title"
+                        id="qrModalLabel<%= download.id %>">
+
+                        QR Code
+
+                      </h5>
+
+                      <small class="text-muted">
+                        <%= download.title %>
+                      </small>
+                    </div>
+
+
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Fechar">
+                    </button>
+
+                  </div>
+
+
+                  <div class="modal-body text-center">
+
+                    <div class="qr-code-container">
+
+                      <%= image_tag(
+                            qr_code_download_path(download),
+                            class: "qr-code-image",
+                            alt: "QR Code para #{download.title}"
+                          ) %>
+
+                    </div>
+
+
+                    <p class="text-muted small mt-3 mb-0">
+                      Escaneie este QR Code para abrir o documento.
+                    </p>
+
+                  </div>
+
+
+                  <div class="modal-footer">
+
+                    <%= link_to qr_code_download_path(
+                                  download,
+                                  download: true
+                                ),
+                                class: "btn btn-primary",
+                                download: true do %>
+
+                      <i class="bi bi-download me-1"></i>
+                      Baixar QR Code
+
+                    <% end %>
+
+
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      data-bs-dismiss="modal">
+
+                      Fechar
+
+                    </button>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
           <% end %>
 
         </div>
+
       </section>
 
     <% end %>
@@ -215,11 +385,14 @@
 
 
   <!-- ========== VOLTAR ========== -->
+
   <div class="downloads-footer">
 
     <%= link_to root_path, class: "btn-outline back-btn" do %>
+
       <i class="bi bi-arrow-left"></i>
       <span>Voltar</span>
+
     <% end %>
 
   </div>

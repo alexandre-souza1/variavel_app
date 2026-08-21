@@ -1,7 +1,19 @@
 class DownloadsController < ApplicationController
+  before_action :set_download, only: [
+    :edit,
+    :update,
+    :destroy,
+    :open,
+    :qr_code
+  ]
 
-  before_action :set_download, only: [:edit, :update, :destroy]
-  before_action :authenticate_user!, only: [:new, :create, :edit, :update, :destroy]
+  before_action :authenticate_user!, only: [
+    :new,
+    :create,
+    :edit,
+    :update,
+    :destroy
+  ]
 
   def index
     @downloads = Download
@@ -43,6 +55,51 @@ class DownloadsController < ApplicationController
                 notice: "Download removido com sucesso!"
   end
 
+  # ==========================================================
+  # ABRIR DOCUMENTO
+  # ==========================================================
+
+  def open
+    if @download.file.attached?
+      redirect_to rails_blob_path(
+        @download.file,
+        disposition: "inline"
+      )
+    else
+      redirect_to @download.url,
+                  allow_other_host: true
+    end
+  end
+
+  # ==========================================================
+  # QR CODE
+  # ==========================================================
+
+  def qr_code
+    qr = RQRCode::QRCode.new(
+      open_download_url(@download)
+    )
+
+    svg = qr.as_svg(
+      module_size: 8,
+      standalone: true,
+      use_path: true
+    )
+
+    if params[:download].present?
+      send_data(
+        svg,
+        filename: "qr-code-#{@download.id}.svg",
+        type: "image/svg+xml",
+        disposition: "attachment"
+      )
+    else
+      render body: svg,
+             content_type: "image/svg+xml",
+             layout: false
+    end
+  end
+
   private
 
   def set_download
@@ -60,5 +117,4 @@ class DownloadsController < ApplicationController
       :file
     )
   end
-
 end

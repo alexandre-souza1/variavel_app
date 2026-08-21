@@ -39,7 +39,12 @@ Rails.application.routes.draw do
   get "consulta", to: "consultas#show"
   get "az_consulta", to: "az_consultas#show"
 
-  resources :downloads
+  resources :downloads do
+    member do
+      get :open
+      get :qr_code
+    end
+  end
 
   resources :notifications, only: :destroy do
     patch :read, on: :member
