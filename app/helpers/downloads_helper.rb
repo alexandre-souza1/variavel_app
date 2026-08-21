@@ -1,21 +1,37 @@
 module DownloadsHelper
+
   def category_icon(category)
     case category
-    when "padrao" then "bi bi-file-text"
-    when "lup" then "bi bi-file-check"
-    when "manual" then "bi bi-book"
-    when "matriz" then "bi bi-diagram-3"
-    else "bi bi-file-earmark"
+    when "PADRÃO"
+      "bi bi-file-text"
+    when "LUP"
+      "bi bi-file-check"
+    when "MATRIZ"
+      "bi bi-diagram-3"
+    else
+      "bi bi-file-earmark"
     end
   end
 
   def category_title(category)
     case category
-    when "padrao" then "Padrões Operacionais"
-    when "matriz" then "Matrizes de Controle"
-    when "lup" then "Lições de Um Ponto (LUPs)"
-    when "manual" then "Manuais"
-    else category.humanize
+    when "PADRÃO"
+      "Padrões Operacionais"
+    when "MATRIZ"
+      "Matrizes de Controle"
+    when "LUP"
+      "Lições de Um Ponto (LUPs)"
+    else
+      category.humanize
     end
   end
+
+  def download_url(download)
+    if download.file.attached?
+      url_for(download.file)
+    else
+      download.url
+    end
+  end
+
 end

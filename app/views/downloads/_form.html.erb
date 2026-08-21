@@ -1,8 +1,22 @@
-<%= form_with(model: download, local: true) do |form| %>
+<%= form_with(
+      model: download,
+      local: true,
+      html: {
+        multipart: true,
+        data: {
+          controller: "download-form"
+        }
+      }
+    ) do |form| %>
+
   <% if download.errors.any? %>
     <div class="alert alert-danger">
-      <h4><%= pluralize(download.errors.count, "erro") %> impediram este download de ser salvo:</h4>
-      <ul>
+      <h4>
+        <%= pluralize(download.errors.count, "erro") %>
+        impediram este download de ser salvo:
+      </h4>
+
+      <ul class="mb-0">
         <% download.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
@@ -10,46 +24,273 @@
     </div>
   <% end %>
 
+
+  <!-- ====================================================== -->
+  <!-- INFORMAÇÕES -->
+  <!-- ====================================================== -->
+
   <div class="mb-3">
-    <div class="row">
-      <div class="col-md-6">
-        <%= form.label :title, "Título*", class: "form-label" %>
-        <%= form.text_field :title, class: "form-control", required: true %>
+    <div class="row g-3">
+
+      <div class="col-12 col-md-6">
+        <%= form.label :title, "Título*", class: "form-label fw-semibold" %>
+
+        <%= form.text_field(
+              :title,
+              class: "form-control",
+              required: true
+            ) %>
       </div>
 
-      <div class="col-md-6">
-        <%= form.label :category, "Categoria*", class: "form-label" %>
-        <%= form.select :category, Download::CATEGORIES.map { |c| [c.humanize.upcase, c] }, {}, class: "form-select", required: true %>
+      <div class="col-12 col-md-6">
+        <%= form.label :category, "Categoria*", class: "form-label fw-semibold" %>
+
+        <%= form.select(
+              :category,
+              Download::CATEGORIES.map { |c| [c.humanize.upcase, c] },
+              {},
+              class: "form-select",
+              required: true
+            ) %>
       </div>
+
     </div>
   </div>
 
+
+  <!-- ====================================================== -->
+  <!-- TIPO / SETOR -->
+  <!-- ====================================================== -->
+
   <div class="mb-3">
-    <div class="row">
-      <div class="col-md-4">
-        <%= form.label :file_type, "Tipo de Arquivo", class: "form-label" %>
-        <%= form.select :file_type, Download::FILE_TYPES, {}, class: "form-select" %>
+    <div class="row g-3">
+
+      <div class="col-12 col-md-6">
+        <%= form.label :file_type, "Tipo de Arquivo", class: "form-label fw-semibold" %>
+
+        <%= form.select(
+              :file_type,
+              Download::FILE_TYPES,
+              {},
+              class: "form-select"
+            ) %>
       </div>
 
-      <div class="col-md-4">
-        <%= form.label :sector, "Setor*", class: "form-label" %>
-        <%= form.select :sector, Download::SECTOR, {}, class: "form-select", required: true %>
+      <div class="col-12 col-md-6">
+        <%= form.label :sector, "Setor*", class: "form-label fw-semibold" %>
+
+        <%= form.select(
+              :sector,
+              Download::SECTOR,
+              {},
+              class: "form-select",
+              required: true
+            ) %>
       </div>
+
     </div>
   </div>
 
-  <div class="mb-3">
-    <%= form.label :url, "URL do Arquivo*", class: "form-label" %>
-    <%= form.url_field :url, class: "form-control", required: true %>
+
+  <!-- ====================================================== -->
+  <!-- ORIGEM -->
+  <!-- ====================================================== -->
+
+  <div class="mb-4">
+
+    <label class="form-label fw-semibold d-block">
+      Como deseja disponibilizar o documento?*
+    </label>
+
+    <div class="row g-3">
+
+      <!-- ARQUIVO -->
+      <div class="col-12 col-md-6">
+
+        <label
+          for="download_source_file"
+          class="download-source-option w-100">
+
+          <%= radio_button_tag(
+                :download_source,
+                "file",
+                download.file.attached? || (!download.file.attached? && download.url.blank?),
+                id: "download_source_file",
+                class: "form-check-input me-2",
+                data: {
+                  action: "change->download-form#toggleSource"
+                }
+              ) %>
+
+          <div>
+            <div class="fw-semibold">
+              <i class="bi bi-cloud-arrow-up me-1"></i>
+              Enviar arquivo
+            </div>
+
+            <small class="text-muted">
+              O documento será armazenado na AWS.
+            </small>
+          </div>
+
+        </label>
+
+      </div>
+
+
+      <!-- LINK -->
+      <div class="col-12 col-md-6">
+
+        <label
+          for="download_source_url"
+          class="download-source-option w-100">
+
+          <%= radio_button_tag(
+                :download_source,
+                "url",
+                download.url.present? && !download.file.attached?,
+                id: "download_source_url",
+                class: "form-check-input me-2",
+                data: {
+                  action: "change->download-form#toggleSource"
+                }
+              ) %>
+
+          <div>
+            <div class="fw-semibold">
+              <i class="bi bi-link-45deg me-1"></i>
+              Link externo
+            </div>
+
+            <small class="text-muted">
+              O documento ficará hospedado em outro sistema.
+            </small>
+          </div>
+
+        </label>
+
+      </div>
+
+    </div>
+
   </div>
 
-  <div class="mb-3">
-    <%= form.label :description, "Descrição", class: "form-label" %>
-    <%= form.text_area :description, class: "form-control", rows: 3 %>
+
+  <!-- ====================================================== -->
+  <!-- CAMPO ARQUIVO -->
+  <!-- ====================================================== -->
+
+  <div
+    class="mb-4 d-none"
+    data-download-form-target="fileField">
+
+    <div class="border rounded-3 p-3">
+
+      <%= form.label :file, "Arquivo", class: "form-label fw-semibold" %>
+
+      <%= form.file_field(
+            :file,
+            class: "form-control",
+            accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png",
+            data: {
+              download_form_target: "fileInput"
+            }
+          ) %>
+
+      <div class="form-text">
+        O arquivo será armazenado na AWS.
+      </div>
+
+
+      <% if download.persisted? && download.file.attached? %>
+
+        <div class="alert alert-success mt-3 mb-0">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-cloud-check-fill"></i>
+
+            <div>
+              <strong>Arquivo atual</strong>
+
+              <div>
+                <small>
+                  <%= download.file.filename %>
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <% end %>
+
+    </div>
+
   </div>
 
-  <div class="actions mt-4">
-    <%= form.submit "Salvar", class: "btn btn-primary me-2" %>
-    <%= link_to "Cancelar", downloads_path, class: "btn btn-outline-secondary" %>
+
+  <!-- ====================================================== -->
+  <!-- CAMPO URL -->
+  <!-- ====================================================== -->
+
+  <div
+    class="mb-4 d-none"
+    data-download-form-target="urlField">
+
+    <div class="border rounded-3 p-3">
+
+      <%= form.label :url, "URL do arquivo", class: "form-label fw-semibold" %>
+
+      <%= form.url_field(
+            :url,
+            class: "form-control",
+            placeholder: "https://...",
+            data: {
+              download_form_target: "urlInput"
+            }
+          ) %>
+
+      <div class="form-text">
+        Informe o endereço onde o documento está hospedado.
+      </div>
+
+    </div>
+
   </div>
+
+
+  <!-- ====================================================== -->
+  <!-- DESCRIÇÃO -->
+  <!-- ====================================================== -->
+
+  <div class="mb-3">
+
+    <%= form.label :description, "Descrição", class: "form-label fw-semibold" %>
+
+    <%= form.text_area(
+          :description,
+          class: "form-control",
+          rows: 3
+        ) %>
+
+  </div>
+
+
+  <!-- ====================================================== -->
+  <!-- AÇÕES -->
+  <!-- ====================================================== -->
+
+  <div class="actions mt-4 d-flex flex-wrap gap-2">
+
+    <%= form.submit(
+          "Salvar",
+          class: "btn btn-primary"
+        ) %>
+
+    <%= link_to(
+          "Cancelar",
+          downloads_path,
+          class: "btn btn-outline-secondary"
+        ) %>
+
+  </div>
+
 <% end %>
