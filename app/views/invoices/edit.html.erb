@@ -55,6 +55,7 @@
                 <div class="nested-fields d-flex mb-2 align-items-center gap-2" data-new-record="false">
 
                   <%= nf_form.text_field :number, class: "form-control", placeholder: "Número da NF" %>
+                  <%= nf_form.number_field :amount, step: 0.01, min: 0, class: "form-control", placeholder: "Valor", data: { action: "input->invoice-numbers#calculate" } %>
 
                   <%= nf_form.collection_select :cost_center_id,
                         CostCenter.all.order(:name),
@@ -77,6 +78,10 @@
                       type="text"
                       name="invoice[invoice_numbers_attributes][NEW_RECORD][number]"
                       autocomplete="off">
+
+                <input class="form-control" type="number" step="0.01" min="0" value="0"
+                      name="invoice[invoice_numbers_attributes][NEW_RECORD][amount]"
+                      placeholder="Valor" data-action="input->invoice-numbers#calculate">
 
                 <select class="form-select"
                         name="invoice[invoice_numbers_attributes][NEW_RECORD][cost_center_id]">
@@ -143,7 +148,7 @@
               <%= f.label :total, "Valor total", class: "form-label fw-bold" %>
               <div class="input-group">
                 <span class="input-group-text">R$</span>
-                <%= f.number_field :total, step: 0.01, class: "form-control" %>
+                <%= f.number_field :total, step: 0.01, class: "form-control", readonly: true, data: { invoice_numbers_target: "total" } %>
               </div>
             </div>
 

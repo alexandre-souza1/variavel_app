@@ -394,7 +394,7 @@ class InvoicesController < ApplicationController
   def invoice_params
     params.require(:invoice).permit(
       :supplier_id, :date_issued, :due_date, :total, :purchaser_id, :budget_category_id, :cost_center_id, :notes, :code, documents: [],
-      invoice_numbers_attributes: [:id, :number, :cost_center_id, :_destroy]
+      invoice_numbers_attributes: [:id, :number, :amount, :cost_center_id, :_destroy]
     )
   end
 end

@@ -99,6 +99,7 @@
                   <div class="badge bg-info text-dark me-1 mb-1 p-2" style="font-size: 1rem;">
                     <i class="fas fa-file-alt me-1"></i>
                     <strong><%= invoice_number.number %></strong>
+                    <span class="ms-2">R$ <%= number_to_currency(invoice_number.amount, unit: "", separator: ",", delimiter: ".") %></span>
 
                     <% if invoice_number.cost_center.present? %>
                       <span class="ms-2">

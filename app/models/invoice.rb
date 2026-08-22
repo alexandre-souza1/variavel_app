@@ -6,6 +6,7 @@ class Invoice < ApplicationRecord
   belongs_to :budget_category
 
   before_validation :ensure_code_for_abastecimento, on: :create
+  before_validation :calculate_total_from_invoice_numbers
 
   accepts_nested_attributes_for :invoice_numbers, allow_destroy: true
 
@@ -46,6 +47,10 @@ class Invoice < ApplicationRecord
     if budget_category&.name&.downcase == 'abastecimento' && code.blank?
       self.code = "ABAST-#{Date.today.strftime('%Y%m%d')}-#{SecureRandom.alphanumeric(6).upcase}"
     end
+  end
+
+  def calculate_total_from_invoice_numbers
+    self.total = invoice_numbers.reject(&:marked_for_destruction?).sum { |invoice_number| invoice_number.amount.to_d }
   end
 
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_14_124500) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_22_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -326,6 +326,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_14_124500) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "cost_center_id"
+    t.decimal "amount", precision: 15, scale: 2, default: "0.0", null: false
     t.index ["cost_center_id"], name: "index_invoice_numbers_on_cost_center_id"
     t.index ["invoice_id"], name: "index_invoice_numbers_on_invoice_id"
   end
