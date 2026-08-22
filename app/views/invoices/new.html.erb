@@ -1,16 +1,19 @@
-<div class="invoice-form-container">
-  <div class="container p-3">
-    <div class="row align-items-center">
-      <div class="col-md-8">
-        <h1 class="mb-0"><i class="bi bi-receipt"></i> <%= @invoice.persisted? ? 'Editar Nota Fiscal' : 'Nova Nota Fiscal' %></h1>
+<div class="dashboard-finance invoice-entry-page">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div>
+        <h1><i class="bi bi-receipt"></i> <%= @invoice.persisted? ? 'Editar Nota Fiscal' : 'Nova Nota Fiscal' %></h1>
+        <p class="subtitle">Cadastre a invoice e suas notas fiscais com revisão automática dos dados</p>
       </div>
-      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
-        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
+      <div class="header-actions">
+        <%= link_to invoices_path, class: "btn-outline btn-sm" do %>
+          <i class="bi bi-arrow-left me-1"></i>Voltar para invoices
+        <% end %>
       </div>
     </div>
-  </div>
+  </header>
 
-  <div class="container">
+  <div class="invoice-entry-content">
     <% if @invoice.errors.any? %>
       <div class="alert alert-danger mb-4">
         <h5><%= pluralize(@invoice.errors.count, "erro") %> impedem o salvamento da NF:</h5>
@@ -22,7 +25,7 @@
       </div>
     <% end %>
 
-    <div class="card shadow-sm rounded mb-4">
+    <div class="chart-card invoice-form-card">
       <div class="card-header bg-light border-bottom">
         <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Dados da Nota Fiscal</h5>
       </div>
@@ -41,7 +44,12 @@
           </div>
 
           <div class="mb-3" data-controller="invoice-numbers">
-            <%= f.label :invoice_numbers, "Números da NF", class: "form-label fw-bold" %>
+            <div class="invoice-numbers-heading">
+              <%= f.label :invoice_numbers, "Números da NF", class: "form-label fw-bold mb-0" %>
+              <%= link_to "#", class: "icon-btn", title: "Adicionar NF", data: { action: "click->invoice-numbers#add" } do %> <%# herb:disable html-anchor-require-href %>
+                <i class="bi bi-plus-lg"></i>
+              <% end %>
+            </div>
 
             <div data-invoice-numbers-target="container" class="mb-2">
               <%= f.fields_for :invoice_numbers do |nf_form| %>
@@ -65,12 +73,12 @@
 
                     <div class="col-md-2">
                       <%= nf_form.label :amount, "Valor", class: "form-label" %>
-                      <%= nf_form.number_field :amount, step: 0.01, min: 0, class: "form-control", data: { action: "input->invoice-numbers#calculate" } %>
+                      <%= nf_form.text_field :amount, class: "form-control", inputmode: "decimal", data: { action: "input->invoice-numbers#calculate" } %>
                     </div>
 
                     <div class="col-md-2 d-flex align-items-end">
                       <%= nf_form.check_box :_destroy, style: "display: none" %>
-                      <button type="button" class="btn btn-sm btn-outline-danger" data-action="click->invoice-numbers#remove">Remover</button>
+                      <button type="button" class="icon-btn danger" title="Remover NF" data-action="click->invoice-numbers#remove"><i class="bi bi-trash3"></i></button>
                     </div>
 
                   </div>
@@ -103,7 +111,7 @@
 
                   <div class="col-md-2">
                     <label class="form-label">Valor</label>
-                    <input class="form-control" type="number" step="0.01" min="0" value="0"
+                    <input class="form-control" type="text" inputmode="decimal" value="0,00"
                            name="invoice[invoice_numbers_attributes][NEW_RECORD][amount]"
                            data-action="input->invoice-numbers#calculate">
                   </div>
@@ -112,7 +120,7 @@
                     <input type="hidden"
                           name="invoice[invoice_numbers_attributes][NEW_RECORD][_destroy]"
                           value="false">
-                    <button type="button" class="btn btn-sm btn-outline-danger" data-action="click->invoice-numbers#remove">Remover</button>
+                    <button type="button" class="icon-btn danger" title="Remover NF" data-action="click->invoice-numbers#remove"><i class="bi bi-trash3"></i></button>
                   </div>
 
                 </div>
@@ -120,9 +128,6 @@
             </template>
 
 
-            <%= link_to "#", class: "btn btn-sm btn-outline-primary", data: { action: "click->invoice-numbers#add" } do %> <%# herb:disable html-anchor-require-href %>
-              <i class="bi bi-plus-circle"></i> Adicionar NF
-            <% end %>
           </div>
 
           <div class="row">
@@ -165,16 +170,18 @@
               <%= f.label :total, "Valor total", class: "form-label fw-bold" %>
 
               <!-- Campo visual -->
-              <%= f.number_field :total, step: 0.01, class: "form-control", readonly: true,
+              <%= f.text_field :total, class: "form-control", readonly: true,
                     data: { invoice_numbers_target: "total" } %>
             </div>
 
             <!-- 📎 ANEXOS -->
             <div class="col-md-8 mb-3" data-controller="documents">
               <%= f.label :documents, "Anexos", class: "form-label fw-bold" %>
+              <div data-controller="invoice-scan" class="mb-2">
+              </div>
 
               <!-- botão de upload -->
-              <div class="d-flex align-items-center gap-2 mb-2">
+              <div class="invoice-attachments-toolbar d-flex align-items-center gap-2 mb-2">
                 <%= f.file_field :documents,
                       multiple: true,
                       class: "d-none",
@@ -184,9 +191,10 @@
                       } %>
 
                 <button type="button"
-                        class="btn btn-outline-primary btn-sm"
+                        class="icon-btn"
+                        title="Adicionar anexo"
                         data-action="click->documents#openFileDialog">
-                  <i class="bi bi-upload"></i> Adicionar arquivos
+                  <i class="bi bi-plus-lg"></i>
                 </button>
 
                 <small class="text-muted">
@@ -194,10 +202,9 @@
                 </small>
               </div>
 
-              <!-- lista dos arquivos -->
-              <div data-documents-target="list" class="d-flex flex-wrap gap-2"></div>
+                <div data-documents-target="list" class="d-flex flex-wrap gap-2"></div>
+              </div>
             </div>
-          </div>
 
           <div class="mb-4">
             <%= f.label :notes, "Observações", class: "form-label fw-bold" %>
@@ -212,6 +219,5 @@
       </div>
     </div>
 
-    <%= link_to "Voltar", dashboard_invoices_path, class: "btn btn-primary shadow-sm p-3 w-100" %>
   </div>
 </div>

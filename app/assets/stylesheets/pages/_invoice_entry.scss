@@ -1,0 +1,160 @@
+.invoice-entry-page {
+  max-width: none;
+  padding: 2rem 1.5rem;
+
+  .invoice-entry-content {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .invoice-form-card {
+    margin: 0 0 1.5rem;
+
+    > .card-header {
+      padding: 1.25rem 1.5rem;
+      background: var(--bs-tertiary-bg) !important;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      h5 { font-size: 1rem; font-weight: 650; }
+    }
+
+    > .card-body { padding: 1.5rem; }
+  }
+
+  .invoice-form-card form {
+    padding-inline: 0;
+  }
+
+  .invoice-numbers-heading {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: .35rem;
+  }
+
+  form .form-label {
+    color: var(--bs-secondary-color);
+    font-size: .78rem;
+    font-weight: 700 !important;
+    letter-spacing: .035em;
+    text-transform: uppercase;
+    margin-bottom: .45rem;
+  }
+
+  form .form-control, form .form-select {
+    min-height: 42px;
+    border-radius: 8px;
+    border-color: var(--bs-border-color);
+    background-color: var(--bs-body-bg);
+  }
+
+  form .form-control:focus, form .form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 .2rem rgba(var(--bs-primary-rgb), .12);
+  }
+
+  [data-invoice-numbers-target="container"] {
+    padding: .25rem 0;
+    background: transparent;
+    border: 0;
+  }
+
+  [data-invoice-numbers-target="container"] .nested-fields:not(:first-child) .form-label {
+    display: none;
+  }
+
+  [data-invoice-numbers-target="container"] .nested-fields:first-child .col-md-2:last-child {
+    align-self: flex-end;
+    margin-bottom: 6px;
+  }
+
+  [data-invoice-numbers-target="container"] .nested-fields .row {
+    align-items: end;
+  }
+
+  .invoice-attachments-toolbar {
+    flex-wrap: wrap;
+    min-height: 38px;
+  }
+
+  .invoice-attachments-toolbar [data-documents-target="list"] {
+    display: contents !important;
+  }
+
+  .icon-btn {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+    transition: .15s ease;
+    &:hover { color: var(--bs-primary); border-color: var(--bs-primary); background: rgba(var(--bs-primary-rgb), .08); }
+    &.danger:hover { color: var(--bs-danger); border-color: var(--bs-danger); background: rgba(var(--bs-danger-rgb), .08); }
+    &.warning:hover { color: var(--bs-warning-text-emphasis); border-color: var(--bs-warning); background: rgba(var(--bs-warning-rgb), .1); }
+  }
+
+  .invoice-attachments-toolbar > small { margin-right: .25rem; }
+
+  form > .row {
+    margin-bottom: .25rem;
+  }
+
+  form > .row:last-of-type {
+    align-items: stretch;
+  }
+
+  .invoice-form-card form > .d-flex {
+    margin: 2rem 0 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--bs-border-color);
+  }
+
+  .invoice-form-card form > .mb-4 {
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .nested-fields {
+    padding: .9rem 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 0;
+  }
+
+  [data-documents-target="list"] > div {
+    width: auto !important;
+    min-height: 0;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: .45rem;
+    padding: .35rem .55rem !important;
+    border: 1px solid var(--bs-border-color) !important;
+    border-radius: 7px !important;
+    box-shadow: none !important;
+    background: var(--bs-tertiary-bg) !important;
+    > div:first-of-type { display: none; }
+    button { margin-top: 0 !important; }
+    .btn-light { position: static !important; order: 4; }
+  }
+
+  [data-documents-target="list"] { gap: .5rem !important; }
+
+  .invoice-form-card .btn-primary { padding-inline: 1.5rem; }
+
+  @media (max-width: 767px) {
+    padding: 1rem .75rem;
+    .invoice-form-card > .card-body { padding: 1rem; }
+    .dashboard-header .header-actions { width: 100%; }
+    .dashboard-header .header-actions a { width: 100%; text-align: center; }
+  }
+}

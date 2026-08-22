@@ -202,6 +202,7 @@ Rails.application.routes.draw do
   resources :budget_categories
 
   resources :invoices do
+    post :scan_upload, on: :collection
     collection do
       get :dashboard
     end

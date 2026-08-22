@@ -49,7 +49,6 @@ export default class extends Controller {
         "position-relative"
       )
 
-      container.style.width = "120px"
       container.style.fontSize = "0.75rem"
 
       // 📄 Ícone
@@ -62,6 +61,10 @@ export default class extends Controller {
       const fileName = document.createElement("div")
       fileName.innerText = file.name
       fileName.style.wordBreak = "break-word"
+      fileName.style.maxWidth = "220px"
+      fileName.style.whiteSpace = "nowrap"
+      fileName.style.overflow = "hidden"
+      fileName.style.textOverflow = "ellipsis"
 
       // 🏷️ Tipo
       const hiddenType = document.createElement("input")
@@ -74,14 +77,14 @@ export default class extends Controller {
 
       const setTypeVisual = () => {
         if (hiddenType.value === "nf") {
-          typeBtn.className = "btn btn-sm btn-outline-primary mt-1"
-          typeBtn.innerHTML = `<i class="bi bi-receipt me-1"></i> NF`
+          typeBtn.className = "icon-btn type-btn"
+          typeBtn.innerHTML = `<i class="bi bi-receipt"></i>`
         } else if (hiddenType.value === "boleto") {
-          typeBtn.className = "btn btn-sm btn-outline-warning mt-1"
-          typeBtn.innerHTML = `<i class="bi bi-cash me-1"></i> Boleto`
+          typeBtn.className = "icon-btn type-btn warning"
+          typeBtn.innerHTML = `<i class="bi bi-cash"></i>`
         } else {
-          typeBtn.className = "btn btn-sm btn-outline-secondary mt-1"
-          typeBtn.innerHTML = `<i class="bi bi-file-earmark me-1"></i> Outro`
+          typeBtn.className = "icon-btn type-btn secondary"
+          typeBtn.innerHTML = `<i class="bi bi-file-earmark"></i>`
         }
       }
 
@@ -95,13 +98,23 @@ export default class extends Controller {
         setTypeVisual()
       }
 
+      const scanBtn = document.createElement("button")
+      scanBtn.type = "button"
+      scanBtn.className = "icon-btn warning"
+      scanBtn.title = "Ler NF com Textract"
+      scanBtn.innerHTML = `<i class="bi bi-magic"></i>`
+      scanBtn.onclick = () => {
+        if (hiddenType.value === "nf") {
+          window.dispatchEvent(new CustomEvent("invoice:scan", { detail: { file } }))
+        }
+      }
+
       // ❌ remover
       const removeBtn = document.createElement("button")
       removeBtn.type = "button"
-      removeBtn.className = "btn btn-sm btn-light border position-absolute"
-      removeBtn.style.top = "2px"
-      removeBtn.style.right = "2px"
-      removeBtn.innerHTML = `<i class="bi bi-x-lg text-danger"></i>`
+      removeBtn.className = "icon-btn danger"
+      removeBtn.title = "Remover anexo"
+      removeBtn.innerHTML = `<i class="bi bi-trash3"></i>`
 
       removeBtn.onclick = () => {
         this.files.splice(index, 1)
@@ -113,6 +126,7 @@ export default class extends Controller {
       container.appendChild(icon)
       container.appendChild(fileName)
       container.appendChild(typeBtn)
+      container.appendChild(scanBtn)
       container.appendChild(hiddenType)
 
       this.listTarget.appendChild(container)

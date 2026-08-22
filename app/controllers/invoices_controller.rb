@@ -67,6 +67,16 @@ class InvoicesController < ApplicationController
   def show
   end
 
+  def scan_upload
+    raise InvoiceTextractService::Error, "Selecione um PDF ou imagem." unless params[:document].present?
+    result = InvoiceTextractService.new(params[:document]).call
+    render json: result
+  rescue InvoiceTextractService::Error, Aws::Textract::Errors::ServiceError => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  rescue Seahorse::Client::NetworkingError
+    render json: { error: "Não foi possível conectar ao Amazon Textract. Verifique a conexão de rede/DNS do servidor." }, status: :service_unavailable
+  end
+
   # GET /invoices/new
   def new
     @cost_centers = CostCenter.all

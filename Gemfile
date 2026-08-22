@@ -18,6 +18,7 @@ gem "csv"
 
 gem 'nokogiri', '~> 1.18.6', platforms: :ruby, require: false
 gem "aws-sdk-s3", require: false
+gem "aws-sdk-textract", require: false
 gem "devise"
 gem "oauth2"
 gem "faraday"

@@ -26,8 +26,8 @@ export default class extends Controller {
   calculate() {
     const total = [...this.containerTarget.querySelectorAll("input[name*='[amount]']")]
       .filter((input) => input.closest(".nested-fields")?.style.display !== "none")
-      .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0)
+      .reduce((sum, input) => sum + (parseFloat(input.value.replace(/\./g, "").replace(",", ".")) || 0), 0)
     const totalField = this.element.closest("form")?.querySelector("[data-invoice-numbers-target='total']")
-    if (totalField) totalField.value = total.toFixed(2)
+    if (totalField) totalField.value = total.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
 }
