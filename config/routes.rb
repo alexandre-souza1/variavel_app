@@ -48,6 +48,7 @@ Rails.application.routes.draw do
 
   resources :notifications, only: :destroy do
     patch :read, on: :member
+    delete :destroy_all, on: :collection
   end
 
   resources :checklists do

@@ -1,8 +1,15 @@
-<div class="notification-item <%= "is-unread" unless notification.read? %>">
+<div id="notification_<%= notification.id %>"
+     class="notification-item <%= "is-unread" unless notification.read? %>"
+     data-notifications-target="item"
+     data-unread="<%= notification.read? ? "false" : "true" %>">
   <%= button_to notification_path(notification),
                 method: :delete,
                 class: "notification-delete-btn",
-                form: { class: "notification-delete-form" },
+                data: { action: "click->notifications#keepOpen" },
+                form: {
+                  class: "notification-delete-form",
+                  data: { action: "submit->notifications#destroy" }
+                },
                 aria: { label: "Apagar notificação" },
                 title: "Apagar notificação" do %>
     <i class="bi bi-x"></i>

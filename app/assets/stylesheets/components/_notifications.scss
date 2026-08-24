@@ -39,6 +39,31 @@
   font-weight: 700;
 }
 
+.notification-menu-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.notification-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 0;
+  padding: 0.2rem 0.35rem;
+  border-radius: 5px;
+  color: var(--bs-secondary-color);
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.notification-clear-btn:hover,
+.notification-clear-btn:focus {
+  color: var(--bs-danger);
+  background: rgba(var(--bs-danger-rgb), 0.1);
+}
+
 .notification-list {
   max-height: 420px;
   overflow-y: auto;
@@ -155,6 +180,14 @@
 
   .notification-menu-header {
     padding: 0.65rem 0.8rem;
+  }
+
+  .notification-menu-actions {
+    gap: 0.25rem;
+  }
+
+  .notification-clear-btn span {
+    display: none;
   }
 
   .notification-list {

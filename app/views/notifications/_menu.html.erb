@@ -1,32 +1,46 @@
-<div id="notifications-menu" class="dropdown">
+<div id="notifications-menu"
+     class="dropdown"
+     data-controller="notifications"
+     data-notifications-delete-all-url-value="<%= destroy_all_notifications_path %>">
   <% unread_count = user.notifications.unread.count %>
   <% notifications = user.notifications.recent.limit(10) %>
 
   <button class="nav-link notification-toggle" id="notificationsDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notificações">
     <i class="bi bi-bell"></i>
-    <% if unread_count.positive? %>
-      <span id="notifications-count" class="notification-badge"><%= unread_count %></span>
-    <% end %>
+    <span id="notifications-count"
+          class="notification-badge <%= "d-none" unless unread_count.positive? %>"
+          data-notifications-target="badge"><%= unread_count %></span>
   </button>
 
-  <div class="dropdown-menu dropdown-menu-end app-dropdown-menu notification-menu shadow-lg" aria-labelledby="notificationsDropdown">
+  <div class="dropdown-menu dropdown-menu-end app-dropdown-menu notification-menu shadow-lg"
+       data-bs-auto-close="outside"
+       aria-labelledby="notificationsDropdown">
     <div class="notification-menu-header">
       <span>Notificações</span>
-      <% if unread_count.positive? %>
-        <span class="badge text-bg-primary"><%= unread_count %> nova<%= "s" if unread_count > 1 %></span>
+      <div class="notification-menu-actions">
+        <span class="badge text-bg-primary <%= "d-none" unless unread_count.positive? %>"
+              data-notifications-target="headerCount"><%= unread_count %> nova<%= "s" if unread_count > 1 %></span>
+        <% if notifications.any? %>
+          <button type="button"
+                  class="notification-clear-btn"
+                  title="Apagar todas as notificações"
+                  data-notifications-target="deleteAll"
+                  data-action="click->notifications#destroyAll">
+            <i class="bi bi-trash3"></i>
+            <span>Apagar todas</span>
+          </button>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="notification-list" data-notifications-target="list">
+      <% notifications.each do |notification| %>
+        <%= render "notifications/notification", notification: notification %>
       <% end %>
     </div>
 
-    <% if notifications.any? %>
-      <div class="notification-list">
-        <% notifications.each do |notification| %>
-          <%= render "notifications/notification", notification: notification %>
-        <% end %>
-      </div>
-    <% else %>
-      <div class="notification-empty">
-        Nenhuma notificação por enquanto.
-      </div>
-    <% end %>
+    <div class="notification-empty <%= "d-none" if notifications.any? %>" data-notifications-target="empty">
+      Nenhuma notificação por enquanto.
+    </div>
   </div>
 </div>
