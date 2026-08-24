@@ -1,0 +1,200 @@
+<div class="dashboard-finance invoice-entry-page">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div>
+        <h1><i class="bi bi-receipt"></i> <%= invoice.persisted? ? "Editar Nota Fiscal" : "Nova Nota Fiscal" %></h1>
+        <p class="subtitle"><%= invoice.persisted? ? "Atualize os dados da invoice e suas notas fiscais" : "Cadastre a invoice e suas notas fiscais com revisão automática dos dados" %></p>
+      </div>
+      <div class="header-actions">
+        <%= link_to invoices_path, class: "btn-outline btn-sm" do %>
+          <i class="bi bi-arrow-left me-1"></i>Voltar para invoices
+        <% end %>
+      </div>
+    </div>
+  </header>
+
+  <div class="invoice-entry-content">
+    <% if notice %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= notice %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+      </div>
+    <% end %>
+
+    <% if invoice.errors.any? %>
+      <div class="alert alert-danger mb-4">
+        <h5><%= pluralize(invoice.errors.count, "erro") %> impedem o salvamento da NF:</h5>
+        <ul class="mb-0">
+          <% invoice.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="chart-card invoice-form-card">
+      <div class="card-header bg-light border-bottom">
+        <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Dados da Nota Fiscal</h5>
+      </div>
+
+      <div class="card-body">
+        <%= form_with(model: invoice, local: true) do |f| %>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :code, "Código da NF", class: "form-label fw-bold" %>
+              <%= f.text_field :code, placeholder: "Ex: ID1755707018874279", class: "form-control" %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= f.label :supplier_id, "Fornecedor", class: "form-label fw-bold" %>
+              <%= f.collection_select :supplier_id, Supplier.all, :id, :name, { prompt: "Selecione o fornecedor" }, class: "form-select" %>
+            </div>
+          </div>
+
+          <div class="mb-3" data-controller="invoice-numbers">
+            <div class="invoice-numbers-heading">
+              <%= f.label :invoice_numbers, "Números da NF", class: "form-label fw-bold mb-0" %>
+              <%= link_to "#", class: "icon-btn", title: "Adicionar NF", data: { action: "click->invoice-numbers#add" } do %> <%# herb:disable html-anchor-require-href %>
+                <i class="bi bi-plus-lg"></i>
+              <% end %>
+            </div>
+
+            <div data-invoice-numbers-target="container" class="mb-2">
+              <%= f.fields_for :invoice_numbers do |nf_form| %>
+                <div class="nested-fields d-flex mb-2 align-items-center gap-2" data-new-record="false">
+                  <%= nf_form.text_field :number, class: "form-control", placeholder: "Número da NF", aria: { label: "Número da NF" } %>
+                  <%= nf_form.collection_select :cost_center_id,
+                        CostCenter.all.order(:name),
+                        :id,
+                        :name,
+                        { prompt: "Centro de custo" },
+                        class: "form-select",
+                        aria: { label: "Centro de custo" } %>
+                  <%= nf_form.text_field :amount,
+                        value: number_with_precision(nf_form.object.amount, precision: 2, separator: ",", delimiter: "."),
+                        class: "form-control",
+                        inputmode: "decimal",
+                        placeholder: "Valor",
+                        aria: { label: "Valor da NF" },
+                        data: { action: "input->invoice-numbers#calculate" } %>
+                  <%= nf_form.check_box :_destroy, style: "display: none" %>
+                  <button type="button" class="icon-btn danger" title="Remover NF" data-action="click->invoice-numbers#remove">
+                    <i class="bi bi-trash3"></i>
+                  </button>
+                </div>
+              <% end %>
+            </div>
+
+            <template data-invoice-numbers-target="template">
+              <div class="nested-fields d-flex mb-2 align-items-center gap-2" data-new-record="true">
+                <input class="form-control" placeholder="Número da NF" type="text" autocomplete="off" aria-label="Número da NF" name="invoice[invoice_numbers_attributes][NEW_RECORD][number]">
+                <select class="form-select" aria-label="Centro de custo" name="invoice[invoice_numbers_attributes][NEW_RECORD][cost_center_id]">
+                  <option value="">Centro de custo</option>
+                  <% CostCenter.all.order(:name).each do |cost_center| %>
+                    <option value="<%= cost_center.id %>"><%= cost_center.name %></option>
+                  <% end %>
+                </select>
+                <input class="form-control" type="text" inputmode="decimal" value="0,00" placeholder="Valor" aria-label="Valor da NF" name="invoice[invoice_numbers_attributes][NEW_RECORD][amount]" data-action="input->invoice-numbers#calculate">
+                <input type="hidden" name="invoice[invoice_numbers_attributes][NEW_RECORD][_destroy]" value="false">
+                <button type="button" class="icon-btn danger" title="Remover NF" data-action="click->invoice-numbers#remove">
+                  <i class="bi bi-trash3"></i>
+                </button>
+              </div>
+            </template>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :date_issued, "Data de lançamento", class: "form-label fw-bold" %>
+              <%= f.date_field :date_issued, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= f.label :due_date, "Data de vencimento", class: "form-label fw-bold" %>
+              <%= f.date_field :due_date, class: "form-control" %>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <%= f.label :budget_category_id, "Categoria Orçamentária", class: "form-label fw-bold" %>
+              <%= f.collection_select :budget_category_id,
+                    BudgetCategory.all.order(:name),
+                    :id,
+                    :name,
+                    { prompt: "Selecione a categoria" },
+                    class: "form-select" %>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= f.label :purchaser_id, "Comprador", class: "form-label fw-bold" %>
+              <%= f.collection_select :purchaser_id,
+                    User.all.order(:name),
+                    :id,
+                    :name,
+                    { prompt: "Selecione o comprador" },
+                    class: "form-select" %>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <%= f.label :total, "Valor total", class: "form-label fw-bold" %>
+              <%= f.text_field :total,
+                    value: number_with_precision(invoice.total, precision: 2, separator: ",", delimiter: "."),
+                    class: "form-control",
+                    readonly: true,
+                    data: { invoice_numbers_target: "total" } %>
+            </div>
+
+            <div class="col-md-8 mb-3" data-controller="documents">
+              <%= f.label :documents, "Anexos", class: "form-label fw-bold" %>
+              <div data-controller="invoice-scan"></div>
+
+              <div class="invoice-attachments-toolbar d-flex align-items-center gap-2 mb-2">
+                <%= f.file_field :documents,
+                      multiple: true,
+                      class: "d-none",
+                      data: {
+                        documents_target: "input",
+                        action: "change->documents#handleFiles"
+                      } %>
+                <button type="button" class="icon-btn" title="Adicionar anexo" data-action="click->documents#openFileDialog">
+                  <i class="bi bi-plus-lg"></i>
+                </button>
+                <small class="text-muted"><i class="bi bi-file-earmark-pdf"></i> PDFs</small>
+              </div>
+
+              <div data-documents-target="list" class="d-flex flex-wrap gap-2"></div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <%= f.label :notes, "Observações", class: "form-label fw-bold" %>
+            <%= f.text_area :notes, class: "form-control", rows: 3 %>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <%= link_to "Cancelar", invoices_path, class: "btn btn-outline-secondary" %>
+            <div>
+              <% if invoice.persisted? %>
+                <%= link_to "Ver Nota Fiscal", invoice, class: "btn btn-outline-primary me-2" %>
+              <% end %>
+              <%= f.submit invoice.persisted? ? "Atualizar NF" : "Salvar NF", class: "btn btn-primary" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <% if invoice.persisted? %>
+      <div class="d-flex justify-content-between mt-4">
+        <%= link_to "Voltar para Notas Fiscais", invoices_path, class: "btn btn-primary shadow-sm p-3" %>
+        <%= link_to "Voltar para Dashboard", dashboard_invoices_path, class: "btn btn-primary shadow-sm p-3" %>
+        <%= button_to "Excluir esta Nota Fiscal", invoice, method: :delete,
+              data: { turbo_confirm: "Tem certeza que deseja excluir esta nota fiscal?" },
+              class: "btn btn-danger shadow-sm p-3" %>
+      </div>
+    <% end %>
+  </div>
+</div>

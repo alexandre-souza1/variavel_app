@@ -50,7 +50,14 @@ class Invoice < ApplicationRecord
   end
 
   def calculate_total_from_invoice_numbers
-    self.total = invoice_numbers.reject(&:marked_for_destruction?).sum { |invoice_number| invoice_number.amount.to_d }
+    self.total = invoice_numbers.reject(&:marked_for_destruction?).sum do |invoice_number|
+      amount = invoice_number.amount
+      if amount.is_a?(String)
+        amount.gsub('.', '').tr(',', '.').to_d
+      else
+        amount.to_d
+      end
+    end
   end
 
 end

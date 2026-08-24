@@ -66,13 +66,12 @@
     display: none;
   }
 
-  [data-invoice-numbers-target="container"] .nested-fields:first-child .col-md-2:last-child {
-    align-self: flex-end;
-    margin-bottom: 6px;
+  [data-invoice-numbers-target="container"] .nested-fields > .icon-btn {
+    flex: 0 0 30px;
   }
 
-  [data-invoice-numbers-target="container"] .nested-fields .row {
-    align-items: end;
+  [data-invoice-numbers-target="container"] .nested-fields:first-child > .icon-btn {
+    margin-bottom: 6px;
   }
 
   .invoice-attachments-toolbar {
@@ -124,10 +123,27 @@
   }
 
   .nested-fields {
-    padding: .9rem 0;
+    padding: .35rem 0;
     background: transparent;
     border: 0;
     border-bottom: 0;
+    margin-bottom: .25rem !important;
+  }
+
+  @media (max-width: 767px) {
+    [data-invoice-numbers-target="container"] .nested-fields {
+      flex-wrap: wrap;
+    }
+
+    [data-invoice-numbers-target="container"] .nested-fields > .form-control,
+    [data-invoice-numbers-target="container"] .nested-fields > .form-select {
+      min-width: 0;
+      flex: 1 1 calc(50% - .5rem);
+    }
+
+    [data-invoice-numbers-target="container"] .nested-fields > .icon-btn {
+      margin-bottom: 0;
+    }
   }
 
   [data-documents-target="list"] > div {

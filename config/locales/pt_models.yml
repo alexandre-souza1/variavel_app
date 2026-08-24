@@ -1,0 +1,37 @@
+pt:
+  errors:
+    format: "%{attribute} %{message}"
+    messages:
+      blank: "não pode ficar em branco"
+      invalid: "não é válido"
+      required: "é obrigatório"
+      not_a_number: "não é um número"
+      greater_than_or_equal_to: "deve ser maior ou igual a %{count}"
+  activerecord:
+    attributes:
+      invoice:
+        invoice_numbers: "NFs"
+        supplier_id: "Fornecedor"
+        purchaser_id: "Comprador"
+        budget_category_id: "Categoria orçamentária"
+        date_issued: "Data de emissão"
+        due_date: "Data de vencimento"
+        total: "Valor total"
+        code: "Código da NF"
+      invoice_number:
+        invoice: "Invoice"
+        cost_center: "Centro de custo"
+        number: "Número da NF"
+        amount: "Valor da NF"
+        cost_center_id: "Centro de custo"
+    errors:
+      models:
+        invoice:
+          attributes:
+            invoice_numbers:
+              invalid: "possui uma NF inválida"
+        invoice_number:
+          attributes:
+            amount:
+              not_a_number: "deve ser um valor válido, como 100,00"
+              greater_than_or_equal_to: "deve ser maior ou igual a %{count}"
