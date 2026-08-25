@@ -36,7 +36,7 @@
                 <li><%= link_to 'Ajudantes', az_ajudantes_path, class: 'dropdown-item app-dropdown-item' %></li>
                 <li><%= link_to 'Resultados Diários', az_mapas_path, class: 'dropdown-item app-dropdown-item' %></li>
                 <li><%= link_to 'Resultados WMS', wms_tasks_path, class: 'dropdown-item app-dropdown-item' %></li>
-                <li><%= link_to 'Importar WMS', new_import_wms_tasks_path, class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Importação', az_consultas_import_path, class: 'dropdown-item app-dropdown-item' %></li>
               </ul>
             </li>
           <% end %>
@@ -236,7 +236,7 @@
             <%= link_to 'Ajudantes', az_ajudantes_path, class: 'app-mobile-nav-link' %>
             <%= link_to 'Resultados Diários', az_mapas_path, class: 'app-mobile-nav-link' %>
             <%= link_to 'Resultados WMS', wms_tasks_path, class: 'app-mobile-nav-link' %>
-            <%= link_to 'Importar WMS', new_import_wms_tasks_path, class: 'app-mobile-nav-link' %>
+            <%= link_to 'Importação', az_consultas_import_path, class: 'app-mobile-nav-link' %>
           </div>
         </div>
       <% end %>

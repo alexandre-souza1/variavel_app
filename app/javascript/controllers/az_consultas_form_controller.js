@@ -6,7 +6,8 @@ export default class extends Controller {
   static targets = ["formulario", "titulo", "turnoInput"]
 
   mostrarFormulario(event) {
-    const turno = event.target.dataset.turno;
+    const turnoCard = event.currentTarget;
+    const turno = turnoCard.dataset.turno;
     const turnoLabel = this.getTurnoLabel(turno);
 
     // Se o formulário já estiver visível e for o mesmo botão, fecha o formulário
@@ -14,6 +15,8 @@ export default class extends Controller {
       this.fecharFormulario();
     } else {
       // Caso contrário, atualiza o formulário com o novo turno
+      this.element.querySelectorAll("[data-turno]").forEach((card) => card.classList.remove("is-selected"));
+      turnoCard.classList.add("is-selected");
       this.mudarFormulario(turno, turnoLabel);
     }
   }
@@ -21,6 +24,7 @@ export default class extends Controller {
   fecharFormulario() {
     // Fecha o formulário com uma transição suave
     this.formularioTarget.classList.remove("ativo");
+    this.element.querySelectorAll("[data-turno]").forEach((card) => card.classList.remove("is-selected"));
 
     // Espera a animação terminar (400ms) antes de aplicar d-none
     setTimeout(() => {

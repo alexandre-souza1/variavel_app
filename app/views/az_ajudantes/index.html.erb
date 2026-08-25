@@ -1,14 +1,78 @@
-<p style="color: green"><%= notice %></p>
+<div class="container-fluid py-4 px-3 px-lg-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <p class="text-uppercase text-muted small fw-semibold mb-1">Armazém</p>
+      <h1 class="h3 mb-1">Ajudantes</h1>
+      <p class="text-muted mb-0">Cadastre a matrícula e o turno usados na consulta de remuneração variável.</p>
+    </div>
 
-<h1>Az ajudantes</h1>
+    <div class="d-flex flex-wrap gap-2">
+      <% if current_user.admin? || current_user.supervisor? %>
+        <%= link_to import_az_ajudantes_path, class: "btn btn-outline-primary" do %>
+          <i class="bi bi-upload me-1"></i> Importar CSV
+        <% end %>
+        <%= link_to new_az_ajudante_path, class: "btn btn-primary" do %>
+          <i class="bi bi-plus-lg me-1"></i> Novo ajudante
+        <% end %>
+      <% end %>
+      <%= link_to "Voltar para consultas", az_consultas_new_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
 
-<div id="az_ajudantes">
-  <% @az_ajudantes.each do |az_ajudante| %>
-    <%= render az_ajudante %>
-    <p>
-      <%= link_to "Show this az ajudante", az_ajudante %>
-    </p>
+  <%= render "shared/flashes" if lookup_context.exists?("shared/flashes", [], true) %>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <% if @az_ajudantes.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">Matrícula</th>
+                <th>Nome</th>
+                <th>Turno</th>
+                <th>CPF</th>
+                <th class="text-end pe-4">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @az_ajudantes.each do |az_ajudante| %>
+                <tr>
+                  <td class="ps-4 fw-semibold"><%= az_ajudante.matricula %></td>
+                  <td><%= az_ajudante.nome %></td>
+                  <td><span class="badge text-bg-light"><%= turno_label(az_ajudante.turno) %></span></td>
+                  <td><%= az_ajudante.cpf.presence || "—" %></td>
+                  <td class="text-end pe-4">
+                    <%= link_to "Ver", az_ajudante, class: "btn btn-sm btn-outline-secondary" %>
+                    <% if current_user.admin? || current_user.supervisor? %>
+                      <%= link_to "Editar", edit_az_ajudante_path(az_ajudante), class: "btn btn-sm btn-outline-primary" %>
+                    <% end %>
+                    <% if current_user.admin? %>
+                      <%= button_to az_ajudante, method: :delete, class: "btn btn-sm btn-outline-danger", form: { class: "d-inline" }, data: { turbo_confirm: "Remover este ajudante?" } do %>
+                        <i class="bi bi-trash"></i>
+                      <% end %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-people fs-1 d-block mb-3"></i>
+          <p class="mb-3">Nenhum ajudante cadastrado.</p>
+          <% if current_user.admin? || current_user.supervisor? %>
+            <%= link_to "Importar ajudantes", import_az_ajudantes_path, class: "btn btn-primary" %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <% if current_user.admin? && @az_ajudantes.any? %>
+    <div class="text-end mt-3">
+      <%= button_to "Remover todos", destroy_all_az_ajudantes_path, method: :delete, class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Remover todos os ajudantes? Esta ação não pode ser desfeita." } %>
+    </div>
   <% end %>
 </div>
-
-<%= link_to "New az ajudante", new_az_ajudante_path %>

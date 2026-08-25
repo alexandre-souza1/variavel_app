@@ -1,0 +1,274 @@
+// ============================================================
+// HOME / WORKSTATION
+// ============================================================
+
+.workstation-home {
+  min-height: calc(100vh - 4rem);
+  padding: 2.5rem 1.5rem 3rem;
+  color: var(--bs-body-color);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  .workstation-home__inner {
+    max-width: 1260px;
+    margin: 0 auto;
+  }
+
+  .workstation-hero {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2.25rem;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    border: 1px solid rgba(var(--bs-primary-rgb), .18);
+    border-radius: 20px;
+    background:
+      radial-gradient(circle at 88% 18%, rgba(var(--bs-primary-rgb), .2), transparent 20rem),
+      linear-gradient(135deg, rgba(var(--bs-primary-rgb), .1), var(--bs-body-bg) 62%);
+    box-shadow: 0 12px 32px rgba(15, 23, 42, .06);
+
+    &::after {
+      position: absolute;
+      right: -4rem;
+      bottom: -5rem;
+      width: 16rem;
+      height: 16rem;
+      border: 1px solid rgba(var(--bs-primary-rgb), .12);
+      border-radius: 50%;
+      box-shadow: 0 0 0 2rem rgba(var(--bs-primary-rgb), .035), 0 0 0 4rem rgba(var(--bs-primary-rgb), .025);
+      content: "";
+      pointer-events: none;
+    }
+  }
+
+  .workstation-hero__content {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+  }
+
+  .workstation-eyebrow {
+    margin: 0 0 .55rem;
+    color: var(--bs-primary);
+    font-size: .74rem;
+    font-weight: 750;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+
+  .workstation-title {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    margin: 0;
+    font-size: clamp(1.75rem, 4vw, 2.7rem);
+    font-weight: 700;
+    letter-spacing: -.035em;
+
+    i {
+      color: var(--bs-primary);
+    }
+  }
+
+  .workstation-subtitle {
+    max-width: 610px;
+    margin: .75rem 0 0;
+    color: var(--bs-secondary-color);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .workstation-location {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    margin-top: 1.25rem;
+    padding: .45rem .7rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 999px;
+    background: var(--bs-body-bg);
+    color: var(--bs-secondary-color);
+    font-size: .78rem;
+    font-weight: 600;
+
+    i {
+      color: var(--bs-primary);
+    }
+  }
+
+  .workstation-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+
+      i {
+        color: var(--bs-primary);
+      }
+    }
+
+    p {
+      margin: .3rem 0 0;
+      color: var(--bs-secondary-color);
+      font-size: .83rem;
+    }
+  }
+
+  .workstation-access-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .workstation-access-card {
+    position: relative;
+    display: flex;
+    min-height: 260px;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: hidden;
+    padding: 1.35rem;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 16px;
+    background-position: center;
+    background-size: cover;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, .12);
+    color: #fff;
+    isolation: isolate;
+    text-decoration: none;
+    transition: transform .2s ease, box-shadow .2s ease, outline-color .2s ease;
+
+    &::before {
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(15, 23, 42, .04) 18%, rgba(15, 23, 42, .85) 100%);
+      content: "";
+    }
+
+    &:hover,
+    &:focus-visible {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px rgba(15, 23, 42, .2);
+      outline: 3px solid rgba(var(--bs-primary-rgb), .45);
+      outline-offset: 2px;
+      color: #fff;
+    }
+
+    .workstation-access-card__icon {
+      display: inline-flex;
+      width: 42px;
+      height: 42px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: .8rem;
+      border: 1px solid rgba(255, 255, 255, .35);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .14);
+      font-size: 1.3rem;
+      backdrop-filter: blur(4px);
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 1.45rem;
+      font-weight: 750;
+      letter-spacing: -.02em;
+    }
+
+    p {
+      max-width: 420px;
+      margin: .45rem 0 1rem;
+      color: rgba(255, 255, 255, .82);
+      font-size: .88rem;
+      line-height: 1.45;
+    }
+
+    .workstation-access-card__action {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      color: #fff;
+      font-size: .82rem;
+      font-weight: 700;
+
+      i {
+        font-size: 1rem;
+        transition: transform .2s ease;
+      }
+    }
+
+    &:hover .workstation-access-card__action i,
+    &:focus-visible .workstation-access-card__action i {
+      transform: translateX(3px);
+    }
+  }
+
+  .workstation-help {
+    display: flex;
+    align-items: flex-start;
+    gap: .65rem;
+    margin-top: 1.35rem;
+    padding: .9rem 1rem;
+    border-left: 3px solid var(--bs-primary);
+    border-radius: 8px;
+    background: rgba(var(--bs-primary-rgb), .06);
+    color: var(--bs-secondary-color);
+    font-size: .82rem;
+
+    i {
+      color: var(--bs-primary);
+      font-size: 1rem;
+    }
+  }
+
+  @media (max-width: 700px) {
+    padding: 1.25rem 1rem 2rem;
+
+    .workstation-hero {
+      margin-bottom: 1.75rem;
+      border-radius: 16px;
+    }
+
+    .workstation-section-heading {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .workstation-access-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .workstation-access-card {
+      min-height: 200px;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .workstation-title {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: .35rem;
+    }
+  }
+}
+
+html[data-bs-theme="dark"] .workstation-home {
+  .workstation-hero,
+  .workstation-access-card {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, .22);
+  }
+
+  .workstation-hero {
+    background:
+      radial-gradient(circle at 88% 18%, rgba(37, 99, 235, .24), transparent 20rem),
+      linear-gradient(135deg, rgba(37, 99, 235, .14), var(--bs-body-bg) 62%);
+  }
+}

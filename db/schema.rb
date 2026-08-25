@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_22_000000) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_25_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -93,6 +93,91 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_22_000000) do
     t.boolean "atingiu_meta", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "az_rv_imports", force: :cascade do |t|
+    t.string "source_type", null: false
+    t.date "reference_date"
+    t.string "original_filename", null: false
+    t.string "file_digest", null: false
+    t.string "status", default: "completed", null: false
+    t.integer "rows_imported", default: 0, null: false
+    t.integer "rows_skipped", default: 0, null: false
+    t.text "error_message"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["source_type", "file_digest"], name: "index_az_rv_imports_on_source_type_and_file_digest", unique: true
+    t.index ["user_id"], name: "index_az_rv_imports_on_user_id"
+  end
+
+  create_table "az_rv_on_demand_activities", force: :cascade do |t|
+    t.bigint "az_rv_import_id", null: false
+    t.string "source_key", null: false
+    t.string "warehouse"
+    t.string "activity"
+    t.string "activity_code"
+    t.string "address"
+    t.string "task_number"
+    t.string "employee_name", null: false
+    t.string "employee_key", null: false
+    t.datetime "created_at_source"
+    t.datetime "associated_at"
+    t.datetime "finalized_at"
+    t.string "validation_status"
+    t.string "task_status"
+    t.text "observation"
+    t.string "plate"
+    t.string "vehicle_type"
+    t.string "transport_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["az_rv_import_id"], name: "index_az_rv_on_demand_activities_on_az_rv_import_id"
+    t.index ["employee_key", "created_at_source"], name: "index_az_rv_ondemand_on_employee_and_date"
+    t.index ["source_key"], name: "index_az_rv_on_demand_activities_on_source_key", unique: true
+  end
+
+  create_table "az_rv_points", force: :cascade do |t|
+    t.bigint "az_rv_import_id", null: false
+    t.string "employee_name", null: false
+    t.string "employee_key", null: false
+    t.date "reference_date", null: false
+    t.decimal "credits", precision: 16, scale: 2, default: "0.0", null: false
+    t.decimal "debits", precision: 16, scale: 2, default: "0.0", null: false
+    t.decimal "total_points", precision: 16, scale: 2, default: "0.0", null: false
+    t.decimal "reported_value", precision: 16, scale: 2, default: "0.0", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["az_rv_import_id"], name: "index_az_rv_points_on_az_rv_import_id"
+    t.index ["employee_key", "reference_date"], name: "index_az_rv_points_on_employee_key_and_reference_date", unique: true
+  end
+
+  create_table "az_rv_tasks", force: :cascade do |t|
+    t.bigint "az_rv_import_id", null: false
+    t.string "source_key", null: false
+    t.string "warehouse"
+    t.string "map_code"
+    t.string "task_number"
+    t.string "horse_plate"
+    t.string "trailer_plate"
+    t.string "origin"
+    t.string "destination"
+    t.string "pallet"
+    t.string "priority"
+    t.string "status"
+    t.string "task_type"
+    t.string "employee_name", null: false
+    t.string "employee_key", null: false
+    t.datetime "created_at_source"
+    t.datetime "associated_at"
+    t.datetime "changed_at"
+    t.datetime "released_at"
+    t.string "completed_task"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["az_rv_import_id"], name: "index_az_rv_tasks_on_az_rv_import_id"
+    t.index ["employee_key", "created_at_source"], name: "index_az_rv_tasks_on_employee_key_and_created_at_source"
+    t.index ["source_key"], name: "index_az_rv_tasks_on_source_key", unique: true
   end
 
   create_table "buckets", force: :cascade do |t|
@@ -706,7 +791,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_22_000000) do
     t.integer "duration", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "source_key"
+    t.bigint "az_rv_import_id"
+    t.index ["az_rv_import_id"], name: "index_wms_tasks_on_az_rv_import_id"
     t.index ["operator_id"], name: "index_wms_tasks_on_operator_id"
+    t.index ["source_key"], name: "index_wms_tasks_on_source_key", unique: true, where: "(source_key IS NOT NULL)"
     t.index ["started_at"], name: "index_wms_tasks_on_started_at"
     t.index ["task_code"], name: "index_wms_tasks_on_task_code"
   end
@@ -714,6 +803,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_22_000000) do
   add_foreign_key "action_plans", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "az_rv_imports", "users"
+  add_foreign_key "az_rv_on_demand_activities", "az_rv_imports"
+  add_foreign_key "az_rv_points", "az_rv_imports"
+  add_foreign_key "az_rv_tasks", "az_rv_imports"
   add_foreign_key "buckets", "action_plans"
   add_foreign_key "checklist_defects", "checklists"
   add_foreign_key "checklist_items", "checklist_templates"
@@ -771,5 +864,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_22_000000) do
   add_foreign_key "tasks", "users", column: "assignee_id"
   add_foreign_key "tasks", "users", column: "creator_id"
   add_foreign_key "vehicle_remunerations", "remuneration_periods"
+  add_foreign_key "wms_tasks", "az_rv_imports"
   add_foreign_key "wms_tasks", "operators"
 end

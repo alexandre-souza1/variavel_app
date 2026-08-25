@@ -1,7 +1,7 @@
 class WmsTaskImportJob < ApplicationJob
   queue_as :default
 
-  def perform(file_path, user_id = nil)
+  def perform(file_path, user_id = nil, original_filename = nil)
     file_path = file_path.to_s
 
     unless File.exist?(file_path)
@@ -9,96 +9,28 @@ class WmsTaskImportJob < ApplicationJob
       return
     end
 
-    begin
-      csv_content = File.read(file_path)
-      csv = CSV.parse(csv_content, headers: true, encoding: 'UTF-8', col_sep: ';')
+    result = SharedTasksImportService.new(
+      file: file_path,
+      user: User.find_by(id: user_id),
+      original_filename: original_filename,
+      progress: ->(current, total) do
+        show_progress(user_id, current, total, "Processando linha #{current} de #{total}...")
+      end
+    ).call
 
-      total_rows = csv.size
-
-      # Mostra progresso inicial
-      show_progress(user_id, 0, total_rows, "Iniciando importação...")
-
-      # Importa os dados com progresso
-      result = import_data_with_progress(csv, user_id)
-
-      # Mostra resultado final
-      show_import_result(user_id, result)
-
-    rescue => e
-      show_result(user_id, "❌ Erro: #{e.message}", false, true)
-    ensure
-      File.delete(file_path) if File.exist?(file_path)
-    end
+    show_import_result(user_id, result)
+  rescue StandardError => e
+    show_result(user_id, "❌ Erro: #{e.message}", false, true)
+  ensure
+    File.delete(file_path) if file_path.present? && File.exist?(file_path)
   end
 
   private
-
-  def import_data_with_progress(csv, user_id)
-    imported_count = 0
-    skipped_operators = []
-    failed_rows = []
-
-    operators_hash = Operator.all.each_with_object({}) do |op, hash|
-      hash[WmsTask.normalize_string(op.nome)] = op.id
-    end
-
-    csv.each_with_index do |row, index|
-      nome_operador = WmsTask.normalize_string(row['Usuário'].to_s)
-
-      # Atualiza progresso a cada 10 linhas ou no final
-      if (index % 10 == 0) || (index == csv.size - 1)
-        progress = ((index + 1).to_f / csv.size * 100).round
-        show_progress(user_id, index + 1, csv.size, "Processando linha #{index + 1} de #{csv.size}...")
-      end
-
-      if nome_operador.blank?
-        imported_count += 1
-        next
-      end
-
-      operator_id = operators_hash[nome_operador]
-      unless operator_id
-        skipped_operators << nome_operador
-        imported_count += 1
-        next
-      end
-
-      task = WmsTask.new(
-        operator_id: operator_id,
-        task_type: row['Tipo'],
-        task_code: row['Tarefa'],
-        plate: row['Placa Carreta'],
-        pallet: row['Palete'],
-        started_at: WmsTask.parse_date(row['Data Última Associação']),
-        ended_at: WmsTask.parse_date(row['Data de Alteração'])
-      )
-
-      task.duration = WmsTask.calculate_duration(task.started_at, task.ended_at)
-
-      if task.save
-        imported_count += 1
-      else
-        failed_rows << {
-          row_data: row.to_h,
-          error: task.errors.full_messages.join(', '),
-          operator: nome_operador
-        }
-      end
-    end
-
-    {
-      imported: imported_count,
-      skipped_operators: skipped_operators.uniq,
-      failed_rows: failed_rows,
-      total_rows: csv.size
-    }
-  end
 
   def show_progress(user_id, current, total, message)
     return unless user_id
 
     progress = total > 0 ? ((current.to_f / total) * 100).round : 0
-
     html = ApplicationController.render(
       partial: "shared/import_progress",
       locals: {
@@ -118,41 +50,27 @@ class WmsTaskImportJob < ApplicationJob
   def show_import_result(user_id, result)
     return unless user_id
 
-    imported = result[:imported]
-    skipped_operators = result[:skipped_operators]
-    failed_rows = result[:failed_rows]
-    total = result[:total_rows]
-
-    # Construir mensagem detalhada
     message_parts = []
+    message_parts << "✅ #{result[:wms_imported]} tarefas WMS processadas."
+    message_parts << "♻️ #{result[:refugo_imported]} registros de refugo disponibilizados para os ajudantes."
 
-    if imported > 0
-      message_parts << "✅ #{imported} tarefas importadas com sucesso."
-    else
-      message_parts << "❌ Nenhuma tarefa importada."
+    if result[:skipped_operators].any?
+      message_parts << "👤 #{result[:skipped_operators].size} nomes não vinculados a operadores"
     end
 
-    # Detalhes de operadores não encontrados
-    if skipped_operators.any?
-      message_parts << "👤 #{skipped_operators.size} operadores não encontrados"
-      if skipped_operators.size <= 3
-        message_parts << "Não localizados: #{skipped_operators.join(', ')}"
-      end
-    end
-
-    # Detalhes de erros
-    if failed_rows.any?
-      message_parts << "❌ #{failed_rows.size} linhas com erro"
-      failed_rows.first(2).each do |failed_row|
+    if result[:failed_rows].any?
+      message_parts << "❌ #{result[:failed_rows].size} linhas com erro"
+      result[:failed_rows].first(2).each do |failed_row|
         message_parts << "• #{failed_row[:operator]}: #{failed_row[:error]}"
       end
-      message_parts << "• ... mais #{failed_rows.size - 2} erros" if failed_rows.size > 2
     end
 
-    message = message_parts.join("\n")
-    error = imported == 0
-
-    show_detailed_result(user_id, message, error, result)
+    show_detailed_result(
+      user_id,
+      message_parts.join("\n"),
+      result[:wms_imported].zero? && result[:refugo_imported].zero?,
+      result
+    )
   end
 
   def show_detailed_result(user_id, message, error, result)
@@ -166,7 +84,7 @@ class WmsTaskImportJob < ApplicationJob
         completed: true,
         error: error,
         show_link: true,
-        current: result[:imported],
+        current: result[:total_rows],
         total: result[:total_rows],
         progress: 100
       }
@@ -175,7 +93,7 @@ class WmsTaskImportJob < ApplicationJob
     ActionCable.server.broadcast("user_#{user_id}", { html: html })
   end
 
-  def show_result(user_id, message, error = false)
+  def show_result(user_id, message, error = false, completed = true)
     return unless user_id
 
     html = ApplicationController.render(
@@ -183,7 +101,7 @@ class WmsTaskImportJob < ApplicationJob
       locals: {
         message: message,
         visible: true,
-        completed: true,
+        completed: completed,
         error: error,
         show_link: true
       }

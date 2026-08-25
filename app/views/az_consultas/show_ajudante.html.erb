@@ -1,0 +1,260 @@
+<div class="az-helper-report-page">
+  <header class="az-report-header">
+    <div class="az-report-header-content">
+      <div>
+        <p class="az-report-eyebrow"><i class="bi bi-graph-up-arrow me-1"></i> Remuneração variável · Armazém</p>
+        <h1 class="az-report-title">
+          <i class="bi bi-person-circle"></i>
+          <%= @employee_name %>
+        </h1>
+        <p class="az-report-subtitle">Resumo de desempenho e variável do período de fechamento</p>
+        <div class="az-report-meta">
+          <span><i class="bi bi-person-badge"></i> Matrícula <strong><%= @matricula %></strong></span>
+          <span><i class="bi bi-clock"></i> Turno <strong><%= @turno_label %></strong></span>
+          <span><i class="bi bi-calendar3"></i> <%= l(@start_date) %> a <%= l(@end_date) %></span>
+        </div>
+      </div>
+
+      <div class="az-report-actions">
+        <%= link_to az_consultas_new_path, class: "az-report-back-link" do %>
+          <i class="bi bi-arrow-left"></i> Voltar
+        <% end %>
+
+        <%= form_with url: az_consulta_path, method: :get, local: true,
+                      class: "az-period-filter",
+                      data: { controller: "autosubmit", autosubmit_target: "form" } do %>
+          <%= hidden_field_tag :perfil, "ajudante" %>
+          <%= hidden_field_tag :matricula, @matricula %>
+
+          <div class="az-period-field">
+            <%= label_tag :periodo_mes, "Mês" %>
+            <%= select_tag :periodo_mes,
+                options_for_select((1..12).map { |month| [I18n.t("date.month_names")[month], month] }, @periodo_mes),
+                class: "form-select form-select-sm",
+                data: { autosubmit_target: "select", action: "change->autosubmit#submitOnChange" },
+                required: true %>
+          </div>
+
+          <div class="az-period-field">
+            <%= label_tag :periodo_ano, "Ano" %>
+            <%= select_tag :periodo_ano,
+                options_for_select((Date.current.year - 5..Date.current.year).to_a.reverse, @periodo_ano),
+                class: "form-select form-select-sm",
+                data: { autosubmit_target: "select", action: "change->autosubmit#submitOnChange" },
+                required: true %>
+          </div>
+
+          <%= submit_tag "Atualizar", class: "az-period-submit" %>
+        <% end %>
+      </div>
+    </div>
+  </header>
+
+  <div class="az-report-flashes">
+    <%= render "shared/flashes" %>
+  </div>
+
+  <section class="az-report-overview" aria-label="Resumo da variável">
+    <div class="az-overview-card az-overview-card--total">
+      <div class="az-overview-label"><i class="bi bi-cash-coin"></i> Total da variável</div>
+      <div class="az-overview-value"><%= number_to_currency(@total_variable, unit: "R$ ", separator: ",", delimiter: ".") %></div>
+      <div class="az-overview-detail">Período completo de fechamento</div>
+    </div>
+
+    <div class="az-overview-card">
+      <div class="az-overview-label"><i class="bi bi-box-seam"></i> Montagem</div>
+      <div class="az-overview-value"><%= number_to_currency(@point_value, unit: "R$ ", separator: ",", delimiter: ".") %></div>
+      <div class="az-overview-detail"><%= number_with_precision(@point_total, precision: 2, delimiter: ".", separator: ",") %> pontos</div>
+    </div>
+
+    <div class="az-overview-card">
+      <div class="az-overview-label"><i class="bi bi-exclamation-circle"></i> Refugos</div>
+      <div class="az-overview-value"><%= number_to_currency(@refugo_value, unit: "R$ ", separator: ",", delimiter: ".") %></div>
+      <div class="az-overview-detail"><%= @refugo_count %> ocorrência(s)</div>
+    </div>
+
+    <div class="az-overview-card">
+      <div class="az-overview-label"><i class="bi bi-lightning-charge"></i> On Demand</div>
+      <div class="az-overview-value"><%= number_to_currency(@ondemand_value, unit: "R$ ", separator: ",", delimiter: ".") %></div>
+      <div class="az-overview-detail"><%= @ondemand_activities.size %> atividade(s)</div>
+    </div>
+  </section>
+
+  <section class="az-report-grid">
+    <article class="az-report-panel">
+      <div class="az-panel-header">
+        <div>
+          <h2><i class="bi bi-bar-chart-fill az-panel-icon me-2"></i>Painel de totais</h2>
+          <p>Composição da variável calculada para este fechamento.</p>
+        </div>
+      </div>
+      <div class="az-panel-body">
+        <div class="az-total-list">
+          <div class="az-total-row">
+            <span class="az-total-name"><span class="az-total-dot"></span>Montagem por pontos</span>
+            <span class="az-total-amount"><%= number_to_currency(@point_value, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+          </div>
+          <div class="az-total-row">
+            <span class="az-total-name"><span class="az-total-dot"></span>Refugos</span>
+            <span class="az-total-amount"><%= number_to_currency(@refugo_value, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+          </div>
+          <div class="az-total-row">
+            <span class="az-total-name"><span class="az-total-dot"></span>Atividades On Demand</span>
+            <span class="az-total-amount"><%= number_to_currency(@ondemand_value, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+          </div>
+          <div class="az-total-row az-total-row--grand">
+            <span class="az-total-name"><i class="bi bi-check2-circle"></i>Total geral</span>
+            <span class="az-total-amount"><%= number_to_currency(@total_variable, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="az-report-panel">
+      <div class="az-panel-header">
+        <div>
+          <h2><i class="bi bi-calendar-range az-panel-icon me-2"></i>Dados do período</h2>
+          <p>Referência usada na consulta atual.</p>
+        </div>
+      </div>
+      <div class="az-panel-body">
+        <div class="az-period-details">
+          <div class="az-detail-item"><span>Fechamento</span><span><%= I18n.t("date.month_names")[@periodo_mes.to_i].capitalize %>/<%= @periodo_ano %></span></div>
+          <div class="az-detail-item"><span>Intervalo</span><span><%= l(@start_date) %> — <%= l(@end_date) %></span></div>
+          <div class="az-detail-item"><span>Dias no intervalo</span><span><%= @period_days %></span></div>
+          <div class="az-detail-item"><span>Atividades consideradas</span><span><%= @total_activities %></span></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <div class="az-report-note">
+    <i class="bi bi-info-circle-fill"></i>
+    <span>A montagem usa os pontos importados para o período. Refugo e On Demand são calculados a partir das respectivas importações disponíveis.</span>
+  </div>
+
+  <article class="az-report-panel mb-4">
+    <div class="az-panel-header">
+      <div>
+        <h2 class="az-report-section-title"><i class="bi bi-calendar3"></i> Resumo diário da variável</h2>
+        <p>Valores agrupados pela data de geração ou associação de cada atividade.</p>
+      </div>
+      <span class="az-overview-detail">Total: <strong><%= number_to_currency(@total_variable, unit: "R$ ", separator: ",", delimiter: ".") %></strong></span>
+    </div>
+
+    <% if @daily_summary.any? %>
+      <div class="az-report-table-wrap">
+        <table class="az-report-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th class="text-end">Pontos</th>
+              <th class="text-end">Valor pontos</th>
+              <th class="text-end">Refugo</th>
+              <th class="text-end">On Demand</th>
+              <th class="text-end">Total do dia</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @daily_summary.each do |daily| %>
+              <tr>
+                <td data-label="Data"><%= l(daily[:date]) %></td>
+                <td data-label="Pontos" class="text-end"><%= number_with_precision(daily[:points], precision: 2, delimiter: ".", separator: ",") %></td>
+                <td data-label="Valor pontos" class="text-end"><%= number_to_currency(daily[:point_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                <td data-label="Refugo" class="text-end"><%= daily[:refugo] %> · <%= number_to_currency(daily[:refugo_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                <td data-label="On Demand" class="text-end"><%= daily[:ondemand] %> · <%= number_to_currency(daily[:ondemand_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                <td data-label="Total do dia" class="text-end az-table-total"><%= number_to_currency(daily[:total_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="az-report-empty">Nenhuma atividade encontrada para formar o resumo diário.</p>
+    <% end %>
+  </article>
+
+  <section class="az-report-section-grid">
+    <article class="az-report-panel">
+      <div class="az-panel-header">
+        <div>
+          <h2 class="az-report-section-title"><i class="bi bi-list-check"></i> Atividades por tipo</h2>
+          <p>Distribuição das atividades On Demand.</p>
+        </div>
+        <span class="az-overview-detail">Refugo: <strong><%= @refugo_count %></strong></span>
+      </div>
+
+      <% if @activities_by_type.any? %>
+        <div class="az-report-table-wrap">
+          <table class="az-report-table">
+            <tbody>
+              <% @activities_by_type.each do |activity, count| %>
+                <tr><td data-label="Atividade"><%= activity %></td><td data-label="Quantidade" class="text-end az-table-total"><%= count %></td></tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="az-report-empty">Nenhuma atividade encontrada no período.</p>
+      <% end %>
+    </article>
+
+    <article class="az-report-panel">
+      <div class="az-panel-header">
+        <div>
+          <h2 class="az-report-section-title"><i class="bi bi-tags"></i> Valores por categoria</h2>
+          <p>Totais financeiros das atividades On Demand.</p>
+        </div>
+      </div>
+
+      <% if @ondemand_by_category.any? %>
+        <div class="az-report-table-wrap">
+          <table class="az-report-table">
+            <thead><tr><th>Categoria</th><th class="text-end">Qtd.</th><th class="text-end">Valor</th></tr></thead>
+            <tbody>
+              <% @ondemand_by_category.each do |category, summary| %>
+                <tr>
+                  <td data-label="Categoria"><%= category.to_s.humanize.capitalize %></td>
+                  <td data-label="Quantidade" class="text-end"><%= summary[:count] %></td>
+                  <td data-label="Valor" class="text-end az-table-total"><%= number_to_currency(summary[:value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="az-report-empty">Nenhuma categoria encontrada no período.</p>
+      <% end %>
+    </article>
+  </section>
+
+  <article class="az-report-panel">
+    <div class="az-panel-header">
+      <div>
+        <h2 class="az-report-section-title"><i class="bi bi-bullseye"></i> Pontos por dia</h2>
+        <p>Créditos, débitos e valor calculado na importação de pontos.</p>
+      </div>
+    </div>
+
+    <% if @points.any? %>
+      <div class="az-report-table-wrap">
+        <table class="az-report-table">
+          <thead><tr><th>Data</th><th class="text-end">Créditos</th><th class="text-end">Débitos</th><th class="text-end">Total</th><th class="text-end">Valor</th></tr></thead>
+          <tbody>
+            <% @points.each do |point| %>
+              <tr>
+                <td data-label="Data"><%= l(point.reference_date) %></td>
+                <td data-label="Créditos" class="text-end"><%= number_with_precision(point.credits, precision: 2, delimiter: ".", separator: ",") %></td>
+                <td data-label="Débitos" class="text-end"><%= number_with_precision(point.debits, precision: 2, delimiter: ".", separator: ",") %></td>
+                <td data-label="Total de pontos" class="text-end"><%= number_with_precision(point.total_points, precision: 2, delimiter: ".", separator: ",") %></td>
+                <td data-label="Valor" class="text-end az-table-total"><%= number_to_currency(point.montagem_value, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="az-report-empty">Nenhum arquivo de pontos foi importado para este período.</p>
+    <% end %>
+  </article>
+</div>

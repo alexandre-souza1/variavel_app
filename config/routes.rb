@@ -14,10 +14,19 @@ Rails.application.routes.draw do
   get 'dashboard', to: 'dashboards#index', as: 'dashboard'
   mount ActionCable.server => '/cable'
 
-  resources :az_ajudantes
+  resources :az_ajudantes do
+    collection do
+      get :import
+      post :import_csv
+      delete :destroy_all
+    end
+  end
   get 'az_consultas/index'
   get 'az_consultas/new'
   get 'az_consultas/show'
+  get 'az_consultas/import', to: 'az_consultas#import_form', as: :az_consultas_import
+  post 'az_consultas/import', to: 'az_consultas#import', as: :import_az_consultas
+  delete 'az_consultas/import/:id', to: 'az_consultas#destroy_import', as: :destroy_az_consultas_import
 
   namespace :admin do
     get 'users/index'

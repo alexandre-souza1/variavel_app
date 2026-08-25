@@ -1,0 +1,667 @@
+// ============================================================
+// RELATÓRIO DE RV - AJUDANTE
+// ============================================================
+
+.az-helper-report-page,
+.az-operator-report-page {
+  min-height: 100vh;
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  color: var(--bs-body-color);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  .az-report-eyebrow {
+    margin: 0 0 .45rem;
+    color: var(--bs-primary);
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+
+  .az-report-header {
+    margin-bottom: 2rem;
+  }
+
+  .az-report-header-content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .az-report-title {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    margin: 0;
+    color: var(--bs-body-color);
+    font-size: clamp(1.55rem, 2.4vw, 2rem);
+    font-weight: 650;
+    letter-spacing: -.02em;
+
+    i {
+      color: var(--bs-primary);
+      font-size: 1.8rem;
+    }
+  }
+
+  .az-report-subtitle {
+    margin: .45rem 0 0;
+    color: var(--bs-secondary-color);
+    font-size: .95rem;
+  }
+
+  .az-report-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1rem;
+    margin-top: .9rem;
+    color: var(--bs-secondary-color);
+    font-size: .84rem;
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+    }
+  }
+
+  .az-report-actions {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: .65rem;
+  }
+
+  .az-report-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    align-self: center;
+    color: var(--bs-secondary-color);
+    font-size: .86rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color .2s ease;
+
+    i {
+      font-size: 1rem;
+    }
+
+    &:hover {
+      color: var(--bs-primary);
+    }
+  }
+
+  .az-period-filter {
+    display: flex;
+    align-items: flex-end;
+    gap: .5rem;
+    padding: .65rem .75rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 12px;
+    background: var(--bs-tertiary-bg);
+
+    .az-period-field {
+      min-width: 112px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: .25rem;
+      color: var(--bs-secondary-color);
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .form-select {
+      min-height: 34px;
+      border-radius: 8px;
+      font-size: .85rem;
+    }
+
+    .az-period-submit {
+      min-height: 34px;
+      padding: .35rem .7rem;
+      border: 0;
+      border-radius: 8px;
+      background: var(--bs-primary);
+      color: #fff;
+      font-size: .82rem;
+      font-weight: 600;
+    }
+  }
+
+  .az-report-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    min-height: 38px;
+    padding: .5rem .8rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 9px;
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-size: .84rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color .2s ease, background-color .2s ease, color .2s ease;
+
+    &:hover {
+      border-color: var(--bs-primary);
+      background: rgba(var(--bs-primary-rgb), .08);
+      color: var(--bs-primary);
+    }
+
+    &.az-report-btn--primary {
+      border-color: var(--bs-primary);
+      background: var(--bs-primary);
+      color: #fff;
+
+      &:hover {
+        background: var(--bs-primary-text-emphasis);
+        color: #fff;
+      }
+    }
+  }
+
+  .az-report-flashes {
+    margin-bottom: 1.25rem;
+  }
+
+  .az-report-overview {
+    display: grid;
+    grid-template-columns: minmax(250px, 1.35fr) repeat(3, minmax(155px, 1fr));
+    gap: .85rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .az-overview-card,
+  .az-report-panel {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 14px;
+    background: var(--bs-body-bg);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, .055);
+  }
+
+  .az-overview-card {
+    min-height: 126px;
+    padding: 1.05rem 1.15rem;
+
+    .az-overview-label {
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+      color: var(--bs-secondary-color);
+      font-size: .78rem;
+      font-weight: 650;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .az-overview-value {
+      margin-top: .55rem;
+      color: var(--bs-body-color);
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+
+    .az-overview-detail {
+      margin-top: .25rem;
+      color: var(--bs-secondary-color);
+      font-size: .78rem;
+    }
+
+    &.az-overview-card--total {
+      border-color: rgba(var(--bs-primary-rgb), .3);
+      background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), .12), var(--bs-body-bg) 72%);
+
+      .az-overview-label,
+      .az-overview-value {
+        color: var(--bs-primary-text-emphasis);
+      }
+
+      .az-overview-value {
+        font-size: 1.8rem;
+      }
+    }
+  }
+
+  .az-report-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(290px, .65fr);
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .az-report-panel {
+    overflow: hidden;
+
+    .az-panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.1rem 1.25rem;
+      border-bottom: 1px solid var(--bs-border-color);
+
+      h2 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      p {
+        margin: .25rem 0 0;
+        color: var(--bs-secondary-color);
+        font-size: .8rem;
+      }
+
+      .az-panel-icon {
+        color: var(--bs-primary);
+        font-size: 1.15rem;
+      }
+    }
+
+    .az-panel-body {
+      padding: 1.1rem 1.25rem;
+    }
+  }
+
+  .az-total-list {
+    display: grid;
+    gap: .1rem;
+
+    .az-total-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: .72rem 0;
+      border-bottom: 1px solid var(--bs-border-color);
+      font-size: .9rem;
+
+      &:last-child {
+        border-bottom: 0;
+      }
+
+      .az-total-name {
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        color: var(--bs-secondary-color);
+      }
+
+      .az-total-amount {
+        color: var(--bs-body-color);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .az-total-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--bs-primary);
+      }
+    }
+
+    .az-total-row--grand {
+      margin: .35rem -.35rem -.35rem;
+      padding: .9rem .35rem .35rem;
+      border-top: 2px solid var(--bs-primary);
+      border-bottom: 0;
+
+      .az-total-name,
+      .az-total-amount {
+        color: var(--bs-primary-text-emphasis);
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .az-period-details {
+    display: grid;
+    gap: .9rem;
+
+    .az-detail-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: .8rem;
+      border-bottom: 1px solid var(--bs-border-color);
+
+      &:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+      }
+
+      span:first-child {
+        color: var(--bs-secondary-color);
+        font-size: .82rem;
+      }
+
+      span:last-child {
+        font-size: .88rem;
+        font-weight: 650;
+        text-align: right;
+      }
+    }
+  }
+
+  .az-report-note {
+    display: flex;
+    gap: .65rem;
+    margin-bottom: 1.25rem;
+    padding: .85rem 1rem;
+    border-left: 3px solid var(--bs-info);
+    border-radius: 8px;
+    background: rgba(var(--bs-info-rgb), .08);
+    color: var(--bs-secondary-color);
+    font-size: .82rem;
+
+    i {
+      color: var(--bs-info);
+      font-size: 1rem;
+    }
+  }
+
+  .az-report-section-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .az-report-table-wrap {
+    overflow-x: auto;
+  }
+
+  .az-report-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    font-size: .86rem;
+
+    th {
+      padding: .7rem 1.25rem;
+      border-bottom: 1px solid var(--bs-border-color);
+      color: var(--bs-secondary-color);
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-align: left;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: .72rem 1.25rem;
+      border-bottom: 1px solid var(--bs-border-color);
+      vertical-align: middle;
+    }
+
+    tbody tr {
+      transition: background-color .15s ease;
+
+      &:last-child td {
+        border-bottom: 0;
+      }
+
+      &:hover {
+        background: rgba(var(--bs-primary-rgb), .045);
+      }
+    }
+
+    .text-end {
+      text-align: right;
+    }
+
+    .az-table-total {
+      color: var(--bs-primary-text-emphasis);
+      font-weight: 700;
+    }
+  }
+
+  .az-report-table--wide {
+    min-width: 900px;
+  }
+
+  .az-report-pagination {
+    width: 100%;
+    overflow: hidden;
+
+    nav {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+      gap: .25rem;
+    }
+
+    .page-link {
+      white-space: nowrap;
+    }
+  }
+
+  .az-report-empty {
+    margin: 0;
+    padding: 1.2rem 1.25rem;
+    color: var(--bs-secondary-color);
+    font-size: .86rem;
+  }
+
+  .az-report-section-title {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+
+    i {
+      color: var(--bs-primary);
+    }
+  }
+
+  @media (max-width: 1050px) {
+    .az-report-overview {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .az-overview-card--total {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 820px) {
+    padding: 1.25rem 1rem 2rem;
+
+    .az-report-header-content,
+    .az-report-actions {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .az-report-actions,
+    .az-period-filter {
+      width: 100%;
+    }
+
+    .az-report-back-link {
+      align-self: flex-start;
+    }
+
+    .az-period-filter .az-period-field {
+      flex: 1;
+    }
+
+    .az-report-btn {
+      justify-content: center;
+    }
+
+    .az-report-grid,
+    .az-report-section-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .az-report-overview {
+      grid-template-columns: 1fr;
+    }
+
+    .az-overview-card--total {
+      grid-column: auto;
+    }
+
+    .az-period-filter {
+      flex-wrap: wrap;
+
+      .az-period-field {
+        min-width: calc(50% - .25rem);
+      }
+
+      .az-period-submit {
+        flex: 1;
+      }
+    }
+
+    .az-report-table {
+      min-width: 0;
+    }
+  }
+
+  // No celular, cada linha vira um cartão de leitura. Assim os relatórios
+  // continuam completos sem depender de zoom ou rolagem horizontal.
+  @media (max-width: 640px) {
+    .az-report-table-wrap {
+      overflow-x: visible;
+    }
+
+    .az-report-table,
+    .az-report-table--wide {
+      display: block;
+      min-width: 0;
+
+      thead {
+        display: none;
+      }
+
+      tbody,
+      tr,
+      td {
+        display: block;
+        width: 100%;
+      }
+
+      tbody tr {
+        width: auto;
+        box-sizing: border-box;
+        margin: .7rem .75rem;
+        padding: .5rem .8rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 10px;
+        background: var(--bs-body-bg);
+
+        &:last-child {
+          border-bottom: 1px solid var(--bs-border-color);
+        }
+      }
+
+      td {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: .8rem;
+        padding: .5rem 0;
+        border-bottom: 1px solid var(--bs-border-color);
+        text-align: right !important;
+        overflow-wrap: anywhere;
+
+        &::before {
+          flex: 0 0 42%;
+          color: var(--bs-secondary-color);
+          content: attr(data-label);
+          font-size: .68rem;
+          font-weight: 700;
+          letter-spacing: .04em;
+          line-height: 1.25;
+          text-align: left;
+          text-transform: uppercase;
+        }
+
+        &:last-child {
+          border-bottom: 0;
+        }
+      }
+
+      td.az-report-empty {
+        display: block;
+        border-bottom: 0;
+        text-align: center !important;
+
+        &::before {
+          display: none;
+        }
+      }
+    }
+
+    .az-report-panel > .az-report-table-wrap > .az-report-table tbody tr:only-child {
+      margin-bottom: .8rem;
+    }
+
+    .az-panel-header {
+      flex-wrap: wrap;
+      padding: 1rem;
+    }
+
+    .az-panel-body {
+      padding: 1rem;
+    }
+
+    .az-report-pagination {
+      padding: .5rem .75rem 1rem;
+
+      .pagination {
+        gap: .15rem;
+      }
+
+      .page-link {
+        padding: .3rem .45rem;
+        font-size: .76rem;
+      }
+    }
+
+    .az-total-row {
+      align-items: flex-start !important;
+    }
+  }
+}
+
+html[data-bs-theme="dark"] .az-helper-report-page,
+html[data-bs-theme="dark"] .az-operator-report-page {
+  .az-overview-card,
+  .az-report-panel {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .2);
+  }
+
+  .az-overview-card--total {
+    background: linear-gradient(135deg, rgba(37, 99, 235, .2), var(--bs-body-bg) 72%);
+  }
+}

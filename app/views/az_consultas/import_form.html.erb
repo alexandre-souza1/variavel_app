@@ -1,0 +1,98 @@
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <p class="text-uppercase text-muted small fw-semibold mb-1">Remuneração variável</p>
+      <h1 class="h3 mb-1">Importação</h1>
+      <p class="text-muted mb-0">Centralize os arquivos usados nos cálculos de operadores e ajudantes.</p>
+    </div>
+    <%= link_to "Voltar para consultas", az_consultas_new_path, class: "btn btn-outline-secondary" %>
+  </div>
+
+  <%= render "shared/flashes" %>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+      <%= form_with url: import_az_consultas_path, method: :post, local: true, multipart: true do |form| %>
+        <div class="row g-4">
+          <div class="col-12 col-lg-4">
+            <%= form.label :points_file, "Pontos", class: "form-label fw-semibold" %>
+            <%= form.file_field :points_file, accept: ".csv", class: "form-control" %>
+            <div class="form-text">O relatório não traz a data. Informe abaixo o dia em que esses pontos foram gerados.</div>
+          </div>
+
+          <div class="col-12 col-lg-4">
+            <%= form.label :tasks_file, "Tarefas WMS / Refugo", class: "form-label fw-semibold" %>
+            <%= form.file_field :tasks_file, accept: ".csv", class: "form-control" %>
+            <div class="form-text">Alimenta os operadores e importa somente Blitz Refugo para os ajudantes.</div>
+          </div>
+
+          <div class="col-12 col-lg-4">
+            <%= form.label :ondemand_file, "On Demand", class: "form-label fw-semibold" %>
+            <%= form.file_field :ondemand_file, accept: ".csv", class: "form-control" %>
+            <div class="form-text">Atividades adicionais e suas observações.</div>
+          </div>
+
+          <div class="col-12 col-md-5 col-lg-3">
+            <%= form.label :points_reference_date, "Data dos pontos", class: "form-label fw-semibold" %>
+            <%= form.date_field :points_reference_date, value: Date.current, class: "form-control" %>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-3 mt-4 pt-3 border-top">
+          <%= form.submit "Importar arquivos", class: "btn btn-primary" %>
+          <span class="text-muted small">Os arquivos já importados não serão duplicados.</span>
+        </div>
+      <% end %>
+
+      <div class="alert alert-info border-0 small mt-4 mb-0">
+        <i class="bi bi-info-circle me-1"></i>
+        O arquivo de tarefas é processado uma única vez e compartilhado entre WMS, operadores e ajudantes.
+      </div>
+    </div>
+  </div>
+
+  <% if @recent_imports.any? %>
+    <section class="mt-5">
+      <h2 class="h5 mb-3">Últimas importações</h2>
+      <div class="table-responsive bg-white shadow-sm rounded">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Fonte</th>
+              <th>Arquivo</th>
+              <th>Data dos pontos</th>
+              <th>Linhas</th>
+              <th>Status</th>
+              <th>Importado em</th>
+              <% if current_user.admin? || current_user.supervisor? %>
+                <th class="text-end">Ações</th>
+              <% end %>
+            </tr>
+          </thead>
+          <tbody>
+            <% @recent_imports.each do |item| %>
+              <tr>
+                <td><%= item.source_label %></td>
+                <td class="text-truncate" style="max-width: 260px" title="<%= item.original_filename %>"><%= item.original_filename %></td>
+                <td><%= l(item.reference_date, format: :short) if item.reference_date %></td>
+                <td><%= item.rows_imported %></td>
+                <td><span class="badge text-bg-<%= item.status == 'completed' ? 'success' : 'danger' %>"><%= item.status == 'completed' ? 'Concluída' : 'Falhou' %></span></td>
+                <td><%= l(item.created_at, format: :short) %></td>
+                <% if current_user.admin? || current_user.supervisor? %>
+                  <td class="text-end">
+                    <%= button_to destroy_az_consultas_import_path(item), method: :delete,
+                                  class: "btn btn-sm btn-outline-danger",
+                                  form: { class: "d-inline" },
+                                  data: { turbo_confirm: "Excluir esta importação e todos os dados vinculados? Essa ação não pode ser desfeita." } do %>
+                      <i class="bi bi-trash me-1"></i> Excluir
+                    <% end %>
+                  </td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% end %>
+</div>

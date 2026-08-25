@@ -1,23 +1,48 @@
-<div>
-  <div class="container p-3">
-    <h2 class="text-center mb-4 fw-bold text-primary">Bem vindo ao Workstation LOG20 Foz do Iguaçu</h2>
+<main class="workstation-home">
+  <div class="workstation-home__inner">
+    <section class="workstation-hero">
+      <div class="workstation-hero__content">
+        <p class="workstation-eyebrow"><i class="bi bi-grid-1x2 me-1"></i> Workstation LOG20</p>
+        <h1 class="workstation-title"><i class="bi bi-speedometer2"></i> Bem-vindo ao Workstation</h1>
+        <p class="workstation-subtitle">
+          Acesse rapidamente as consultas de remuneração variável da operação e acompanhe os resultados do seu perfil.
+        </p>
+        <span class="workstation-location"><i class="bi bi-geo-alt-fill"></i> Foz do Iguaçu</span>
+      </div>
+    </section>
 
-    <div class="cards-index">
-      <!-- Botão Distribuição Urbana -->
-      <div
-        class="card-category-index"
-        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(<%= asset_path('truckcommon.jpg') %>);"
-        onclick="window.location=<%= consultas_new_path.to_json %>">
-        Distribuição Urbana
+    <section aria-labelledby="workstation-access-title">
+      <div class="workstation-section-heading">
+        <div>
+          <h2 id="workstation-access-title"><i class="bi bi-arrow-up-right-circle"></i> Escolha uma área</h2>
+          <p>Selecione o ambiente correspondente à sua atividade.</p>
+        </div>
       </div>
 
-      <!-- Botão Armazém -->
-      <div
-        class="card-category-index"
-        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://logweb.com.br/wp-content/uploads/2021/05/Grupo-Imediato-e-Ambev.jpeg);"
-        onclick="window.location=<%= az_consultas_new_path.to_json %>">
-        Armazém
+      <div class="workstation-access-grid">
+        <%= link_to consultas_new_path,
+                    class: "workstation-access-card",
+                    style: "background-image: url(#{asset_path('truckcommon.jpg')})" do %>
+          <span class="workstation-access-card__icon"><i class="bi bi-truck"></i></span>
+          <h3>Distribuição Urbana</h3>
+          <p>Consulte a variável de motoristas, ajudantes e vans da operação de distribuição.</p>
+          <span class="workstation-access-card__action">Acessar consulta <i class="bi bi-arrow-right"></i></span>
+        <% end %>
+
+        <%= link_to az_consultas_new_path,
+                    class: "workstation-access-card",
+                    style: "background-image: url(https://logweb.com.br/wp-content/uploads/2021/05/Grupo-Imediato-e-Ambev.jpeg)" do %>
+          <span class="workstation-access-card__icon"><i class="bi bi-box-seam"></i></span>
+          <h3>Armazém</h3>
+          <p>Consulte a variável de operadores e ajudantes por turno e matrícula.</p>
+          <span class="workstation-access-card__action">Acessar consulta <i class="bi bi-arrow-right"></i></span>
+        <% end %>
       </div>
+    </section>
+
+    <div class="workstation-help">
+      <i class="bi bi-info-circle-fill"></i>
+      <span>Escolha sua área para informar a matrícula e visualizar o relatório do período de fechamento.</span>
     </div>
   </div>
-</div>
+</main>

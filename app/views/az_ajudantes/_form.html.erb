@@ -1,9 +1,8 @@
-<%= form_with(model: az_ajudante) do |form| %>
+<%= form_with(model: az_ajudante, local: true) do |form| %>
   <% if az_ajudante.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(az_ajudante.errors.count, "error") %> prohibited this az_ajudante from being saved:</h2>
-
-      <ul>
+    <div class="alert alert-danger">
+      <strong>Não foi possível salvar o ajudante:</strong>
+      <ul class="mb-0 mt-2">
         <% az_ajudante.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
@@ -11,32 +10,40 @@
     </div>
   <% end %>
 
-  <div>
-    <%= form.label :matricula, style: "display: block" %>
-    <%= form.number_field :matricula %>
+  <div class="row g-3">
+    <div class="col-md-3">
+      <%= form.label :matricula, "Matrícula", class: "form-label" %>
+      <%= form.number_field :matricula, class: "form-control", required: true, min: 1 %>
+    </div>
+
+    <div class="col-md-9">
+      <%= form.label :nome, "Nome completo", class: "form-label" %>
+      <%= form.text_field :nome, class: "form-control", required: true %>
+    </div>
+
+    <div class="col-md-4">
+      <%= form.label :cpf, "CPF", class: "form-label" %>
+      <%= form.text_field :cpf, class: "form-control" %>
+    </div>
+
+    <div class="col-md-4">
+      <%= form.label :data_nascimento, "Data de nascimento", class: "form-label" %>
+      <%= form.date_field :data_nascimento, class: "form-control" %>
+    </div>
+
+    <div class="col-md-4">
+      <%= form.label :turno, "Turno", class: "form-label d-block" %>
+      <div class="btn-group" role="group" aria-label="Turno do ajudante">
+        <% turno_map.each do |label, value| %>
+          <%= form.radio_button :turno, value, class: "btn-check", id: "az_ajudante_turno_#{value}", required: true %>
+          <%= form.label :turno, "Turno #{label}", value: value, class: "btn btn-outline-primary" %>
+        <% end %>
+      </div>
+    </div>
   </div>
 
-  <div>
-    <%= form.label :nome, style: "display: block" %>
-    <%= form.text_field :nome %>
-  </div>
-
-  <div>
-    <%= form.label :cpf, style: "display: block" %>
-    <%= form.text_field :cpf %>
-  </div>
-
-  <div>
-    <%= form.label :data_nascimento, style: "display: block" %>
-    <%= form.date_field :data_nascimento %>
-  </div>
-
-  <div>
-    <%= form.label :turno, style: "display: block" %>
-    <%= form.number_field :turno %>
-  </div>
-
-  <div>
-    <%= form.submit %>
+  <div class="d-flex gap-2 mt-4">
+    <%= form.submit az_ajudante.persisted? ? "Salvar alterações" : "Cadastrar ajudante", class: "btn btn-primary" %>
+    <%= link_to "Cancelar", az_ajudantes_path, class: "btn btn-outline-secondary" %>
   </div>
 <% end %>

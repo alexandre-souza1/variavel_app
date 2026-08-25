@@ -1,5 +1,6 @@
 class WmsTask < ApplicationRecord
   belongs_to :operator
+  belongs_to :az_rv_import, optional: true
 
   validates :task_code, :task_type, presence: true
   validates :duration, numericality: { greater_than_or_equal_to: 10 }

@@ -1,149 +1,171 @@
-<div class="bg-light" data-controller="formulario">
-  <div class="container p-3">
-    <h2 class="text-center mb-4 fw-bold text-primary">Workstation LOG20 Foz do Iguaçu</h2>
+<div class="consultas-new-page" data-controller="formulario">
+  <header class="az-new-header">
+    <div>
+      <p class="az-new-eyebrow"><i class="bi bi-grid-1x2 me-1"></i> Workstation LOG20 · Foz do Iguaçu</p>
+      <h1 class="az-new-title"><i class="bi bi-clipboard-data"></i> Consulta de variável</h1>
+      <p class="az-new-subtitle">Escolha o perfil para consultar a variável de motoristas, ajudantes e vans usando a matrícula.</p>
+    </div>
 
-    <div class="cards">
-      <div
-        data-action="click->formulario#mostrarFormulario"
-        class="card-category"
-        data-categoria="motorista"
-        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('<%= asset_path("caminhao1.png") %>');">
-        Variavel Motorista
+    <div class="az-new-header-actions">
+      <%= link_to downloads_path, class: "az-new-link az-new-link--primary" do %>
+        <i class="bi bi-file-earmark-text"></i> Central de padrões
+      <% end %>
+    </div>
+  </header>
+
+  <section aria-labelledby="perfis-heading">
+    <div class="az-new-section-heading">
+      <div>
+        <h2 id="perfis-heading"><i class="bi bi-person-badge"></i> Selecione o perfil</h2>
+        <p>Escolha uma opção para informar a matrícula e abrir o relatório correspondente.</p>
+      </div>
+      <span class="text-muted small">Toque novamente no perfil para fechar a consulta</span>
+    </div>
+
+    <div class="az-turno-grid">
+      <div data-action="click->formulario#mostrarFormulario"
+           class="az-turno-card"
+           data-categoria="motorista"
+           role="button"
+           tabindex="0"
+           aria-label="Consultar variável de motorista"
+           style="background-image: url('<%= asset_path("caminhao1.png") %>')">
+        <span class="az-turno-label">Motorista</span>
+        <span class="az-turno-action">Consultar variável <i class="bi bi-arrow-right-circle"></i></span>
       </div>
 
-      <div
-        data-action="click->formulario#mostrarFormulario"
-        class="card-category"
-        data-categoria="ajudante"
-        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('<%= asset_path("caminhao2.png") %>');">
-        Variavel Ajudante
+      <div data-action="click->formulario#mostrarFormulario"
+           class="az-turno-card"
+           data-categoria="ajudante"
+           role="button"
+           tabindex="0"
+           aria-label="Consultar variável de ajudante"
+           style="background-image: url('<%= asset_path("caminhao2.png") %>')">
+        <span class="az-turno-label">Ajudante</span>
+        <span class="az-turno-action">Consultar variável <i class="bi bi-arrow-right-circle"></i></span>
       </div>
 
-      <div
-        data-action="click->formulario#mostrarFormulario"
-        class="card-category"
-        data-categoria="van"
-        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('<%= asset_path("caminhao3.png") %>');">
-        Variavel Van
+      <div data-action="click->formulario#mostrarFormulario"
+           class="az-turno-card"
+           data-categoria="van"
+           role="button"
+           tabindex="0"
+           aria-label="Consultar variável de van"
+           style="background-image: url('<%= asset_path("caminhao3.png") %>')">
+        <span class="az-turno-label">Van</span>
+        <span class="az-turno-action">Consultar variável <i class="bi bi-arrow-right-circle"></i></span>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div id="formulario-consulta" class="bg-light min-vh-100 d-flex justify-content-center d-none" data-formulario-target="formulario">
-    <div class="container py-5 mt-5">
-      <div class="row justify-content-center">
-        <div class="col-12 col-md-8 col-lg-6">
-          <div class="card shadow-lg border-0 rounded-4">
-            <div class="card-body p-4">
-              <h2 id="titulo-form" class="text-center mb-4 fw-bold text-primary" data-formulario-target="titulo">Consultar</h2>
+  <section id="formulario-consulta" class="az-new-form-area d-none" data-formulario-target="formulario" aria-live="polite">
+    <article class="az-new-form-panel">
+      <div class="az-new-form-header">
+        <div>
+          <h2 id="titulo-form" data-formulario-target="titulo">Consultar</h2>
+          <p>Informe a matrícula para abrir o relatório do período.</p>
+        </div>
+        <i class="bi bi-search az-new-form-icon"></i>
+      </div>
 
-              <%= form_with url: consulta_path, method: :get, local: true, html: { id: "consulta-form" } do %>
-                <div class="mb-4">
-                  <label for="matricula" class="form-label fw-semibold">Matrícula</label>
-                  <%= text_field_tag :matricula, params[:matricula], class: "form-control form-control-lg", placeholder: "Digite sua matrícula" %>
-                </div>
+      <div class="az-new-form-body">
+        <%= form_with url: consulta_path, method: :get, local: true, html: { id: "consulta-form" } do %>
+          <div class="row g-3 align-items-end">
+            <div class="col-12 col-lg-8">
+              <%= label_tag :matricula, "Matrícula", class: "az-new-field-label" %>
+              <%= text_field_tag :matricula, params[:matricula], class: "form-control form-control-lg az-new-form-control", inputmode: "numeric", placeholder: "Digite sua matrícula", required: true %>
+            </div>
 
-                <!-- Campo oculto para a categoria -->
-                <%= hidden_field_tag :categoria, nil, id: "categoria_oculta", data: { formulario_target: "categoriaInput" } %>
+            <%= hidden_field_tag :categoria, nil, id: "categoria_oculta", data: { formulario_target: "categoriaInput" } %>
 
-                <div class="d-grid">
-                  <%= submit_tag "Consultar", class: "btn btn-primary btn-lg rounded-1" %>
-                </div>
+            <div class="col-12 col-lg-4 d-grid">
+              <%= button_tag type: "submit", class: "az-new-submit" do %>
+                <i class="bi bi-arrow-right"></i>
+                Consultar variável
               <% end %>
             </div>
           </div>
+        <% end %>
+
+        <p class="az-new-form-help">
+          <i class="bi bi-info-circle-fill"></i>
+          <span>O período pode ser selecionado dentro do relatório depois da consulta.</span>
+        </p>
+      </div>
+    </article>
+  </section>
+
+  <section class="az-new-resource-grid">
+    <article class="az-new-carousel-panel">
+      <div class="az-new-panel-header">
+        <h2><i class="bi bi-link-45deg"></i> Acessos rápidos</h2>
+        <p>Links úteis para a rotina da operação.</p>
+      </div>
+
+      <div id="carouselExampleCaptions" class="carousel slide">
+        <div class="carousel-indicators">
+          <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+          <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
+          <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
+          <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="3" aria-label="Slide 4"></button>
         </div>
-      </div>
-    </div>
-  </div>
-  <div class="container">
-    <%= link_to "CENTRAL DE PADRÕES", downloads_path, class: "btn btn-primary btn-lg rounded-1 w-100" %>
-  </div>
-</div>
-
-
-<div class="container mt-3">
-  <div id="carouselExampleCaptions" class="carousel slide">
-    <div class="carousel-indicators">
-      <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-      <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
-      <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
-      <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="3" aria-label="Slide 4"></button>
-    </div>
-    <div class="carousel-inner">
-      <div class="carousel-item active">
-        <%= link_to "https://ambev.beedoo.io/login", class: "d-block w-100 h-100" do %>
-          <%= image_tag("logon.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
-          <div class="carousel-caption">
-            <h5>LOG ON</h5>
-            <p>Link de acesso direto para seus cursos do LOG ON.</p>
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <%= link_to "https://ambev.beedoo.io/login", class: "d-block w-100 h-100" do %>
+              <%= image_tag("logon.png", alt: "Acesso ao LOG ON", class: "d-block w-100 carousel-img") %>
+              <div class="carousel-caption"><h5>LOG ON</h5><p>Links para os cursos do LOG ON.</p></div>
+            <% end %>
           </div>
-        <% end %>
-      </div>
-      <div class="carousel-item">
-        <%= link_to "https://7z4kss-my.sharepoint.com/:b:/g/personal/cadu_7z4kss_onmicrosoft_com/IQBrZmN2nnRWQLTTrNbnotg1AYW6S2tJoep54KdO-ERdPpo?e=grQiL3", class: "d-block w-100 h-100" do %>
-          <%= image_tag("roterizador.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
-          <div class="carousel-caption">
-            <h5>Rotograma</h5>
-            <p>Não conhece o cidade onde está indo? Veja o rotograma dela aqui.</p>
+          <div class="carousel-item">
+            <%= link_to "https://7z4kss-my.sharepoint.com/:b:/g/personal/cadu_7z4kss_onmicrosoft_com/IQBrZmN2nnRWQLTTrNbnotg1AYW6S2tJoep54KdO-ERdPpo?e=grQiL3", class: "d-block w-100 h-100" do %>
+              <%= image_tag("roterizador.png", alt: "Rotograma", class: "d-block w-100 carousel-img") %>
+              <div class="carousel-caption"><h5>Rotograma</h5><p>Consulte o rotograma da cidade.</p></div>
+            <% end %>
           </div>
-        <% end %>
-      </div>
-      <div class="carousel-item">
-        <%= link_to "https://ginfo.inovess.com.br/relatos_2/index.php?codigo=2219990356|filial=7", class: "d-block w-100 h-100" do %>
-          <%= image_tag("relato.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
-          <div class="carousel-caption">
-            <h5>Relatos</h5>
-            <p>Faça seus relatos aqui.</p>
+          <div class="carousel-item">
+            <%= link_to "https://ginfo.inovess.com.br/relatos_2/index.php?codigo=2219990356|filial=7", class: "d-block w-100 h-100" do %>
+              <%= image_tag("relato.png", alt: "Acesso aos relatos", class: "d-block w-100 carousel-img") %>
+              <div class="carousel-caption"><h5>Relatos</h5><p>Faça seus relatos aqui.</p></div>
+            <% end %>
           </div>
-        <% end %>
-      </div>
-      <div class="carousel-item">
-        <%= link_to "https://7z4kss-my.sharepoint.com/:b:/g/personal/cadu_7z4kss_onmicrosoft_com/IQB8jiDcK8AhQZQYVAOm6YbPAeTfG0Z1Z9MvO26n7FiRKPo?e=iLiKwt", class: "d-block w-100 h-100" do %>
-          <%= image_tag("layout.png", alt: "Descrição da imagem", class: "d-block w-100 carousel-img") %>
-          <div class="carousel-caption">
-            <h5>Layout do Estacionamento</h5>
-            <p>Padrão de localização dos carros do Pátio.</p>
-          </div>
-        <% end %>
-      </div>
-    </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
-      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Previous</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
-      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Next</span>
-    </button>
-  </div>
-</div>
-
-
-<div class="container my-4">
-  <div class="row">
-
-    <% ["motorista", "ajudante", "van"].each do |categoria| %>
-      <div class="col-md-4 mb-4">
-        <div class="card shadow-sm h-100">
-          <div class="card-header bg-primary text-white text-center">
-            <h5 class="mb-0 text-uppercase"><%= categoria %></h5>
-          </div>
-          <div class="card-body">
-            <% if @parametros && @parametros[categoria].present? %>
-              <% @parametros[categoria].each do |param| %>
-                <p class="mb-2">
-                  <strong><%= param.nome.to_s.titleize %>:</strong>
-                  R$ <%= number_with_precision(param.valor.to_f, precision: 2, separator: ",") %>
-                </p>
-              <% end %>
-            <% else %>
-              <p class="text-muted text-center">Nenhum dado encontrado.</p>
+          <div class="carousel-item">
+            <%= link_to "https://7z4kss-my.sharepoint.com/:b:/g/personal/cadu_7z4kss_onmicrosoft_com/IQB8jiDcK8AhQZQYVAOm6YbPAeTfG0Z1Z9MvO26n7FiRKPo?e=iLiKwt", class: "d-block w-100 h-100" do %>
+              <%= image_tag("layout.png", alt: "Layout do estacionamento", class: "d-block w-100 carousel-img") %>
+              <div class="carousel-caption"><h5>Layout do estacionamento</h5><p>Padrão de localização dos carros.</p></div>
             <% end %>
           </div>
         </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Próximo</span>
+        </button>
       </div>
-    <% end %>
+    </article>
 
-  </div>
+    <article class="az-new-info-panel">
+      <div class="az-new-panel-header">
+        <h2><i class="bi bi-sliders"></i> Parâmetros de cálculo</h2>
+        <p>Valores configurados por perfil.</p>
+      </div>
+      <div class="az-new-parameters">
+        <% ["motorista", "ajudante", "van"].each do |categoria| %>
+          <div class="consultas-parameter-group">
+            <h3><%= categoria %></h3>
+            <% if @parametros && @parametros[categoria].present? %>
+              <% @parametros[categoria].each do |param| %>
+                <div class="az-new-parameter">
+                  <strong><%= param.nome.to_s.titleize %></strong>
+                  <span>R$ <%= number_with_precision(param.valor.to_f, precision: 2, separator: ",") %></span>
+                </div>
+              <% end %>
+            <% else %>
+              <p class="text-muted small mb-0">Nenhum parâmetro encontrado.</p>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </article>
+  </section>
 </div>

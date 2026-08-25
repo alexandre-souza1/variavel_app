@@ -1,10 +1,13 @@
-<h1>Editing az ajudante</h1>
+<div class="container-fluid py-4 px-3 px-lg-4">
+  <div class="mb-4">
+    <p class="text-uppercase text-muted small fw-semibold mb-1">Armazém</p>
+    <h1 class="h3 mb-1">Editar ajudante</h1>
+    <p class="text-muted mb-0">Atualize matrícula, turno ou demais dados cadastrais.</p>
+  </div>
 
-<%= render "form", az_ajudante: @az_ajudante %>
-
-<br>
-
-<div>
-  <%= link_to "Show this az ajudante", @az_ajudante %> |
-  <%= link_to "Back to az ajudantes", az_ajudantes_path %>
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-4 p-lg-5">
+      <%= render "az_ajudantes/form", az_ajudante: @az_ajudante %>
+    </div>
+  </div>
 </div>

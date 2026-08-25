@@ -19,7 +19,8 @@ class WmsTasksController < ApplicationController
   end
 
   def new_import
-    # Renderiza o formulário de importação
+    # Mantém a rota antiga funcionando, mas centraliza todas as importações no AZ.
+    redirect_to az_consultas_import_path
   end
 
 def import
@@ -38,7 +39,7 @@ def import
       File.write(file_path, file_content, mode: 'wb')
 
       # Enfileira o job
-      WmsTaskImportJob.perform_later(file_path, current_user.id)
+      WmsTaskImportJob.perform_later(file_path, current_user.id, params[:file].original_filename)
 
       # ✅ SOLUÇÃO 1: Fica na mesma página em vez de redirect
       respond_to do |format|
