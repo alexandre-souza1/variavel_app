@@ -1,8 +1,6 @@
 require "securerandom"
 
 class AzConsultasController < ApplicationController
-  before_action :authenticate_user!
-  before_action :authorize_warehouse_access!
   before_action :authorize_import_management!, only: :destroy_import
 
   def index
@@ -65,6 +63,13 @@ class AzConsultasController < ApplicationController
 
   def show
     @default_period_date = period_anchor_date
+
+    @matricula = params[:matricula].to_s.strip
+    selected_turno = params[:turno].presence&.to_i
+    if selected_turno && [0, 1, 2].include?(selected_turno) && turno_mismatch?(@matricula, selected_turno)
+      return render :new
+    end
+
     return show_ajudante if params[:perfil] == "ajudante"
 
     # Os cartões de turno são usados no fluxo antigo de operadores. Se a
@@ -205,6 +210,23 @@ class AzConsultasController < ApplicationController
         .downcase.gsub(/[^a-z0-9]+/, " ").strip
   end
 
+  def turno_mismatch?(matricula, selected_turno)
+    operator = Operator.find_by(matricula: matricula)
+    person = operator || AzAjudante.find_by(matricula: matricula)
+    return false unless person
+    return false if person.turno.to_i == selected_turno
+
+    registered_label = turno_label_for(person.turno)
+    selected_label = turno_label_for(selected_turno)
+    flash.now[:alert] = "A matrícula #{matricula} pertence ao turno #{registered_label}. Selecione o turno #{registered_label} para consultar."
+    Rails.logger.info("Consulta AZ bloqueada: matrícula #{matricula} cadastrada no turno #{registered_label}, turno selecionado #{selected_label}.")
+    true
+  end
+
+  def turno_label_for(turno)
+    { 0 => "A", 1 => "B", 2 => "C" }.fetch(turno.to_i, "não informado")
+  end
+
   def build_daily_summary(points, refugo_tasks, ondemand_activities)
     summary = Hash.new do |hash, date|
       hash[date] = {
@@ -249,12 +271,6 @@ class AzConsultasController < ApplicationController
         total_value: daily[:point_value] + daily[:refugo_value] + daily[:ondemand_value]
       )
     end
-  end
-
-  def authorize_warehouse_access!
-    return if current_user&.admin? || current_user&.sector_warehouse?
-
-    redirect_to root_path, alert: "Acesso permitido somente para o setor Armazém."
   end
 
   def authorize_import_management!
