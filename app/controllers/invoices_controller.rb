@@ -65,6 +65,26 @@ class InvoicesController < ApplicationController
 
   # GET /invoices/1 or /invoices/1.json
   def show
+    supplier_scope = @invoice.supplier.invoices
+                                  .where.not(id: @invoice.id)
+                                  .includes(:budget_category)
+                                  .order(date_issued: :desc, id: :desc)
+
+    @supplier_invoice_count = supplier_scope.count
+    @supplier_invoice_total = supplier_scope.sum(:total)
+    @supplier_invoices = supplier_scope.limit(8)
+
+    respond_to do |format|
+      format.html
+      format.json
+      format.pdf do
+        pdf = InvoicePdf.new(@invoice)
+        send_data pdf.render,
+                  filename: "lancamento_#{@invoice.code.presence || @invoice.id}.pdf",
+                  type: "application/pdf",
+                  disposition: params[:download].present? ? "attachment" : "inline"
+      end
+    end
   end
 
   def scan_upload

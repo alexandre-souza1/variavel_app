@@ -1,0 +1,111 @@
+.invoice-show-page {
+  .az-report-header {
+    margin-bottom: 1.35rem;
+  }
+
+  .invoice-overview {
+    grid-template-columns: 1.25fr repeat(3, minmax(155px, 1fr));
+  }
+
+  .invoice-detail-grid {
+    margin-bottom: 1.25rem;
+  }
+
+  .invoice-status-value {
+    font-size: 1.15rem;
+  }
+
+  .invoice-status-pill {
+    display: inline-flex;
+    padding: .22rem .55rem;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 700;
+
+    &--vencido { background: rgba(var(--bs-danger-rgb), .12); color: var(--bs-danger-text-emphasis); }
+    &--a-vencer { background: rgba(var(--bs-success-rgb), .12); color: var(--bs-success-text-emphasis); }
+    &--sem-vencimento { background: var(--bs-secondary-bg); color: var(--bs-secondary-color); }
+  }
+
+  .invoice-supplier-heading {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1rem;
+
+    strong,
+    span { display: block; }
+    strong { font-size: 1.05rem; }
+    span { margin-top: .15rem; color: var(--bs-secondary-color); font-size: .82rem; }
+  }
+
+  .invoice-supplier-avatar {
+    display: grid;
+    width: 2.65rem;
+    height: 2.65rem;
+    place-items: center;
+    border-radius: 12px;
+    background: rgba(var(--bs-primary-rgb), .1);
+    color: var(--bs-primary);
+    font-size: 1.2rem;
+  }
+
+  .invoice-numbers-panel,
+  .invoice-show-page .az-report-section-grid {
+    margin-bottom: 1.25rem;
+  }
+
+  .invoice-history-link { color: var(--bs-primary); font-weight: 650; text-decoration: none; }
+  .invoice-history-link:hover { text-decoration: underline; }
+
+  .invoice-document-list { display: grid; gap: .55rem; }
+
+  .invoice-document-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .6rem .7rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 10px;
+    font-size: .84rem;
+
+    > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    small { margin-left: .4rem; color: var(--bs-secondary-color); font-size: .65rem; font-weight: 700; }
+    .az-report-btn { min-height: 30px; padding: .3rem .5rem; }
+  }
+
+  .invoice-notes {
+    margin-top: 1rem;
+    padding: .8rem .9rem;
+    border-left: 3px solid var(--bs-primary);
+    border-radius: 0 8px 8px 0;
+    background: var(--bs-tertiary-bg);
+    font-size: .86rem;
+
+    strong { display: block; margin-bottom: .35rem; }
+    p { margin-bottom: 0; }
+  }
+
+  .invoice-delete-btn {
+    border-color: rgba(var(--bs-danger-rgb), .35);
+    color: var(--bs-danger-text-emphasis);
+  }
+
+  .invoice-audit-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--bs-secondary-color);
+    font-size: .78rem;
+  }
+
+  @media (max-width: 767.98px) {
+    padding-inline: .75rem;
+
+    .invoice-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .az-report-header-content { gap: 1rem; }
+    .invoice-audit-line { flex-direction: column; gap: .35rem; }
+    .invoice-document-item { align-items: flex-start; flex-direction: column; }
+  }
+}
