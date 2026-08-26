@@ -3,12 +3,13 @@
     margin-bottom: 1.35rem;
   }
 
-  .invoice-overview {
-    grid-template-columns: 1.25fr repeat(3, minmax(155px, 1fr));
-  }
-
   .invoice-detail-grid {
+    align-items: stretch;
     margin-bottom: 1.25rem;
+
+    .az-report-panel {
+      height: 100%;
+    }
   }
 
   .invoice-status-value {
@@ -53,6 +54,10 @@
   .invoice-numbers-panel,
   .invoice-show-page .az-report-section-grid {
     margin-bottom: 1.25rem;
+  }
+
+  .invoice-numbers-panel .az-panel-header {
+    align-items: center;
   }
 
   .invoice-history-link { color: var(--bs-primary); font-weight: 650; text-decoration: none; }
@@ -103,7 +108,6 @@
   @media (max-width: 767.98px) {
     padding-inline: .75rem;
 
-    .invoice-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .az-report-header-content { gap: 1rem; }
     .invoice-audit-line { flex-direction: column; gap: .35rem; }
     .invoice-document-item { align-items: flex-start; flex-direction: column; }

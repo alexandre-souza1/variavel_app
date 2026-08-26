@@ -1,16 +1,18 @@
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Categorias Orçamentárias</h1>
-    <%= link_to 'Nova Categoria', new_admin_budget_category_path, class: 'btn btn-primary' %>
+<div class="admin-catalog-page">
+  <div class="admin-catalog-header">
+    <div><p class="admin-catalog-eyebrow"><i class="bi bi-tags me-1"></i> Cadastros · Financeiro</p><h1><i class="bi bi-tags me-2"></i>Categorias orçamentárias</h1><p>Classifique os lançamentos para facilitar a análise.</p></div>
+    <button type="button" class="az-report-btn az-report-btn--primary" data-bs-toggle="modal" data-bs-target="#newBudgetCategoryModal"><i class="bi bi-plus-lg"></i> Nova categoria</button>
   </div>
+  <div class="admin-catalog-summary"><div><span>Categorias cadastradas</span><strong><%= @budget_categories.size %></strong></div><div><span>Com lançamentos</span><strong><%= @budget_categories.count { |category| category.invoices.loaded? && category.invoices.any? } %></strong></div></div>
 
-  <div class="card">
+  <div class="card admin-catalog-card">
     <div class="card-body">
-      <table class="table table-striped">
+      <table class="table admin-catalog-table table-hover align-middle">
         <thead>
           <tr>
             <th>Nome</th>
             <th>Setor</th>
+            <th>Lançamentos</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -19,19 +21,39 @@
             <tr>
               <td><%= category.name %></td>
               <td><span class="badge bg-secondary"><%= category.sector.upcase %></span></td>
+              <td><span class="admin-catalog-count"><%= category.invoices.size %></span></td>
               <td>
               <div class="d-flex gap-2">
-                <%= link_to 'Editar', edit_admin_budget_category_path(category), class: 'btn btn-sm btn-warning' %>
-                <%= button_to 'Excluir', admin_budget_category_path(category),
+                <%= link_to edit_admin_budget_category_path(category), class: 'btn btn-sm btn-outline-primary', title: 'Editar categoria' do %><i class="bi bi-pencil"></i><% end %>
+                <%= button_to admin_budget_category_path(category),
                               method: :delete,
-                              class: 'btn btn-sm btn-danger',
-                              data: { confirm: 'Tem certeza?' } %>
+                              class: 'btn btn-sm btn-outline-danger',
+                              title: 'Excluir categoria',
+                              data: { turbo_confirm: 'Tem certeza?' } do %><i class="bi bi-trash"></i><% end %>
               </div>
               </td>
             </tr>
           <% end %>
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade catalog-modal" id="newBudgetCategoryModal" tabindex="-1" aria-labelledby="newBudgetCategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div><h5 class="modal-title" id="newBudgetCategoryModalLabel"><i class="bi bi-tags me-2"></i>Nova categoria orçamentária</h5><small>Informe os dados da nova categoria.</small></div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <%= form_with model: [:admin, BudgetCategory.new], local: true do |form| %>
+        <div class="modal-body">
+          <div class="mb-3"><%= form.label :name, "Nome da categoria", class: "form-label" %><%= form.text_field :name, class: "form-control", required: true, autofocus: true, placeholder: "Ex.: Manutenção" %></div>
+          <div><%= form.label :sector, "Setor", class: "form-label" %><%= form.select :sector, BudgetCategory.sectors.keys.map { |key| [key.humanize.upcase, key] }, { include_blank: "Selecione um setor" }, class: "form-select", required: true %></div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><%= form.submit "Criar categoria", class: "btn btn-primary" %></div>
+      <% end %>
     </div>
   </div>
 </div>

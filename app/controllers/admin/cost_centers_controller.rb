@@ -6,6 +6,10 @@ class Admin::CostCentersController < ApplicationController
 
   def index
     @cost_centers = CostCenter.all.order(:sector, :name)
+    @cost_center_invoice_counts = InvoiceNumber
+                                   .where(cost_center_id: @cost_centers.map(&:id))
+                                   .group(:cost_center_id)
+                                   .count
   end
 
   def new

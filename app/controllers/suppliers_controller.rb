@@ -4,7 +4,7 @@ class SuppliersController < ApplicationController
   before_action :set_supplier, only: [:edit, :update, :destroy]
 
   def index
-    @suppliers = Supplier.all.order(:name)
+    @suppliers = Supplier.includes(:invoices).all.order(:name)
   end
 
   def new
@@ -23,6 +23,17 @@ class SuppliersController < ApplicationController
 
   def show
     set_supplier
+    @supplier_invoices = @supplier.invoices
+                              .includes(:budget_category, :purchaser, invoice_numbers: :cost_center)
+                              .order(date_issued: :desc, id: :desc)
+    @supplier_invoice_total = @supplier_invoices.sum { |invoice| invoice.total.to_d }
+    @supplier_invoice_numbers = @supplier_invoices.flat_map(&:invoice_numbers)
+    @supplier_invoice_numbers_total = @supplier_invoice_numbers.sum { |invoice_number| invoice_number.amount.to_d }
+    @cost_center_totals = @supplier_invoice_numbers
+                          .select(&:cost_center)
+                          .group_by(&:cost_center)
+                          .transform_values { |numbers| numbers.sum { |number| number.amount.to_d } }
+    @top_cost_center, @top_cost_center_total = @cost_center_totals.max_by { |_center, total| total } || [nil, 0.to_d]
   end
 
   def edit

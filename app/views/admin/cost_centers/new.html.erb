@@ -1,10 +1,10 @@
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Novo Centro de Custo</h1>
-    <%= link_to 'Voltar', admin_cost_centers_path, class: 'btn btn-secondary' %>
+<div class="catalog-form-page">
+  <div class="catalog-form-header">
+    <div><p class="admin-catalog-eyebrow"><i class="bi bi-diagram-3 me-1"></i> Cadastros · Financeiro</p><h1><i class="bi bi-diagram-3 me-2"></i>Novo centro de custo</h1><p>Defina o nome e o setor responsável pelos lançamentos.</p></div>
+    <%= link_to admin_cost_centers_path, class: "az-report-btn" do %><i class="bi bi-arrow-left"></i> Voltar<% end %>
   </div>
 
-  <div class="card">
+  <div class="card catalog-form-card">
     <div class="card-body">
       <%= render 'form', cost_center: @cost_center %>
     </div>

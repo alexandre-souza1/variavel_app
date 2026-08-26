@@ -1,4 +1,4 @@
-<div>
+<div class="admin-catalog-page">
   <% if notice %>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
       <%= notice %>
@@ -6,41 +6,45 @@
     </div>
   <% end %>
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-0">Fornecedores</h1>
-    <div class="d-flex gap-2">
-      <%= link_to "Novo Fornecedor", new_supplier_path, class: "btn btn-primary" %>
-    </div>
+  <div class="admin-catalog-header">
+    <div><p class="admin-catalog-eyebrow"><i class="bi bi-building me-1"></i> Cadastros · Financeiro</p><h1><i class="bi bi-truck me-2"></i>Fornecedores</h1><p>Consulte os fornecedores e acompanhe seus lançamentos.</p></div>
+    <%= link_to new_supplier_path, class: "az-report-btn az-report-btn--primary" do %><i class="bi bi-plus-lg"></i> Novo fornecedor<% end %>
   </div>
 
+  <div class="admin-catalog-summary"><div><span>Fornecedores cadastrados</span><strong><%= @suppliers.size %></strong></div><div><span>Com lançamentos</span><strong><%= @suppliers.count { |supplier| supplier.invoices.loaded? && supplier.invoices.any? } %></strong></div></div>
+
   <!-- Tabela de fornecedores -->
-  <div class="table-responsive">
-    <table class="table table-striped table-hover align-middle">
+  <div class="card admin-catalog-card"><div class="card-body"><div class="table-responsive">
+    <table class="table admin-catalog-table table-hover align-middle">
       <thead class="table-light">
         <tr>
           <th>Nome</th>
           <th>CNPJ</th>
+          <th>Lançamentos</th>
           <th>Ações</th>
         </tr>
       </thead>
       <tbody>
         <% @suppliers.each do |supplier| %>
           <tr>
-            <td><%= supplier.name %></td>
+            <td><%= link_to supplier.name, supplier_path(supplier), class: "admin-catalog-link" %></td>
             <td><%= supplier.cnpj %></td>
+            <td><span class="admin-catalog-count"><%= supplier.invoices.size %></span></td>
             <td>
               <div class="d-inline-flex gap-2">
-                <%= link_to "Ver", supplier_path(supplier), class: "btn btn-sm btn-outline-secondary" %>
-                <%= button_to "Excluir", supplier_path(supplier),
+                <%= link_to supplier_path(supplier), class: "btn btn-sm btn-outline-secondary", title: "Ver fornecedor" do %><i class="bi bi-eye"></i><% end %>
+                <%= link_to edit_supplier_path(supplier), class: "btn btn-sm btn-outline-primary", title: "Editar fornecedor" do %><i class="bi bi-pencil"></i><% end %>
+                <%= button_to supplier_path(supplier),
                   method: :delete,
                   data: { turbo_confirm: "Tem certeza?" },
-                  class: "btn btn-sm btn-outline-danger" %>
+                  class: "btn btn-sm btn-outline-danger",
+                  title: "Excluir fornecedor" do %><i class="bi bi-trash"></i><% end %>
               </div>
             </td>
           </tr>
         <% end %>
       </tbody>
     </table>
-  </div>
+  </div></div></div>
   <%= link_to "Voltar", invoices_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
 </div>

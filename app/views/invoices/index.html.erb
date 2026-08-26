@@ -1,14 +1,29 @@
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Consultas de NFs e Boletos</h1>
-  <div class="d-flex gap-2">
-  </div>
-</div>
+<div class="invoice-index-page">
+  <header class="invoice-index-header">
+    <div>
+      <p class="invoice-index-eyebrow"><i class="bi bi-wallet2 me-1"></i> Financeiro · Controle de lançamentos</p>
+      <h1><i class="bi bi-receipt me-2"></i>Notas fiscais e boletos</h1>
+      <p>Consulte, confira e acompanhe os lançamentos financeiros cadastrados.</p>
+    </div>
+    <div class="invoice-index-actions">
+      <%= link_to dashboard_invoices_path, class: "az-report-btn" do %><i class="bi bi-bar-chart"></i> Dashboard<% end %>
+      <%= link_to new_invoice_path, class: "az-report-btn az-report-btn--primary" do %><i class="bi bi-plus-lg"></i> Novo lançamento<% end %>
+    </div>
+  </header>
+
+  <section class="invoice-index-summary" aria-label="Resumo dos resultados">
+    <div class="invoice-summary-total"><span><i class="bi bi-files"></i> Resultados</span><strong><%= @filtered_count %></strong><small>lançamento(s) filtrado(s)</small></div>
+    <div><span><i class="bi bi-cash-stack"></i> Valor filtrado</span><strong><%= number_to_currency(@filtered_total, unit: "R$ ", separator: ",", delimiter: ".") %></strong><small>soma dos resultados</small></div>
+    <div><span><i class="bi bi-buildings"></i> Fornecedores</span><strong><%= @filtered_suppliers %></strong><small>fornecedor(es) relacionado(s)</small></div>
+    <div><span><i class="bi bi-funnel"></i> Página</span><strong><%= @current_page %>/<%= @total_pages %></strong><small><%= params[:per_page] || 10 %> por página</small></div>
+  </section>
 
 <!-- Formulário de filtro -->
-<div class="card mb-4">
-  <div class="card-header bg-light border-bottom">
-      <h5 class="mb-0"><i class="bi bi-search"></i> Filtros</h5>
+<div class="card invoice-filter-card mb-4">
+  <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-search"></i> Filtrar lançamentos</h5>
+      <small>Combine os campos abaixo para localizar um registro específico.</small>
   </div>
   <div class="card-body">
     <%= form_with url: invoices_path, method: :get, local: true, class: "row g-3" do |f| %>
@@ -79,9 +94,10 @@
 </div>
 
 <!-- Tabela de invoices -->
-<div class="card shadow-sm rounded mb-4">
-  <div class="card-header bg-light border-bottom">
-      <h5 class="mb-0"><i class="fas fa-file-invoice"></i> Contas Lançadas</h5>
+<div class="card invoice-results-card shadow-sm rounded mb-4">
+  <div class="card-header">
+      <div><h5 class="mb-0"><i class="bi bi-list-ul"></i> Lançamentos encontrados</h5><small>Mais recentes primeiro</small></div>
+      <span class="invoice-result-count"><%= @filtered_count %> resultado(s)</span>
   </div>
   <div class="card-body">
     <div class="table-responsive">
@@ -103,7 +119,7 @@
         <tbody>
           <% @invoices.each do |invoice| %>
             <tr>
-              <td><%= invoice.code %></td>
+              <td><%= link_to(invoice.code.presence || "##{invoice.id}", invoice_path(invoice), class: "invoice-code-link") %></td>
               <td><%= invoice.supplier.name %> (<%= invoice.supplier.cnpj %>)</td>
               <td>
                 <% if invoice.invoice_numbers.any? %>
@@ -130,23 +146,24 @@
                 <% end %>
               </td>
               <td><%= invoice.budget_category.name if invoice.budget_category %></td>
-              <td><%= invoice.date_issued %></td>
-              <td><%= invoice.due_date %></td>
-              <td>R$ <%= number_with_precision(invoice.total, precision: 2, delimiter: ".") %></td>
+              <td><%= invoice.date_issued ? l(invoice.date_issued) : "—" %></td>
+              <td><%= invoice.due_date ? l(invoice.due_date) : "—" %></td>
+              <td class="fw-semibold"><%= number_to_currency(invoice.total, unit: "R$ ", separator: ",", delimiter: ".") %></td>
               <td><%= truncated_list(invoice.invoice_numbers, :number, 2) %></td>
               <td>
-                <% if invoice.document_urls.present? %>
+                <% if invoice.documents.attached? %>
                   <div class="dropdown">
                     <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" id="dropdownMenuButton<%= invoice.id %>" data-bs-toggle="dropdown" aria-expanded="false">
-                      <i class="fas fa-download"></i>
+                      <i class="fas fa-file-download"></i>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton<%= invoice.id %>">
-                      <% invoice.document_urls.each_with_index do |url, index| %>
+                      <% invoice.documents.each do |document| %>
+                        <% document_type = document.blob.metadata["document_type"].presence || "Documento" %>
                         <li>
-                          <%= link_to download_document_invoice_path(invoice, document_index: index),
+                          <%= link_to download_document_invoice_path(invoice, document_id: document.id),
                                       class: "dropdown-item",
                                       data: { turbo: false } do %>
-                            <i class="fas fa-file"></i> Documento <%= index + 1 %>
+                            <i class="fas fa-file"></i> <%= document_type.upcase %>
                           <% end %>
                         </li>
                       <% end %>
@@ -158,8 +175,8 @@
               </td>
               <td>
                 <div class="d-inline-flex gap-2">
-                  <%= link_to "Ver", invoice, class: "btn btn-sm btn-outline-secondary" %>
-                  <%= link_to "Editar", edit_invoice_path(invoice), class: "btn btn-sm btn-outline-primary" %>
+                  <%= link_to invoice, class: "btn btn-sm btn-outline-secondary", title: "Ver lançamento" do %><i class="bi bi-eye"></i><% end %>
+                  <%= link_to edit_invoice_path(invoice), class: "btn btn-sm btn-outline-primary", title: "Editar lançamento" do %><i class="bi bi-pencil"></i><% end %>
                 </div>
               </td>
             </tr>
@@ -198,7 +215,7 @@
 
       <% if @current_page > window + 2 %>
         <li class="page-item">
-          <%= link_to 1, params.permit!.merge(page: 1, per_page: params[:per_page] || 10), class: "page-link" %>
+          <%= link_to 1, invoices_path(params.permit!.merge(page: 1, per_page: params[:per_page] || 10)), class: "page-link" %>
         </li>
 
         <li class="page-item disabled">
@@ -208,7 +225,7 @@
 
       <% [(@current_page - window), 1].max.upto([(@current_page + window), @total_pages].min) do |page| %>
         <li class="page-item <%= 'active' if page == @current_page %>">
-          <%= link_to page, params.permit!.merge(page: page, per_page: params[:per_page] || 10), class: "page-link" %>
+          <%= link_to page, invoices_path(params.permit!.merge(page: page, per_page: params[:per_page] || 10)), class: "page-link" %>
         </li>
       <% end %>
 
@@ -218,7 +235,7 @@
         </li>
 
         <li class="page-item">
-          <%= link_to @total_pages, params.permit!.merge(page: @total_pages, per_page: params[:per_page] || 10), class: "page-link" %>
+          <%= link_to @total_pages, invoices_path(params.permit!.merge(page: @total_pages, per_page: params[:per_page] || 10)), class: "page-link" %>
         </li>
       <% end %>
 
@@ -230,3 +247,4 @@
   </div>
 </div>
 <%= link_to "Voltar", dashboard_invoices_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
+</div>

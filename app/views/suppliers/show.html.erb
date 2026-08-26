@@ -1,161 +1,66 @@
-<p style="color: green"><%= notice %></p>
+<div class="supplier-show-page az-operator-report-page">
+  <% if notice %><div class="alert alert-success alert-dismissible fade show" role="alert"><%= notice %><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div><% end %>
 
-<div class="container mt-4">
-  <div class="card">
-    <div class="card-header bg-primary text-white">
-      <div class="d-flex justify-content-between align-items-center">
-        <h4 class="mb-0"><i class="fas fa-building me-2"></i>Detalhes do Fornecedor</h4>
-        <div>
-          <%= link_to edit_supplier_path(@supplier), class: "btn btn-warning btn-sm me-2" do %>
-            <i class="fas fa-edit me-1"></i>Editar
-          <% end %>
-          <%= button_to @supplier, method: :delete,
-                        data: { turbo_confirm: "Tem certeza que deseja excluir este fornecedor?" },
-                        class: "btn btn-danger btn-sm",
-                        form_class: "d-inline" do %>
-            <i class="fas fa-trash me-1"></i>Excluir
-          <% end %>
-        </div>
-      </div>
+  <header class="supplier-show-header">
+    <div>
+      <p class="supplier-show-eyebrow"><i class="bi bi-building me-1"></i> Cadastro · Visão geral do fornecedor</p>
+      <h1><i class="bi bi-truck me-2"></i><%= @supplier.name %></h1>
+      <p><%= CNPJ.new(@supplier.cnpj).formatted %> · histórico financeiro e notas fiscais relacionadas.</p>
     </div>
-
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-12 mb-4">
-          <h5 class="text-primary border-bottom pb-2"><i class="fas fa-id-card me-2"></i>Dados Cadastrais</h5>
-        </div>
-
-        <div class="col-md-6">
-          <div class="mb-3">
-            <strong class="text-muted"><i class="fas fa-signature me-2"></i>Razão Social:</strong>
-            <p class="fs-5"><%= @supplier.name %></p>
-          </div>
-
-          <div class="mb-3">
-            <strong class="text-muted"><i class="fas fa-id-card me-2"></i>CNPJ:</strong>
-            <p class="fs-5"><%= CNPJ.new(@supplier.cnpj).formatted %></p>
-          </div>
-
-          <div class="mb-3">
-            <strong class="text-muted"><i class="fas fa-info-circle me-2"></i>Situação:</strong>
-            <p class="fs-5">
-              <span class="badge bg-<%= @supplier.situation == 'ATIVA' ? 'success' : 'warning' %>">
-                <%= @supplier.situation.presence || 'Não informada' %>
-              </span>
-            </p>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="mb-3">
-            <strong class="text-muted"><i class="fas fa-envelope me-2"></i>E-mail:</strong>
-            <p class="fs-5">
-              <% if @supplier.email.present? %>
-                <%= mail_to @supplier.email, @supplier.email, class: "text-decoration-none" %>
-              <% else %>
-                <span class="text-muted fst-italic">Não informado</span>
-              <% end %>
-            </p>
-          </div>
-
-          <div class="mb-3">
-            <strong class="text-muted"><i class="fas fa-phone me-2"></i>Telefone:</strong>
-            <p class="fs-5"><%= @supplier.phone.presence || 'Não informado' %></p>
-          </div>
-        </div>
-      </div>
-
-      <% if @supplier.street.present? || @supplier.city.present? %>
-      <div class="row mt-4">
-        <div class="col-md-12 mb-4">
-          <h5 class="text-primary border-bottom pb-2"><i class="fas fa-map-marker-alt me-2"></i>Endereço</h5>
-        </div>
-
-        <div class="col-md-12">
-          <div class="mb-3">
-            <strong class="text-muted"><i class="fas fa-road me-2"></i>Endereço Completo:</strong>
-            <p class="fs-5">
-              <%= [@supplier.street, @supplier.number, @supplier.complement].compact.join(', ') %>
-              <% if @supplier.neighborhood.present? %> - <%= @supplier.neighborhood %><% end %>
-              <% if @supplier.city.present? %> - <%= @supplier.city %><% end %>
-              <% if @supplier.state.present? %>/<%= @supplier.state %><% end %>
-              <% if @supplier.zip_code.present? %> - CEP: <%= @supplier.zip_code %><% end %>
-            </p>
-          </div>
-        </div>
-      </div>
-      <% end %>
-
-      <div class="row mt-4">
-        <div class="col-md-12 mb-4">
-          <h5 class="text-primary border-bottom pb-2">
-            <i class="fas fa-file-invoice me-2"></i>Contas Cadastradas
-            <span class="badge bg-secondary ms-2"><%= @supplier.invoices.count %></span>
-          </h5>
-        </div>
-
-        <div class="col-md-12">
-          <% if @supplier.invoices.any? %>
-            <div class="table-responsive">
-              <table class="table table-striped table-hover align-middle">
-                <thead class="table-light">
-                  <tr>
-                    <th>Número(s) NF</th>
-                    <th>Data</th>
-                    <th>Valor</th>
-                    <th>Categoria</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% @supplier.invoices.each do |invoice| %>
-                    <tr>
-                      <td>
-                        <% if invoice.invoice_numbers.any? %>
-                          <% invoice.invoice_numbers.each do |invoice_number| %>
-                            <span class="badge bg-info me-1"><%= invoice_number.number %></span>
-                          <% end %>
-                        <% else %>
-                          <span class="text-muted fst-italic">Sem número</span>
-                        <% end %>
-                      </td>
-                      <td><%= l(invoice.date_issued, format: :short) rescue invoice.date_issued.strftime('%d/%m/%Y') %></td>
-                      <td class="fw-bold text-success">R$ <%= number_to_currency(invoice.total, unit: "", separator: ",", delimiter: ".") %></td>
-                      <td><span class="badge bg-primary"><%= invoice.budget_category.titleize %></span></td>
-                      <td>
-                        <%= link_to invoice_path(invoice), class: "btn btn-sm btn-outline-primary", title: "Ver detalhes" do %>
-                          <i class="fas fa-eye"></i>
-                        <% end %>
-                      </td>
-                    </tr>
-                  <% end %>
-                </tbody>
-              </table>
-            </div>
-          <% else %>
-            <div class="text-center py-4">
-              <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
-              <p class="text-muted fs-5">Nenhuma nota fiscal cadastrada para este fornecedor</p>
-              <%= link_to "Cadastrar Nova NF", new_invoice_path, class: "btn btn-primary" %>
-            </div>
-          <% end %>
-        </div>
-      </div>
+    <div class="supplier-show-actions">
+      <%= link_to suppliers_path, class: "az-report-btn" do %><i class="bi bi-arrow-left"></i> Voltar<% end %>
+      <%= link_to edit_supplier_path(@supplier), class: "az-report-btn az-report-btn--primary" do %><i class="bi bi-pencil-square"></i> Editar fornecedor<% end %>
     </div>
+  </header>
 
-    <div class="card-footer bg-light">
-      <div class="d-flex justify-content-between align-items-center">
-        <small class="text-muted">
-          <i class="fas fa-plus-circle me-1"></i>Criado em: <%= l(@supplier.created_at, format: :short) rescue @supplier.created_at.strftime('%d/%m/%Y %H:%M') %>
-        </small>
-        <small class="text-muted">
-          <i class="fas fa-sync-alt me-1"></i>Atualizado em: <%= l(@supplier.updated_at, format: :short) rescue @supplier.updated_at.strftime('%d/%m/%Y %H:%M') %>
-        </small>
+  <section class="supplier-show-summary" aria-label="Resumo financeiro do fornecedor">
+    <div class="supplier-summary-card supplier-summary-card--total"><span><i class="bi bi-cash-stack"></i> Total gasto</span><strong><%= number_to_currency(@supplier_invoice_total, unit: "R$ ", separator: ",", delimiter: ".") %></strong><small>em <%= @supplier_invoices.size %> lançamento(s)</small></div>
+    <div class="supplier-summary-card"><span><i class="bi bi-receipt"></i> Notas fiscais</span><strong><%= @supplier_invoice_numbers.size %></strong><small><%= number_to_currency(@supplier_invoice_numbers_total, unit: "R$ ", separator: ",", delimiter: ".") %> somados nas NFs</small></div>
+    <div class="supplier-summary-card"><span><i class="bi bi-diagram-3"></i> Centro principal</span><strong><%= @top_cost_center&.name || "—" %></strong><small><%= @top_cost_center ? number_to_currency(@top_cost_center_total, unit: "R$ ", separator: ",", delimiter: ".") : "Nenhum rateio informado" %></small></div>
+    <div class="supplier-summary-card"><span><i class="bi bi-person-check"></i> Situação</span><strong class="supplier-situation supplier-situation--<%= @supplier.situation.to_s.parameterize.presence || "unknown" %>"><%= @supplier.situation.presence || "Não informada" %></strong><small>status cadastral</small></div>
+  </section>
+
+  <section class="supplier-show-grid">
+    <article class="az-report-panel">
+      <div class="az-panel-header"><div><h2 class="az-report-section-title"><i class="bi bi-person-vcard"></i> Dados cadastrais</h2><p>Informações de identificação e contato.</p></div></div>
+      <div class="az-panel-body">
+        <div class="supplier-profile"><div class="supplier-avatar"><i class="bi bi-building"></i></div><div><strong><%= @supplier.name %></strong><span><%= @supplier.email.presence || "E-mail não informado" %></span></div></div>
+        <div class="az-period-details">
+          <div class="az-detail-item"><span>CNPJ</span><strong><%= CNPJ.new(@supplier.cnpj).formatted %></strong></div>
+          <div class="az-detail-item"><span>Telefone</span><strong><%= @supplier.phone.presence || "Não informado" %></strong></div>
+          <div class="az-detail-item"><span>E-mail</span><strong><%= @supplier.email.presence || "Não informado" %></strong></div>
+          <div class="az-detail-item"><span>Endereço</span><strong><%= [@supplier.street, @supplier.number, @supplier.city, @supplier.state].compact_blank.join(", ").presence || "Não informado" %></strong></div>
+        </div>
       </div>
-    </div>
-  </div>
+    </article>
 
-  <div class="mt-3">
-    <%= link_to "Voltar", suppliers_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
-  </div>
+    <article class="az-report-panel">
+      <div class="az-panel-header"><div><h2 class="az-report-section-title"><i class="bi bi-bar-chart-line"></i> Gastos por centro de custo</h2><p>Onde os lançamentos deste fornecedor estão concentrados.</p></div></div>
+      <div class="az-panel-body">
+        <% if @cost_center_totals.any? %>
+          <div class="supplier-cost-center-list supplier-scroll-panel"><% @cost_center_totals.sort_by { |_center, total| -total }.each do |center, total| %><div class="supplier-cost-center-row"><span><strong><%= center.name %></strong><small><%= @supplier_invoice_numbers.count { |number| number.cost_center_id == center.id } %> NF(s)</small></span><strong><%= number_to_currency(total, unit: "R$ ", separator: ",", delimiter: ".") %></strong></div><% end %></div>
+        <% else %><p class="az-report-empty">Nenhum centro de custo foi informado nas notas fiscais.</p><% end %>
+      </div>
+    </article>
+  </section>
+
+  <article class="az-report-panel supplier-nf-panel">
+    <div class="az-panel-header"><div><h2 class="az-report-section-title"><i class="bi bi-list-ol"></i> Notas fiscais geradas</h2><p>Exibindo até 50 NFs; seus valores e o lançamento de origem.</p></div><div class="supplier-panel-actions"><% if @supplier_invoice_numbers.size > 50 %><%= link_to invoices_path(supplier_name: @supplier.name), class: "az-report-btn" do %><i class="bi bi-search"></i> Ver todas no index<% end %><% end %><%= link_to new_invoice_path, class: "az-report-btn" do %><i class="bi bi-plus-lg"></i> Novo lançamento<% end %></div></div>
+    <% if @supplier_invoice_numbers.any? %>
+      <div class="az-report-table-wrap supplier-nf-table-wrap"><table class="az-report-table"><thead><tr><th>Número da NF</th><th>Código do lançamento</th><th>Emissão</th><th>Centro de custo</th><th class="text-end">Valor</th><th></th></tr></thead><tbody>
+        <% @supplier_invoice_numbers.first(50).each do |invoice_number| %><% invoice = invoice_number.invoice %><tr><td data-label="Número da NF"><strong><%= invoice_number.number %></strong></td><td data-label="Código"><%= link_to(invoice.code.presence || "##{invoice.id}", invoice_path(invoice), class: "supplier-history-link") %></td><td data-label="Emissão"><%= invoice.date_issued ? l(invoice.date_issued) : "—" %></td><td data-label="Centro de custo"><%= invoice_number.cost_center&.name || "Sem centro de custo" %></td><td data-label="Valor" class="text-end az-table-total"><%= number_to_currency(invoice_number.amount, unit: "R$ ", separator: ",", delimiter: ".") %></td><td class="text-end"><%= link_to invoice_path(invoice), class: "btn btn-sm btn-outline-secondary", title: "Ver lançamento" do %><i class="bi bi-eye"></i><% end %></td></tr><% end %>
+      </tbody></table></div>
+    <% else %>
+      <div class="supplier-empty-state"><i class="bi bi-receipt"></i><p>Nenhuma nota fiscal cadastrada para este fornecedor.</p><%= link_to "Cadastrar lançamento", new_invoice_path, class: "az-report-btn az-report-btn--primary" %></div>
+    <% end %>
+  </article>
+
+  <article class="az-report-panel supplier-launches-panel">
+    <div class="az-panel-header"><div><h2 class="az-report-section-title"><i class="bi bi-clock-history"></i> Histórico de lançamentos</h2><p>Exibindo até 50 lançamentos recentes.</p></div><div class="supplier-panel-actions"><% if @supplier_invoices.size > 50 %><%= link_to invoices_path(supplier_name: @supplier.name), class: "az-report-btn" do %><i class="bi bi-search"></i> Ver todos no index<% end %><% end %><span class="az-overview-detail"><strong><%= @supplier_invoices.size %></strong> lançamento(s)</span></div></div>
+    <div class="az-report-table-wrap supplier-history-table-wrap"><table class="az-report-table"><thead><tr><th>Código</th><th>Data</th><th>Categoria</th><th>Responsável</th><th class="text-end">Total</th></tr></thead><tbody>
+      <% @supplier_invoices.first(50).each do |invoice| %><tr><td data-label="Código"><%= link_to(invoice.code.presence || "##{invoice.id}", invoice_path(invoice), class: "supplier-history-link") %></td><td data-label="Data"><%= invoice.date_issued ? l(invoice.date_issued) : "—" %></td><td data-label="Categoria"><%= invoice.budget_category&.name&.titleize || "—" %></td><td data-label="Responsável"><%= invoice.purchaser&.name || "—" %></td><td data-label="Total" class="text-end az-table-total"><%= number_to_currency(invoice.total, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr><% end %>
+    </tbody></table></div>
+  </article>
+
+  <div class="supplier-audit-line"><span><i class="bi bi-plus-circle me-1"></i>Criado em <%= l(@supplier.created_at, format: :short) %></span><span><i class="bi bi-arrow-repeat me-1"></i>Atualizado em <%= l(@supplier.updated_at, format: :short) %></span></div>
 </div>

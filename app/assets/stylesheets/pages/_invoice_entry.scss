@@ -8,6 +8,14 @@
     margin: 0 auto;
   }
 
+  .invoice-entry-eyebrow { margin: 0 0 .4rem; color: var(--bs-primary); font-size: .74rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .dashboard-header { margin-bottom: 1.5rem; }
+
+  .az-report-btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 34px; padding: .4rem .7rem; border: 1px solid var(--bs-border-color); border-radius: 9px; background: var(--bs-body-bg); color: var(--bs-body-color); font-size: .8rem; font-weight: 600; text-decoration: none; }
+  .az-report-btn:hover { border-color: var(--bs-primary); background: rgba(var(--bs-primary-rgb), .08); color: var(--bs-primary); }
+  .az-report-btn--primary { border-color: var(--bs-primary); background: var(--bs-primary); color: #fff; }
+  .az-report-btn--primary:hover { background: var(--bs-primary-text-emphasis); color: #fff; }
+
   .invoice-form-card {
     margin: 0 0 1.5rem;
 

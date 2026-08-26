@@ -5,7 +5,7 @@ class Admin::BudgetCategoriesController < ApplicationController
   before_action :set_budget_category, only: [:edit, :update, :destroy, :expenses]
 
   def index
-    @budget_categories = BudgetCategory.order(:sector, :name)
+    @budget_categories = BudgetCategory.includes(:invoices).order(:sector, :name)
   end
 
   def new

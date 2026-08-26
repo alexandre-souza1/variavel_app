@@ -2,11 +2,12 @@
   <header class="dashboard-header">
     <div class="header-content">
       <div>
+        <p class="invoice-entry-eyebrow"><i class="bi bi-wallet2 me-1"></i> Financeiro · Lançamentos</p>
         <h1><i class="bi bi-receipt"></i> <%= invoice.persisted? ? "Editar Nota Fiscal" : "Nova Nota Fiscal" %></h1>
         <p class="subtitle"><%= invoice.persisted? ? "Atualize os dados da invoice e suas notas fiscais" : "Cadastre a invoice e suas notas fiscais com revisão automática dos dados" %></p>
       </div>
       <div class="header-actions">
-        <%= link_to invoices_path, class: "btn-outline btn-sm" do %>
+        <%= link_to invoices_path, class: "az-report-btn" do %>
           <i class="bi bi-arrow-left me-1"></i>Voltar para invoices
         <% end %>
       </div>

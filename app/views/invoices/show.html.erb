@@ -57,7 +57,7 @@
 
   <section class="az-report-grid invoice-detail-grid">
     <article class="az-report-panel">
-      <div class="az-panel-header"><div><h2><i class="bi bi-info-circle az-panel-icon me-2"></i>Dados do lançamento</h2><p>Informações principais utilizadas no controle financeiro.</p></div></div>
+      <div class="az-panel-header"><div><h2 class="az-report-section-title"><i class="bi bi-info-circle"></i> Dados do lançamento</h2><p>Informações principais utilizadas no controle financeiro.</p></div></div>
       <div class="az-panel-body">
         <div class="az-period-details">
           <div class="az-detail-item"><span>Código do lançamento</span><strong><%= @invoice.code.presence || "Não informado" %></strong></div>
@@ -72,7 +72,7 @@
 
     <article class="az-report-panel">
       <div class="az-panel-header">
-        <div><h2><i class="bi bi-truck az-panel-icon me-2"></i>Fornecedor</h2><p>Identificação e contatos cadastrados.</p></div>
+        <div><h2 class="az-report-section-title"><i class="bi bi-truck"></i> Fornecedor</h2><p>Identificação e contatos cadastrados.</p></div>
         <%= link_to supplier_path(supplier), class: "az-report-btn" do %><i class="bi bi-box-arrow-up-right"></i> Abrir cadastro<% end %>
       </div>
       <div class="az-panel-body">

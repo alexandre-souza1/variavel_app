@@ -5,7 +5,9 @@ class InvoicesController < ApplicationController
 
   # GET /invoices or /invoices.json
   def index
-    @invoices = Invoice.includes(:supplier, :invoice_numbers).all
+    @invoices = Invoice.with_attached_documents
+                       .includes(:supplier, :budget_category, invoice_numbers: :cost_center)
+                       .all
 
     # filtro por categoria orçamentária
     @invoices = @invoices.where(budget_category_id: params[:budget_category_id]) if params[:budget_category_id].present?
@@ -51,6 +53,9 @@ class InvoicesController < ApplicationController
 
     # opcional: ordenar por ID decrescente
     @invoices = @invoices.order(id: :desc)
+    @filtered_count = @invoices.count
+    @filtered_total = @invoices.sum(:total)
+    @filtered_suppliers = @invoices.select(:supplier_id).distinct.count
 
     # pega per_page do params, default 10
     per_page = (params[:per_page] || 10).to_i
