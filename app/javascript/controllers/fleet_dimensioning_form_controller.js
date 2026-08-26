@@ -60,7 +60,8 @@ export default class extends Controller {
 
     this.slotTargets.forEach((slot) => {
       const position = Number(slot.dataset.position)
-      const slotIsActive = !Number.isInteger(position) || position < activeSlotCount
+      const isSpecialRouteSlot = Boolean(slot.dataset.specialRoute)
+      const slotIsActive = isSpecialRouteSlot || position < activeSlotCount
       const slotList = slot.querySelector(
         "[data-fleet-dimensioning-form-target='slotList']"
       )

@@ -91,9 +91,10 @@
                             .compact %>
     <% selected_by_position =
          @fleet_dimensioning.fleet_dimensioning_standard_plates
-                            .select { |sp| sp.plate_id.present? }
+                            .select { |sp| sp.plate_id.present? && sp.special_route.blank? }
                             .index_by(&:position) %>
     <% rota_plates = Plate.where(setor: "ROTA").ordered %>
+    <% position_standard_plates = @fleet_dimensioning.fleet_dimensioning_standard_plates.select { |sp| sp.special_route.blank? } %>
 
     <div class="fleet-dimensioning-board">
       <%# Lista de placas disponíveis %>
@@ -117,7 +118,7 @@
         <h6 class="mb-2">Posições padrão</h6>
         <div class="fleet-dimensioning-slots"
              style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
-          <%= f.fields_for :fleet_dimensioning_standard_plates do |standard_plate_form| %>
+          <%= f.fields_for :fleet_dimensioning_standard_plates, position_standard_plates do |standard_plate_form| %>
             <% position = standard_plate_form.object.position.to_i %>
             <% standard_plate = selected_by_position[position] %>
             <% plate = standard_plate&.plate %>
@@ -160,6 +161,62 @@
           <% end %>
         </div>
       </section>
+    </div>
+
+    <div class="mt-4 pt-4 border-top">
+      <h6 class="mb-1">Placas padrão das rotas especiais</h6>
+      <small class="text-body-secondary d-block mb-3">
+        Defina uma placa padrão para cada rota especial dimensionada.
+      </small>
+
+      <% special_route_standard_plates = @fleet_dimensioning.fleet_dimensioning_standard_plates.select { |sp| sp.special_route.present? } %>
+      <div class="row g-3">
+        <% special_route_standard_plates.each do |special_standard_plate| %>
+          <% route = special_standard_plate.special_route %>
+          <% route_label = FleetAvailability::SPECIAL_ROUTES[route] || route.humanize %>
+          <%= f.fields_for :fleet_dimensioning_standard_plates,
+                           special_standard_plate,
+                           child_index: "special_#{route}" do |special_plate_form| %>
+            <div class="col-sm-6 col-lg-4">
+              <div class="fleet-dimensioning-slot border rounded bg-body h-100"
+                   data-fleet-dimensioning-form-target="slot"
+                   data-special-route="<%= route %>">
+                <div class="fleet-dimensioning-slot__header px-2 py-1 bg-secondary bg-opacity-10 fw-semibold small">
+                  Rota <%= route_label %>
+                </div>
+                <%= special_plate_form.hidden_field :special_route %>
+                <%= special_plate_form.hidden_field :position, value: nil %>
+                <%= special_plate_form.hidden_field :plate_id,
+                                                     value: special_standard_plate.plate_id,
+                                                     data: {
+                                                       fleet_dimensioning_form_target: "plateInput"
+                                                     } %>
+                <%= special_plate_form.hidden_field :_destroy,
+                                                     value: special_standard_plate.plate_id.present? ? "0" : "1",
+                                                     data: {
+                                                       fleet_dimensioning_form_target: "destroyInput"
+                                                     } %>
+
+                <div class="fleet-dimensioning-slot__body p-2"
+                     data-fleet-dimensioning-form-target="slotList">
+                  <% if special_standard_plate.plate.present? %>
+                    <div class="fleet-dimensioning-plate bg-body-secondary border rounded p-2"
+                         data-plate-id="<%= special_standard_plate.plate.id %>"
+                         data-plate-label="<%= special_standard_plate.plate.placa %>">
+                      <strong><%= special_standard_plate.plate.placa %></strong>
+                      <small class="d-block text-body-secondary"><%= special_standard_plate.plate.perfil.presence || special_standard_plate.plate.tipo.presence || "Ativa" %></small>
+                    </div>
+                  <% else %>
+                    <div class="fleet-dimensioning-placeholder text-body-secondary p-2 text-center">
+                      Arraste uma placa
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
     </div>
   </div>
 

@@ -16,6 +16,7 @@ class FleetAvailabilityItem < ApplicationRecord
     breakdown: "breakdown",
     accident: "accident",
     document: "document",
+    recape: "recape",
     other: "other"
   }, prefix: true
 
@@ -77,6 +78,7 @@ class FleetAvailabilityItem < ApplicationRecord
       "breakdown" => "Quebra",
       "accident" => "Acidente",
       "document" => "Documentação",
+      "recape" => "Recape",
       "other" => "Outro"
     }[reason] || "Sem defeito informado"
   end

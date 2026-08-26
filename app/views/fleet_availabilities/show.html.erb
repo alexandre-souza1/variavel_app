@@ -238,6 +238,7 @@
                 <%= render "fleet_availability_items/item",
                        item: route_item,
                        variant: :special_route,
+                       standard_plate: @standard_plate_by_special_route[route_key]&.plate,
                        editable: @editable %>
               <% end %>
 
@@ -269,9 +270,12 @@
         </div>
         <div class="card-body fleet-list fleet-list--availability"
             id="available-list"
-            data-max-items="<%= availability_slots %>"
-            data-standard-plates="<%= @standard_plate_by_position.transform_values { |standard_plate| standard_plate.plate.placa }.to_json %>"
-            style="--fleet-visible-rows: <%= [availability_slots, 1].max %>;">
+             data-max-items="<%= availability_slots %>"
+             data-standard-plates="<%= @standard_plate_by_position.transform_values { |standard_plate| standard_plate.plate.placa }.to_json %>"
+             data-standard-plate-ids="<%= @standard_plate_by_position.transform_values { |standard_plate| standard_plate.plate.id }.to_json %>"
+             data-standard-route-plates="<%= @standard_plate_by_special_route.transform_values { |standard_plate| standard_plate.plate.placa }.to_json %>"
+             data-standard-route-plate-ids="<%= @standard_plate_by_special_route.transform_values { |standard_plate| standard_plate.plate.id }.to_json %>"
+             style="--fleet-visible-rows: <%= [availability_slots, 1].max %>;">
           <% availability_slots.times do |position| %>
             <% item = available_item_by_position[position] %>
             <% standard_plate = @standard_plate_by_position[position]&.plate %>
@@ -567,6 +571,10 @@
 
               <option value="document">
                 Documentação
+              </option>
+
+              <option value="recape">
+                Recape
               </option>
 
               <option value="other">

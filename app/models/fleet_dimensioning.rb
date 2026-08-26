@@ -53,6 +53,13 @@ class FleetDimensioning < ApplicationRecord
       .index_by(&:position)
   end
 
+  def standard_plate_by_special_route
+    fleet_dimensioning_standard_plates
+      .includes(:plate)
+      .where.not(special_route: nil)
+      .index_by(&:special_route)
+  end
+
   def build_standard_plate_slots(quantity = nil)
     slot_quantity = [quantity || route_quantity.to_i, STANDARD_PLATE_SLOTS].max
 
@@ -60,6 +67,15 @@ class FleetDimensioning < ApplicationRecord
       next if fleet_dimensioning_standard_plates.any? { |item| item.position == position }
 
       fleet_dimensioning_standard_plates.build(position: position)
+    end
+  end
+
+  def build_special_route_slots
+    FleetAvailability::SPECIAL_ROUTES.each_key do |route|
+      next unless public_send("#{route}_quantity").to_i.positive?
+      next if fleet_dimensioning_standard_plates.any? { |item| item.special_route == route }
+
+      fleet_dimensioning_standard_plates.build(special_route: route)
     end
   end
 

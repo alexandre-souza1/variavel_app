@@ -376,6 +376,13 @@ export default class extends Controller {
 
     if (!status) return
 
+    // Dropping an unavailable plate back into the same list is only a
+    // reorder. Do not ask again why it is unavailable.
+    if (status === "unavailable" && event.from === event.to) {
+      this.refreshUnavailableRows()
+      return
+    }
+
     if (this.availableSlotFor(event.from) && targetSlot) {
       this.restoreItem(event)
       this.showAlert("Para trocar a posição, envie a placa para o depósito e depois para a linha desejada.")
@@ -763,7 +770,13 @@ export default class extends Controller {
       "fleet-plate-item--deposit",
       "fleet-plate-item--unavailable",
       "fleet-plate-item--special_route",
-      "fleet-plate-item--default"
+      "fleet-plate-item--default",
+      "fleet-plate-item--reason-maintenance",
+      "fleet-plate-item--reason-breakdown",
+      "fleet-plate-item--reason-accident",
+      "fleet-plate-item--reason-document",
+      "fleet-plate-item--reason-recape",
+      "fleet-plate-item--reason-other"
     )
 
     if (item.status === "available") {
@@ -776,6 +789,7 @@ export default class extends Controller {
       this.setDepositDetails(itemElement)
     } else if (item.status === "unavailable") {
       itemElement.classList.add("fleet-plate-item--unavailable")
+      itemElement.classList.add(`fleet-plate-item--reason-${this.reasonClass(item.reason)}`)
       itemElement.title = item.observation
         ? `${item.reason_label} - ${item.observation}`
         : item.reason_label
@@ -794,13 +808,23 @@ export default class extends Controller {
     const container = this.detailsContainer(itemElement, "fleet-plate-card__side")
     const position = this.itemIndex(itemElement)
     const standardPlate = this.standardPlateForPosition(position)
-    const observation = String(itemElement.dataset.observation || "").trim()
+    const standardPlateId = this.standardPlateIdForPosition(position)
+    const plateChanged = String(standardPlateId || "") !== String(itemElement.dataset.plateId || "")
+
+    itemElement.classList.toggle("fleet-plate-item--changed", plateChanged)
 
     container.innerHTML = `
       <span>
         Placa padrão: ${this.escapeHtml(standardPlate || "não definida")}
       </span>
     `
+
+    if (plateChanged) {
+      container.insertAdjacentHTML(
+        "beforeend",
+        '<span class="fleet-plate-card__changed-badge"><i class="bi bi-exclamation-triangle-fill"></i> Placa diferente</span>'
+      )
+    }
   }
 
 
@@ -822,10 +846,38 @@ export default class extends Controller {
   }
 
 
+  reasonClass(reason) {
+    const validReasons = [
+      "maintenance",
+      "breakdown",
+      "accident",
+      "document",
+      "recape",
+      "other"
+    ]
+
+    return validReasons.includes(reason) ? reason : "other"
+  }
+
+
   setSpecialRouteDetails(itemElement) {
     const container = this.detailsContainer(itemElement, "fleet-plate-card__side")
+    const route = itemElement.closest("[data-special-route]")?.dataset.specialRoute
+    const standardPlate = this.standardRoutePlateForRoute(route)
+    const standardPlateId = this.standardRoutePlateIdForRoute(route)
+    const plateChanged = Boolean(standardPlateId) && String(standardPlateId) !== String(itemElement.dataset.plateId || "")
 
-    container.innerHTML = ""
+    itemElement.classList.toggle("fleet-plate-item--changed", plateChanged)
+    container.innerHTML = `
+      <span>Placa padrão: ${this.escapeHtml(standardPlate || "não definida")}</span>
+    `
+
+    if (plateChanged) {
+      container.insertAdjacentHTML(
+        "beforeend",
+        '<span class="fleet-plate-card__changed-badge"><i class="bi bi-exclamation-triangle-fill"></i> Placa diferente</span>'
+      )
+    }
   }
 
 
@@ -890,9 +942,12 @@ export default class extends Controller {
       ? `<span>${this.escapeHtml(observationText)}</span>`
       : "<span>Sem observação</span>"
 
+    // Keep the observation area visible when the item is editable. The
+    // empty-state class hides the whole container in the availability box,
+    // which also hides the button used to add the first observation.
     container.classList.toggle(
       "fleet-plate-card__observation--empty",
-      !observationText
+      !observationText && !button
     )
     container.innerHTML = label
 
@@ -911,6 +966,51 @@ export default class extends Controller {
       const standardPlates = JSON.parse(availableList.dataset.standardPlates || "{}")
 
       return standardPlates[String(position)] || null
+    } catch (_error) {
+      return null
+    }
+  }
+
+
+  standardPlateIdForPosition(position) {
+    const availableList = document.getElementById("available-list")
+
+    if (!availableList) return null
+
+    try {
+      const standardPlateIds = JSON.parse(availableList.dataset.standardPlateIds || "{}")
+
+      return standardPlateIds[String(position)] || null
+    } catch (_error) {
+      return null
+    }
+  }
+
+
+  standardRoutePlateForRoute(route) {
+    const availableList = document.getElementById("available-list")
+
+    if (!availableList || !route) return null
+
+    try {
+      const standardPlates = JSON.parse(availableList.dataset.standardRoutePlates || "{}")
+
+      return standardPlates[route] || null
+    } catch (_error) {
+      return null
+    }
+  }
+
+
+  standardRoutePlateIdForRoute(route) {
+    const availableList = document.getElementById("available-list")
+
+    if (!availableList || !route) return null
+
+    try {
+      const standardPlateIds = JSON.parse(availableList.dataset.standardRoutePlateIds || "{}")
+
+      return standardPlateIds[route] || null
     } catch (_error) {
       return null
     }

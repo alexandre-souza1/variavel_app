@@ -90,6 +90,8 @@ class FleetAvailabilitiesController < ApplicationController
     @dimensioning = FleetAvailability.dimensioning_period_for(@fleet_availability.date)
     @standard_plate_by_position =
       @dimensioning&.standard_plate_by_position || {}
+    @standard_plate_by_special_route =
+      @dimensioning&.standard_plate_by_special_route || {}
 
     respond_to do |format|
       format.html

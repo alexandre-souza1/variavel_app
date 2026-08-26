@@ -21,6 +21,10 @@ class FleetAvailabilityPdf < Prawn::Document
       FleetAvailability
       .dimensioning_period_for(fleet_availability.date)
       &.standard_plate_by_position || {}
+    @standard_plate_by_special_route =
+      FleetAvailability
+      .dimensioning_period_for(fleet_availability.date)
+      &.standard_plate_by_special_route || {}
 
     header
     dashboard_section
@@ -142,6 +146,25 @@ class FleetAvailabilityPdf < Prawn::Document
         ]
       end
 
+    # A Van is a special route, but should appear at the end of the main
+    # availability table in the PDF instead of in the special-routes section.
+    items.select { |item| item.special_route? && item.special_route == "van" }.each do |item|
+      plate = item.plate
+      standard_plate = @standard_plate_by_special_route["van"]&.plate
+      row_index = rows.length
+      van_changed = standard_plate&.id != plate&.id
+      highlighted_rows << row_index if van_changed
+
+      rows << [
+        standard_plate&.placa || "-",
+        standard_plate&.perfil.presence || "-",
+        van_changed ? "Sim" : "Não",
+        plate.placa,
+        plate.perfil.presence || "-",
+        item.observation.presence || "-"
+      ]
+    end
+
     # Larguras fixas para as 5 primeiras colunas (ordem atual)
     fixed_widths = [100, 70, 40, 100, 70]   # soma = 245
     obs_width = bounds.width - fixed_widths.sum  # o resto para Observação
@@ -185,12 +208,15 @@ class FleetAvailabilityPdf < Prawn::Document
   end
 
   def special_routes_section
-    rows =
-      items.select(&:special_route?).map do |item|
-        plate = item.plate
+    highlighted_rows = []
+    rows = items.select { |item| item.special_route? && item.special_route != "van" }.each_with_index.map do |item, index|
+      plate = item.plate
+      standard_plate = @standard_plate_by_special_route[item.special_route]&.plate
+      highlighted_rows << index if standard_plate.present? && standard_plate.id != plate.id
 
         [
           item.special_route_label,
+          standard_plate&.placa || "-",
           plate.placa,
           item.observation.presence || "-"
         ]
@@ -198,8 +224,9 @@ class FleetAvailabilityPdf < Prawn::Document
 
     table_section(
       STATUS_TITLES[:special_route],
-      ["Rota", "Placa", "Observação"],
-      rows
+      ["Rota", "Placa padrão", "Placa", "Observação"],
+      rows,
+      highlighted_rows: highlighted_rows
     )
   end
 

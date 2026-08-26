@@ -1,13 +1,20 @@
 <% variant = local_assigns.fetch(:variant, :default).to_sym %>
 <% plate = item.plate %>
 <% standard_plate = local_assigns[:standard_plate] %>
+<% plate_changed = if variant == :special_route
+                     standard_plate.present? && standard_plate.id != plate.id
+                   else
+                     variant == :availability && standard_plate&.id != plate&.id
+                   end %>
+<% reason_class = variant == :unavailable && item.reason.present? ? " fleet-plate-item--reason-#{item.reason}" : "" %>
 <% editable = local_assigns.fetch(:editable, false) %>
 
 <article id="<%= dom_id(item) %>"
-         class="fleet-plate-item fleet-plate-item--<%= variant %> sortable-item"
+         class="fleet-plate-item fleet-plate-item--<%= variant %><%= reason_class %><%= ' fleet-plate-item--changed' if plate_changed %> sortable-item"
          data-status="<%= item.status %>"
          data-setor="<%= plate.setor.presence || "-" %>"
          data-profile="<%= plate.perfil.presence || "Sem perfil" %>"
+         data-plate-id="<%= plate.id %>"
          data-reason="<%= item.reason %>"
          data-observation="<%= item.observation %>"
          data-van-plate="<%= item.van_plate? %>"
@@ -45,11 +52,16 @@
       </div>
 
       <div class="<%= variant == :unavailable ? "fleet-plate-card__defect-wrapper" : "fleet-plate-card__side" %>" data-live-details>
-        <% if variant == :availability %>
+        <% if [:availability, :special_route].include?(variant) %>
           <span>
             Placa padrão:
             <%= standard_plate&.placa.presence || "não definida" %>
           </span>
+          <% if plate_changed %>
+            <span class="fleet-plate-card__changed-badge">
+              <i class="bi bi-exclamation-triangle-fill"></i> Placa diferente
+            </span>
+          <% end %>
         <% elsif variant == :unavailable %>
           <div class="fleet-plate-card__defect" data-defect>
             <strong>

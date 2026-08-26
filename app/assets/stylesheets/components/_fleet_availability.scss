@@ -636,6 +636,38 @@
       overflow: hidden;         /* Corte continua, mas agora a obs pode quebrar linha */
     }
 
+    &--availability.fleet-plate-item--changed .fleet-plate-card {
+      border-color: #f59e0b;
+      background: #fffbeb;
+      box-shadow: inset 0.25rem 0 #f59e0b;
+    }
+
+    &--availability.fleet-plate-item--changed .fleet-plate-card__changed-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      margin-top: 0.15rem;
+      color: #92400e;
+      font-size: 0.64rem;
+      font-weight: 700;
+    }
+
+    &--special_route.fleet-plate-item--changed .fleet-plate-card {
+      border-color: #f59e0b;
+      background: #fffbeb;
+      box-shadow: inset 0.25rem 0 #f59e0b;
+    }
+
+    &--special_route.fleet-plate-item--changed .fleet-plate-card__changed-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      margin-top: 0.15rem;
+      color: #92400e;
+      font-size: 0.64rem;
+      font-weight: 700;
+    }
+
     &--availability .fleet-plate-card__main {
       min-width: 0;
       gap: 0.6rem;
@@ -808,6 +840,37 @@
         color: var(--bs-secondary-color);
       }
     }
+
+  }
+
+  .fleet-plate-item--unavailable.fleet-plate-item--reason-maintenance .fleet-plate-card__defect {
+    background: rgba(var(--bs-danger-rgb), 0.10);
+    color: var(--bs-danger-text-emphasis);
+  }
+
+  .fleet-plate-item--unavailable.fleet-plate-item--reason-breakdown .fleet-plate-card__defect {
+    background: rgba(249, 115, 22, 0.12);
+    color: #c2410c;
+  }
+
+  .fleet-plate-item--unavailable.fleet-plate-item--reason-accident .fleet-plate-card__defect {
+    background: rgba(139, 92, 246, 0.12);
+    color: #6d28d9;
+  }
+
+  .fleet-plate-item--unavailable.fleet-plate-item--reason-document .fleet-plate-card__defect {
+    background: rgba(var(--bs-warning-rgb), 0.18);
+    color: var(--bs-warning-text-emphasis);
+  }
+
+  .fleet-plate-item--unavailable.fleet-plate-item--reason-recape .fleet-plate-card__defect {
+    background: rgba(var(--bs-info-rgb), 0.14);
+    color: var(--bs-info-text-emphasis);
+  }
+
+  .fleet-plate-item--unavailable.fleet-plate-item--reason-other .fleet-plate-card__defect {
+    background: rgba(var(--bs-secondary-rgb), 0.12);
+    color: var(--bs-secondary-text-emphasis);
   }
 
   // ─── Empty slots ──────────────────────────────────────────────────
@@ -1175,6 +1238,24 @@
 
   .fleet-plate-card:hover {
     box-shadow: 0 0.35rem 0.9rem rgba(0, 0, 0, 0.2);
+  }
+
+  .fleet-plate-item--availability.fleet-plate-item--changed .fleet-plate-card {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: #f59e0b;
+  }
+
+  .fleet-plate-item--availability.fleet-plate-item--changed .fleet-plate-card__changed-badge {
+    color: #fbbf24;
+  }
+
+  .fleet-plate-item--special_route.fleet-plate-item--changed .fleet-plate-card {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: #f59e0b;
+  }
+
+  .fleet-plate-item--special_route.fleet-plate-item--changed .fleet-plate-card__changed-badge {
+    color: #fbbf24;
   }
 }
 
