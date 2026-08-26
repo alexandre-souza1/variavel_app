@@ -89,14 +89,20 @@ class InvoiceTextractService
     extra_text = "#{extra_text} #{line_items(document).map { |item| item[:description] }.compact.join(' ')}"
     # Dados adicionais de NF-e podem aparecer em blocos que não são summary_fields.
     extra_text = "#{extra_text} #{all_text(document)}"
-    supplier = supplier_from_text(extra_text)
-    invoice_number = invoice_number_for(fields, extra_text)
+    nfse_service = nfse_service_document?(extra_text)
+    supplier = supplier_from_text(extra_text, nfse_service: nfse_service)
+    invoice_number = invoice_number_for(fields, extra_text, nfse_service: nfse_service)
     { supplier_name: supplier&.name || value_for(fields, "VENDOR_NAME"), supplier_cnpj: supplier&.cnpj,
       supplier_id: supplier&.id,
       cost_center_id: cost_center_from(extra_text),
       invoice_number: invoice_number,
-      date_issued: normalize_date(value_for(fields, "INVOICE_RECEIPT_DATE")),
-      total: money_value_for(fields, "TOTAL"), items: line_items(document) }
+      date_issued: date_issued_for(fields, extra_text, nfse_service: nfse_service),
+      total: total_for(fields, extra_text, nfse_service: nfse_service), items: line_items(document) }
+  end
+
+  def nfse_service_document?(text)
+    text.to_s.match?(/DANFSe|DOCUMENTO AUXILIAR DA NFS-e/i) &&
+      text.to_s.match?(/PRESTADOR\s*\/\s*FORNECEDOR/i)
   end
 
   def cost_center_from(text)
@@ -115,8 +121,9 @@ class InvoiceTextractService
     document.to_h.to_s.scan(/[[:print:]]{3,}/).join(" ")
   end
 
-  def supplier_from_text(text)
-    cnpjs = text.scan(/\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/).map { |cnpj| cnpj.gsub(/\D/, "") }.uniq
+  def supplier_from_text(text, nfse_service: false)
+    search_text = nfse_service ? nfse_provider_section(text) : text
+    cnpjs = search_text.scan(/\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/).map { |cnpj| cnpj.gsub(/\D/, "") }.uniq
     return if cnpjs.empty?
 
     # Evita uma consulta SQL enorme quando o OCR interpreta códigos e números
@@ -127,7 +134,16 @@ class InvoiceTextractService
     nil
   end
 
-  def invoice_number_for(fields, text)
+  def nfse_provider_section(text)
+    text.to_s.match(/PRESTADOR\s*\/\s*FORNECEDOR(.*?)TOMADOR\s*\/\s*ADQUIRENTE/im)&.to_s || text
+  end
+
+  def invoice_number_for(fields, text, nfse_service: false)
+    if nfse_service
+      number = text[/N[ÚU]MERO\s+DA\s+NFS-e\s*:?\s*([0-9]{6,})/i, 1]
+      return number if number.present?
+    end
+
     detected = value_for(fields, "INVOICE_RECEIPT_ID")
     # NFS-e: o número correto aparece como 9 dígitos após o ano no código longo.
     # Só considera códigos numéricos longos (ex.: chave/código de validação).
@@ -139,6 +155,23 @@ class InvoiceTextractService
       return number.to_s if number.positive?
     end
     detected.to_s.gsub(/\D/, "").sub(/^0+/, "") if detected.present?
+  end
+
+  def date_issued_for(fields, text, nfse_service: false)
+    detected = value_for(fields, "INVOICE_RECEIPT_DATE")
+    if nfse_service
+      detected ||= text[/DATA\s+E\s+HORA\s+DA\s+EMISS[AÃ]O\s+DA\s+NFS-e\s*:?\s*(\d{2}\/\d{2}\/\d{4})/i, 1]
+      detected ||= text[/DATA\s+DE\s+EMISS[AÃ]O\s*:?\s*(\d{2}\/\d{2}\/\d{4})/i, 1]
+    end
+    normalize_date(detected)
+  end
+
+  def total_for(fields, text, nfse_service: false)
+    detected = money_value_for(fields, "TOTAL")
+    return detected if detected.present? || !nfse_service
+
+    operation_value = text[/VALOR\s+DA\s+OPERAÇÃO\s*\/\s*SERVIÇO\s*R?\$?\s*([0-9.,]+)/i, 1]
+    normalize_money(operation_value)
   end
 
   def line_items(document)
