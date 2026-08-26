@@ -102,82 +102,22 @@ class ConsultasController < ApplicationController
   end
 
   def prepare_report_totals!
-    @mapa_totals = {
-      caixas_reais: 0,
-      valor_caixas: 0,
-      pdvs_reais: 0,
-      valor_pdvs: 0,
-      recargas: 0,
-      valor_recargas: 0,
-      quantidade_mapas: @mapas.size,
-      devolucoes: 0,
-      percentual_devolucao: 0,
-      bonus_devolucao: 0,
-      total_mapas: 0,
-      valor_total: 0
-    }
+    service = MapaRemuneracaoService.new(@categoria)
     @mapa_calculations = {}
 
-    total_pdv_real = @mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.pdv_real.to_f }
-    total_pdv_total = @mapas.sum { |mapa| mapa.recarga == "SIM" ? 0 : mapa.pdv_total.to_f }
-    percentual_devolucao = total_pdv_total.zero? ? 0 : (total_pdv_total - total_pdv_real) / total_pdv_total
-
     @mapas.each do |mapa|
-      valor_cx, valor_pdv, valor_rec = mapa_values(mapa)
-      valor_mp = mapa.recarga == "SIM" ? valor_rec : valor_cx + valor_pdv
-      @mapa_calculations[mapa.id] = { valor_cx: valor_cx, valor_pdv: valor_pdv, valor_rec: valor_rec, valor_mp: valor_mp }
-
-      unless mapa.recarga == "SIM"
-        @mapa_totals[:caixas_reais] += mapa.cx_real.to_f
-        @mapa_totals[:valor_caixas] += valor_cx
-        @mapa_totals[:pdvs_reais] += mapa.pdv_real.to_f
-        @mapa_totals[:valor_pdvs] += valor_pdv
-      end
-
-      unless @categoria == "van"
-        @mapa_totals[:recargas] += 1 if mapa.recarga == "SIM"
-        @mapa_totals[:valor_recargas] += valor_rec
-      end
-
-      @mapa_totals[:total_mapas] += 1
-      @mapa_totals[:valor_total] += valor_mp
+      @mapa_calculations[mapa.id] = service.values(mapa)
     end
 
-    @mapa_totals[:devolucoes] = total_pdv_total - total_pdv_real
-    @mapa_totals[:percentual_devolucao] = percentual_devolucao
-    @mapa_totals[:bonus_devolucao] = if @mapas.size >= 15 && percentual_devolucao <= 0.03
-                                      @valor_bonus_devolucao.to_f
-                                    else
-                                      0
-                                    end
-    @mapa_totals[:valor_total] += @mapa_totals[:bonus_devolucao]
+    totals = service.totals(@mapas)
+    @mapa_totals = totals.merge(
+      caixas_reais: totals[:cx_real],
+      pdvs_reais: totals[:pdv_real]
+    )
   end
 
   def mapa_values(mapa)
-    case @categoria
-    when "motorista"
-      if mapa.fator == 2
-        valor_cx = mapa.cx_real.to_f * @valor_caixa_motorista.to_f / 2
-        valor_pdv = mapa.pdv_real.to_f * @valor_entrega_motorista.to_f / 2
-      else
-        multiplicador = mapa.fator == 0 && mapa.pdv_total.to_f >= 2 ? 2 : 1
-        valor_cx = mapa.cx_real.to_f * @valor_caixa_motorista.to_f * multiplicador
-        valor_pdv = mapa.pdv_real.to_f * @valor_entrega_motorista.to_f * multiplicador
-      end
-      valor_rec = mapa.recarga == "SIM" ? @valor_recarga_motorista.to_f : 0
-    when "ajudante"
-      divisor = mapa.fator == 2 ? 2 : 1
-      valor_cx = mapa.cx_real.to_f * @valor_caixa_ajudante.to_f / divisor
-      valor_pdv = mapa.pdv_real.to_f * @valor_entrega_ajudante.to_f / divisor
-      valor_rec = mapa.recarga == "SIM" ? @valor_recarga_ajudante.to_f : 0
-    when "van"
-      valor_cx = mapa.cx_real.to_f * @valor_caixa_van.to_f
-      valor_pdv = mapa.pdv_real.to_f * @valor_entrega_van.to_f
-      valor_rec = 0
-    else
-      valor_cx = valor_pdv = valor_rec = 0
-    end
-
-    [valor_cx, valor_pdv, valor_rec]
+    values = MapaRemuneracaoService.new(@categoria).values(mapa)
+    [values[:valor_cx], values[:valor_pdv], values[:valor_rec]]
   end
 end

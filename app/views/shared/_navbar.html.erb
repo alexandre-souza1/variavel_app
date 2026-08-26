@@ -1,7 +1,9 @@
 <nav class="navbar navbar-expand-lg app-navbar app-admin-nav shadow-sm sticky-top" data-controller="theme">
   <div class="container-fluid px-3 px-md-4">
     <!-- Logo -->
-    <%= link_to root_path, class: "navbar-brand d-flex align-items-center gap-2" do %>
+    <%= link_to root_path,
+                class: "navbar-brand d-flex align-items-center gap-2",
+                data: { turbo: false } do %>
       <%= image_tag "logo.png", alt: "Workstation Logo", height: "40" %>
       <span class="fw-bold brand-text">Workstation</span>
     <% end %>

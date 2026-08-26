@@ -196,11 +196,16 @@ class TasksController < ApplicationController
       ]
     ).tap do |whitelisted|
 
-      whitelisted[:label_ids] = whitelisted[:label_ids]&.reject(&:blank?) || []
-      whitelisted[:user_ids]  = whitelisted[:user_ids]&.reject(&:blank?) || []
+      # The reminder switch is submitted by a separate form that does not
+      # contain labels or assignees. Do not turn omitted fields into empty
+      # arrays, otherwise updating only the reminder removes existing links.
+      if whitelisted.key?(:label_ids)
+        whitelisted[:label_ids] = whitelisted[:label_ids].reject(&:blank?).map(&:to_i)
+      end
 
-      whitelisted[:label_ids] = whitelisted[:label_ids].map(&:to_i)
-      whitelisted[:user_ids]  = whitelisted[:user_ids].map(&:to_i)
+      if whitelisted.key?(:user_ids)
+        whitelisted[:user_ids] = whitelisted[:user_ids].reject(&:blank?).map(&:to_i)
+      end
 
       if @task&.persisted?
         whitelisted[:label_ids] &= @task.bucket.action_plan.label_ids
