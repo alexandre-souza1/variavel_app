@@ -1,0 +1,7 @@
+<div class="catalog-form-page">
+  <div class="catalog-form-header">
+    <div><p class="admin-catalog-eyebrow"><i class="bi bi-bullseye me-1"></i> Financeiro · Metas</p><h1><i class="bi bi-bullseye me-2"></i>Nova meta mensal</h1><p>Defina o setor, as categorias e o valor a acompanhar.</p></div>
+    <%= link_to admin_invoice_goals_path, class: "az-report-btn" do %><i class="bi bi-arrow-left"></i> Voltar<% end %>
+  </div>
+  <div class="card catalog-form-card"><div class="card-body"><%= render "form", invoice_goal: @invoice_goal, budget_categories: @budget_categories %></div></div>
+</div>

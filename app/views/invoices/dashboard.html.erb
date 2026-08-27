@@ -28,7 +28,7 @@
             <%= submit_tag "Filtrar", class: "az-report-btn az-report-btn--primary" %>
           </div>
         <% end %>
-        <%= link_to "Mês Atual", dashboard_invoices_path(month: Date.today.month, year: Date.today.year), class: "az-report-btn" %>
+        <%= link_to "Mês Atual", dashboard_invoices_path(month: Date.today.month, year: Date.today.year, sector: @invoice_sector_filter), class: "az-report-btn" %>
         <%= link_to "Limpar", dashboard_invoices_path, class: "az-report-btn" %>
       </div>
     </div>
@@ -85,6 +85,40 @@
     </div>
   </div>
 
+  <% if @invoice_goals.present? %>
+    <div class="chart-card mb-4">
+      <div class="chart-header">
+        <h5><i class="bi bi-bullseye me-2"></i>Metas do período</h5>
+        <% if @can_filter_invoice_sector %>
+          <%= link_to "Gerenciar metas", admin_invoice_goals_path, class: "az-report-btn" %>
+        <% end %>
+      </div>
+      <div class="row g-3">
+        <% @invoice_goals.each do |goal_data| %>
+          <% goal = goal_data[:goal] %>
+          <div class="col-md-6 col-xl-4">
+            <div class="card h-100 border">
+              <div class="card-body">
+                <div class="d-flex justify-content-between gap-2 mb-2">
+                  <strong><%= goal.name %></strong>
+                  <span class="badge bg-secondary"><%= InvoiceGoal.sectors[goal.sector] %></span>
+                </div>
+                <div class="progress mb-2" role="progressbar" aria-valuenow="<%= [goal_data[:percentage], 100].min %>" aria-valuemin="0" aria-valuemax="100">
+                  <div class="progress-bar" style="width: <%= [goal_data[:percentage], 100].min %>%"></div>
+                </div>
+                <div class="d-flex justify-content-between small">
+                  <span><%= number_to_currency(goal_data[:actual_amount], unit: "R$ ", separator: ",", delimiter: ".") %> realizado</span>
+                  <span><%= goal_data[:percentage] %>%</span>
+                </div>
+                <div class="text-muted small mt-1">Meta: <%= number_to_currency(goal.target_amount, unit: "R$ ", separator: ",", delimiter: ".") %> · Saldo: <%= number_to_currency(goal_data[:remaining_amount], unit: "R$ ", separator: ",", delimiter: ".") %></div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <!-- ========== GRÁFICO DE EVOLUÇÃO ========== -->
   <div class="chart-card">
     <div class="chart-header">
@@ -98,6 +132,7 @@
         <%= hidden_field_tag :month, params[:month] if params[:month].present? %>
         <%= hidden_field_tag :year, params[:year] if params[:year].present? %>
         <%= hidden_field_tag :cost_center_id, params[:cost_center_id] if params[:cost_center_id].present? %>
+        <%= hidden_field_tag :sector, @invoice_sector_filter if @invoice_sector_filter.present? %>
       <% end %>
     </div>
     <div class="chart-body">

@@ -228,6 +228,7 @@ Rails.application.routes.draw do
     resources :budget_categories do
       get :expenses, on: :member
     end
+    resources :invoice_goals, except: :show
   end
 
    resources :operators do

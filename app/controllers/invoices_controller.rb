@@ -1,13 +1,16 @@
 class InvoicesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_invoice, only: %i[ show edit update destroy ]
+  before_action :set_invoice, only: %i[ show edit update destroy download_document ]
   before_action :set_purchasers, only: [:new, :edit, :create, :update]
 
   # GET /invoices or /invoices.json
   def index
+    prepare_invoice_sector_filter
     @invoices = Invoice.with_attached_documents
                        .includes(:supplier, :budget_category, invoice_numbers: :cost_center)
                        .all
+
+    @invoices = apply_invoice_sector_filter(@invoices)
 
     # filtro por categoria orçamentária
     @invoices = @invoices.where(budget_category_id: params[:budget_category_id]) if params[:budget_category_id].present?
@@ -130,7 +133,8 @@ class InvoicesController < ApplicationController
   # 2. Escopo base: todas as invoices, com filtro opcional de centro de custo
   #    (usando subconsulta para evitar multiplicação de linhas)
   # ------------------------------------------------------------
-  base_scope = Invoice.all
+    prepare_invoice_sector_filter
+    base_scope = apply_invoice_sector_filter(Invoice.all)
   if @cost_center_id.present?
     base_scope = base_scope.where(
       id: InvoiceNumber.where(cost_center_id: @cost_center_id).select(:invoice_id)
@@ -191,6 +195,8 @@ class InvoicesController < ApplicationController
       @period_display = "Mês de Ano"
       @has_period_filter = false
     end
+
+    load_invoice_goals(month_start, month_end, base_scope)
 
     # ------------------------------------------------------------
     # 7. Gastos por categoria no período selecionado
@@ -308,14 +314,9 @@ class InvoicesController < ApplicationController
     chart_year = Date.current.year
     category_filter = params[:category_id].presence
 
-    chart_scope = Invoice.joins(:budget_category)
-                        .where(date_issued: Date.new(chart_year, 1, 1)..Date.new(chart_year, 12, 31))
-
-    if @cost_center_id.present?
-      chart_scope = chart_scope.joins(:invoice_numbers)
-                              .where(invoice_numbers: { cost_center_id: @cost_center_id })
-                              .distinct
-    end
+    chart_scope = base_scope
+      .joins(:budget_category)
+      .where(date_issued: Date.new(chart_year, 1, 1)..Date.new(chart_year, 12, 31))
 
     chart_scope = chart_scope.where(budget_categories: { id: category_filter }) if category_filter
 
@@ -340,7 +341,7 @@ class InvoicesController < ApplicationController
       }
     end
 
-    @all_categories = BudgetCategory.all.order(:name)
+    @all_categories = invoice_budget_categories.order(:name)
 
     # ------------------------------------------------------------
     # 14. Resposta
@@ -407,8 +408,7 @@ class InvoicesController < ApplicationController
   end
 
   def download_document
-    invoice = Invoice.find(params[:id])
-    doc = invoice.documents.find(params[:document_id])
+    doc = @invoice.documents.find(params[:document_id])
 
     redirect_to rails_blob_url(doc, disposition: "attachment")
   end
@@ -416,13 +416,92 @@ class InvoicesController < ApplicationController
   private
 
   def set_purchasers
-    @purchasers = User.all.order(:name)  # ✅ Mude para .all por enquanto
+    category_id = params.dig(:invoice, :budget_category_id).presence || @invoice&.budget_category_id
+    category = BudgetCategory.find_by(id: category_id)
+
+    @purchasers = if category&.user_sector
+      User.where(sector: User.sectors.fetch(category.user_sector.to_s)).order(:name)
+    else
+      User.all.order(:name)
+    end
+  end
+
+  def prepare_invoice_sector_filter
+    @can_filter_invoice_sector = can_view_all_invoice_sectors?
+    @invoice_sector_options = BudgetCategory.sectors.values.uniq
+    @invoice_sector_filter = if @can_filter_invoice_sector
+      sector = params[:sector].presence
+      @invoice_sector_options.include?(sector) ? sector : nil
+    end
+  end
+
+  def can_view_all_invoice_sectors?
+    current_user.admin? || current_user.sector_finance?
+  end
+
+  def apply_invoice_sector_filter(scope)
+    sectors = if @can_filter_invoice_sector
+      @invoice_sector_filter.present? ? [@invoice_sector_filter] : nil
+    else
+      current_user.budget_sectors
+    end
+
+    return scope if sectors.nil?
+
+    scope.joins(:budget_category).where(budget_categories: { sector: sectors })
+  end
+
+  def invoice_budget_categories
+    categories = BudgetCategory.all
+    if @can_filter_invoice_sector
+      return categories.where(sector: @invoice_sector_filter) if @invoice_sector_filter.present?
+
+      return categories
+    end
+
+    categories.where(sector: current_user.budget_sectors)
+  end
+
+  def load_invoice_goals(month_start, month_end, base_scope)
+    @invoice_goals = [] unless @has_period_filter
+    return unless @has_period_filter
+
+    sectors = if @can_filter_invoice_sector && @invoice_sector_filter.present?
+      [@invoice_sector_filter]
+    elsif @can_filter_invoice_sector
+      BudgetCategory.sectors.values
+    else
+      current_user.budget_sectors
+    end
+
+    @invoice_goals = InvoiceGoal.includes(:budget_categories)
+                                 .where(reference_month: month_start, sector: sectors)
+                                 .order(:sector, :name)
+                                 .map do |goal|
+      actual_amount = base_scope
+        .where(date_issued: month_start..month_end, budget_category_id: goal.budget_category_ids)
+        .sum(:total)
+        .to_d
+
+      {
+        goal: goal,
+        actual_amount: actual_amount,
+        percentage: goal.target_amount.to_d.positive? ? (actual_amount / goal.target_amount.to_d * 100).round(1) : 0,
+        remaining_amount: [goal.target_amount.to_d - actual_amount, 0.to_d].max
+      }
+    end
   end
 
 
   # Use callbacks to share common setup or constraints between actions.
   def set_invoice
     @invoice = Invoice.find(params[:id])
+    return if can_view_all_invoice_sectors?
+
+    category_sector = @invoice.budget_category && BudgetCategory.sectors[@invoice.budget_category.sector]
+    return if current_user.budget_sectors.include?(category_sector)
+
+    redirect_to invoices_path, alert: "Você não tem acesso a este setor."
   end
 
     # Only allow a list of trusted parameters through.

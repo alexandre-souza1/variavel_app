@@ -14,7 +14,8 @@ class ApplicationController < ActionController::Base
       "invoices",
       "suppliers",
       "admin/budget_categories",
-      "admin/cost_centers"
+      "admin/cost_centers",
+      "admin/invoice_goals"
     ])
   end
 
@@ -31,5 +32,11 @@ class ApplicationController < ActionController::Base
     return if current_user&.admin? || current_user&.supervisor?
 
     redirect_to root_path, alert: "Acesso negado"
+  end
+
+  def require_admin_or_finance!
+    return if current_user&.admin? || current_user&.sector_finance?
+
+    redirect_to root_path, alert: "Acesso restrito ao administrador ou setor Financeiro"
   end
 end

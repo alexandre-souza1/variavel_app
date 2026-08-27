@@ -1,10 +1,44 @@
 <nav class="navbar navbar-expand-lg app-admin-nav">
   <div class="container-fluid px-4">
     <!-- Logo / Título -->
-    <%= link_to dashboard_invoices_path, class: "navbar-brand d-flex align-items-center gap-2" do %>
-      <i class="bi bi-coin text-primary fs-3"></i>
-      <span class="fw-semibold">Workstation Fin</span>
-    <% end %>
+    <div class="d-flex align-items-center gap-3">
+      <%= link_to dashboard_invoices_path, class: "navbar-brand d-flex align-items-center gap-2" do %>
+        <i class="bi bi-coin text-primary fs-3"></i>
+        <span class="fw-semibold">Workstation Fin</span>
+      <% end %>
+
+      <% if controller_path == "invoices" && action_name.in?(%w[index dashboard]) && (current_user.admin? || current_user.sector_finance?) %>
+        <details class="workstation-sector-picker">
+          <summary class="workstation-sector-trigger">
+            <i class="bi bi-briefcase me-1"></i>
+            <span>Setor · <strong><%= params[:sector].presence || "Todos" %></strong></span>
+            <i class="bi bi-chevron-down ms-1 workstation-sector-chevron"></i>
+          </summary>
+          <div class="workstation-sector-picker__menu">
+            <% sector_icons = {
+              "FROTA" => "bi-truck-front",
+              "ROTA" => "bi-sign-turn-right",
+              "AS" => "bi-building",
+              "RH" => "bi-people",
+              "SEGURANÇA" => "bi-shield-check",
+              "GESTÃO" => "bi-diagram-3",
+              "FINANCEIRO" => "bi-cash-stack",
+              "ARMAZEM" => "bi-box-seam"
+            } %>
+            <% sector_options = [nil] + BudgetCategory.sectors.values.uniq %>
+            <% sector_options.each do |sector| %>
+              <% query = request.query_parameters.except("sector") %>
+              <% query["sector"] = sector if sector.present? %>
+              <%= link_to url_for(query), class: "workstation-sector-option #{'is-active' if params[:sector].presence == sector}" do %>
+                <i class="bi <%= sector.present? ? sector_icons.fetch(sector, 'bi-briefcase') : 'bi-grid' %>"></i>
+                <span><%= sector.presence || "Todos os setores" %></span>
+                <% if params[:sector].presence == sector %><i class="bi bi-check2 ms-auto"></i><% end %>
+              <% end %>
+            <% end %>
+          </div>
+        </details>
+      <% end %>
+    </div>
 
     <!-- Toggle para mobile -->
     <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#financeNavbar" aria-controls="financeNavbar">
@@ -23,6 +57,7 @@
           <ul class="dropdown-menu app-dropdown-menu">
             <li><%= link_to 'Centros de Custo', admin_cost_centers_path, class: 'dropdown-item app-dropdown-item' %></li>
             <li><%= link_to 'Categorias', admin_budget_categories_path, class: 'dropdown-item app-dropdown-item' %></li>
+            <li><%= link_to 'Metas por setor', admin_invoice_goals_path, class: 'dropdown-item app-dropdown-item' %></li>
             <li><%= link_to 'Fornecedores', suppliers_path, class: 'dropdown-item app-dropdown-item' %></li>
           </ul>
         </li>

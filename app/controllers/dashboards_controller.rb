@@ -1,5 +1,6 @@
 class DashboardsController < ApplicationController
   before_action :authenticate_user!
+  before_action :require_fleet_dashboard_access, only: :index
   before_action :set_mes_ano, only: [:index, :placas_por_setor, :mapas]
 
   def index
@@ -22,7 +23,10 @@ class DashboardsController < ApplicationController
     # Período: mês atual
     month_start = Date.current.beginning_of_month
     month_end   = Date.current.end_of_month
-    month_scope = Invoice.where(date_issued: month_start..month_end)
+    fleet_category_scope = { budget_categories: { sector: BudgetCategory.sectors[:frota] } }
+    month_scope = Invoice.joins(:budget_category)
+                         .where(date_issued: month_start..month_end)
+                         .where(fleet_category_scope)
 
     # Cards
     @current_month_cost = month_scope.sum(:total)
@@ -42,7 +46,9 @@ class DashboardsController < ApplicationController
 
     # Evolução mensal (últimos 12 meses)
     monthly_totals = Invoice
+      .joins(:budget_category)
       .where(date_issued: 11.months.ago.beginning_of_month..Date.current.end_of_month)
+      .where(fleet_category_scope)
 
     # Aplica filtro por categoria se selecionado
     if @selected_category_id.present?
@@ -63,6 +69,7 @@ class DashboardsController < ApplicationController
     # ------------------------------------------------------------
     @categories = BudgetCategory
       .joins(:invoices)
+      .where(sector: BudgetCategory.sectors[:frota])
       .where(invoices: { date_issued: 11.months.ago.beginning_of_month..Date.current.end_of_month })
       .distinct
       .order(:name)
@@ -73,6 +80,7 @@ class DashboardsController < ApplicationController
     @total_vehicles = Plate.where(setor: "ROTA").count
     @vehicles_by_type = Plate.where(setor: "ROTA").group(:tipo).count
     @vehicles_not_used_this_month = vehicles_not_used_in_month(@mes, @ano, "ROTA")
+    @fleet_coverage = fleet_coverage_for_month(@mes, @ano)
 
     # ------------------------------------------------------------
     # 4. Último mapa (baseado no campo 'data' – string DDMMYYYY)
@@ -171,6 +179,23 @@ class DashboardsController < ApplicationController
   end
 
   private
+
+  def require_fleet_dashboard_access
+    return if current_user.admin? || current_user.sector_fleet?
+
+    redirect_to root_path, alert: "Acesso restrito ao dashboard da Frota"
+  end
+
+  def fleet_coverage_for_month(month, year)
+    start_date = Date.new(year, month, 1)
+    availabilities = FleetAvailability
+      .includes(:fleet_availability_items)
+      .where(date: start_date..start_date.end_of_month)
+
+    return 0 if availabilities.empty?
+
+    (availabilities.sum(&:coverage_percentage).to_f / availabilities.size).round
+  end
 
   def set_mes_ano
     @mes = params[:mes].presence&.to_i || Date.current.month

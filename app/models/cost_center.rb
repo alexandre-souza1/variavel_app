@@ -5,6 +5,7 @@ class CostCenter < ApplicationRecord
   validates :sector, presence: true
 
   enum sector: {
+    frota: 'FROTA',
     rota: 'ROTA',
     rh: 'RH',
     seguranca: 'SEGURANÇA',

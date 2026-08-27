@@ -1,0 +1,52 @@
+<div class="admin-catalog-page">
+  <div class="admin-catalog-header">
+    <div>
+      <p class="admin-catalog-eyebrow"><i class="bi bi-bullseye me-1"></i> Financeiro · Metas</p>
+      <h1><i class="bi bi-bullseye me-2"></i>Metas por setor</h1>
+      <p>Acompanhe metas mensais agrupadas pelas categorias selecionadas.</p>
+    </div>
+    <%= link_to new_admin_invoice_goal_path, class: "az-report-btn az-report-btn--primary" do %>
+      <i class="bi bi-plus-lg"></i> Nova meta
+    <% end %>
+  </div>
+
+  <div class="card admin-catalog-card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table admin-catalog-table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Meta</th>
+              <th>Setor</th>
+              <th>Mês</th>
+              <th>Categorias</th>
+              <th class="text-end">Valor</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @invoice_goals.each do |goal| %>
+              <tr>
+                <td><strong><%= goal.name %></strong></td>
+                <td><span class="badge bg-secondary"><%= InvoiceGoal.sectors[goal.sector] %></span></td>
+                <td><%= l(goal.reference_month, format: "%B de %Y") %></td>
+                <td><%= goal.budget_categories.map(&:name).join(", ") %></td>
+                <td class="text-end"><%= number_to_currency(goal.target_amount, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                <td>
+                  <div class="d-flex gap-2">
+                    <%= link_to edit_admin_invoice_goal_path(goal), class: "btn btn-sm btn-outline-primary", title: "Editar meta" do %><i class="bi bi-pencil"></i><% end %>
+                    <%= button_to admin_invoice_goal_path(goal), method: :delete, class: "btn btn-sm btn-outline-danger", title: "Excluir meta", data: { turbo_confirm: "Tem certeza?" } do %><i class="bi bi-trash"></i><% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <% if @invoice_goals.empty? %>
+        <p class="text-muted mb-0">Nenhuma meta cadastrada.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

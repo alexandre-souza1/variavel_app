@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_26_000000) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_27_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -405,6 +405,26 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_26_000000) do
     t.string "period"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "invoice_goal_categories", force: :cascade do |t|
+    t.bigint "invoice_goal_id", null: false
+    t.bigint "budget_category_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["budget_category_id"], name: "index_invoice_goal_categories_on_budget_category_id"
+    t.index ["invoice_goal_id", "budget_category_id"], name: "index_invoice_goal_categories_on_goal_and_category", unique: true
+    t.index ["invoice_goal_id"], name: "index_invoice_goal_categories_on_invoice_goal_id"
+  end
+
+  create_table "invoice_goals", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "sector", null: false
+    t.date "reference_month", null: false
+    t.decimal "target_amount", precision: 15, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["sector", "reference_month", "name"], name: "index_invoice_goals_on_sector_and_reference_month_and_name", unique: true
   end
 
   create_table "invoice_numbers", force: :cascade do |t|
@@ -828,6 +848,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_26_000000) do
   add_foreign_key "fleet_availability_items", "plates"
   add_foreign_key "fleet_dimensioning_standard_plates", "fleet_dimensionings"
   add_foreign_key "fleet_dimensioning_standard_plates", "plates"
+  add_foreign_key "invoice_goal_categories", "budget_categories"
+  add_foreign_key "invoice_goal_categories", "invoice_goals"
   add_foreign_key "invoice_numbers", "cost_centers"
   add_foreign_key "invoice_numbers", "invoices"
   add_foreign_key "invoices", "budget_categories"

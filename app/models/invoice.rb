@@ -16,6 +16,7 @@ class Invoice < ApplicationRecord
 
   # Validação customizada para o code
   validate :code_required_unless_abastecimento
+  validate :purchaser_matches_budget_category_sector, if: :sector_relationship_changed?
 
   # Método para obter a lista de purchasers ativos
   def self.available_purchasers
@@ -34,6 +35,18 @@ class Invoice < ApplicationRecord
   }.freeze
 
   private
+
+  def sector_relationship_changed?
+    new_record? || will_save_change_to_purchaser_id? || will_save_change_to_budget_category_id?
+  end
+
+  def purchaser_matches_budget_category_sector
+    return if purchaser.blank? || budget_category.blank?
+    return if budget_category.user_sector.blank? || purchaser.sector.blank?
+    return if purchaser.sector.to_sym == budget_category.user_sector
+
+    errors.add(:purchaser, "deve pertencer ao setor #{BudgetCategory.sectors[budget_category.sector]}")
+  end
 
   def code_required_unless_abastecimento
     # Se NÃO for abastecimento E code estiver em branco, adiciona erro

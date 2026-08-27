@@ -45,11 +45,12 @@
 
     <div class="kpi-card">
       <div class="kpi-icon bg-success-soft">
-        <i class="bi bi-tags text-success"></i>
+        <i class="bi bi-speedometer2 text-success"></i>
       </div>
       <div class="kpi-info">
-        <span class="kpi-label">Tipos de Veículo</span>
-        <span class="kpi-value"><%= @vehicles_by_type.keys.size %></span>
+        <span class="kpi-label">Cobertura da Frota</span>
+        <span class="kpi-value"><%= @fleet_coverage %>%</span>
+        <span class="kpi-sub">média no mês</span>
       </div>
     </div>
 

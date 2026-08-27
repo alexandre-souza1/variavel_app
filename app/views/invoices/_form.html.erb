@@ -130,7 +130,7 @@
             <div class="col-md-4 mb-3">
               <%= f.label :purchaser_id, "Comprador", class: "form-label fw-bold" %>
               <%= f.collection_select :purchaser_id,
-                    User.all.order(:name),
+                    (@purchasers || User.all.order(:name)),
                     :id,
                     :name,
                     { prompt: "Selecione o comprador" },

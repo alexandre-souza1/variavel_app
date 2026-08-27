@@ -45,6 +45,24 @@ class User < ApplicationRecord
     "Planejamento" => :planning
   }.freeze
 
+  CATEGORY_SECTORS_BY_USER_SECTOR = {
+    fleet: ['FROTA'],
+    du: ['ROTA', 'AS'],
+    warehouse: ['ARMAZEM'],
+    hr: ['RH'],
+    safety: ['SEGURANÇA'],
+    finance: ['FINANCEIRO'],
+    planning: ['GESTÃO']
+  }.freeze
+
+  def budget_sectors
+    CATEGORY_SECTORS_BY_USER_SECTOR[sector&.to_sym] || []
+  end
+
+  def budget_sector
+    budget_sectors.first
+  end
+
     enum role: { user: 0, supervisor: 1, admin: 2, mechanical: 3}
 
   # Defina um valor padrão, se quiser
