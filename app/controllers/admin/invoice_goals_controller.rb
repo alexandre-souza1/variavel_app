@@ -48,10 +48,10 @@ class Admin::InvoiceGoalsController < ApplicationController
 
   def load_budget_categories
     sector = @invoice_goal&.sector || params.dig(:invoice_goal, :sector)
-    sector_value = BudgetCategory.sectors[sector.to_s]
+    sector_key = BudgetCategory.sectors.key(sector.to_s) || sector.to_s
 
-    @budget_categories = if sector_value.present?
-      BudgetCategory.where(sector: sector_value).order(:name)
+    @budget_categories = if sector_key.present?
+      BudgetCategory.where(sector: sector_key).order(:name)
     else
       BudgetCategory.order(:sector, :name)
     end

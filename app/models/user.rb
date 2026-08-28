@@ -46,13 +46,13 @@ class User < ApplicationRecord
   }.freeze
 
   CATEGORY_SECTORS_BY_USER_SECTOR = {
-    fleet: ['FROTA'],
-    du: ['ROTA', 'AS'],
-    warehouse: ['ARMAZEM'],
-    hr: ['RH'],
-    safety: ['SEGURANÇA'],
-    finance: ['FINANCEIRO'],
-    planning: ['GESTÃO']
+    fleet: ['frota'],
+    du: ['rota', 'as'],
+    warehouse: ['armazem'],
+    hr: ['rh'],
+    safety: ['seguranca'],
+    finance: ['financeiro'],
+    planning: ['gestao']
   }.freeze
 
   def budget_sectors

@@ -431,7 +431,7 @@ class InvoicesController < ApplicationController
     @invoice_sector_options = BudgetCategory.sectors.values.uniq
     @invoice_sector_filter = if @can_filter_invoice_sector
       sector = params[:sector].presence
-      @invoice_sector_options.include?(sector) ? sector : nil
+      BudgetCategory.sectors.key(sector) || (BudgetCategory.sectors.key?(sector) ? sector : nil)
     end
   end
 
@@ -498,7 +498,7 @@ class InvoicesController < ApplicationController
     @invoice = Invoice.find(params[:id])
     return if can_view_all_invoice_sectors?
 
-    category_sector = @invoice.budget_category && BudgetCategory.sectors[@invoice.budget_category.sector]
+    category_sector = @invoice.budget_category&.sector
     return if current_user.budget_sectors.include?(category_sector)
 
     redirect_to invoices_path, alert: "Você não tem acesso a este setor."

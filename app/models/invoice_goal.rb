@@ -36,10 +36,10 @@ class InvoiceGoal < ApplicationRecord
   def categories_must_belong_to_goal_sector
     return if sector.blank? || budget_categories.empty?
 
-    expected_sector = BudgetCategory.sectors[sector]
-    invalid_categories = budget_categories.reject { |category| category.sector == sector || category.sector == expected_sector }
+    expected_sector = sector.to_s
+    invalid_categories = budget_categories.reject { |category| category.sector == expected_sector }
     return if invalid_categories.empty?
 
-    errors.add(:budget_categories, "devem pertencer ao setor #{expected_sector}")
+    errors.add(:budget_categories, "devem pertencer ao setor #{BudgetCategory.sectors[expected_sector]}")
   end
 end

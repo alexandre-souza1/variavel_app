@@ -23,7 +23,7 @@ class DashboardsController < ApplicationController
     # Período: mês atual
     month_start = Date.current.beginning_of_month
     month_end   = Date.current.end_of_month
-    fleet_category_scope = { budget_categories: { sector: BudgetCategory.sectors[:frota] } }
+    fleet_category_scope = { budget_categories: { sector: :frota } }
     month_scope = Invoice.joins(:budget_category)
                          .where(date_issued: month_start..month_end)
                          .where(fleet_category_scope)
@@ -69,7 +69,7 @@ class DashboardsController < ApplicationController
     # ------------------------------------------------------------
     @categories = BudgetCategory
       .joins(:invoices)
-      .where(sector: BudgetCategory.sectors[:frota])
+      .where(sector: :frota)
       .where(invoices: { date_issued: 11.months.ago.beginning_of_month..Date.current.end_of_month })
       .distinct
       .order(:name)
