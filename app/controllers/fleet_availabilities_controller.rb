@@ -1,6 +1,6 @@
 class FleetAvailabilitiesController < ApplicationController
   before_action :authenticate_user!
-  before_action :auto_lock_expired_fleet_availabilities
+  before_action :auto_lock_expired_fleet_availabilities, except: :lock
   before_action :set_fleet_availability, only: %i[show destroy lock unlock restore_standard_layout]
   before_action :require_admin!, only: %i[destroy unlock]
   before_action :require_creator_edit_access!, only: %i[
@@ -9,6 +9,7 @@ class FleetAvailabilitiesController < ApplicationController
   ]
 
   def index
+    @fleet_availability_setting = FleetAvailabilitySetting.current
     @dimensioning_periods = FleetDimensioning.recent
     @selected_dimensioning = selected_dimensioning_period
     @fleet_availabilities =

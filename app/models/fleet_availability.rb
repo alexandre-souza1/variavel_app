@@ -160,8 +160,20 @@ class FleetAvailability < ApplicationRecord
     where(id: id).update_all(sanitized_sql)
   end
 
-  def self.auto_lock_expired!
+  def self.auto_lock_expired!(now: Time.current)
     return 0 unless locking_enabled?
+
+    setting = FleetAvailabilitySetting.current
+    today = now.to_date
+    eligible = where(locked_at: nil, auto_lock_exempted_at: nil)
+               .where("date < ?", today)
+    eligible = eligible.or(
+      where(locked_at: nil, auto_lock_exempted_at: nil,
+            date: today..(today + 1.day))
+    ) if setting.auto_lock_at(today) <= now
+    eligible_ids = eligible.select(:id)
+
+    return 0 if eligible_ids.empty?
 
     sanitized_sql = sanitize_sql_array(
       [
@@ -175,8 +187,7 @@ class FleetAvailability < ApplicationRecord
       ]
     )
 
-    where(locked_at: nil)
-      .where("created_at <= ?", 24.hours.ago)
+    where(id: eligible_ids)
       .update_all(sanitized_sql)
   end
 

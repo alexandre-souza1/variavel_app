@@ -373,6 +373,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_28_010000) do
     t.index ["plate_id"], name: "index_fleet_availability_items_on_plate_id"
   end
 
+  create_table "fleet_availability_settings", force: :cascade do |t|
+    t.string "auto_lock_time", default: "08:00", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "auto_open_time", default: "08:00", null: false
+  end
+
   create_table "fleet_dimensioning_standard_plates", force: :cascade do |t|
     t.bigint "fleet_dimensioning_id", null: false
     t.bigint "plate_id", null: false

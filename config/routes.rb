@@ -130,6 +130,9 @@ Rails.application.routes.draw do
   resource :fleet_availability_email_setting,
            only: %i[edit update],
            path: "fleet_availabilities/email_setting"
+  resource :fleet_availability_setting,
+           only: %i[edit update],
+           path: "fleet_availabilities/setting"
 
   resources :fleet_availabilities do
     member do

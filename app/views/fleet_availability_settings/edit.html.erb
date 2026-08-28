@@ -1,0 +1,27 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1>Configuração da disponibilidade</h1>
+      <p class="text-muted mb-0">Defina quando as disponibilidades abertas serão fechadas automaticamente.</p>
+    </div>
+    <%= link_to "Voltar", fleet_availabilities_path, class: "btn btn-outline-secondary" %>
+  </div>
+
+  <%= form_with model: @fleet_availability_setting,
+                url: fleet_availability_setting_path,
+                method: :patch do |f| %>
+    <% if @fleet_availability_setting.errors.any? %>
+      <div class="alert alert-danger"><%= @fleet_availability_setting.errors.full_messages.to_sentence %></div>
+    <% end %>
+
+    <div class="card mb-3" style="max-width: 540px">
+      <div class="card-body">
+        <%= f.label :auto_lock_time, "Fechar disponibilidade do próximo dia às", class: "form-label" %>
+        <%= f.time_field :auto_lock_time, value: @fleet_availability_setting.auto_lock_time.to_s.first(5), class: "form-control" %>
+        <div class="form-text">A disponibilidade de amanhã será travada hoje nesse horário, para envio. O horário usa o fuso de Brasília.</div>
+      </div>
+    </div>
+
+    <%= f.submit "Salvar configuração", class: "btn btn-primary" %>
+  <% end %>
+</div>
