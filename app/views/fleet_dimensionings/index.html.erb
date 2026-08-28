@@ -1,25 +1,21 @@
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="app-page">
+  <div class="app-page-header">
     <div>
-      <h2 class="fw-bold mb-1">Dimensionamentos da Frota</h2>
-
-      <p class="text-muted mb-0">
-        Quinzenas usadas para montar a disponibilidade da frota.
-      </p>
+      <p class="app-page-eyebrow"><i class="bi bi-truck me-1"></i>Configurações · Frota</p>
+      <h1><i class="bi bi-sliders me-2"></i>Dimensionamentos da frota</h1>
+      <p>Quinzenas usadas para montar a disponibilidade da frota.</p>
     </div>
-
-    <%= link_to new_fleet_dimensioning_path,
-                class: "btn btn-primary" do %>
-      <i class="bi bi-plus-circle"></i>
-      Novo Dimensionamento
-    <% end %>
+    <div class="app-page-actions">
+      <%= link_to new_fleet_dimensioning_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg me-1"></i> Novo dimensionamento<% end %>
+      <%= link_to "Voltar", root_path, class: "btn btn-outline-secondary" %>
+    </div>
   </div>
 
-  <div class="card shadow-sm border-0">
-    <div class="card-body p-0">
+  <div class="app-table-section">
+    <div class="app-table-section__body">
       <% if @fleet_dimensionings.any? %>
         <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
+          <div class="app-table-shell"><table class="table app-table app-table--data mb-0">
             <thead class="table-light">
               <tr>
                 <th>Nome</th>
@@ -46,15 +42,14 @@
                   <td class="text-center"><%= dimensioning.as_quantity %></td>
                   <td class="text-end">
                     <%= link_to edit_fleet_dimensioning_path(dimensioning),
-                                class: "btn btn-sm btn-outline-primary" do %>
-                      <i class="bi bi-pencil"></i>
-                      Editar
+                                class: "icon-btn", title: "Editar dimensionamento", aria: { label: "Editar dimensionamento" } do %>
+                      <i class="bi bi-pencil-square" aria-hidden="true"></i>
                     <% end %>
                   </td>
                 </tr>
               <% end %>
             </tbody>
-          </table>
+          </table></div>
         </div>
       <% else %>
         <div class="text-center py-5">
@@ -73,8 +68,8 @@
           <% end %>
         </div>
       <% end %>
-    </div>
   </div>
+</div>
   <div class="mt-2">
       <%= link_to fleet_availabilities_path,
                 class: "btn btn-outline-secondary" do %>

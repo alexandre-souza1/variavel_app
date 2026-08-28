@@ -1,16 +1,19 @@
-<div class="driver-report-container">
-  <div class="container p-3">
-    <div class="row align-items-center">
-      <div class="col-md-8">
-        <h1 class="mb-0"><i class="bi bi-card-list"> </i>Resultados Diarios AZ</h1>
-      </div>
-      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
-        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
-      </div>
+<div class="app-page">
+  <div class="app-page-header">
+    <div>
+      <p class="app-page-eyebrow"><i class="bi bi-calendar-check me-1"></i>Resultados · AZ</p>
+      <h1><i class="bi bi-graph-up-arrow me-2"></i>Resultados diários</h1>
+      <p>Consulte os lançamentos e indicadores diários da operação AZ.</p>
+    </div>
+    <div class="app-page-actions">
+      <% if current_user.admin? %>
+        <%= link_to new_az_mapa_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg me-1"></i> Novo lançamento<% end %>
+      <% end %>
+      <%= link_to "Voltar", root_path, class: "btn btn-outline-secondary" %>
     </div>
   </div>
 
-  <div class="container">
+  <div>
     <div class="card shadow-sm rounded mb-4">
       <div class="card-body">
         <div class="row align-items-center">
@@ -27,7 +30,6 @@
           <div class="col-md-6 text-md-end">
             <% if current_user.admin? %>
             <div class="d-flex gap-2 flex-row-reverse">
-              <%= link_to 'Novo Lançamento', new_az_mapa_path, class: "btn btn-primary" %>
               <%= button_to "Apagar todos os Lançamentos", destroy_all_az_mapas_path, method: :delete, data: { turbo_confirm: "Tem certeza que deseja apagar TODOS os Lançamentos?" }, class: "btn btn-danger" %>
             </div>
             <% end %>
@@ -47,7 +49,7 @@
       </div>
       <div class="card-body">
           <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle">
+            <div class="app-table-shell"><table class="table app-table app-table--data">
               <thead class="table-primary text-center">
                 <tr>
                   <th>Data</th>
@@ -84,14 +86,18 @@
                         <span class="badge bg-danger">Não</span>
                       <% end %>
                     </td>
-                    <td class="d-flex gap-2">
-                      <%= link_to 'Editar', edit_az_mapa_path(az_mapa), class: 'btn btn-warning btn-sm' %>
-                      <%= link_to 'Excluir', az_mapa_path(az_mapa), data: { turbo_method: :delete, turbo_confirm: 'Tem certeza?' }, class: 'btn btn-danger btn-sm' %>
+                    <td class="text-end">
+                      <%= link_to edit_az_mapa_path(az_mapa), class: 'icon-btn', title: 'Editar mapa AZ', aria: { label: 'Editar mapa AZ' } do %>
+                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                      <% end %>
+                      <%= link_to az_mapa_path(az_mapa), data: { turbo_method: :delete, turbo_confirm: 'Tem certeza?' }, class: 'icon-btn danger', title: 'Excluir mapa AZ', aria: { label: 'Excluir mapa AZ' } do %>
+                        <i class="bi bi-trash3" aria-hidden="true"></i>
+                      <% end %>
                     </td>
                   </tr>
                 <% end %>
               </tbody>
-            </table>
+            </table></div>
           </div>
       </div>
       <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>

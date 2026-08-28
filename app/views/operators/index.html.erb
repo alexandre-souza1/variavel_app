@@ -1,46 +1,25 @@
-<div class="driver-report-container">
-  <div class="container p-3">
-    <div class="row align-items-center">
-      <div class="col-md-8">
-        <h1 class="mb-0"><i class="bi bi-card-list"> </i>Operadores Cadastrados</h1>
-      </div>
-      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
-        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
-      </div>
+<div class="app-page">
+  <div class="app-page-header">
+    <div>
+      <p class="text-uppercase text-muted small fw-semibold mb-1">Operação</p>
+      <h1 class="h3 mb-1"><i class="bi bi-person-workspace me-2"></i>Operadores</h1>
+      <p class="text-muted mb-0">Cadastre e acompanhe os operadores utilizados na operação.</p>
+    </div>
+    <div class="app-page-actions">
+      <% if current_user.admin? || current_user.supervisor? %>
+        <%= button_to destroy_all_operators_path, method: :delete, class: "btn btn-outline-warning", form: { class: "d-inline" }, data: { turbo_confirm: "Inativar TODOS os operadores? O histórico será preservado." } do %><i class="bi bi-archive me-1"></i> Inativar todos<% end %>
+        <%= link_to import_operators_path, class: "btn btn-outline-primary" do %><i class="bi bi-upload me-1"></i> Importar CSV<% end %>
+        <%= link_to new_operator_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg me-1"></i> Novo operador<% end %>
+      <% end %>
+      <%= link_to "Voltar", root_path, class: "btn btn-outline-secondary" %>
     </div>
   </div>
+  <%= render "shared/flashes" if lookup_context.exists?("shared/flashes", [], true) %>
 
-  <div class="container">
-
-    <div class="card shadow-sm rounded mb-4">
-      <div class="card-body">
-        <div class="row align-items-center">
-          <div class="col-md-6">
-              <h2 class="mb-1"><i class="bi bi-truck"></i> Total de Operadores: <%= @operators.size %></h2>
-              <p class="text-muted mb-0"> <%= %></p>
-          </div>
-          <div class="col-md-6 text-md-end">
-            <% if current_user.admin? or current_user.supervisor? %>
-              <%= button_to "Inativar todos os operadores", destroy_all_operators_path,
-                  method: :delete,
-                  data: { turbo_confirm: "Inativar TODOS os operadores? O histórico será preservado." },
-                  class: "btn btn-danger d-inline-block",
-                  form: { class: "d-inline" } %>
-            <% end %>
-            <%= link_to "Novo Operador", new_operator_path, class: "btn btn-light" %>
-            <%= link_to "Importar Operadores", import_operators_path, class: "btn btn-light" %>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card shadow-sm rounded mb-4">
-      <div class="card-header bg-light border-bottom">
-        <h5 class="mb-0"><i class="bi bi-person-fill"></i> Detalhes dos Operadores</h5>
-      </div>
-      <div class="card-body">
+    <div class="app-table-section">
+      <div class="app-table-section__body">
         <div class="table-responsive">
-          <table class="table table-hover align-middle">
+          <div class="app-table-shell"><table class="table app-table app-table--data">
             <thead class="table-light">
           <tr>
             <th>Nome</th>
@@ -61,21 +40,26 @@
               <td><%= operator.data_nascimento.strftime("%d/%m/%Y") if operator.data_nascimento %></td>
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
-                <%= link_to "Ver", operator_path(operator), class: "btn btn-outline-primary" %>
-                <%= link_to "Editar", edit_operator_path(operator), class: "btn btn-outline-primary" %>
+                <%= link_to operator_path(operator), class: "icon-btn", title: "Ver operador", aria: { label: "Ver operador" } do %>
+                  <i class="bi bi-eye" aria-hidden="true"></i>
+                <% end %>
+                <%= link_to edit_operator_path(operator), class: "icon-btn", title: "Editar operador", aria: { label: "Editar operador" } do %>
+                  <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                <% end %>
                 <% if current_user.admin? or current_user.supervisor? %>
-                <%= link_to "Inativar", operator_path(operator),
+                <%= link_to operator_path(operator),
                   data: { turbo_method: :delete, turbo_confirm: "Inativar este operador? O histórico será preservado." },
-                class: "btn btn-outline-danger" %>
+                class: "icon-btn danger", title: "Inativar operador", aria: { label: "Inativar operador" } do %>
+                  <i class="bi bi-archive" aria-hidden="true"></i>
+                <% end %>
                 <% end %>
                 </div>
               </td>
             </tr>
           <% end %>
         </tbody>
-      </table>
+          </table></div>
     </div>
-    <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
   </div>
 </div>
 </div>

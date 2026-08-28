@@ -1,46 +1,25 @@
-<div>
-  <div class="container p-3">
-    <div class="row align-items-center">
-      <div class="col-md-8">
-        <h1 class="mb-0"><i class="bi bi-card-list"> </i>Ajudantes Cadastrados</h1>
-      </div>
-      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
-        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
-      </div>
+<div class="app-page">
+  <div class="app-page-header">
+    <div>
+      <p class="text-uppercase text-muted small fw-semibold mb-1">Operação</p>
+      <h1 class="h3 mb-1"><i class="bi bi-people me-2"></i>Ajudantes</h1>
+      <p class="text-muted mb-0">Cadastre e acompanhe os ajudantes utilizados na operação.</p>
+    </div>
+    <div class="app-page-actions">
+      <% if current_user.admin? || current_user.supervisor? %>
+        <%= button_to destroy_all_ajudantes_path, method: :delete, class: "btn btn-outline-warning", form: { class: "d-inline" }, data: { turbo_confirm: "Inativar TODOS os ajudantes? O histórico será preservado." } do %><i class="bi bi-archive me-1"></i> Inativar todos<% end %>
+        <%= link_to import_ajudantes_path, class: "btn btn-outline-primary" do %><i class="bi bi-upload me-1"></i> Importar CSV<% end %>
+        <%= link_to new_ajudante_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg me-1"></i> Novo ajudante<% end %>
+      <% end %>
+      <%= link_to "Voltar", root_path, class: "btn btn-outline-secondary" %>
     </div>
   </div>
+  <%= render "shared/flashes" if lookup_context.exists?("shared/flashes", [], true) %>
 
-  <div class="container">
-
-    <div class="card shadow-sm rounded mb-4">
-      <div class="card-body">
-        <div class="row align-items-center">
-          <div class="col-md-6">
-              <h2 class="mb-1"><i class="bi bi-truck"></i> Total de Ajudantes: <%= @ajudantes.size %></h2>
-              <p class="text-muted mb-0"> <%= %></p>
-          </div>
-          <div class="col-md-6 text-md-end">
-          <% if current_user.admin? or current_user.supervisor? %>
-            <%= button_to "Inativar todos os ajudantes", destroy_all_ajudantes_path,
-              method: :delete,
-              data: { turbo_confirm: "Inativar TODOS os ajudantes? O histórico será preservado." },
-              class: "btn btn-danger d-inline-block",
-              form: { class: "d-inline" } %>
-          <% end %>
-            <%= link_to "Novo Ajudante", new_ajudante_path, class: "btn btn-light" %>
-            <%= link_to "Importar Ajudantes", import_ajudantes_path, class: "btn btn-light" %>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card shadow-sm rounded mb-4">
-      <div class="card-header bg-light border-bottom">
-        <h5 class="mb-0"><i class="bi bi-person-fill"></i> Detalhes dos Motoristas</h5>
-      </div>
-      <div class="card-body">
+    <div class="app-table-section">
+      <div class="app-table-section__body">
         <div class="table-responsive">
-          <table class="table table-hover align-middle">
+          <div class="app-table-shell"><table class="table app-table app-table--data">
             <thead class="table-light">
               <tr>
                 <th>Nome</th>
@@ -61,19 +40,24 @@
                   <td><%= ajudante.data_nascimento.strftime("%d/%m/%Y") if ajudante.data_nascimento %></td>
                   <td class="text-end">
                     <div class="btn-group btn-group-sm" role="group">
-                    <%= link_to "Ver", ajudante_path(ajudante), class: "btn btn-outline-primary" %>
-                    <%= link_to "Editar", edit_ajudante_path(ajudante), class: "btn btn-outline-primary" %>
+                    <%= link_to ajudante_path(ajudante), class: "icon-btn", title: "Ver ajudante", aria: { label: "Ver ajudante" } do %>
+                      <i class="bi bi-eye" aria-hidden="true"></i>
+                    <% end %>
+                    <%= link_to edit_ajudante_path(ajudante), class: "icon-btn", title: "Editar ajudante", aria: { label: "Editar ajudante" } do %>
+                      <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                    <% end %>
                     <% if current_user.admin? or current_user.supervisor? %>
-                      <%= link_to "Inativar", ajudante_path(ajudante), method: :delete, data: { confirm: "Inativar este ajudante? O histórico será preservado." }, class: "btn btn-outline-warning" %>
+                      <%= link_to ajudante_path(ajudante), method: :delete, data: { confirm: "Inativar este ajudante? O histórico será preservado." }, class: "icon-btn danger", title: "Inativar ajudante", aria: { label: "Inativar ajudante" } do %>
+                        <i class="bi bi-archive" aria-hidden="true"></i>
+                      <% end %>
                     <% end %>
                   </div>
                   </td>
                 </tr>
               <% end %>
             </tbody>
-          </table>
+          </table></div>
         </div>
-        <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
       </div>
     </div>
   </div>

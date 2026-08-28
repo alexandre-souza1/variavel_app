@@ -17,6 +17,17 @@
 
   .invoice-index-eyebrow { margin: 0 0 .4rem; color: var(--bs-primary); font-size: .74rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
   .invoice-index-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .55rem; }
+  .invoice-index-back-link {
+    align-items: center;
+    align-self: center;
+    color: var(--bs-secondary-color);
+    display: inline-flex;
+    font-size: .84rem;
+    gap: .35rem;
+    text-decoration: none;
+
+    &:hover { color: var(--bs-primary); }
+  }
 
   .az-report-btn {
     display: inline-flex;
@@ -70,37 +81,63 @@
     > .invoice-summary-total strong { color: var(--bs-primary-text-emphasis); }
   }
 
-  .invoice-filter-card,
-  .invoice-results-card {
-    border: 1px solid var(--bs-border-color);
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, .055);
+  .invoice-filter-section,
+  .invoice-results-section {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    overflow: visible;
   }
 
-  .invoice-filter-card .card-header,
-  .invoice-results-card .card-header {
+  .invoice-filter-section {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 14px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, .055);
+    padding: 1rem 1.25rem 1.15rem;
+  }
+
+  .invoice-section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1.1rem 1.25rem;
-    background: var(--bs-tertiary-bg);
-    border-bottom: 1px solid var(--bs-border-color);
+    padding: 0 0 .75rem;
+    background: transparent;
+    border-bottom: 0;
   }
 
-  .invoice-filter-card .card-body,
-  .invoice-results-card .card-body { padding: 1.1rem 1.25rem; }
-  .invoice-filter-card .card-header small,
-  .invoice-results-card .card-header small { display: block; margin-top: .2rem; color: var(--bs-secondary-color); font-size: .78rem; }
-  .invoice-filter-card .form-label { margin-bottom: .35rem; color: var(--bs-secondary-color); font-size: .78rem; font-weight: 650; }
-  .invoice-filter-card .form-control,
-  .invoice-filter-card .form-select { border-radius: 9px; }
+  .invoice-section-header small { display: block; margin-top: .2rem; color: var(--bs-secondary-color); font-size: .78rem; }
+  .invoice-section-body { padding: 0; }
+  .invoice-filter-section .invoice-section-header { border-bottom: 1px solid var(--bs-border-color); margin-bottom: 1rem; }
+  .invoice-filter-section .form-label { margin-bottom: .35rem; color: var(--bs-secondary-color); font-size: .78rem; font-weight: 650; }
+  .invoice-filter-section .form-control,
+  .invoice-filter-section .form-select { border-radius: 9px; }
+  .invoice-filter-field-with-actions {
+    align-items: center;
+    display: flex;
+    gap: .45rem;
+
+    .form-control { min-width: 0; }
+  }
+
+  .invoice-filter-actions {
+    align-items: center;
+    display: flex;
+    gap: .45rem;
+    flex-shrink: 0;
+
+    .btn { border-radius: 9px; min-height: 34px; }
+    .btn-primary { padding-left: .65rem; padding-right: .65rem; }
+    .btn-outline-secondary { padding-left: .65rem; padding-right: .65rem; }
+  }
   .invoice-result-count { padding: .3rem .65rem; border-radius: 999px; background: rgba(var(--bs-primary-rgb), .1); color: var(--bs-primary); font-size: .75rem; font-weight: 700; white-space: nowrap; }
-  .invoice-results-card .table { margin-bottom: 0; font-size: .84rem; }
-  .invoice-results-card thead th { padding-top: .8rem; padding-bottom: .8rem; color: var(--bs-secondary-color); font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
-  .invoice-results-card tbody td { padding-top: .75rem; padding-bottom: .75rem; }
-  .invoice-results-card tbody tr:hover { background: rgba(var(--bs-primary-rgb), .045); }
+  .invoice-filter-section { margin-bottom: 1.5rem !important; }
+  .invoice-results-section { margin-bottom: 1.5rem !important; }
+  .invoice-results-section .table { margin-bottom: 0; font-size: .84rem; }
+  .invoice-results-section thead th { padding-top: .8rem; padding-bottom: .8rem; color: var(--bs-secondary-color); font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+  .invoice-results-section tbody td { padding-top: .75rem; padding-bottom: .75rem; }
+  .invoice-results-section tbody tr:hover { background: rgba(var(--bs-primary-rgb), .045); }
   .invoice-code-link { color: var(--bs-primary); font-weight: 700; text-decoration: none; }
   .invoice-code-link:hover { text-decoration: underline; }
   .invoice-index-page .pagination { --bs-pagination-border-radius: 8px; }
@@ -116,9 +153,7 @@
     .invoice-index-summary { gap: .55rem; }
     .invoice-index-summary > div { min-height: 96px; padding: .75rem; }
     .invoice-index-summary strong { font-size: 1.05rem; }
-    .invoice-results-card .card-header,
-    .invoice-filter-card .card-header { align-items: flex-start; flex-direction: column; }
-    .invoice-filter-card .card-body,
-    .invoice-results-card .card-body { padding: 1rem; }
+    .invoice-section-header { align-items: flex-start; flex-direction: column; }
+    .invoice-filter-section { padding: .85rem 1rem 1rem; }
   }
 }

@@ -3,15 +3,24 @@
 // ============================================================
 
 .dashboard-page {
-  padding: 2rem 1.5rem;
-  max-width: 1440px;
+  padding: 2rem clamp(1.5rem, 4vw, 4.5rem) 3rem;
+  max-width: 1520px;
   margin: 0 auto;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color: var(--bs-body-color);
   min-height: 100vh;
 
   .dashboard-header {
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
+
+    .dashboard-eyebrow {
+      color: var(--bs-primary);
+      font-size: .74rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      margin: 0 0 .4rem;
+      text-transform: uppercase;
+    }
 
     .header-content {
       display: flex;
@@ -58,18 +67,18 @@
   .kpi-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.25rem;
-    margin-bottom: 2rem;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
   }
 
   .kpi-card {
     background: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
     border-radius: 12px;
-    padding: 1.25rem 1.5rem;
+    padding: .9rem 1.1rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: .8rem;
     transition: all 0.2s ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 
@@ -80,8 +89,8 @@
     }
 
     .kpi-icon {
-      width: 56px;
-      height: 56px;
+      width: 46px;
+      height: 46px;
       border-radius: 12px;
       display: flex;
       align-items: center;
@@ -89,7 +98,7 @@
       flex-shrink: 0;
 
       i {
-        font-size: 1.8rem;
+        font-size: 1.45rem;
       }
     }
 
@@ -106,12 +115,17 @@
       }
 
       .kpi-value {
-        font-size: 2rem;
+        font-size: 1.65rem;
         font-weight: 700;
         color: var(--bs-body-color);
         line-height: 1.2;
       }
     }
+  }
+
+  .kpi-card:first-child {
+    background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), .14), var(--bs-body-bg) 72%);
+    border-color: rgba(var(--bs-primary-rgb), .3);
   }
 
   // Cores para ícones (tema claro/escuro compatível)
@@ -418,6 +432,184 @@
         gap: 0.5rem;
       }
     }
+  }
+}
+
+.mapas-dashboard-page {
+  max-width: 1520px;
+  margin: 0 auto;
+  padding: 2rem clamp(1.5rem, 4vw, 4.5rem) 3rem;
+
+  .mapas-dashboard-header {
+    align-items: flex-start;
+    display: flex;
+    gap: 1.5rem;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .mapas-dashboard-eyebrow {
+    color: var(--bs-primary);
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    margin: 0 0 .4rem;
+    text-transform: uppercase;
+  }
+
+  .mapas-dashboard-header h1 {
+    color: var(--bs-body-color);
+    font-size: clamp(1.5rem, 2.3vw, 2rem);
+    font-weight: 650;
+    letter-spacing: -.02em;
+    margin: 0;
+  }
+
+  .mapas-dashboard-header h1 i { color: var(--bs-primary); }
+  .mapas-dashboard-header p:not(.mapas-dashboard-eyebrow) { color: var(--bs-secondary-color); font-size: .92rem; margin: .4rem 0 0; }
+
+  .mapas-period-card {
+    border-color: rgba(var(--bs-primary-rgb), 0.3);
+    background: linear-gradient(110deg, rgba(var(--bs-primary-rgb), .1), var(--bs-body-bg) 38%) !important;
+  }
+
+  .mapas-period-title {
+    color: var(--bs-body-color);
+    font-size: clamp(1.25rem, 2vw, 1.65rem);
+    font-weight: 650;
+  }
+
+  .mapas-period-title i { color: var(--bs-primary); }
+
+  .card {
+    background: var(--bs-body-bg) !important;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 14px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, .055);
+  }
+
+  .mapas-summary-grid .card-body { min-height: 92px; padding: .85rem 1rem; }
+  .mapas-summary-grid h3, .mapas-summary-grid h5 { color: var(--bs-primary); font-weight: 700; }
+  .mapas-operation-grid .card-body { padding: .9rem 1rem; }
+  .mapas-dashboard-page .card-header { background: var(--bs-tertiary-bg); border-bottom: 1px solid var(--bs-border-color); padding: .75rem 1rem; }
+  .mapas-dashboard-page .card-header h5 { font-size: .88rem; font-weight: 650; }
+  .mapas-dashboard-page .app-table-shell { border-radius: 0 0 14px 14px; }
+
+  .mapas-charts-grid > div > .card {
+    background: var(--bs-body-bg) !important;
+    border-radius: 16px;
+    overflow: hidden;
+
+    .mapas-card-header {
+      align-items: flex-start;
+      background: transparent;
+      min-height: 58px;
+      padding: .85rem 1.25rem;
+      position: relative;
+    }
+
+    .mapas-card-header::after {
+      border-bottom: 1px solid var(--bs-border-color);
+      bottom: 0;
+      content: "";
+      left: 1.25rem;
+      position: absolute;
+      right: 1.25rem;
+    }
+
+    .mapas-card-header h2 {
+      color: var(--bs-body-color);
+      font-size: .92rem;
+      font-weight: 650;
+      letter-spacing: -.01em;
+      line-height: 1.2;
+      margin: .18rem 0 0;
+    }
+
+    .mapas-card-header .dashboard-panel-kicker {
+      color: var(--bs-primary);
+      display: block;
+      font-size: .66rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .mapas-card-header .dashboard-panel-kicker i { font-size: .68rem; }
+    .mapas-card-header .dashboard-panel-heading small { color: var(--bs-secondary-color); font-size: .7rem; line-height: 1.35; margin-top: .25rem; }
+    .card-body { background: transparent !important; padding: 1rem 1.25rem 1.2rem; }
+  }
+
+  // Neutraliza as classes utilitárias do Bootstrap usadas originalmente
+  // nessa tela, mantendo os cards com a mesma superfície do dashboard.
+  .mapas-charts-grid > div > .card,
+  .mapas-charts-grid > div > .card > .mapas-card-header,
+  .mapas-charts-grid > div > .card > .card-body {
+    background-color: var(--bs-body-bg) !important;
+  }
+
+  .mapas-charts-grid > div > .card > .mapas-card-header {
+    border-bottom-color: var(--bs-border-color) !important;
+  }
+
+  .mapas-table-card {
+    background: transparent !important;
+    border: 0;
+    box-shadow: none;
+    overflow: visible;
+
+    .mapas-card-header {
+      background: transparent;
+      border-bottom: 0;
+      padding: 0 0 .7rem;
+    }
+
+    .card-body { padding: 0; }
+  }
+
+  .mapas-table-card .mapas-card-header {
+    align-items: flex-start;
+    display: block;
+    min-height: 0;
+    padding: 0 0 .75rem;
+    position: relative;
+  }
+
+  .mapas-table-card .mapas-card-header::after {
+    display: none;
+  }
+
+  .mapas-table-card .dashboard-panel-kicker {
+    color: var(--bs-primary);
+    display: block;
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .mapas-table-card .dashboard-panel-heading h2 {
+    color: var(--bs-body-color);
+    font-size: .92rem;
+    font-weight: 650;
+    line-height: 1.2;
+    margin: .18rem 0 0;
+  }
+
+  .mapas-table-card .dashboard-panel-heading small {
+    color: var(--bs-secondary-color);
+    display: block;
+    font-size: .7rem;
+    line-height: 1.35;
+    margin-top: .25rem;
+  }
+
+  @media (max-width: 650px) {
+    padding: 1.25rem 1rem 2rem;
+    .mapas-dashboard-header { flex-direction: column; }
+    .mapas-dashboard-header .btn { width: 100%; }
   }
 }
 

@@ -1,11 +1,22 @@
-<div class="container mt-5">
+<div class="app-page">
+  <div class="app-page-header">
+    <div>
+      <p class="app-page-eyebrow"><i class="bi bi-bar-chart-line me-1"></i>Indicadores · Operação</p>
+      <h1><i class="bi bi-fuel-pump me-2"></i>Consumo de combustível</h1>
+      <p>Acompanhe médias, metas e registros importados dos motoristas.</p>
+    </div>
+    <div class="app-page-actions">
+      <%= link_to new_fuel_consumption_path, class: "btn btn-primary" do %><i class="bi bi-upload me-1"></i> Importar CSV<% end %>
+      <%= link_to "Voltar", root_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
 
   <!-- Card Resumo -->
   <div class="card shadow-sm rounded mb-4">
     <div class="card-body">
       <div class="row align-items-center">
         <div class="col-md-6">
-          <h2 class="mb-1"><i class="bi bi-fuel-pump"></i> Consumo de Combustível</h2>
+          <h2 class="mb-1">Resumo do consumo</h2>
           <p class="text-muted mb-0">
             Total de registros: <%= @fuel_consumptions.size %> <br>
             Média geral (Km/L): <%= @fuel_consumptions.average(:km_per_liter).to_f.round(2) %> <br>
@@ -13,17 +24,14 @@
             Motoristas abaixo da meta: <%= @fuel_consumptions.select { |fc| fc.km_per_liter < fc.km_per_liter_goal }.count %>
           </p>
         </div>
-        <div class="col-md-6 text-md-end">
-          <%= link_to "Importar CSV", new_fuel_consumption_path, class: "btn btn-primary me-2" %>
-        </div>
       </div>
     </div>
   </div>
 
   <!-- Tabela de histórico -->
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <table class="table table-hover align-middle">
+  <div class="app-table-section">
+    <div class="app-table-section__body">
+      <div class="app-table-shell"><table class="table app-table app-table--data">
         <thead class="table-light">
           <tr>
             <th>Motorista</th>
@@ -50,7 +58,7 @@
             </tr>
           <% end %>
         </tbody>
-      </table>
+      </table></div>
       <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
     </div>
   </div>

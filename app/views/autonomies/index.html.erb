@@ -28,7 +28,7 @@
         <% if current_user&.admin? %>
           <!-- Visão do Administrador (como estava originalmente) -->
           <div class="table-responsive">
-            <table class="table table-hover align-middle">
+            <div class="app-table-shell"><table class="table app-table app-table--data">
               <thead class="table-light">
                 <tr>
                   <th class="fw-bold">Matrícula</th>
@@ -83,7 +83,7 @@
                   </tr>
                 <% end %>
               </tbody>
-            </table>
+            </table></div>
           </div>
 
           <!-- Paginação para admin -->

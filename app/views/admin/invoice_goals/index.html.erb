@@ -10,10 +10,9 @@
     <% end %>
   </div>
 
-  <div class="card admin-catalog-card">
-    <div class="card-body">
+  <div>
       <div class="table-responsive">
-        <table class="table admin-catalog-table table-hover align-middle">
+        <div class="app-table-shell"><table class="table app-table app-table--data admin-catalog-table">
           <thead>
             <tr>
               <th>Meta</th>
@@ -41,12 +40,11 @@
               </tr>
             <% end %>
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <% if @invoice_goals.empty? %>
         <p class="text-muted mb-0">Nenhuma meta cadastrada.</p>
       <% end %>
-    </div>
   </div>
 </div>

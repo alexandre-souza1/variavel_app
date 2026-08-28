@@ -1,20 +1,20 @@
-<div class="container-fluid p-3">
+<div class="mapas-dashboard-page">
   <!-- Cabeçalho -->
-  <div class="row align-items-center mb-4">
-    <div class="col-md-8">
-      <h1 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Dashboard de Mapas</h1>
+  <header class="mapas-dashboard-header">
+    <div>
+      <p class="mapas-dashboard-eyebrow"><i class="bi bi-map me-1"></i> Gestão · Operação</p>
+      <h1><i class="bi bi-speedometer2 me-2"></i>Dashboard de mapas</h1>
+      <p>Visão consolidada da operação, produtividade e remuneração do ciclo.</p>
     </div>
-    <div class="col-md-4 text-md-end">
-      <p class="font-weight-light mb-0">LOG20 - Foz do Iguaçu</p>
-    </div>
-  </div>
+    <%= link_to mapas_todos_path, class: "btn btn-outline-primary" do %><i class="bi bi-list-ul me-1"></i> Mapas cadastrados<% end %>
+  </header>
 
   <!-- Filtro de período -->
-  <div class="card shadow-sm rounded mb-4">
-    <div class="card-body">
+  <div class="app-panel mb-4 mapas-period-card">
+    <div class="app-panel__body">
       <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
         <div>
-          <h2 class="mb-1">
+          <h2 class="mb-1 mapas-period-title">
             <i class="bi bi-calendar-range me-2"></i>
             <%= @periodo_inicio.strftime("%d/%m/%Y") %> a <%= @periodo_fim.strftime("%d/%m/%Y") %>
           </h2>
@@ -56,7 +56,7 @@
   </div>
 
   <!-- Cards de resumo -->
-  <div class="row g-3 mb-4">
+  <div class="row g-3 mb-4 mapas-summary-grid">
     <div class="col-6 col-md-4 col-lg-2">
       <div class="card shadow-sm rounded h-100">
         <div class="card-body text-center">
@@ -108,7 +108,7 @@
   </div>
 
   <!-- Segunda linha de cards (operações) -->
-  <div class="row g-3 mb-4">
+  <div class="row g-3 mb-4 mapas-operation-grid">
     <div class="col-12 col-md-4">
       <div class="card shadow-sm rounded h-100">
         <div class="card-body">
@@ -136,11 +136,15 @@
   </div>
 
   <!-- Gráficos -->
-  <div class="row g-3 mb-4">
+  <div class="row g-3 mb-4 mapas-charts-grid">
     <div class="col-12 col-md-6 col-xl-4">
       <div class="card shadow-sm rounded h-100">
-        <div class="card-header bg-light">
-          <h5 class="mb-0"><i class="bi bi-bar-chart-fill me-2"></i>Top 10 Motoristas (Valor)</h5>
+        <div class="mapas-card-header app-panel__header">
+          <div class="dashboard-panel-heading">
+            <span class="dashboard-panel-kicker"><i class="bi bi-bar-chart-fill me-1"></i> Produtividade · Motoristas</span>
+            <h2>Top 10 Motoristas por valor</h2>
+            <small>Motoristas com maior remuneração acumulada no ciclo.</small>
+          </div>
         </div>
         <div class="card-body">
           <%= column_chart @motoristas_top10_valor,
@@ -154,8 +158,12 @@
     </div>
     <div class="col-12 col-md-6 col-xl-4">
       <div class="card shadow-sm rounded h-100">
-        <div class="card-header bg-light">
-          <h5 class="mb-0"><i class="bi bi-pie-chart-fill me-2"></i>Top 10 Ajudantes (Valor)</h5>
+        <div class="mapas-card-header app-panel__header">
+          <div class="dashboard-panel-heading">
+            <span class="dashboard-panel-kicker"><i class="bi bi-pie-chart-fill me-1"></i> Produtividade · Ajudantes</span>
+            <h2>Top 10 Ajudantes por valor</h2>
+            <small>Ajudantes com maior remuneração acumulada no ciclo.</small>
+          </div>
         </div>
         <div class="card-body">
           <%= column_chart @ajudantes_top10_valor,
@@ -169,8 +177,12 @@
     </div>
     <div class="col-12 col-md-12 col-xl-4">
       <div class="card shadow-sm rounded h-100">
-        <div class="card-header bg-light">
-          <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Mapas por Dia</h5>
+        <div class="mapas-card-header app-panel__header">
+          <div class="dashboard-panel-heading">
+            <span class="dashboard-panel-kicker"><i class="bi bi-graph-up me-1"></i> Tendência · Operação</span>
+            <h2>Mapas por dia</h2>
+            <small>Quantidade de mapas registrados em cada dia do ciclo.</small>
+          </div>
         </div>
         <div class="card-body">
           <%= line_chart @mapas_por_dia, height: "250px", discrete: true %>
@@ -183,13 +195,17 @@
   <div class="row g-3 mb-4">
     <!-- Tabela Motoristas -->
     <div class="col-12 col-xl-6">
-      <div class="card shadow-sm rounded h-100">
-        <div class="card-header bg-light border-bottom">
-          <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Motoristas que Mais Rodaram</h5>
+      <div class="card shadow-sm rounded h-100 mapas-table-card">
+        <div class="mapas-card-header">
+          <div class="dashboard-panel-heading">
+            <span class="dashboard-panel-kicker"><i class="bi bi-person-lines-fill me-1"></i> Registro · Motoristas</span>
+            <h2>Motoristas que mais rodaram</h2>
+            <small>Ranking de produtividade e remuneração no ciclo.</small>
+          </div>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <div class="app-table-shell"><table class="table app-table app-table--report mb-0">
               <thead class="table-light">
                 <tr>
                   <th>#</th>
@@ -221,7 +237,7 @@
                   </tr>
                 <% end %>
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       </div>
@@ -229,13 +245,17 @@
 
     <!-- Tabela Ajudantes -->
     <div class="col-12 col-xl-6">
-      <div class="card shadow-sm rounded h-100">
-        <div class="card-header bg-light border-bottom">
-          <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>Ajudantes que Mais Rodaram</h5>
+      <div class="card shadow-sm rounded h-100 mapas-table-card">
+        <div class="mapas-card-header">
+          <div class="dashboard-panel-heading">
+            <span class="dashboard-panel-kicker"><i class="bi bi-people-fill me-1"></i> Registro · Ajudantes</span>
+            <h2>Ajudantes que mais rodaram</h2>
+            <small>Ranking de produtividade e remuneração no ciclo.</small>
+          </div>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <div class="app-table-shell"><table class="table app-table app-table--report mb-0">
               <thead class="table-light">
                 <tr>
                   <th>#</th>
@@ -267,7 +287,7 @@
                   </tr>
                 <% end %>
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       </div>
@@ -275,13 +295,17 @@
   </div>
 
   <!-- Tabela Placas (largura total) -->
-  <div class="card shadow-sm rounded mb-4">
-    <div class="card-header bg-light border-bottom">
-      <h5 class="mb-0"><i class="bi bi-truck-front-fill me-2"></i>Placas que Mais Rodaram</h5>
+  <div class="card shadow-sm rounded mb-4 mapas-table-card">
+    <div class="mapas-card-header">
+      <div class="dashboard-panel-heading">
+        <span class="dashboard-panel-kicker"><i class="bi bi-truck-front-fill me-1"></i> Registro · Frota</span>
+        <h2>Placas que mais rodaram</h2>
+        <small>Veículos com maior volume de mapas no ciclo.</small>
+      </div>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <div class="app-table-shell"><table class="table app-table app-table--report mb-0">
           <thead class="table-light">
             <tr>
               <th>#</th>
@@ -311,7 +335,7 @@
               </tr>
             <% end %>
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   </div>

@@ -1,12 +1,13 @@
-<div>
-  <div class="container p-3">
-    <div class="row align-items-center">
-      <div class="col-md-8">
-        <h1 class="mb-0"><i class="bi bi-card-list"> </i>Mapas Cadastrados</h1>
-      </div>
-      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
-        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
-      </div>
+<div class="mapas-all-page app-page">
+  <div class="app-page-header">
+    <div>
+      <p class="app-page-eyebrow"><i class="bi bi-map me-1"></i>Cadastros · Operação</p>
+      <h1><i class="bi bi-map-fill me-2"></i>Mapas cadastrados</h1>
+      <p>Consulte, filtre e gerencie os mapas importados da operação.</p>
+    </div>
+    <div class="app-page-actions">
+      <%= link_to mapas_path, class: "btn btn-primary" do %><i class="bi bi-upload me-1"></i> Importar 2ART<% end %>
+      <%= link_to "Voltar", root_path, class: "btn btn-outline-secondary" %>
     </div>
   </div>
 
@@ -39,12 +40,12 @@
     </div>
 
     <!-- Lista de mapas com filtros -->
-    <div class="card shadow-sm rounded mb-4">
-      <div class="card-header bg-light border-bottom">
+    <div class="mapas-list-section">
+      <div class="mapas-list-section__header">
         <h5 class="mb-0"><i class="bi bi-table me-2"></i>Lista de Mapas</h5>
       </div>
-      <div data-controller="delete-maps" class="card-body">
-        <%= form_with url: mapas_todos_path, method: :get, local: true, class: "row mb-3 g-2 align-items-end" do |f| %>
+      <div data-controller="delete-maps" class="mapas-list-section__body">
+        <%= form_with url: mapas_todos_path, method: :get, local: true, class: "mapas-filters" do |f| %>
           <%= f.hidden_field :page, value: 1 %>
           <div class="col-12 col-md-2">
             <%= f.text_field :mapa, value: params[:mapa], class: "form-control", placeholder: "Filtrar por Mapa" %>
@@ -93,7 +94,7 @@
             <% if @mapas.empty? %>
               <div class="alert alert-info mb-0">Nenhum mapa encontrado.</div>
             <% else %>
-              <table class="table table-hover align-middle">
+              <div class="app-table-shell"><table class="table app-table app-table--report mapas-all-table">
                 <thead class="table-light">
                   <tr>
                     <th width="50px">
@@ -120,7 +121,7 @@
                 <tbody>
                   <% @mapas.each do |mapa| %>
                     <tr>
-                      <td>
+                      <td data-label="Selecionar">
                         <input type="checkbox"
                                name="mapa_ids[]"
                                value="<%= mapa.id %>"
@@ -128,28 +129,32 @@
                                data-action="change->delete-maps#updateSelection"
                                class="form-check-input">
                       </td>
-                      <td><%= mapa.mapa %></td>
-                      <td><%= mapa.data_formatada&.strftime("%d/%m/%Y") || "Data inválida" %></td>
-                      <td><%= mapa.matric_motorista %></td>
-                      <td><%= mapa.matric_ajudante %></td>
-                      <td><%= mapa.matric_ajudante_2 %></td>
-                      <td><%= mapa.fator %></td>
-                      <td><%= mapa.cx_total %></td>
-                      <td><%= mapa.cx_real %></td>
-                      <td><%= mapa.pdv_total %></td>
-                      <td><%= mapa.pdv_real %></td>
-                      <td><%= mapa.recarga %></td>
-                      <td><%= mapa.plate %></td>
-                      <td class="text-end">
+                      <td data-label="Mapa"><%= mapa.mapa %></td>
+                      <td data-label="Data"><%= mapa.data_formatada&.strftime("%d/%m/%Y") || "Data inválida" %></td>
+                      <td data-label="Matrícula motorista"><%= mapa.matric_motorista %></td>
+                      <td data-label="Matrícula ajudante 1"><%= mapa.matric_ajudante %></td>
+                      <td data-label="Matrícula ajudante 2"><%= mapa.matric_ajudante_2 %></td>
+                      <td data-label="Fator"><%= mapa.fator %></td>
+                      <td data-label="Cx total"><%= mapa.cx_total %></td>
+                      <td data-label="Cx real"><%= mapa.cx_real %></td>
+                      <td data-label="PDV total"><%= mapa.pdv_total %></td>
+                      <td data-label="PDV real"><%= mapa.pdv_real %></td>
+                      <td data-label="Recarga"><%= mapa.recarga %></td>
+                      <td data-label="Placa"><%= mapa.plate %></td>
+                      <td data-label="Ações" class="text-end">
                         <div class="btn-group btn-group-sm" role="group">
-                          <%= link_to 'Editar', edit_mapa_path(mapa), class: 'btn btn-outline-primary' %>
-                          <%= link_to 'Excluir', mapa_path(mapa), data: { turbo_method: :delete, turbo_confirm: 'Tem certeza?' }, class: 'btn btn-outline-danger' %>
+                          <%= link_to edit_mapa_path(mapa), class: 'icon-btn', title: 'Editar mapa', aria: { label: 'Editar mapa' } do %>
+                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                          <% end %>
+                          <%= link_to mapa_path(mapa), data: { turbo_method: :delete, turbo_confirm: 'Tem certeza?' }, class: 'icon-btn danger', title: 'Excluir mapa', aria: { label: 'Excluir mapa' } do %>
+                            <i class="bi bi-trash3" aria-hidden="true"></i>
+                          <% end %>
                         </div>
                       </td>
                     </tr>
                   <% end %>
                 </tbody>
-              </table>
+              </table></div>
             <% end %>
           </div>
 

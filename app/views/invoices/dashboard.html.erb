@@ -309,7 +309,6 @@
       <div class="dashboard-panel-heading">
         <span class="dashboard-panel-kicker"><i class="fas fa-list me-1"></i> Registro</span>
         <h2>Últimos Lançamentos</h2>
-        <small>Os lançamentos financeiros mais recentes</small>
       </div>
       <div>
         <small class="text-muted me-3">Mostrando <%= @latest_invoices.count %> de <%= @total_invoices_count %> notas</small>
@@ -317,8 +316,8 @@
       </div>
     </div>
     <div class="table-card-body">
-      <div class="table-responsive">
-        <table class="table table-custom">
+      <div class="app-table-shell"><div class="table-responsive">
+        <table class="table app-table app-table--report">
           <thead>
             <tr>
               <th>Fornecedor</th>
@@ -381,7 +380,7 @@
             <% end %>
           </tbody>
         </table>
-      </div>
+      </div></div>
     </div>
   </div>
 

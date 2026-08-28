@@ -1,17 +1,21 @@
-<div class="container py-4">
-  <h1 class="h3 mb-4">Importar Dados dos Mapas (2ART)</h1>
+<div class="app-page">
+  <div class="app-page-header">
+    <div>
+      <p class="app-page-eyebrow"><i class="bi bi-cloud-arrow-up me-1"></i>Importações · Operação</p>
+      <h1><i class="bi bi-map me-2"></i>Importar mapas 2ART</h1>
+      <p>Envie o relatório de mapas para atualizar os dados da operação.</p>
+    </div>
+    <div class="app-page-actions">
+      <%= link_to mapas_todos_path, class: "btn btn-outline-primary" do %><i class="bi bi-list-ul me-1"></i> Mapas cadastrados<% end %>
+      <%= link_to "Voltar", root_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
 
   <%= form_with url: import_mapas_path, local: true, multipart: true, class: "card p-4 shadow-sm" do %>
     <div class="mb-3">
       <label class="form-label">Arquivo CSV:</label>
       <%= file_field_tag :file, class: "form-control" %>
     </div>
-
     <%= submit_tag "Importar", class: "btn btn-primary" %>
   <% end %>
-
-  <div class="mt-3 d-flex gap-2">
-    <%= link_to "Voltar", root_path, class: "btn btn-outline-secondary" %>
-    <%= link_to "Ver todos os mapas cadastrados", mapas_todos_path, class: "btn btn-outline-info" %>
-  </div>
 </div>

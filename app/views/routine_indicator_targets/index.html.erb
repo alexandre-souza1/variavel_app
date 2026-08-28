@@ -67,29 +67,33 @@
 
               <td class="text-end">
 
-                <%= link_to "Editar",
-                    edit_routine_template_routine_category_routine_indicator_routine_indicator_target_path(
+                <%= link_to edit_routine_template_routine_category_routine_indicator_routine_indicator_target_path(
                       @template,
                       @category,
                       @indicator,
                       target
                     ),
-                    class: "btn btn-sm btn-outline-secondary" %>
+                    class: "icon-btn", title: "Editar meta", aria: { label: "Editar meta" } do %>
+                  <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                <% end %>
 
-                <%= button_to "Excluir",
-                    routine_template_routine_category_routine_indicator_routine_indicator_target_path(
+                <%= button_to routine_template_routine_category_routine_indicator_routine_indicator_target_path(
                       @template,
                       @category,
                       @indicator,
                       target
                     ),
                     method: :delete,
-                    class: "btn btn-sm btn-outline-danger",
+                    class: "icon-btn danger",
+                    title: "Excluir meta",
+                    aria: { label: "Excluir meta" },
                     form: {
                       data: {
                         turbo_confirm: "Tem certeza que deseja excluir esta meta?"
                       }
-                    } %>
+                    } do %>
+                  <i class="bi bi-trash3" aria-hidden="true"></i>
+                <% end %>
 
               </td>
 

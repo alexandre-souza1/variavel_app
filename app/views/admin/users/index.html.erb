@@ -1,4 +1,4 @@
-<div class="container py-4">
+<div class="app-page">
 
   <div class="card shadow-lg border-0 rounded-4">
 
@@ -78,7 +78,7 @@
       <!-- Tabela -->
       <div class="table-responsive">
 
-        <table class="table table-hover align-middle">
+        <div class="app-table-shell"><table class="table app-table app-table--data">
 
           <thead class="table">
 
@@ -209,10 +209,8 @@
                   <div class="btn-group">
 
                     <%= link_to edit_admin_user_path(user),
-                        class: "btn btn-outline-primary btn-sm" do %>
-
-                      <i class="fas fa-edit me-1"></i>
-                      Editar
+                        class: "icon-btn", title: "Editar usuário", aria: { label: "Editar usuário" } do %>
+                      <i class="bi bi-pencil-square" aria-hidden="true"></i>
 
                     <% end %>
 
@@ -223,10 +221,8 @@
                             turbo_method: :delete,
                             turbo_confirm: "Inativar este usuário? O histórico será preservado."
                           },
-                          class: "btn btn-outline-danger btn-sm" do %>
-
-                        <i class="fas fa-trash-alt me-1"></i>
-                        Inativar
+                          class: "icon-btn danger", title: "Inativar usuário", aria: { label: "Inativar usuário" } do %>
+                        <i class="bi bi-archive" aria-hidden="true"></i>
 
                       <% end %>
 
@@ -242,7 +238,7 @@
 
           </tbody>
 
-        </table>
+        </table></div>
 
       </div>
 

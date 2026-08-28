@@ -14,8 +14,8 @@
   <div class="admin-catalog-summary"><div><span>Fornecedores cadastrados</span><strong><%= @suppliers.size %></strong></div><div><span>Com lançamentos</span><strong><%= @suppliers.count { |supplier| supplier.invoices.loaded? && supplier.invoices.any? } %></strong></div></div>
 
   <!-- Tabela de fornecedores -->
-  <div class="card admin-catalog-card"><div class="card-body"><div class="table-responsive">
-    <table class="table admin-catalog-table table-hover align-middle">
+  <div class="app-table-section admin-catalog-card"><div class="app-table-section__body"><div class="table-responsive">
+    <div class="app-table-shell"><table class="table app-table app-table--data admin-catalog-table">
       <thead class="table-light">
         <tr>
           <th>Nome</th>
@@ -44,7 +44,7 @@
           </tr>
         <% end %>
       </tbody>
-    </table>
+    </table></div>
   </div></div></div>
   <%= link_to "Voltar", invoices_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
 </div>

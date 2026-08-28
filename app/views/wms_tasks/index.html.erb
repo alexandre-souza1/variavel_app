@@ -1,16 +1,17 @@
-<div class="driver-report-container">
-  <div class="container p-3">
-    <div class="row align-items-center">
-      <div class="col-md-8">
-        <h1 class="mb-0"><i class="bi bi-card-list"></i> Tarefas WMS Importadas</h1>
-      </div>
-      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
-        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
-      </div>
+<div class="app-page">
+  <div class="app-page-header">
+    <div>
+      <p class="app-page-eyebrow"><i class="bi bi-list-check me-1"></i>Resultados · WMS</p>
+      <h1><i class="bi bi-list-task me-2"></i>Resultados WMS</h1>
+      <p>Consulte as tarefas WMS importadas e seus períodos de processamento.</p>
+    </div>
+    <div class="app-page-actions">
+      <%= link_to az_consultas_import_path, class: "btn btn-primary" do %><i class="bi bi-upload me-1"></i> Nova importação<% end %>
+      <%= link_to "Voltar", root_path, class: "btn btn-outline-secondary" %>
     </div>
   </div>
 
-  <div class="container">
+  <div>
     <div class="card shadow-sm rounded mb-4">
       <div class="card-body">
         <div class="row align-items-center">
@@ -26,20 +27,19 @@
           </div>
           <div class="d-flex col-md-6 text-md-end justify-content-end gap-2">
             <%= button_to "Deletar Todas as Tarefas", delete_all_wms_tasks_path, method: :delete, class: "btn btn-danger", data: { confirm: "Tem certeza que deseja deletar todas as tarefas?" } %>
-            <%= link_to 'Importação', az_consultas_import_path, class: 'btn btn-success' %>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Tabela de Tarefas WMS -->
-    <div class="card shadow-sm rounded mb-4">
-      <div class="card-header bg-light border-bottom">
+    <div class="app-table-section">
+      <div class="app-table-section__header">
         <h5 class="mb-0"><i class="bi bi-list-task me-2"></i>Detalhes das Tarefas</h5>
       </div>
-      <div class="card-body">
+      <div class="app-table-section__body">
         <div class="table-responsive">
-          <table class="table table-hover align-middle">
+          <div class="app-table-shell"><table class="table app-table app-table--report">
             <thead class="table-light">
               <tr>
                 <th>Tarefa</th>
@@ -66,7 +66,7 @@
                 </tr>
               <% end %>
             </tbody>
-          </table>
+          </table></div>
         </div>
 
         <!-- Paginação -->

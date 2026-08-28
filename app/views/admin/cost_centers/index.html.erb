@@ -5,9 +5,9 @@
   </div>
   <div class="admin-catalog-summary"><div><span>Centros cadastrados</span><strong><%= @cost_centers.size %></strong></div><div><span>Com lançamentos</span><strong><%= @cost_center_invoice_counts.count { |_id, count| count.positive? } %></strong></div></div>
 
-  <div class="card admin-catalog-card">
-    <div class="card-body">
-      <table class="table admin-catalog-table table-hover align-middle">
+  <div class="app-table-section admin-catalog-card">
+    <div class="app-table-section__body">
+      <div class="app-table-shell"><table class="table app-table app-table--data admin-catalog-table">
         <thead>
           <tr>
             <th>Nome</th>
@@ -35,7 +35,7 @@
             </tr>
           <% end %>
         </tbody>
-      </table>
+      </table></div>
     </div>
   </div>
 </div>

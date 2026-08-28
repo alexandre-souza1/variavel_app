@@ -19,7 +19,7 @@
             <h5 class="mb-0"><i class="bi bi-people-fill"></i> <%= categoria.titleize %></h5>
           </div>
           <div class="card-body">
-            <table class="table table-bordered table-sm mb-0">
+            <div class="app-table-shell"><table class="table app-table app-table--compact mb-0">
               <thead>
                 <tr>
                   <th>Nome</th>
@@ -33,13 +33,17 @@
                     <td><%= param.nome.humanize %></td>
                     <td><%= number_to_currency(param.valor, unit: "R$ ") %></td>
                     <td>
-                      <%= link_to 'Mostrar', parametro_calculo_path(param), class: "btn btn-outline-info btn-sm" %>
-                      <%= link_to 'Editar', edit_parametro_calculo_path(param), class: "btn btn-outline-warning btn-sm" %>
+                      <%= link_to parametro_calculo_path(param), class: "icon-btn", title: "Ver parâmetro", aria: { label: "Ver parâmetro" } do %>
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                      <% end %>
+                      <%= link_to edit_parametro_calculo_path(param), class: "icon-btn", title: "Editar parâmetro", aria: { label: "Editar parâmetro" } do %>
+                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                      <% end %>
                     </td>
                   </tr>
                 <% end %>
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       </div>

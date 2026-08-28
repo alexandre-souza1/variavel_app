@@ -53,6 +53,296 @@
   margin-top: .25rem;
 }
 
+// Tabela padrão da aplicação, inspirada na tabela de Rotinas.
+.app-table-shell {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-table {
+  --app-table-row-hover: rgba(var(--bs-primary-rgb), .035);
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  color: var(--bs-body-color);
+  font-size: .88rem;
+  margin: 0;
+  min-width: 640px;
+  width: 100%;
+
+  // A tabela é uma superfície independente do painel que a contém.
+  overflow: hidden;
+
+  // O Bootstrap pinta cada célula individualmente. Mantemos a cor da
+  // superfície da tabela e deixamos o hover ser controlado por nós.
+  > :not(caption) > * > * {
+    background-color: var(--bs-body-bg) !important;
+    border-bottom-width: 0 !important;
+    box-shadow: none !important;
+    color: var(--bs-body-color) !important;
+    padding: .78rem 1rem !important;
+  }
+
+  > tbody > tr:hover > * {
+    background-color: var(--app-table-row-hover) !important;
+    box-shadow: none !important;
+  }
+
+  > tbody > tr:not(:last-child) > td {
+    border-bottom: 1px solid var(--bs-border-color) !important;
+  }
+
+  thead th {
+    background: var(--bs-tertiary-bg) !important;
+    border-bottom: 1px solid var(--bs-border-color);
+    color: var(--bs-secondary-color);
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    padding: .78rem 1rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    transition: background-color .15s ease;
+
+    &:not(:last-child) td { border-bottom: 1px solid var(--bs-border-color); }
+    &:hover { background: var(--app-table-row-hover); }
+  }
+
+  tbody td {
+    border: 0;
+    color: var(--bs-body-color);
+    padding: .78rem 1rem;
+    vertical-align: middle;
+  }
+
+  .app-table__actions {
+    align-items: center;
+    display: flex;
+    gap: .45rem;
+    justify-content: flex-end;
+    white-space: nowrap;
+  }
+
+  .app-table__muted { color: var(--bs-secondary-color); font-size: .78rem; }
+}
+
+// Variantes: a base é compartilhada, mas a densidade acompanha o contexto.
+.app-table--data {
+  tbody td:first-child { font-weight: 600; }
+}
+
+.app-table--report {
+  font-size: .84rem;
+
+  thead th { padding-bottom: .68rem; padding-top: .68rem; }
+  tbody td { padding-bottom: .65rem; padding-top: .65rem; }
+}
+
+.app-table--compact {
+  font-size: .8rem;
+  min-width: 480px;
+
+  thead th,
+  tbody td { padding: .55rem .75rem; }
+}
+
+// Agrupador leve para uma tabela: não cria uma segunda superfície ao redor
+// dela, deixando a própria tabela assumir o papel visual principal.
+.app-table-section {
+  margin-bottom: 1.5rem;
+}
+
+.app-table-section__header {
+  align-items: center;
+  color: var(--bs-body-color);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: .75rem;
+  padding: 0 .15rem;
+
+  h5, h6 { font-size: .95rem; font-weight: 650; margin: 0; }
+}
+
+.app-table-section__body { padding: 0; }
+
+// Cabeçalho padrão das páginas de cadastro e resultados.
+.app-page {
+  margin: 0;
+  padding: 2.25rem clamp(1.5rem, 4vw, 4.5rem) 3.5rem;
+}
+
+.app-page-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
+
+  .app-page-eyebrow {
+    color: var(--bs-primary);
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    margin: 0 0 .4rem;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    color: var(--bs-body-color);
+    font-size: clamp(1.5rem, 2.3vw, 2rem);
+    font-weight: 650;
+    letter-spacing: -.02em;
+    margin: 0;
+  }
+
+  h1 i { color: var(--bs-primary); }
+  p:not(.app-page-eyebrow) { color: var(--bs-secondary-color); font-size: .92rem; margin: .4rem 0 0; }
+  .app-page-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+}
+
+@media (max-width: 650px) {
+  .app-page { padding: 1.25rem 1rem 2rem; }
+  .app-page-header { flex-direction: column; }
+  .app-page-header .app-page-actions { width: 100%; }
+  .app-page-header .app-page-actions > * { flex: 1 1 auto; }
+}
+
+.mapas-all-page {
+  // O conteúdo antigo ainda usa .container do Bootstrap, que impõe uma
+  // largura menor que a do cabeçalho e cria um recuo visual inesperado.
+  > .container {
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+    width: 100%;
+  }
+
+  .mapas-list-section__header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: .85rem;
+    padding: 0 .15rem;
+
+    h5 { font-size: .95rem; font-weight: 650; margin: 0; }
+  }
+
+  .mapas-list-section__body { padding: 0; }
+
+  .mapas-filters {
+    align-items: end;
+    display: grid;
+    gap: .75rem;
+    grid-template-columns: repeat(4, minmax(130px, 1fr)) 130px 90px 90px;
+    margin-bottom: 1rem;
+    padding: 0;
+
+    .form-control,
+    .form-select { border-radius: 8px; font-size: .82rem; min-height: 38px; }
+
+    > div { width: auto; }
+
+    > div:last-child {
+      align-items: center;
+      display: flex;
+      grid-column: 1 / -1;
+      justify-content: space-between;
+    }
+  }
+
+  .mapas-all-table {
+    font-size: .74rem;
+    min-width: 0;
+    table-layout: fixed;
+
+    thead th,
+    tbody td { overflow: hidden; padding-left: .55rem; padding-right: .55rem; text-overflow: ellipsis; white-space: nowrap; word-break: normal; }
+    thead th { font-size: .63rem; white-space: normal; word-break: break-word; }
+    th:first-child, td:first-child { width: 34px; }
+    th:nth-child(2), td:nth-child(2) { width: 8%; }
+    th:nth-child(2), td:nth-child(2) { white-space: normal; word-break: break-word; }
+    th:nth-child(3), td:nth-child(3) { width: 8%; }
+    th:nth-child(4), td:nth-child(4),
+    th:nth-child(5), td:nth-child(5),
+    th:nth-child(6), td:nth-child(6) { width: 9%; }
+    th:nth-child(4), td:nth-child(4),
+    th:nth-child(5), td:nth-child(5),
+    th:nth-child(6), td:nth-child(6) { line-height: 1.15; }
+    th:nth-child(14), td:nth-child(14) { width: 112px; }
+    td:last-child { overflow: visible; }
+  }
+}
+
+@media (max-width: 900px) {
+  .mapas-all-page .mapas-filters { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .mapas-all-page {
+    .mapas-all-table {
+      border: 0;
+      display: block;
+      min-width: 0;
+
+      thead { display: none; }
+      tbody, tr, td { display: block; width: 100%; }
+      tbody tr {
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 12px;
+        margin-bottom: .7rem;
+        padding: .5rem .7rem;
+      }
+      tbody tr:hover { background: var(--bs-body-bg); }
+      tbody td {
+        align-items: center;
+        border-bottom: 1px solid var(--bs-border-color) !important;
+        display: flex;
+        justify-content: space-between;
+        min-height: 34px;
+        overflow: visible;
+        padding: .38rem 0 !important;
+        text-align: right;
+        white-space: normal;
+
+        // A primeira coluna tem 34px no desktop por conter apenas o checkbox.
+        // No layout empilhado ela precisa voltar a ocupar a linha inteira,
+        // senão o rótulo do pseudo-elemento aparece cortado como "...".
+        &:first-child { width: 100%; }
+
+        &::before {
+          color: var(--bs-secondary-color);
+          content: attr(data-label);
+          font-size: .68rem;
+          font-weight: 700;
+          letter-spacing: .04em;
+          margin-right: .75rem;
+          text-align: left;
+          text-transform: uppercase;
+        }
+        &:last-child { border-bottom: 0 !important; }
+      }
+      tbody td:first-child { width: 100%; }
+    }
+
+    .mapas-filters {
+      grid-template-columns: 1fr;
+      > div:last-child { align-items: stretch; flex-direction: column; gap: .55rem; }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .app-table { font-size: .82rem; min-width: 560px; }
+  .app-table thead th,
+  .app-table tbody td { padding-left: .75rem; padding-right: .75rem; }
+}
+
 @media (max-width: 576px) {
   .app-panel__header { padding: .85rem 1rem .7rem; }
   .app-panel__header::after { left: 1rem; right: 1rem; }

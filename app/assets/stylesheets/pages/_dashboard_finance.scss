@@ -408,6 +408,24 @@
     }
   }
 
+  // A tabela de lançamentos é uma superfície própria; o painel fornece
+  // apenas o contexto e o cabeçalho, sem criar um card ao redor da tabela.
+  &.invoice-dashboard-page .table-card {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+
+    .table-card-header {
+      background: transparent;
+      border-bottom: 0;
+      padding: 0 0 .85rem;
+    }
+
+    .table-card-body { padding: 0; }
+  }
+
   .table-custom {
     width: 100%;
     border-collapse: collapse;
@@ -943,6 +961,17 @@
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     }
   }
+}
+
+// O cabeçalho de Últimos Lançamentos não precisa de divisor: a própria
+// borda da tabela já marca a separação visual.
+.invoice-dashboard-page .table-card .table-card-header {
+  border-bottom: 0 !important;
+  padding-bottom: .45rem;
+}
+
+.invoice-dashboard-page .table-card .table-card-header::after {
+  display: none;
 }
 
 @media (max-width: 768px) {
