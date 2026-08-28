@@ -91,10 +91,43 @@
           <%= link_to dashboard_path, class: "navbar-brand fw-semibold user-name" do %>
             Olá, <%= current_user.name&.split&.first %>
           <% end %>
-          <span class="user-sector">
-            <i class="bi bi-briefcase me-1"></i>
-            <%= User::USER_SECTORS.invert[current_user.sector.to_sym] %>
-          </span>
+          <% user_sector_name = User::USER_SECTORS.invert[current_user.sector&.to_sym] || "Setor não definido" %>
+          <% if current_user.admin? %>
+            <details class="workstation-sector-picker">
+              <summary class="workstation-sector-trigger user-sector">
+                <i class="bi bi-briefcase me-1"></i>
+                <span>Setor · <strong><%= params[:sector].presence || "Todos" %></strong></span>
+                <i class="bi bi-chevron-down ms-1 workstation-sector-chevron"></i>
+              </summary>
+              <div class="workstation-sector-picker__menu">
+                <% sector_icons = {
+                  "FROTA" => "bi-truck-front",
+                  "ROTA" => "bi-sign-turn-right",
+                  "AS" => "bi-building",
+                  "RH" => "bi-people",
+                  "SEGURANÇA" => "bi-shield-check",
+                  "GESTÃO" => "bi-diagram-3",
+                  "FINANCEIRO" => "bi-cash-stack",
+                  "ARMAZEM" => "bi-box-seam"
+                } %>
+                <% sector_options = [nil] + BudgetCategory.sectors.values.uniq %>
+                <% sector_options.each do |sector| %>
+                  <% query = request.query_parameters.except("sector") %>
+                  <% query["sector"] = sector if sector.present? %>
+                  <%= link_to url_for(query), class: "workstation-sector-option #{'is-active' if params[:sector].presence == sector}" do %>
+                    <i class="bi <%= sector.present? ? sector_icons.fetch(sector, 'bi-briefcase') : 'bi-grid' %>"></i>
+                    <span><%= sector.presence || "Todos os setores" %></span>
+                    <% if params[:sector].presence == sector %><i class="bi bi-check2 ms-auto"></i><% end %>
+                  <% end %>
+                <% end %>
+              </div>
+            </details>
+          <% else %>
+            <span class="user-sector">
+              <i class="bi bi-briefcase me-1"></i>
+              <%= user_sector_name %>
+            </span>
+          <% end %>
         </div>
 
         <ul class="navbar-nav">
