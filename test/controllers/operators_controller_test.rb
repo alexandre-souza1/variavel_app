@@ -39,10 +39,11 @@ class OperatorsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should destroy operator" do
-    assert_difference("Operator.count", -1) do
+    assert_no_difference("Operator.count") do
       delete operator_url(@operator)
     end
 
+    assert_not @operator.reload.active?
     assert_redirected_to operators_url
   end
 end

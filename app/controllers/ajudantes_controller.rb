@@ -22,7 +22,7 @@ class AjudantesController < ApplicationController
   end
 
   def index
-    @ajudantes = Ajudante.all
+    @ajudantes = params[:status] == "inactive" ? Ajudante.inactive : Ajudante.active
   end
 
   def import
@@ -83,13 +83,13 @@ class AjudantesController < ApplicationController
   end
 
   def destroy
-    @ajudante.destroy
-    redirect_to ajudantes_path, notice: "Motorista apagado com sucesso."
+    @ajudante.retire!
+    redirect_to ajudantes_path, notice: "Ajudante inativado com sucesso. O histórico foi preservado."
   end
 
   def destroy_all
-    Ajudante.delete_all
-    redirect_to ajudantes_path, notice: "Todos os Ajudantes foram apagados com sucesso."
+    Ajudante.update_all(active: false, retired_at: Date.current, updated_at: Time.current)
+    redirect_to ajudantes_path, notice: "Ajudantes inativados com sucesso."
   end
 
   private

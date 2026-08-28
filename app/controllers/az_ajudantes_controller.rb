@@ -9,7 +9,8 @@ class AzAjudantesController < ApplicationController
   include AzAjudantesHelper
 
   def index
-    @az_ajudantes = AzAjudante.order(:nome)
+    scope = params[:status] == "inactive" ? AzAjudante.inactive : AzAjudante.active
+    @az_ajudantes = scope.order(:nome)
   end
 
   def import
@@ -85,8 +86,8 @@ class AzAjudantesController < ApplicationController
 
   def destroy
     respond_to do |format|
-      if @az_ajudante.destroy
-        format.html { redirect_to az_ajudantes_path, status: :see_other, notice: "Ajudante removido com sucesso." }
+      if @az_ajudante.retire!
+        format.html { redirect_to az_ajudantes_path, status: :see_other, notice: "Ajudante inativado com sucesso. O histórico foi preservado." }
         format.json { head :no_content }
       else
         format.html { redirect_to @az_ajudante, alert: "Não foi possível remover o ajudante." }
@@ -96,8 +97,8 @@ class AzAjudantesController < ApplicationController
   end
 
   def destroy_all
-    count = AzAjudante.delete_all
-    redirect_to az_ajudantes_path, notice: "#{count} ajudantes foram removidos."
+    count = AzAjudante.update_all(active: false, retired_at: Date.current, updated_at: Time.current)
+    redirect_to az_ajudantes_path, notice: "#{count} ajudantes foram inativados."
   end
 
   private

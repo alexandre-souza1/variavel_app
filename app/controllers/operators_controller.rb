@@ -24,7 +24,7 @@ class OperatorsController < ApplicationController
 
   # GET /operators or /operators.json
   def index
-    @operators = Operator.all
+    @operators = params[:status] == "inactive" ? Operator.inactive : Operator.active
   end
 
   def import
@@ -101,17 +101,17 @@ class OperatorsController < ApplicationController
 
   # DELETE /operators/1 or /operators/1.json
   def destroy
-    @operator.destroy!
+    @operator.retire!
 
     respond_to do |format|
-      format.html { redirect_to operators_path, status: :see_other, notice: "Operator was successfully destroyed." }
+        format.html { redirect_to operators_path, status: :see_other, notice: "Operador inativado com sucesso. O histórico foi preservado." }
       format.json { head :no_content }
     end
   end
 
   def destroy_all
-    Operator.delete_all
-    redirect_to operators_path, notice: "Todos os Operadores foram apagados com sucesso."
+    Operator.update_all(active: false, retired_at: Date.current, updated_at: Time.current)
+    redirect_to operators_path, notice: "Operadores inativados com sucesso."
   end
 
   private

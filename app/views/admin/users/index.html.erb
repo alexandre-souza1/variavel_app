@@ -221,12 +221,12 @@
                       <%= link_to admin_user_path(user),
                           data: {
                             turbo_method: :delete,
-                            turbo_confirm: "Tem certeza que deseja excluir este usuário?"
+                            turbo_confirm: "Inativar este usuário? O histórico será preservado."
                           },
                           class: "btn btn-outline-danger btn-sm" do %>
 
                         <i class="fas fa-trash-alt me-1"></i>
-                        Excluir
+                        Inativar
 
                       <% end %>
 

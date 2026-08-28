@@ -39,10 +39,11 @@ class AjudantesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should destroy ajudante" do
-    assert_difference("Ajudante.count", -1) do
+    assert_no_difference("Ajudante.count") do
       delete ajudante_url(@ajudante)
     end
 
+    assert_not @ajudante.reload.active?
     assert_redirected_to ajudantes_url
   end
 end

@@ -22,7 +22,7 @@ class DriversController < ApplicationController
   end
 
   def index
-    @drivers = Driver.all
+    @drivers = params[:status] == "inactive" ? Driver.inactive : Driver.active
   end
 
   def import
@@ -83,13 +83,13 @@ class DriversController < ApplicationController
   end
 
   def destroy
-    @driver.destroy
-    redirect_to drivers_path, notice: "Motorista apagado com sucesso."
+    @driver.retire!
+    redirect_to drivers_path, notice: "Motorista inativado com sucesso. O histórico foi preservado."
   end
 
   def destroy_all
-    Driver.delete_all
-    redirect_to drivers_path, notice: "Todos os Motoristas foram apagados com sucesso."
+    Driver.update_all(active: false, retired_at: Date.current, updated_at: Time.current)
+    redirect_to drivers_path, notice: "Motoristas inativados com sucesso."
   end
 
   private

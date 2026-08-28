@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_28_000000) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_28_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -60,6 +60,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_28_000000) do
     t.date "data_nascimento"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "active", default: true, null: false
+    t.date "retired_at"
+    t.index ["active"], name: "index_ajudantes_on_active"
   end
 
   create_table "autonomies", force: :cascade do |t|
@@ -83,6 +86,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_28_000000) do
     t.integer "turno"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "active", default: true, null: false
+    t.date "retired_at"
+    t.index ["active"], name: "index_az_ajudantes_on_active"
   end
 
   create_table "az_mapas", force: :cascade do |t|
@@ -308,6 +314,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_28_000000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "autonomy", default: false, null: false
+    t.boolean "active", default: true, null: false
+    t.date "retired_at"
+    t.index ["active"], name: "index_drivers_on_active"
   end
 
   create_table "fleet_availabilities", force: :cascade do |t|
@@ -520,6 +529,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_28_000000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "autonomy", default: false, null: false
+    t.boolean "active", default: true, null: false
+    t.date "retired_at"
+    t.index ["active"], name: "index_operators_on_active"
   end
 
   create_table "parametro_calculos", force: :cascade do |t|
@@ -790,6 +802,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_28_000000) do
     t.integer "role"
     t.string "name"
     t.integer "sector"
+    t.boolean "active", default: true, null: false
+    t.date "retired_at"
+    t.index ["active"], name: "index_users_on_active"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

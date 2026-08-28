@@ -21,9 +21,9 @@
           </div>
           <div class="col-md-6 text-md-end">
           <% if current_user.admin? or current_user.supervisor? %>
-            <%= button_to "Apagar todos os ajudantes", destroy_all_ajudantes_path,
+            <%= button_to "Inativar todos os ajudantes", destroy_all_ajudantes_path,
               method: :delete,
-              data: { turbo_confirm: "Tem certeza que deseja apagar TODOS os ajudantes?" },
+              data: { turbo_confirm: "Inativar TODOS os ajudantes? O histórico será preservado." },
               class: "btn btn-danger d-inline-block",
               form: { class: "d-inline" } %>
           <% end %>
@@ -64,7 +64,7 @@
                     <%= link_to "Ver", ajudante_path(ajudante), class: "btn btn-outline-primary" %>
                     <%= link_to "Editar", edit_ajudante_path(ajudante), class: "btn btn-outline-primary" %>
                     <% if current_user.admin? or current_user.supervisor? %>
-                      <%= link_to "Excluir", ajudante_path(ajudante), method: :delete, data: { confirm: "Tem certeza?" }, class: "btn btn-outline-danger" %>
+                      <%= link_to "Inativar", ajudante_path(ajudante), method: :delete, data: { confirm: "Inativar este ajudante? O histórico será preservado." }, class: "btn btn-outline-warning" %>
                     <% end %>
                   </div>
                   </td>

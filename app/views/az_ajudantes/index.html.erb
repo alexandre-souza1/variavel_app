@@ -48,7 +48,7 @@
                       <%= link_to "Editar", edit_az_ajudante_path(az_ajudante), class: "btn btn-sm btn-outline-primary" %>
                     <% end %>
                     <% if current_user.admin? %>
-                      <%= button_to az_ajudante, method: :delete, class: "btn btn-sm btn-outline-danger", form: { class: "d-inline" }, data: { turbo_confirm: "Remover este ajudante?" } do %>
+                      <%= button_to az_ajudante, method: :delete, class: "btn btn-sm btn-outline-warning", form: { class: "d-inline" }, data: { turbo_confirm: "Inativar este ajudante? O histórico será preservado." } do %>
                         <i class="bi bi-trash"></i>
                       <% end %>
                     <% end %>
@@ -72,7 +72,7 @@
 
   <% if current_user.admin? && @az_ajudantes.any? %>
     <div class="text-end mt-3">
-      <%= button_to "Remover todos", destroy_all_az_ajudantes_path, method: :delete, class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Remover todos os ajudantes? Esta ação não pode ser desfeita." } %>
+      <%= button_to "Inativar todos", destroy_all_az_ajudantes_path, method: :delete, class: "btn btn-sm btn-outline-warning", data: { turbo_confirm: "Inativar todos os ajudantes? O histórico será preservado." } %>
     </div>
   <% end %>
 </div>

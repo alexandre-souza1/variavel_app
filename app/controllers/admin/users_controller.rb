@@ -5,7 +5,8 @@ class Admin::UsersController < ApplicationController
   before_action :authorize_user_edit, only: [:edit, :update] # Nova verificação para edit/update
 
   def index
-    @users = User.all.order(:id)
+    scope = params[:status] == "inactive" ? User.inactive : User.active
+    @users = scope.order(:id)
   end
 
   def new
@@ -53,8 +54,8 @@ class Admin::UsersController < ApplicationController
     if @user == current_user
       redirect_to admin_users_path, alert: "Você não pode deletar a si mesmo."
     else
-      @user.destroy
-      redirect_to admin_users_path, notice: "Usuário excluído com sucesso."
+      @user.retire!
+      redirect_to admin_users_path, notice: "Usuário inativado com sucesso. O histórico foi preservado."
     end
   end
 

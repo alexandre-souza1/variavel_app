@@ -12,7 +12,7 @@ class FuelConsumptionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get create" do
-    get fuel_consumptions_create_url
-    assert_response :success
+    post fuel_consumptions_url
+    assert_redirected_to new_fuel_consumption_url
   end
 end

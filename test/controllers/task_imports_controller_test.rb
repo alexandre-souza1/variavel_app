@@ -2,12 +2,12 @@ require "test_helper"
 
 class TaskImportsControllerTest < ActionDispatch::IntegrationTest
   test "should get new" do
-    get task_imports_new_url
+    get new_task_import_url
     assert_response :success
   end
 
   test "should get create" do
-    get task_imports_create_url
-    assert_response :success
+    post task_imports_url
+    assert_redirected_to new_task_import_url
   end
 end

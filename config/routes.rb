@@ -39,6 +39,7 @@ Rails.application.routes.draw do
   get 'drivers/new'
   get 'drivers/edit'
   get 'drivers/show'
+  resources :drivers
   get 'consultas/new'
   get 'consultas/show'
   get "mapas/show_todos", to: "mapas#show_todos", as: :mapas_todos

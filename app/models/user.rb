@@ -19,7 +19,16 @@ class User < ApplicationRecord
            foreign_key: :actor_id,
            dependent: :nullify
 
-  scope :active, -> { where.not(confirmed_at: nil) }
+  scope :active, -> { where(active: true) }
+  scope :inactive, -> { where(active: false) }
+
+  def retire!
+    update!(active: false, retired_at: Date.current)
+  end
+
+  def active_for_authentication?
+    super && active?
+  end
 
   has_one_attached :photo do |attachable|
     attachable.variant :thumb, resize_to_limit: [150, 150]

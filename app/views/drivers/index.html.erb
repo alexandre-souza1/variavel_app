@@ -21,9 +21,9 @@
           </div>
           <div class="col-md-6 text-md-end">
             <% if current_user.admin? or current_user.supervisor? %>
-              <%= button_to "Apagar todos os motoristas", destroy_all_drivers_path,
+              <%= button_to "Inativar todos os motoristas", destroy_all_drivers_path,
                   method: :delete,
-                  data: { turbo_confirm: "Tem certeza que deseja apagar TODOS os motoristas?" },
+                  data: { turbo_confirm: "Inativar TODOS os motoristas? O histórico será preservado." },
                   class: "btn btn-danger d-inline-block",
                   form: { class: "d-inline" } %>
             <% end %>
@@ -69,8 +69,8 @@
                   <%= link_to "Ver", driver_path(driver), class: "btn btn-outline-primary" %>
                   <%= link_to "Editar", edit_driver_path(driver), class: "btn btn-outline-primary" %>
                   <% if current_user.admin? or current_user.supervisor? %>
-                  <%= link_to "Excluir", driver_path(driver),
-                    data: { turbo_method: :delete, turbo_confirm: "Tem certeza?" },
+                  <%= link_to "Inativar", driver_path(driver),
+                    data: { turbo_method: :delete, turbo_confirm: "Inativar este motorista? O histórico será preservado." },
                   class: "btn btn-outline-danger" %>
                   <% end %>
                 </div>

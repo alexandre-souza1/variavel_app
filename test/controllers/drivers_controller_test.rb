@@ -1,6 +1,8 @@
 require "test_helper"
 
 class DriversControllerTest < ActionDispatch::IntegrationTest
+  setup { @driver = drivers(:one) }
+
   test "should get index" do
     get drivers_index_url
     assert_response :success
@@ -12,12 +14,12 @@ class DriversControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get edit" do
-    get drivers_edit_url
+    get edit_driver_url(@driver)
     assert_response :success
   end
 
   test "should get show" do
-    get drivers_show_url
+    get driver_url(@driver)
     assert_response :success
   end
 end

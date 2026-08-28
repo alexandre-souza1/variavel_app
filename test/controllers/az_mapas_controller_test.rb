@@ -20,7 +20,7 @@ class AzMapasControllerTest < ActionDispatch::IntegrationTest
       post az_mapas_url, params: { az_mapa: { atingiu_meta: @az_mapa.atingiu_meta, data: @az_mapa.data, resultado: @az_mapa.resultado, tipo: @az_mapa.tipo, turno: @az_mapa.turno } }
     end
 
-    assert_redirected_to az_mapa_url(AzMapa.last)
+    assert_redirected_to az_mapas_url
   end
 
   test "should show az_mapa" do
@@ -34,7 +34,7 @@ class AzMapasControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update az_mapa" do
-    patch az_mapa_url(@az_mapa), params: { az_mapa: { atingiu_meta: @az_mapa.atingiu_meta, data: @az_mapa.data, resultado: @az_mapa.resultado, tipo: @az_mapa.tipo, turno: @az_mapa.turno } }
+    patch az_mapa_url(@az_mapa), params: { az_mapa: { atingiu_meta: @az_mapa.atingiu_meta, data: Date.current + 30.days, resultado: 9.9, tipo: "eficiencia_descarga", turno: [1] } }
     assert_redirected_to az_mapa_url(@az_mapa)
   end
 
