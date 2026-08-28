@@ -529,6 +529,392 @@
   .chart-card, .info-card, .table-card { border-radius: 14px; box-shadow: 0 8px 22px rgba(15, 23, 42, .055); }
 }
 
+// Painel compacto de metas mensais
+.invoice-dashboard-page .invoice-goals-panel {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .045);
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+}
+
+// Indicadores com a mesma linguagem visual do painel de metas
+.invoice-dashboard-page .kpi-grid {
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+}
+
+.invoice-dashboard-page .kpi-card {
+  align-items: center;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .045);
+  gap: .75rem;
+  min-height: 82px;
+  padding: .9rem 1.1rem;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.invoice-dashboard-page .kpi-card:hover {
+  border-color: rgba(var(--bs-primary-rgb), .35);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, .07);
+  transform: none;
+}
+
+.invoice-dashboard-page .kpi-card .kpi-icon {
+  border-radius: 10px;
+  flex: 0 0 36px;
+  height: 36px;
+  width: 36px;
+}
+
+.invoice-dashboard-page .kpi-card .kpi-icon i {
+  font-size: 1.15rem;
+}
+
+.invoice-dashboard-page .kpi-card .kpi-info .kpi-label {
+  font-size: .67rem;
+  letter-spacing: .07em;
+}
+
+.invoice-dashboard-page .kpi-card .kpi-info .kpi-value {
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+.invoice-dashboard-page .kpi-card .kpi-info .kpi-sub {
+  font-size: .68rem;
+}
+
+.invoice-dashboard-page .invoice-goals-header {
+  align-items: center;
+  border-bottom: 1px solid var(--bs-border-color);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: .25rem;
+  padding-bottom: .75rem;
+}
+
+.invoice-dashboard-page .invoice-goals-kicker {
+  color: var(--bs-primary);
+  display: block;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  margin-bottom: .15rem;
+  text-transform: uppercase;
+}
+
+.invoice-dashboard-page .invoice-goals-header h2 {
+  color: var(--bs-body-color);
+  font-size: 1rem;
+  font-weight: 650;
+  margin: 0;
+}
+
+.invoice-dashboard-page .invoice-goals-manage {
+  color: var(--bs-secondary-color);
+  font-size: .78rem;
+  text-decoration: none;
+}
+
+.invoice-dashboard-page .invoice-goals-manage:hover {
+  color: var(--bs-primary);
+}
+
+.invoice-dashboard-page .invoice-goal-row {
+  align-items: center;
+  display: flex;
+  gap: .8rem;
+  min-height: 74px;
+  padding: .65rem 0;
+}
+
+.invoice-dashboard-page .invoice-goal-row + .invoice-goal-row {
+  border-top: 1px solid color-mix(in srgb, var(--bs-border-color) 65%, transparent);
+}
+
+.invoice-dashboard-page .invoice-goal-icon {
+  align-items: center;
+  background: rgba(var(--bs-primary-rgb), .09);
+  border-radius: 11px;
+  color: var(--bs-primary);
+  display: flex;
+  flex: 0 0 36px;
+  height: 36px;
+  justify-content: center;
+}
+
+.invoice-dashboard-page .invoice-goal-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.invoice-dashboard-page .invoice-goal-title-line {
+  align-items: center;
+  display: flex;
+  gap: .5rem;
+  justify-content: space-between;
+}
+
+.invoice-dashboard-page .invoice-goal-title-line strong {
+  color: var(--bs-body-color);
+  font-size: .86rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.invoice-dashboard-page .invoice-goal-title-line span {
+  color: var(--bs-secondary-color);
+  flex-shrink: 0;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.invoice-dashboard-page .invoice-goal-main small {
+  color: var(--bs-secondary-color);
+  display: block;
+  font-size: .7rem;
+  margin: .15rem 0 .45rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.invoice-dashboard-page .invoice-goal-progress {
+  background: var(--bs-tertiary-bg);
+  border-radius: 99px;
+  height: 5px;
+  overflow: hidden;
+}
+
+.invoice-dashboard-page .invoice-goal-progress span {
+  background: linear-gradient(90deg, var(--bs-primary), #65a8ff);
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  transition: width .3s ease;
+}
+
+.invoice-dashboard-page .invoice-goal-values {
+  align-items: flex-end;
+  display: flex;
+  flex: 0 0 150px;
+  flex-direction: column;
+  gap: .08rem;
+  text-align: right;
+}
+
+.invoice-dashboard-page .invoice-goal-values strong {
+  color: var(--bs-primary);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.invoice-dashboard-page .invoice-goal-values small,
+.invoice-dashboard-page .invoice-goal-values em {
+  color: var(--bs-secondary-color);
+  font-size: .68rem;
+  font-style: normal;
+}
+
+// Cabeçalhos dos painéis: duas linhas, leves e alinhados ao painel de metas
+.invoice-dashboard-page {
+  .chart-card .chart-header,
+  .info-card .info-card-header,
+  .table-card .table-card-header {
+    align-items: flex-start;
+    background: transparent;
+    border-bottom: 0;
+    padding: .95rem 1.25rem .8rem;
+    position: relative;
+  }
+
+  .chart-card .chart-header::after,
+  .info-card .info-card-header::after,
+  .table-card .table-card-header::after {
+    border-bottom: 1px solid var(--bs-border-color);
+    bottom: 0;
+    content: "";
+    left: 1.25rem;
+    position: absolute;
+    right: 1.25rem;
+  }
+
+  .dashboard-panel-heading {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .dashboard-panel-kicker {
+    color: var(--bs-primary);
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    line-height: 1.2;
+    margin-bottom: .18rem;
+    text-transform: uppercase;
+  }
+
+  .dashboard-panel-kicker i {
+    font-size: .68rem;
+  }
+
+  .dashboard-panel-heading h2 {
+    color: var(--bs-body-color);
+    font-size: .92rem;
+    font-weight: 650;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  .dashboard-panel-heading small {
+    color: var(--bs-secondary-color);
+    font-size: .7rem;
+    line-height: 1.35;
+    margin-top: .25rem;
+  }
+
+  .chart-card .chart-header,
+  .info-card .info-card-header,
+  .table-card .table-card-header {
+    border-bottom-color: var(--bs-border-color);
+  }
+
+  .chart-card .chart-header .chart-filters {
+    align-self: center;
+    flex-shrink: 0;
+  }
+
+  .chart-card .chart-header .chart-filters .form-select {
+    border-color: var(--bs-border-color);
+    border-radius: 9px;
+    font-size: .75rem;
+    min-width: 170px;
+  }
+
+  .category-grid-wrapper {
+    margin-bottom: 0;
+  }
+
+  .category-grid-wrapper .category-heading {
+    border-bottom: 0;
+    margin-bottom: 1rem;
+  }
+
+  .category-grid-wrapper .category-card-clickable:hover {
+    transform: translateY(-2px);
+  }
+
+  .category-grid-wrapper .category-card-clickable .category-card-inner {
+    align-items: center;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 14px;
+    box-shadow: 0 5px 14px rgba(15, 23, 42, .035);
+    display: flex;
+    gap: .7rem;
+    min-height: 72px;
+    padding: .75rem .85rem;
+    text-align: left;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+
+  .category-grid-wrapper .category-card-clickable:hover .category-card-inner {
+    border-color: rgba(var(--bs-primary-rgb), .35);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, .07);
+  }
+
+  .category-grid-wrapper .category-card-inner .category-icon .badge {
+    border-radius: 11px;
+    flex: 0 0 38px;
+    font-size: 1rem;
+    height: 38px;
+    padding: .35rem;
+    width: 38px;
+  }
+
+  .category-grid-wrapper .category-card-inner .category-info {
+    flex: 1;
+    margin-top: 0;
+    min-width: 0;
+  }
+
+  .category-grid-wrapper .category-card-inner .category-info .category-name {
+    font-size: .78rem;
+    margin-bottom: .15rem;
+  }
+
+  .category-grid-wrapper .category-card-inner .category-info .category-value {
+    font-size: .98rem;
+    line-height: 1.15;
+  }
+
+  .category-grid-wrapper .category-card-inner .category-info .category-count {
+    font-size: .68rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .invoice-dashboard-page {
+    .chart-card .chart-header,
+    .info-card .info-card-header,
+    .table-card .table-card-header {
+      padding: .85rem 1rem .7rem;
+    }
+
+    .chart-card .chart-header::after,
+    .info-card .info-card-header::after,
+    .table-card .table-card-header::after {
+      left: 1rem;
+      right: 1rem;
+    }
+
+    .chart-card .chart-header .chart-filters {
+      align-self: stretch;
+      width: 100%;
+    }
+
+    .chart-card .chart-header .chart-filters .form-select {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .dashboard-panel-heading h2 {
+      font-size: .88rem;
+    }
+
+    .dashboard-panel-heading small {
+      font-size: .68rem;
+    }
+
+    .category-grid-wrapper .category-grid {
+      gap: .65rem;
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .invoice-dashboard-page .invoice-goals-panel {
+    padding: .85rem 1rem;
+  }
+
+  .invoice-dashboard-page .invoice-goal-row {
+    align-items: flex-start;
+  }
+
+  .invoice-dashboard-page .invoice-goal-values {
+    flex-basis: 105px;
+  }
+}
+
 // ============================================================
 // RESPONSIVIDADE
 // ============================================================
@@ -752,6 +1138,24 @@
 
     .table-custom {
       font-size: 0.7rem;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .invoice-dashboard-page {
+    .chart-card .chart-header {
+      align-items: stretch;
+      text-align: left;
+    }
+
+    .chart-card .chart-header .chart-filters {
+      align-self: stretch;
+      width: 100%;
+    }
+
+    .table-card .table-card-header > div {
+      min-width: 0;
     }
   }
 }

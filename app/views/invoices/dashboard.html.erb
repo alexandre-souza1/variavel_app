@@ -86,43 +86,52 @@
   </div>
 
   <% if @invoice_goals.present? %>
-    <div class="chart-card mb-4">
-      <div class="chart-header">
-        <h5><i class="bi bi-bullseye me-2"></i>Metas do período</h5>
+    <section class="invoice-goals-panel" aria-labelledby="invoice-goals-title">
+      <div class="invoice-goals-header">
+        <div>
+          <span class="invoice-goals-kicker"><i class="bi bi-bullseye me-1"></i> Acompanhamento</span>
+          <h2 id="invoice-goals-title">Metas do período</h2>
+        </div>
         <% if @can_filter_invoice_sector %>
-          <%= link_to "Gerenciar metas", admin_invoice_goals_path, class: "az-report-btn" %>
+          <%= link_to admin_invoice_goals_path, class: "invoice-goals-manage" do %>
+            Gerenciar metas <i class="bi bi-arrow-up-right"></i>
+          <% end %>
         <% end %>
       </div>
-      <div class="row g-3">
+      <div class="invoice-goals-list">
         <% @invoice_goals.each do |goal_data| %>
           <% goal = goal_data[:goal] %>
-          <div class="col-md-6 col-xl-4">
-            <div class="card h-100 border">
-              <div class="card-body">
-                <div class="d-flex justify-content-between gap-2 mb-2">
-                  <strong><%= goal.name %></strong>
-                  <span class="badge bg-secondary"><%= InvoiceGoal.sectors[goal.sector] %></span>
-                </div>
-                <div class="progress mb-2" role="progressbar" aria-valuenow="<%= [goal_data[:percentage], 100].min %>" aria-valuemin="0" aria-valuemax="100">
-                  <div class="progress-bar" style="width: <%= [goal_data[:percentage], 100].min %>%"></div>
-                </div>
-                <div class="d-flex justify-content-between small">
-                  <span><%= number_to_currency(goal_data[:actual_amount], unit: "R$ ", separator: ",", delimiter: ".") %> realizado</span>
-                  <span><%= goal_data[:percentage] %>%</span>
-                </div>
-                <div class="text-muted small mt-1">Meta: <%= number_to_currency(goal.target_amount, unit: "R$ ", separator: ",", delimiter: ".") %> · Saldo: <%= number_to_currency(goal_data[:remaining_amount], unit: "R$ ", separator: ",", delimiter: ".") %></div>
+          <div class="invoice-goal-row">
+            <div class="invoice-goal-icon"><i class="bi bi-bullseye"></i></div>
+            <div class="invoice-goal-main">
+              <div class="invoice-goal-title-line">
+                <strong><%= goal.name %></strong>
+                <span><%= InvoiceGoal.sectors[goal.sector] %></span>
               </div>
+              <small><%= goal.budget_categories.map(&:name).join(" · ") %></small>
+              <div class="invoice-goal-progress" role="progressbar" aria-label="Progresso da meta <%= goal.name %>" aria-valuenow="<%= [goal_data[:percentage], 100].min %>" aria-valuemin="0" aria-valuemax="100">
+                <span style="width: <%= [goal_data[:percentage], 100].min %>%"></span>
+              </div>
+            </div>
+            <div class="invoice-goal-values">
+              <strong><%= goal_data[:percentage] %>%</strong>
+              <small><%= number_to_currency(goal_data[:actual_amount], unit: "R$ ", separator: ",", delimiter: ".") %> de <%= number_to_currency(goal.target_amount, unit: "R$ ", separator: ",", delimiter: ".") %></small>
+              <em><%= number_to_currency(goal_data[:remaining_amount], unit: "R$ ", separator: ",", delimiter: ".") %> restante</em>
             </div>
           </div>
         <% end %>
       </div>
-    </div>
+    </section>
   <% end %>
 
   <!-- ========== GRÁFICO DE EVOLUÇÃO ========== -->
   <div class="chart-card">
     <div class="chart-header">
-      <h5><i class="fas fa-chart-line me-2"></i> Evolução Mensal por Categoria (<%= Date.current.year %>)</h5>
+      <div class="dashboard-panel-heading">
+        <span class="dashboard-panel-kicker"><i class="fas fa-chart-line me-1"></i> Tendência</span>
+        <h2>Evolução Mensal por Categoria</h2>
+        <small>Últimos 12 meses · <%= Date.current.year %></small>
+      </div>
       <%= form_with url: dashboard_invoices_path, method: :get, local: true, class: "chart-filters" do %>
         <%= select_tag :category_id,
               options_from_collection_for_select(@all_categories, :id, :name, params[:category_id]),
@@ -152,7 +161,11 @@
 
   <!-- ========== GASTOS POR CATEGORIA (cards clicáveis) ========== -->
   <div class="category-grid-wrapper">
-    <h5 class="section-title"><i class="fas fa-tags me-2"></i> Gastos por Categoria - <%= @period_display %></h5>
+    <div class="dashboard-panel-heading category-heading">
+      <span class="dashboard-panel-kicker"><i class="fas fa-tags me-1"></i> Composição</span>
+      <h2>Gastos por Categoria</h2>
+      <small><%= @period_display %> · toque em uma categoria para ver os lançamentos</small>
+    </div>
     <% if @has_period_filter %>
       <div data-controller="category-details">
         <div class="category-grid">
@@ -189,7 +202,11 @@
   <div class="charts-grid">
     <div class="chart-card">
       <div class="chart-header">
-        <h5><i class="fas fa-chart-pie me-2"></i> Valores por Categoria</h5>
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="fas fa-chart-pie me-1"></i> Distribuição</span>
+          <h2>Valores por Categoria</h2>
+          <small>Participação dos gastos no período selecionado</small>
+        </div>
       </div>
       <div class="chart-body">
         <%= pie_chart @spent_per_category,
@@ -204,7 +221,11 @@
 
     <div class="chart-card">
       <div class="chart-header">
-        <h5><i class="fas fa-chart-bar me-2"></i> Manutenções por Centro de Custo</h5>
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="fas fa-chart-bar me-1"></i> Alocação</span>
+          <h2>Manutenções por Centro de Custo</h2>
+          <small>Onde os custos de manutenção estão concentrados</small>
+        </div>
       </div>
       <div class="chart-body">
         <%= pie_chart @total_per_cost_center,
@@ -221,7 +242,11 @@
   <div class="info-grid">
     <div class="info-card">
       <div class="info-card-header">
-        <h5><i class="fas fa-trophy me-2"></i> Top 5 Fornecedores</h5>
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="fas fa-trophy me-1"></i> Relacionamentos</span>
+          <h2>Top 5 Fornecedores</h2>
+          <small>Fornecedores com maior impacto no período</small>
+        </div>
       </div>
       <div class="info-card-body">
         <div class="supplier-list">
@@ -243,7 +268,11 @@
 
     <div class="info-card">
       <div class="info-card-header">
-        <h5><i class="fas fa-exclamation-triangle me-2"></i> Alertas e Pendências</h5>
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="fas fa-exclamation-triangle me-1"></i> Atenção</span>
+          <h2>Alertas e Pendências</h2>
+          <small>Sinais que merecem acompanhamento</small>
+        </div>
       </div>
       <div class="info-card-body">
         <div class="alert-list">
@@ -277,7 +306,11 @@
   <!-- ========== ÚLTIMOS LANÇAMENTOS ========== -->
   <div class="table-card">
     <div class="table-card-header">
-      <h5><i class="fas fa-list me-2"></i> Últimos Lançamentos</h5>
+      <div class="dashboard-panel-heading">
+        <span class="dashboard-panel-kicker"><i class="fas fa-list me-1"></i> Registro</span>
+        <h2>Últimos Lançamentos</h2>
+        <small>Os lançamentos financeiros mais recentes</small>
+      </div>
       <div>
         <small class="text-muted me-3">Mostrando <%= @latest_invoices.count %> de <%= @total_invoices_count %> notas</small>
         <%= link_to "Ver Todas", invoices_path, class: "az-report-btn az-report-btn--primary" %>
