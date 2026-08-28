@@ -93,7 +93,7 @@
           <% end %>
           <% user_sector_name = User::USER_SECTORS.invert[current_user.sector&.to_sym] || "Setor não definido" %>
           <% if current_user.admin? %>
-            <details class="workstation-sector-picker">
+            <details class="workstation-sector-picker" data-controller="sector-picker">
               <summary class="workstation-sector-trigger user-sector">
                 <i class="bi bi-briefcase me-1"></i>
                 <span>Setor · <strong><%= params[:sector].presence || "Todos" %></strong></span>
