@@ -95,7 +95,7 @@ class ChecklistsController < ApplicationController
     # =========================
 
     @plates =
-      Plate.where(setor: @template.setor)
+      Plate.active.where(setor: @template.setor)
   end
 
   def edit
@@ -105,7 +105,7 @@ class ChecklistsController < ApplicationController
     prepare_checklist_form
 
     @plates =
-      Plate.where(setor: @template.setor)
+      Plate.active.where(setor: @template.setor)
 
     render :new
   end
@@ -128,7 +128,7 @@ class ChecklistsController < ApplicationController
 
       redirect_to @checklist, notice: 'Checklist enviado com sucesso.'
     else
-      @plates = Plate.where(setor: @template.setor)
+      @plates = Plate.active.where(setor: @template.setor)
       render :new, status: :unprocessable_entity
     end
   end
@@ -146,7 +146,7 @@ class ChecklistsController < ApplicationController
     else
 
       @template = @checklist.checklist_template
-      @plates = Plate.where(setor: @template.setor)
+      @plates = Plate.active.where(setor: @template.setor)
 
       render :new,
             status: :unprocessable_entity

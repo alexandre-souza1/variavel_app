@@ -7,12 +7,16 @@
 
         <h3 class="mb-0 fw-bold">
           <i class="bi bi-truck-front-fill me-2"></i>
-          Placas Cadastradas
+          <%= params[:status] == "inactive" ? "Placas Inativas" : "Placas Ativas" %>
         </h3>
 
         <%= link_to new_plate_path, class: "btn btn-light" do %>
           <i class="bi bi-plus-circle-fill me-1"></i>
           Nova Placa
+        <% end %>
+
+        <%= link_to plates_path(status: params[:status] == "inactive" ? nil : "inactive"), class: "btn btn-outline-light ms-2" do %>
+          <%= params[:status] == "inactive" ? "Placas ativas" : "Placas inativas" %>
         <% end %>
 
       </div>
@@ -264,15 +268,19 @@
 
                     <% end %>
 
-                    <%= link_to plate_path(plate),
-                          data: {
-                            turbo_method: :delete,
-                            turbo_confirm: "Tem certeza?"
-                          },
-                          class: "btn btn-sm btn-outline-danger" do %>
-
-                      <i class="bi bi-trash-fill"></i>
-
+                    <% if plate.active? %>
+                      <%= button_to retire_plate_path(plate),
+                            method: :patch,
+                            form: { data: { turbo_confirm: "Inativar esta placa? O histórico será preservado." } },
+                            class: "btn btn-sm btn-outline-warning" do %>
+                        <i class="bi bi-archive"></i>
+                      <% end %>
+                    <% else %>
+                      <%= button_to reactivate_plate_path(plate),
+                            method: :patch,
+                            class: "btn btn-sm btn-outline-success" do %>
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                      <% end %>
                     <% end %>
 
                   </div>

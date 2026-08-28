@@ -23,6 +23,7 @@ class Checklist < ApplicationRecord
                                 reject_if: :all_blank
 
   validate :validate_plate_presence_if_required
+  validate :plate_must_be_active
   validate :validate_reponsavel_presence_if_required
   validate :validate_vehicle_model_presence_if_required
   validate :validate_kilometer_presence_if_required
@@ -37,6 +38,13 @@ class Checklist < ApplicationRecord
   validate :validate_photos_are_images
 
   private
+
+  def plate_must_be_active
+    return unless plate_id.present? && will_save_change_to_plate_id?
+    return if plate&.active?
+
+    errors.add(:plate, "está inativa")
+  end
 
   def validate_plate_presence_if_required
     return unless checklist_template&.plate_required?

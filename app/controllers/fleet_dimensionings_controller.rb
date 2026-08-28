@@ -62,7 +62,7 @@ class FleetDimensioningsController < ApplicationController
   def standard_plate_slot_quantity
     [
       @fleet_dimensioning.route_quantity.to_i,
-      Plate.where(setor: "ROTA").count,
+      Plate.active.where(setor: "ROTA").count,
       FleetDimensioning::STANDARD_PLATE_SLOTS
     ].max
   end

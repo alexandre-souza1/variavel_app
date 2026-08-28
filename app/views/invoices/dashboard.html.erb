@@ -86,8 +86,8 @@
   </div>
 
   <% if @invoice_goals.present? %>
-    <section class="invoice-goals-panel" aria-labelledby="invoice-goals-title">
-      <div class="invoice-goals-header">
+    <section class="app-panel invoice-goals-panel" aria-labelledby="invoice-goals-title">
+      <div class="app-panel__header invoice-goals-header">
         <div>
           <span class="invoice-goals-kicker"><i class="bi bi-bullseye me-1"></i> Acompanhamento</span>
           <h2 id="invoice-goals-title">Metas do período</h2>
@@ -125,8 +125,8 @@
   <% end %>
 
   <!-- ========== GRÁFICO DE EVOLUÇÃO ========== -->
-  <div class="chart-card">
-    <div class="chart-header">
+  <div class="app-panel chart-card">
+    <div class="app-panel__header chart-header">
       <div class="dashboard-panel-heading">
         <span class="dashboard-panel-kicker"><i class="fas fa-chart-line me-1"></i> Tendência</span>
         <h2>Evolução Mensal por Categoria</h2>
@@ -200,8 +200,8 @@
 
   <!-- ========== GRÁFICOS EM GRID ========== -->
   <div class="charts-grid">
-    <div class="chart-card">
-      <div class="chart-header">
+    <div class="app-panel chart-card">
+      <div class="app-panel__header chart-header">
         <div class="dashboard-panel-heading">
           <span class="dashboard-panel-kicker"><i class="fas fa-chart-pie me-1"></i> Distribuição</span>
           <h2>Valores por Categoria</h2>
@@ -219,8 +219,8 @@
       </div>
     </div>
 
-    <div class="chart-card">
-      <div class="chart-header">
+    <div class="app-panel chart-card">
+      <div class="app-panel__header chart-header">
         <div class="dashboard-panel-heading">
           <span class="dashboard-panel-kicker"><i class="fas fa-chart-bar me-1"></i> Alocação</span>
           <h2>Manutenções por Centro de Custo</h2>
@@ -240,8 +240,8 @@
 
   <!-- ========== TOP FORNECEDORES + ALERTAS ========== -->
   <div class="info-grid">
-    <div class="info-card">
-      <div class="info-card-header">
+    <div class="app-panel info-card">
+      <div class="app-panel__header info-card-header">
         <div class="dashboard-panel-heading">
           <span class="dashboard-panel-kicker"><i class="fas fa-trophy me-1"></i> Relacionamentos</span>
           <h2>Top 5 Fornecedores</h2>
@@ -266,8 +266,8 @@
       </div>
     </div>
 
-    <div class="info-card">
-      <div class="info-card-header">
+    <div class="app-panel info-card">
+      <div class="app-panel__header info-card-header">
         <div class="dashboard-panel-heading">
           <span class="dashboard-panel-kicker"><i class="fas fa-exclamation-triangle me-1"></i> Atenção</span>
           <h2>Alertas e Pendências</h2>
@@ -304,8 +304,8 @@
   </div>
 
   <!-- ========== ÚLTIMOS LANÇAMENTOS ========== -->
-  <div class="table-card">
-    <div class="table-card-header">
+  <div class="app-panel table-card">
+    <div class="app-panel__header table-card-header">
       <div class="dashboard-panel-heading">
         <span class="dashboard-panel-kicker"><i class="fas fa-list me-1"></i> Registro</span>
         <h2>Últimos Lançamentos</h2>

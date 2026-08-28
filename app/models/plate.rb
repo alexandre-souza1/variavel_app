@@ -16,6 +16,20 @@ class Plate < ApplicationRecord
   validates :perfil, inclusion: { in: PERFIS }, allow_nil: true
 
   scope :ordered, -> { order(:placa) }
+  scope :active, -> { where(active: true) }
+  scope :inactive, -> { where(active: false) }
+
+  def retire!
+    update!(active: false, retired_at: Date.current)
+  end
+
+  def reactivate!
+    update!(active: true, retired_at: nil)
+  end
+
+  def active_on?(date)
+    active? || (retired_at.present? && retired_at > date.to_date)
+  end
 
   def self.import(file)
     csv_text = file.read.force_encoding("ISO-8859-1").encode("UTF-8")

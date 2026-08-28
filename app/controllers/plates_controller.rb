@@ -1,6 +1,6 @@
 class PlatesController < ApplicationController
   def index
-    @plates = Plate.all
+    @plates = params[:status] == "inactive" ? Plate.inactive : Plate.active
 
     @plates = @plates.where("placa ILIKE ?", "%#{params[:placa]}%") if params[:placa].present?
     @plates = @plates.where(setor: params[:setor]) if params[:setor].present?
@@ -40,6 +40,18 @@ class PlatesController < ApplicationController
     @plate = Plate.find(params[:id])
     @plate.destroy
     redirect_to plates_path, notice: "Placa removida com sucesso"
+  end
+
+  def retire
+    @plate = Plate.find(params[:id])
+    @plate.retire!
+    redirect_to plates_path, notice: "Placa inativada com sucesso. O histórico foi preservado."
+  end
+
+  def reactivate
+    @plate = Plate.find(params[:id])
+    @plate.reactivate!
+    redirect_to plates_path(status: "inactive"), notice: "Placa reativada com sucesso."
   end
 
   def import

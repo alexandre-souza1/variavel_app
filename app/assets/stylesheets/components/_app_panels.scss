@@ -1,0 +1,60 @@
+// Superfícies reutilizáveis do Workstation.
+.app-panel {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .045);
+  overflow: hidden;
+}
+
+.app-panel__header {
+  align-items: flex-start;
+  background: transparent;
+  display: flex;
+  justify-content: space-between;
+  min-height: 58px;
+  padding: .95rem 1.25rem .8rem;
+  position: relative;
+}
+
+.app-panel__header::after {
+  border-bottom: 1px solid var(--bs-border-color);
+  bottom: 0;
+  content: "";
+  left: 1.25rem;
+  position: absolute;
+  right: 1.25rem;
+}
+
+.app-panel__body { padding: 1rem 1.25rem; }
+
+.app-panel__kicker {
+  color: var(--bs-primary);
+  display: block;
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.app-panel__title {
+  color: var(--bs-body-color);
+  font-size: .92rem;
+  font-weight: 650;
+  line-height: 1.2;
+  margin: .18rem 0 0;
+}
+
+.app-panel__subtitle {
+  color: var(--bs-secondary-color);
+  display: block;
+  font-size: .7rem;
+  line-height: 1.35;
+  margin-top: .25rem;
+}
+
+@media (max-width: 576px) {
+  .app-panel__header { padding: .85rem 1rem .7rem; }
+  .app-panel__header::after { left: 1rem; right: 1rem; }
+  .app-panel__body { padding-left: 1rem; padding-right: 1rem; }
+}

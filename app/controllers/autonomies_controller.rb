@@ -91,7 +91,7 @@ class AutonomiesController < ApplicationController
 
   def plates
     equipment_type = params[:equipment_type]
-    plates = Plate.where(tipo: equipment_type).pluck(:placa)
+    plates = Plate.active.where(tipo: equipment_type).pluck(:placa)
     render json: plates
   end
 

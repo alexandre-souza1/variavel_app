@@ -78,9 +78,13 @@
   <!-- ========== GRÁFICOS ========== -->
   <div class="charts-grid">
     <!-- Evolução dos Custos -->
-    <div class="chart-card">
-      <div class="chart-header">
-        <h5><i class="bi bi-graph-up-arrow text-primary me-2"></i> Evolução dos Custos</h5>
+    <div class="app-panel chart-card">
+      <div class="app-panel__header chart-header">
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="bi bi-graph-up-arrow me-1"></i> Tendência</span>
+          <h2>Evolução dos Custos</h2>
+          <small>Comportamento dos gastos nos últimos 12 meses</small>
+        </div>
         <div class="chart-actions">
           <span class="badge bg-primary-soft text-primary"><%= @total_invoices %> faturas</span>
           <div class="dropdown">
@@ -96,7 +100,7 @@
           </div>
         </div>
       </div>
-      <div class="chart-body">
+      <div class="app-panel__body chart-body">
         <% if @monthly_costs.present? %>
           <%= column_chart @monthly_costs,
                 colors: ["#3b82f6"],
@@ -117,11 +121,15 @@
     </div>
 
     <!-- Gastos por Categoria -->
-    <div class="chart-card">
-      <div class="chart-header">
-        <h5><i class="bi bi-pie-chart text-success me-2"></i> Gastos por Categoria (Mês)</h5>
+    <div class="app-panel chart-card">
+      <div class="app-panel__header chart-header">
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="bi bi-pie-chart me-1"></i> Composição</span>
+          <h2>Gastos por Categoria</h2>
+          <small>Distribuição dos custos no mês atual</small>
+        </div>
       </div>
-      <div class="chart-body">
+      <div class="app-panel__body chart-body">
         <% if @expenses_by_category.present? %>
           <%= pie_chart @expenses_by_category,
                 donut: true,
@@ -142,9 +150,13 @@
   <!-- ========== CARDS DE INFORMAÇÕES ========== -->
   <div class="info-grid">
     <!-- Veículos sem movimentação -->
-    <div class="info-card">
-      <div class="info-card-header">
-        <h5><i class="bi bi-pause-circle text-danger me-2"></i> Veículos sem Movimentação no Mês</h5>
+    <div class="app-panel info-card">
+      <div class="app-panel__header info-card-header">
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="bi bi-pause-circle me-1"></i> Operação</span>
+          <h2>Veículos sem Movimentação</h2>
+          <small>Placas que ainda não rodaram no mês</small>
+        </div>
         <div class="info-badges">
           <% if @last_map_date.present? %>
             <% days_ago = (Date.current - @last_map_date).to_i %>
@@ -169,7 +181,7 @@
           <span class="badge bg-danger"><%= @vehicles_not_used_this_month&.count || 0 %></span>
         </div>
       </div>
-      <div class="info-card-body">
+      <div class="app-panel__body info-card-body">
         <% vehicles = @vehicles_not_used_this_month.take(10) %>
         <% if vehicles.present? %>
           <ul class="vehicle-list">
@@ -197,11 +209,15 @@
     </div>
 
     <!-- Resumo Rápido -->
-    <div class="info-card">
-      <div class="info-card-header">
-        <h5><i class="bi bi-info-circle text-secondary me-2"></i> Resumo Rápido</h5>
+    <div class="app-panel info-card">
+      <div class="app-panel__header info-card-header">
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="bi bi-info-circle me-1"></i> Visão geral</span>
+          <h2>Resumo Rápido</h2>
+          <small>Indicadores para acompanhamento diário</small>
+        </div>
       </div>
-      <div class="info-card-body">
+      <div class="app-panel__body info-card-body">
         <div class="summary-grid">
           <!-- Custo do mês -->
           <div class="summary-item">

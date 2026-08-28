@@ -87,6 +87,7 @@ class FleetAvailabilitiesController < ApplicationController
               .fleet_availability_items
               .includes(:plate)
               .ordered
+              .select { |item| item.plate.active_on?(@fleet_availability.date) }
     @dimensioning = FleetAvailability.dimensioning_period_for(@fleet_availability.date)
     @standard_plate_by_position =
       @dimensioning&.standard_plate_by_position || {}

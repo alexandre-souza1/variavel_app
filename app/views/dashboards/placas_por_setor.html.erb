@@ -1,15 +1,29 @@
-<div class="container mt-4">
-  <h1 class="mb-4"><i class="bi bi-speedometer2"></i> Teste de Estresse – Placas por Setor</h1>
+<div class="dashboard-page placas-sector-page">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div>
+        <h1><i class="bi bi-speedometer2"></i> Placas por Setor</h1>
+        <p class="subtitle">Teste de estresse e acompanhamento da movimentação mensal da frota.</p>
+      </div>
+    </div>
+  </header>
 
   <!-- Filtros -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-body">
+  <section class="app-panel filter-panel mb-4">
+    <div class="app-panel__header">
+      <div class="panel-heading">
+        <span class="app-panel__kicker"><i class="bi bi-sliders me-1"></i> Consulta</span>
+        <h2 class="app-panel__title">Filtros da movimentação</h2>
+        <small class="app-panel__subtitle">Selecione a placa e o período que deseja acompanhar.</small>
+      </div>
+    </div>
+    <div class="app-panel__body">
       <%= form_with url: placas_por_setor_path, method: :get, local: true, class: "row g-3" do |f| %>
         <div class="col-md-4">
           <%= f.label :placa, "Placa" %>
             <%= f.select :placa,
               options_for_select(
-                [["Todas", ""]] + Plate.where(setor: "ROTA").order(:placa).pluck(:placa),
+                [["Todas", ""]] + Plate.active.where(setor: "ROTA").order(:placa).pluck(:placa),
                 params[:placa]
               ),
               {},
@@ -28,35 +42,38 @@
         </div>
       <% end %>
     </div>
-  </div>
+  </section>
 
   <!-- Resumo por setor -->
-  <div class="row mb-4">
+  <div class="sector-status-grid mb-4">
     <% @status_por_setor.each do |setor, status| %>
-      <div class="col-md-3 mb-3">
-        <div class="card <%= status[:completo] ? 'border-success' : 'border-danger' %>">
-          <div class="card-body text-center">
-            <h5 class="card-title"><%= setor %></h5>
-            <p class="card-text">
+      <div class="app-panel sector-status-card <%= status[:completo] ? 'is-complete' : 'is-pending' %>">
+        <div class="app-panel__body text-center">
+            <span class="app-panel__kicker">Setor</span>
+            <h2 class="sector-status-title"><%= setor %></h2>
+            <p class="sector-status-summary">
               <%= status[:rodaram] %> / <%= status[:total] %> placas rodaram
             </p>
             <% if status[:completo] %>
-              <span class="badge bg-success">Setor completo ✓</span>
+              <span class="status-pill status-pill--success"><i class="bi bi-check-circle me-1"></i> Setor completo</span>
             <% else %>
-              <span class="badge bg-danger"><%= status[:total] - status[:rodaram] %> placa(s) ociosa(s)</span>
+              <span class="status-pill status-pill--danger"><i class="bi bi-exclamation-circle me-1"></i> <%= status[:total] - status[:rodaram] %> placa(s) ociosa(s)</span>
             <% end %>
-          </div>
         </div>
       </div>
     <% end %>
   </div>
 
   <!-- Tabela de placas -->
-  <div class="card shadow-sm">
-    <div class="card-header bg-light">
-      <h5 class="mb-0">Detalhamento diário</h5>
+  <section class="app-panel plates-detail-panel">
+    <div class="app-panel__header">
+      <div class="panel-heading">
+        <span class="app-panel__kicker"><i class="bi bi-calendar3 me-1"></i> Operação</span>
+        <h2 class="app-panel__title">Detalhamento diário</h2>
+        <small class="app-panel__subtitle">Movimentação das placas no período selecionado.</small>
+      </div>
     </div>
-    <div class="card-body table-responsive">
+    <div class="app-panel__body table-responsive">
       <table class="table table-bordered table-hover table-sm">
         <thead class="table-light">
           <tr>
@@ -103,9 +120,11 @@
         </tbody>
       </table>
     </div>
-  </div>
+  </section>
 
   <div class="mt-3">
-    <%= link_to "Voltar", mapas_path, class: "btn btn-secondary" %>
+    <%= link_to mapas_path, class: "btn-outline" do %>
+      <i class="bi bi-arrow-left me-1"></i> Voltar
+    <% end %>
   </div>
 </div>

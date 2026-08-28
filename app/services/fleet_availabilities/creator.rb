@@ -74,7 +74,7 @@ module FleetAvailabilities
     def create_default_items(availability)
       base = base_item_attributes(availability.id)
 
-      items = Plate.where(setor: "ROTA")
+      items = Plate.active.where(setor: "ROTA")
                    .ordered
                    .each_with_index.map do |plate, index|
         status = index < availability.agreed_quantity.to_i ?
@@ -118,7 +118,7 @@ module FleetAvailabilities
     def create_items_with_unavailable_from_previous(availability, previous)
       base = base_item_attributes(availability.id)
       total_positions = availability.agreed_quantity.to_i
-      all_plates = Plate.where(setor: "ROTA").ordered.to_a
+      all_plates = Plate.active.where(setor: "ROTA").ordered.to_a
 
       # 1. Mapeia os itens unavailable do dia anterior
       unavailable_items = previous.fleet_availability_items

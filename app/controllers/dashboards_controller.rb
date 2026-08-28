@@ -77,8 +77,8 @@ class DashboardsController < ApplicationController
     # ------------------------------------------------------------
     # 3. Métricas de frotas ROTA
     # ------------------------------------------------------------
-    @total_vehicles = Plate.where(setor: "ROTA").count
-    @vehicles_by_type = Plate.where(setor: "ROTA").group(:tipo).count
+    @total_vehicles = Plate.active.where(setor: "ROTA").count
+    @vehicles_by_type = Plate.active.where(setor: "ROTA").group(:tipo).count
     @vehicles_not_used_this_month = vehicles_not_used_in_month(@mes, @ano, "ROTA")
     @fleet_coverage = fleet_coverage_for_month(@mes, @ano)
 
@@ -114,7 +114,7 @@ class DashboardsController < ApplicationController
     # 5. Outros dados
     # ------------------------------------------------------------
     @recent_activities = recent_activities
-    @plates_count      = Plate.where(setor: "ROTA").count
+    @plates_count      = Plate.active.where(setor: "ROTA").count
     @drivers_count     = Driver.count
     @checklists_today  = Checklist.where(created_at: Date.current.all_day).count
     @stress_tests_count = StressTestImport.count
@@ -125,7 +125,7 @@ class DashboardsController < ApplicationController
     @setor = "ROTA"
     @placa = params[:placa]
 
-    @placas = Plate.where(setor: "ROTA")
+    @placas = Plate.active.where(setor: "ROTA")
     @placas = @placas.where(placa: @placa) if @placa.present?
     @placas = @placas.order(:placa)
 
@@ -134,7 +134,7 @@ class DashboardsController < ApplicationController
     inicio = Date.new(@ano, @mes, 1)
     @dias_do_mes = (1..inicio.end_of_month.day).to_a
 
-    @setores = Plate.where(setor: "ROTA").group_by(&:setor)
+    @setores = Plate.active.where(setor: "ROTA").group_by(&:setor)
 
     @status_por_setor = {}
     @setores.each do |setor, placas_do_setor|
@@ -238,7 +238,7 @@ class DashboardsController < ApplicationController
 
   def vehicles_not_used_in_month(mes, ano, setor = nil)
     dias_rodados = dias_rodados_por_placa(mes, ano)
-    plates = setor.present? ? Plate.where(setor: setor) : Plate.all
+    plates = setor.present? ? Plate.active.where(setor: setor) : Plate.active
     all_plates = plates.pluck(:placa)
 
     not_used = all_plates.reject do |placa|

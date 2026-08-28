@@ -93,7 +93,7 @@
          @fleet_dimensioning.fleet_dimensioning_standard_plates
                             .select { |sp| sp.plate_id.present? && sp.special_route.blank? }
                             .index_by(&:position) %>
-    <% rota_plates = Plate.where(setor: "ROTA").ordered %>
+    <% rota_plates = Plate.active.where(setor: "ROTA").ordered %>
     <% position_standard_plates = @fleet_dimensioning.fleet_dimensioning_standard_plates.select { |sp| sp.special_route.blank? } %>
 
     <div class="fleet-dimensioning-board">

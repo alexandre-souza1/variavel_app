@@ -177,6 +177,10 @@ Rails.application.routes.draw do
 
   resources :plates do
     collection { post :import }
+    member do
+      patch :retire
+      patch :reactivate
+    end
   end
 
   resources :mapas do
