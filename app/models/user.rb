@@ -44,6 +44,16 @@ class User < ApplicationRecord
     planning: 6
   }, prefix: true
 
+  # Mecânicos têm um fluxo próprio e não devem herdar permissões ou
+  # redirecionamentos baseados no setor eventualmente gravado no cadastro.
+  def sector_fleet?
+    !mechanical? && sector == "fleet"
+  end
+
+  def sector_du?
+    !mechanical? && sector == "du"
+  end
+
   USER_SECTORS = {
     "Frota" => :fleet,
     "DU" => :du,

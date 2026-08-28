@@ -8,7 +8,13 @@ class CommentsController < ApplicationController
 
     if @comment.save
       @task.broadcast_task_update
-      head :ok
+      respond_to do |format|
+        format.turbo_stream { head :ok }
+        format.html do
+          destination = current_user.mechanical? ? mechanic_tasks_path : action_plan_path(@task.bucket.action_plan)
+          redirect_to destination, notice: "Comentário adicionado."
+        end
+      end
     else
       head :unprocessable_entity
     end
@@ -31,7 +37,8 @@ class CommentsController < ApplicationController
   end
 
   def accessible_tasks
-    Task.joins(:bucket).where(buckets: { action_plan_id: accessible_action_plans.select(:id) })
+    scope = Task.joins(:bucket).where(buckets: { action_plan_id: accessible_action_plans.select(:id) })
+    current_user.mechanical? ? scope.visible_for(current_user) : scope
   end
 
   def comment_params

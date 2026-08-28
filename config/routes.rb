@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   get 'dashboard/placas_por_setor', to: 'dashboards#placas_por_setor', as: 'placas_por_setor'
   get 'dashboard/mapas', to: 'dashboards#mapas', as: 'dashboard_mapas'
   get 'dashboard', to: 'dashboards#index', as: 'dashboard'
+  get "minhas-tarefas", to: "mechanic_tasks#index", as: :mechanic_tasks
   mount ActionCable.server => '/cable'
 
   resources :az_ajudantes do
@@ -160,7 +161,7 @@ Rails.application.routes.draw do
         resource :tasklist, only: [:create, :destroy]
 
         # 👇 ADICIONE ESTA LINHA
-        resources :tasklist_items, only: [:create]
+        resources :tasklist_items, only: [:create, :update]
       end
     end
   end

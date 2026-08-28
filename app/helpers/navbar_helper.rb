@@ -113,6 +113,7 @@ module NavbarHelper
 
   # Apenas admin vê tudo; supervisor e usuários comuns seguem as regras do setor
   def can_view_nav_link?(link_key, user)
+    return false if user.mechanical?
     return true if user.admin?
     link = NAVBAR_LINKS[link_key]
     return false unless link
@@ -120,6 +121,7 @@ module NavbarHelper
   end
 
   def can_view_subitem?(subitem_key, user)
+    return false if user.mechanical?
     return true if user.admin?
     subitem = REGISTRATION_SUBITEMS[subitem_key]
     return false unless subitem
@@ -127,18 +129,21 @@ module NavbarHelper
   end
 
   def can_view_registration_dropdown?(user)
+    return false if user.mechanical?
     return true if user.admin?
     REGISTRATION_SUBITEMS.any? { |key, _| can_view_subitem?(key, user) }
   end
 
   # Menus DU e AZ: aparecem apenas para admin ou para quem tem o setor correspondente
   def can_view_du_menu?(user)
+    return false if user.mechanical?
     return true if user.admin?
-    user.sector.to_sym == :du
+    user.sector&.to_sym == :du
   end
 
   def can_view_az_menu?(user)
+    return false if user.mechanical?
     return true if user.admin?
-    user.sector.to_sym == :warehouse
+    user.sector&.to_sym == :warehouse
   end
 end

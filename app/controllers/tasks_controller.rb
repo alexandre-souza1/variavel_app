@@ -94,7 +94,7 @@ class TasksController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to action_plan_path(@task.bucket.action_plan) }
+      format.html { redirect_to(current_user.mechanical? ? mechanic_tasks_path : action_plan_path(@task.bucket.action_plan)) }
     end
   end
 
@@ -141,7 +141,7 @@ class TasksController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to action_plan_path(@task.bucket.action_plan) }
+      format.html { redirect_to(current_user.mechanical? ? mechanic_tasks_path : action_plan_path(@task.bucket.action_plan)) }
     end
   end
 
@@ -170,7 +170,8 @@ class TasksController < ApplicationController
   end
 
   def accessible_tasks
-    Task.where(bucket_id: accessible_buckets.select(:id))
+    scope = Task.where(bucket_id: accessible_buckets.select(:id))
+    current_user.mechanical? ? scope.visible_for(current_user) : scope
   end
 
   def block_mechanical!

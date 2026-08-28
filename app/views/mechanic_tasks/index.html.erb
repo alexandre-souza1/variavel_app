@@ -1,0 +1,101 @@
+<div class="mechanic-tasks-page">
+  <header class="mechanic-tasks-header">
+    <div class="mechanic-tasks-header__icon" aria-hidden="true"><i class="bi bi-wrench-adjustable-circle"></i></div>
+    <div class="mechanic-tasks-header__content">
+      <p class="mechanic-tasks-eyebrow"><i class="bi bi-wrench-adjustable-circle me-1"></i> Área do mecânico</p>
+      <h1>Minhas tarefas</h1>
+      <p>Acompanhe suas atividades e registre cada manutenção concluída.</p>
+    </div>
+  </header>
+
+  <div class="mechanic-tasks-summary" aria-label="Resumo das tarefas">
+    <div class="mechanic-task-stat is-primary"><strong><%= @open_count %></strong><span>abertas</span></div>
+    <div class="mechanic-task-stat"><strong><%= @completed_count %></strong><span>concluídas</span></div>
+    <div class="mechanic-task-stat"><strong><%= @total_count %></strong><span>no total</span></div>
+  </div>
+
+  <section class="mechanic-tasks-toolbar">
+    <div>
+      <p class="mechanic-tasks-toolbar__eyebrow"><i class="bi bi-list-check me-1"></i> Tarefas atribuídas</p>
+      <h2>O que precisa ser feito</h2>
+    </div>
+    <nav class="mechanic-tasks-filters" aria-label="Filtrar tarefas">
+      <%= link_to "Abertas", mechanic_tasks_path(status: "open"), class: ("is-active" if @status == "open") %>
+      <%= link_to "Concluídas", mechanic_tasks_path(status: "completed"), class: ("is-active" if @status == "completed") %>
+      <%= link_to "Todas", mechanic_tasks_path(status: "all"), class: ("is-active" if @status == "all") %>
+    </nav>
+  </section>
+
+  <main class="mechanic-tasks-list">
+    <% if @tasks.any? %>
+      <% @tasks.each do |task| %>
+        <% overdue = task.due_at.present? && task.due_at < Time.current && !task.completed %>
+        <article class="mechanic-task <%= 'is-completed' if task.completed %>">
+          <div class="mechanic-task__topline">
+            <span class="mechanic-task__status <%= task.completed ? 'is-done' : (overdue ? 'is-overdue' : '') %>">
+              <i class="bi <%= task.completed ? 'bi-check-circle-fill' : (overdue ? 'bi-exclamation-circle-fill' : 'bi-circle') %>"></i>
+              <%= task.completed ? "Concluída" : (overdue ? "Atrasada" : "Pendente") %>
+            </span>
+            <% if task.due_at.present? %>
+              <span class="mechanic-task__date <%= 'is-overdue' if overdue %>"><i class="bi bi-calendar-event me-1"></i><%= l(task.due_at, format: :short) %></span>
+            <% end %>
+          </div>
+
+          <h2><%= task.title %></h2>
+          <p class="mechanic-task__location"><i class="bi bi-kanban me-1"></i><%= task.bucket.action_plan.name %> · <%= task.bucket.name %></p>
+
+          <% if task.description.present? %>
+            <p class="mechanic-task__description"><%= task.description %></p>
+          <% end %>
+
+          <% if task.tasklist %>
+            <details class="mechanic-task__checklist">
+              <summary><i class="bi bi-list-check me-1"></i> Lista de compras / checklist (<%= task.tasklist.tasklist_items.size %>)</summary>
+              <ul>
+                <% task.tasklist.tasklist_items.each do |item| %>
+                  <li class="mechanic-task__checklist-item <%= 'is-done' if item.completed %>" id="tasklist-item-<%= item.id %>">
+                    <%= form_with url: action_plan_bucket_task_tasklist_item_path(task.bucket.action_plan, task.bucket, task, item), method: :patch, data: { turbo: false } do |item_form| %>
+                      <%= item_form.check_box :completed, { checked: item.completed, class: "form-check-input" }, "true", "false" %>
+                      <%= item_form.text_field :content, value: item.content, class: "form-control form-control-sm", aria: { label: "Item da checklist" } %>
+                      <%= item_form.submit "Salvar", class: "btn btn-sm btn-link" %>
+                    <% end %>
+                  </li>
+                <% end %>
+              </ul>
+              <%= form_with url: action_plan_bucket_task_tasklist_items_path(task.bucket.action_plan, task.bucket, task), method: :post, data: { turbo: false }, class: "mechanic-task__new-item" do |item_form| %>
+                <%= item_form.text_field :content, class: "form-control form-control-sm", placeholder: "Adicionar item...", required: true %>
+                <%= item_form.submit "Adicionar", class: "btn btn-sm btn-outline-primary" %>
+              <% end %>
+            </details>
+          <% end %>
+
+          <details class="mechanic-task__comments">
+            <summary><i class="bi bi-chat-left-text me-1"></i> Comentários (<%= task.comments.size %>)</summary>
+            <div class="mechanic-task__comments-list">
+              <% task.comments.last(3).each do |comment| %>
+                <div class="mechanic-task__comment"><strong><%= comment.user&.name.to_s.split.first.presence || "Usuário" %></strong><span><%= l(comment.created_at, format: :short) %></span><p><%= comment.content %></p></div>
+              <% end %>
+            </div>
+            <%= form_with model: [task.bucket.action_plan, task.bucket, task, Comment.new], data: { turbo: false }, class: "mechanic-task__comment-form" do |comment_form| %>
+              <%= comment_form.text_area :content, rows: 2, required: true, placeholder: "Adicionar comentário...", class: "form-control form-control-sm" %>
+              <%= comment_form.submit "Comentar", class: "btn btn-sm btn-outline-primary" %>
+            <% end %>
+          </details>
+
+          <div class="mechanic-task__footer">
+            <% if task.labels.any? %>
+              <div class="mechanic-task__labels">
+                <% task.labels.each do |label| %><span style="--label-color: <%= label.color %>"><%= label.name %></span><% end %>
+              </div>
+            <% end %>
+            <%= button_to toggle_complete_action_plan_bucket_task_path(task.bucket.action_plan, task.bucket, task), method: :patch, data: { turbo: false }, class: "mechanic-task__complete #{'is-done' if task.completed}" do %>
+              <i class="bi <%= task.completed ? 'bi-arrow-counterclockwise' : 'bi-check-lg' %> me-1"></i><%= task.completed ? "Reabrir" : "Concluir tarefa" %>
+            <% end %>
+          </div>
+        </article>
+      <% end %>
+    <% else %>
+      <div class="mechanic-tasks-empty"><i class="bi bi-check2-circle"></i><h2>Nenhuma tarefa aqui</h2><p>Quando novas tarefas forem atribuídas a você, elas aparecerão nesta lista.</p></div>
+    <% end %>
+  </main>
+</div>
