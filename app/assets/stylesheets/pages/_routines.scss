@@ -156,9 +156,11 @@
 // ============================================================
 .routine-cell {
   position: relative;
-  padding: 0 !important;
-  min-width: 60px;
-  height: 38px;
+  padding: 0 6px !important;
+  width: 68px;
+  min-width: 68px;
+  min-height: 64px;
+  height: auto;
   vertical-align: middle;
   transition: background-color .2s ease;
 
@@ -215,8 +217,16 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  min-width: 64px;
+  min-height: 64px;
   height: 100%;
+  padding: 0.25rem 0.15rem;
   cursor: pointer;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .routine-cell--saving {
@@ -471,9 +481,18 @@
 }
 
 .table-routine {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
+
+  th.routine-day,
+  td.routine-cell,
+  td.empty-cell {
+    width: 68px;
+    min-width: 68px;
+    box-sizing: border-box;
+  }
 
   thead {
     background-color: var(--bs-tertiary-bg);
@@ -592,9 +611,11 @@
   // Células editáveis (routine-cell)
   .routine-cell {
     position: relative;
-    padding: 0 !important;
-    min-width: 60px;
-    height: 64px;
+    padding: 0 6px !important;
+    width: 68px;
+    min-width: 68px;
+    min-height: 64px;
+    height: auto;
     vertical-align: middle;
     text-align: center;
     cursor: pointer;
@@ -625,13 +646,19 @@
       align-items: center;
       justify-content: center;
       width: 100%;
+      min-width: 64px;
+      min-height: 64px;
       height: 100%;
-      padding: 0.3rem 0.2rem;
+      padding: 0.25rem 0.15rem;
       font-weight: 500;
       color: var(--bs-body-color);
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
+      white-space: normal;
+      word-break: normal;
+      overflow-wrap: break-word;
+      line-height: 1.2;
+      text-align: center;
     }
 
     .routine-cell__input {
@@ -728,8 +755,9 @@
     }
 
     .routine-cell {
-      min-width: 40px;
-      height: 58px;
+      min-width: 68px;
+      width: 68px;
+      height: 64px;
     }
 
     .routine-cell__display {

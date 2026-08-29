@@ -9,7 +9,7 @@
           <th class="col-goal">Meta</th>
           <th class="col-result">Resultado</th>
           <% days.each do |day| %>
-            <th class="text-center <%= 'routine-day--today' if day == Date.current %> <%= 'routine-day--sunday' if day.sunday? %>">
+            <th class="routine-day text-center <%= 'routine-day--today' if day == Date.current %> <%= 'routine-day--sunday' if day.sunday? %>">
               <div><%= day.day %></div>
               <small class="text-muted"><%= routine_weekday_abbr(day) %></small>
             </th>
