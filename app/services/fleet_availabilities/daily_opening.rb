@@ -30,7 +30,8 @@ module FleetAvailabilities
           user: @user,
           date: next_date,
           agreed_quantity: dimensioning.route_quantity,
-          special_routes: dimensioning.special_routes
+          special_routes: dimensioning.special_routes,
+          copy_previous_day: true
         )
       end
 

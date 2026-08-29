@@ -49,4 +49,26 @@ class FleetAvailabilities::DailyOpeningTest < ActiveSupport::TestCase
 
     assert fleet_availabilities(:two).reload.locked?
   end
+
+  test "copies the previous day's layout when opening automatically" do
+    previous = fleet_availabilities(:two)
+    previous.fleet_availability_items.first.update!(
+      status: FleetAvailabilityItem.statuses[:unavailable],
+      reason: "maintenance",
+      observation: "Copiar integralmente"
+    )
+
+    result = FleetAvailabilities::DailyOpening.call(
+      user: users(:one),
+      now: Time.zone.local(2026, 7, 22, 8, 0)
+    )
+
+    copied_item = result.availability.fleet_availability_items.find_by(
+      plate_id: previous.fleet_availability_items.first.plate_id
+    )
+
+    assert_equal "unavailable", copied_item.status
+    assert_equal "maintenance", copied_item.reason
+    assert_equal "Copiar integralmente", copied_item.observation
+  end
 end
