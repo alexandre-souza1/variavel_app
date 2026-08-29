@@ -173,8 +173,10 @@
   color: var(--bs-danger-text-emphasis);
 }
 
-.routine-day--today {
-  background: rgba(255, 193, 7, 0.10);
+.table-routine thead th.routine-day--today,
+.table-routine td.empty-cell.routine-day--today,
+.table-routine .routine-cell.routine-cell--today {
+  background-color: rgba(255, 193, 7, 0.10) !important;
   color: var(--bs-body-color);
 }
 
@@ -185,10 +187,6 @@
 
 .routine-cell--sunday {
   background: rgba(var(--bs-danger-rgb), .05);
-}
-
-.routine-cell--today {
-  background: rgba(255, 193, 7, 0.14);
 }
 
 .routine-cell--sunday:hover {
@@ -275,7 +273,7 @@
 
   padding: 0;
 
-  z-index: 5;
+  z-index: 6;
 
   cursor: help;
   pointer-events: auto;
@@ -317,7 +315,7 @@
   opacity: 0;
   transform: translateY(-2px);
   transition: opacity .15s ease, transform .15s ease;
-  z-index: 6;
+  z-index: 5;
 }
 
 .routine-cell:hover .routine-cell__comment-button,
@@ -440,20 +438,6 @@
   box-shadow: inset 0 0 0 1px rgba(var(--bs-danger-rgb), .28);
 }
 
-.routine-cell--today.routine-cell--success {
-  background: rgba(var(--bs-success-rgb), .14);
-  box-shadow: inset 0 0 0 1px rgba(var(--bs-success-rgb), .28);
-}
-
-.routine-cell--today.routine-cell--danger {
-  background: rgba(var(--bs-danger-rgb), .14);
-  box-shadow: inset 0 0 0 1px rgba(var(--bs-danger-rgb), .28);
-}
-
-.routine-cell--today.routine-cell--sunday {
-  background: rgba(var(--bs-danger-rgb), .05);
-}
-
 .category-form {
   overflow: hidden;
   max-height: 0;
@@ -507,7 +491,7 @@
       &.col-indicator {
         position: sticky;
         left: 0;
-        z-index: 5;
+        z-index: 10;
         width: 280px;
         min-width: 280px;
         text-align: left;
@@ -552,7 +536,7 @@
       .indicator-name {
         position: sticky;
         left: 0;
-        z-index: 3;
+        z-index: 10;
         font-size: 0.95rem; // um pouco maior
         padding: 0.5rem 1rem 0.5rem 1.2rem; // mais espaçamento à esquerda
         max-width: 280px;
@@ -769,7 +753,7 @@
 .table-routine tbody tr.category-row td.category-row__label {
   position: sticky;
   left: 0;
-  z-index: 4;
+  z-index: 10;
   background: var(--bs-body-bg);
   min-width: 280px;
   white-space: nowrap;
