@@ -173,6 +173,15 @@
   color: var(--bs-danger-text-emphasis);
 }
 
+.routine-day--today {
+  background: rgba(255, 193, 7, 0.10) !important;
+  color: var(--bs-body-color);
+}
+
+.routine-cell--today {
+  background: rgba(255, 193, 7, 0.14) !important;
+}
+
 .routine-cell--sunday {
   background: rgba(var(--bs-danger-rgb), .05);
 }
@@ -450,6 +459,11 @@
 
   .table-responsive {
     margin: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
   }
 }
 
@@ -472,6 +486,9 @@
       white-space: nowrap;
 
       &.col-indicator {
+        position: sticky;
+        left: 0;
+        z-index: 5;
         width: 280px;
         min-width: 280px;
         text-align: left;
@@ -514,6 +531,9 @@
       }
 
       .indicator-name {
+        position: sticky;
+        left: 0;
+        z-index: 3;
         font-size: 0.95rem; // um pouco maior
         padding: 0.5rem 1rem 0.5rem 1.2rem; // mais espaçamento à esquerda
         max-width: 280px;
@@ -720,12 +740,20 @@
 }
 
 .table-routine tbody tr.category-row td {
-  background: rgba(var(--bs-primary-rgb, 79, 110, 247), 0.08) !important;
   border-bottom: 2px solid var(--bs-border-color);
   padding: 0.6rem 1rem;
   font-weight: 600;
   color: var(--bs-body-color);
   font-size: 0.95rem;
+}
+
+.table-routine tbody tr.category-row td.category-row__label {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  background: var(--bs-body-bg);
+  min-width: 280px;
+  white-space: nowrap;
 
   i {
     color: var(--bs-primary, #4f6ef7);
@@ -733,22 +761,41 @@
   }
 }
 
+.table-routine tbody tr.category-row td.category-row__spacer {
+  background: var(--bs-body-bg);
+}
+
 /* Container que tem o controller */
+[data-controller="drag-scroll"] {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: pan-x;
+}
+
 [data-controller="drag-scroll"] .category-row {
   cursor: grab;
 }
 
 /* Quando estiver arrastando (classe .dragging adicionada pelo controller) */
+[data-controller="drag-scroll"].dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+[data-controller="drag-scroll"].dragging * {
+  user-select: none;
+}
+
 [data-controller="drag-scroll"].dragging .category-row {
   cursor: grabbing;
 }
 
-/* Opcional: se quiser que o cursor mude também ao passar o mouse sobre a linha */
 [data-controller="drag-scroll"] .category-row:hover {
   cursor: grab;
 }
 
-/* E durante o arraste, força grabbing mesmo com hover */
 [data-controller="drag-scroll"].dragging .category-row:hover {
   cursor: grabbing;
 }

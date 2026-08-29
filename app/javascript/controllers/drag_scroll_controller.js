@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static values = {
-    handle: { type: String, default: "" } // default vazio = sem restrição
+    handle: { type: String, default: "" }
   }
 
   connect() {
@@ -14,6 +14,7 @@ export default class extends Controller {
     this.lastX = 0
     this.lastTime = 0
     this.raf = null
+    this.hasMovedEnough = false
 
     this.mouseDown = this.mouseDown.bind(this)
     this.mouseMove = this.mouseMove.bind(this)
@@ -27,6 +28,7 @@ export default class extends Controller {
     this.element.addEventListener("touchstart", this.mouseDown, { passive: true })
     this.element.addEventListener("touchmove", this.mouseMove, { passive: false })
     this.element.addEventListener("touchend", this.mouseUp)
+    this.element.addEventListener("touchcancel", this.mouseUp)
   }
 
   disconnect() {
@@ -37,22 +39,24 @@ export default class extends Controller {
     this.element.removeEventListener("touchstart", this.mouseDown)
     this.element.removeEventListener("touchmove", this.mouseMove)
     this.element.removeEventListener("touchend", this.mouseUp)
+    this.element.removeEventListener("touchcancel", this.mouseUp)
     cancelAnimationFrame(this.raf)
   }
 
   mouseDown(e) {
-    // Só restringe o clique se um handle foi DEFINIDO
     const handleSelector = this.handleValue
     if (handleSelector) {
       const handleElement = e.target.closest(handleSelector)
       if (!handleElement) return
     }
 
-    // Ignora elementos interativos (comum pros dois casos)
-    if (e.target.closest("input, textarea, select, button, a, .task-card, .drag-handle, .card")) return
+    if (e.target.closest("input, textarea, select, button, a, .routine-cell__input, .btn, .dropdown, .accordion-button")) {
+      return
+    }
 
     this.isDown = true
     this.isDragging = false
+    this.hasMovedEnough = false
 
     const pageX = e.touches ? e.touches[0].pageX : e.pageX
 
@@ -64,29 +68,29 @@ export default class extends Controller {
     this.velocity = 0
 
     cancelAnimationFrame(this.raf)
-
     this.element.classList.add("dragging")
   }
 
   mouseMove(e) {
     if (!this.isDown) return
 
-    e.preventDefault()
-
     const pageX = e.touches ? e.touches[0].pageX : e.pageX
     const x = pageX - this.element.offsetLeft
+    const walk = (x - this.startX) * 1.1
 
-    const walk = (x - this.startX) * 1.2
-    this.element.scrollLeft = this.scrollLeft - walk
-
-    if (Math.abs(walk) > 5) {
-      this.isDragging = true
+    if (Math.abs(walk) > 3) {
+      this.hasMovedEnough = true
+      e.preventDefault()
     }
+
+    if (!this.hasMovedEnough) return
+
+    this.element.scrollLeft = this.scrollLeft - walk
+    this.isDragging = true
 
     const now = Date.now()
     const dx = pageX - this.lastX
     const dt = now - this.lastTime
-
     this.velocity = dx / (dt || 1)
 
     this.lastX = pageX
@@ -105,13 +109,13 @@ export default class extends Controller {
   }
 
   startMomentum() {
-    let velocity = this.velocity * 20
+    let velocity = this.velocity * 18
 
     const step = () => {
       this.element.scrollLeft -= velocity
-      velocity *= 0.95
+      velocity *= 0.94
 
-      if (Math.abs(velocity) > 0.5) {
+      if (Math.abs(velocity) > 0.2) {
         this.raf = requestAnimationFrame(step)
       }
     }

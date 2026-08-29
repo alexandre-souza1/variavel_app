@@ -5,6 +5,12 @@ class Download < ApplicationRecord
 
   FILE_TYPES = ['PDF', 'Excel', 'Word', 'PowerPoint'].freeze
 
+  ALLOWED_URL_HOSTS = %w[
+    drive.google.com
+    docs.google.com
+    onedrive.live.com
+  ].freeze
+
   SECTOR = [
     'FROTA',
     'ENTREGA',
@@ -29,6 +35,22 @@ class Download < ApplicationRecord
 
   validate :only_one_source
 
+  validate :allowed_shared_url_host, if: :url_present?
+
+  def safe_url?
+    return false if url.blank?
+
+    uri = URI.parse(url)
+    return false unless uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
+
+    host = uri.host.to_s.downcase
+    return false if host.empty?
+
+    ALLOWED_URL_HOSTS.include?(host) || host.end_with?('.sharepoint.com')
+  rescue URI::InvalidURIError
+    false
+  end
+
   private
 
   def file_or_url_present
@@ -45,4 +67,13 @@ class Download < ApplicationRecord
     end
   end
 
+  def url_present?
+    url.present?
+  end
+
+  def allowed_shared_url_host
+    return if safe_url?
+
+    errors.add(:url, "deve ser um link compartilhado do Google Drive ou Microsoft OneDrive")
+  end
 end
