@@ -8,12 +8,29 @@ class FleetDimensioningsController < ApplicationController
 
   def new
     @fleet_dimensioning = FleetDimensioning.new
+    @period_year = Date.current.year
+    @period_month = Date.current.month
+    @period_half = Date.current.day <= 15 ? "q1" : "q2"
     @fleet_dimensioning.build_standard_plate_slots(standard_plate_slot_quantity)
     @fleet_dimensioning.build_special_route_slots
   end
 
   def create
-    permitted_params = fleet_dimensioning_params
+    @period_year = params.dig(:fleet_dimensioning, :period_year).to_i
+    @period_month = params.dig(:fleet_dimensioning, :period_month).to_i
+    @period_half = params.dig(:fleet_dimensioning, :period_half).to_s
+    period = selected_period
+    permitted_params = fleet_dimensioning_params.except("period_year", "period_month", "period_half")
+
+    if period
+      permitted_params.merge!(label: period[:label], start_date: period[:start_date], end_date: period[:end_date])
+    else
+      @fleet_dimensioning = FleetDimensioning.new(permitted_params)
+      @fleet_dimensioning.errors.add(:base, "Selecione um ano, mês e quinzena válidos.")
+      prepare_form_collections
+      render :new, status: :unprocessable_entity and return
+    end
+
     @fleet_dimensioning = FleetDimensioning.new(permitted_params)
 
     if @fleet_dimensioning.save
@@ -73,6 +90,9 @@ class FleetDimensioningsController < ApplicationController
       :label,
       :start_date,
       :end_date,
+      :period_year,
+      :period_month,
+      :period_half,
       :route_quantity,
       :van_quantity,
       :vespertina_quantity,
@@ -109,6 +129,34 @@ class FleetDimensioningsController < ApplicationController
     end
 
     permitted_params.to_h
+  end
+
+  def selected_period
+    year = params.dig(:fleet_dimensioning, :period_year).to_i
+    month = params.dig(:fleet_dimensioning, :period_month).to_i
+    half = params.dig(:fleet_dimensioning, :period_half).to_s
+
+    return if year < 2000 || year > 2100 || !month.between?(1, 12) || !%w[q1 q2].include?(half)
+
+    start_date = Date.new(year, month, half == "q1" ? 1 : 16)
+    end_date = half == "q1" ? Date.new(year, month, 15) : start_date.end_of_month
+    month_name = I18n.t("date.month_names")[month].to_s.upcase
+
+    {
+      label: "#{half == 'q1' ? 'Q1' : 'Q2'} #{month_name} #{year.to_s.last(2)}",
+      start_date: start_date,
+      end_date: end_date
+    }
+  rescue Date::Error
+    nil
+  end
+
+  def prepare_form_collections
+    @period_year ||= params.dig(:fleet_dimensioning, :period_year).to_i
+    @period_month ||= params.dig(:fleet_dimensioning, :period_month).to_i
+    @period_half ||= params.dig(:fleet_dimensioning, :period_half).to_s
+    @fleet_dimensioning.build_standard_plate_slots(standard_plate_slot_quantity)
+    @fleet_dimensioning.build_special_route_slots
   end
 
   def persist_special_route_standard_plates!(permitted_params)

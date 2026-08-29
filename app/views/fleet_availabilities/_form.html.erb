@@ -1,5 +1,6 @@
+<% modal = local_assigns.fetch(:modal, false) %>
 <%= form_with model: fleet_availability,
-              class: "card shadow-sm border-0" do |f| %>
+              class: "card shadow-sm border-0 #{'fleet-availability-modal-form' if modal}" do |f| %>
 
   <div class="card-header bg-primary text-white">
     <h5 class="mb-0">
@@ -40,7 +41,6 @@
 
         <%= f.date_field :date,
                          class: "form-control",
-                         onchange: "window.location.href='#{new_fleet_availability_path}?date=' + this.value",
                          required: true %>
 
       </div>
@@ -60,14 +60,18 @@
 
   </div>
 
-  <div class="card-footer d-flex justify-content-between">
+  <div class=" d-flex justify-content-between mb-1">
 
-    <%= link_to fleet_availabilities_path,
-                class: "btn btn-outline-secondary" do %>
-
-      <i class="bi bi-arrow-left"></i>
-      Voltar
-
+    <% if modal %>
+      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+        Cancelar
+      </button>
+    <% else %>
+      <%= link_to fleet_availabilities_path,
+                  class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left"></i>
+        Voltar
+      <% end %>
     <% end %>
 
     <%= f.submit "Salvar",

@@ -17,6 +17,15 @@ class FleetAvailabilitiesController < ApplicationController
       .recent
       .includes(:user)
     @fleet_summary = fleet_summary(@fleet_availabilities)
+
+    new_date = default_start_date
+    @new_fleet_availability = FleetAvailability.new(
+      date: new_date,
+      agreed_quantity: FleetAvailability.default_dimensioning_quantity_for(new_date),
+      special_routes: FleetAvailability.default_special_routes_for(new_date)
+    )
+    @new_dimensioning_period = FleetAvailability.dimensioning_period_for(new_date)
+    @new_dimensioning_quantities = dimensioning_quantities(@new_dimensioning_period)
   end
 
   # ========== ALTERADO AQUI ==========

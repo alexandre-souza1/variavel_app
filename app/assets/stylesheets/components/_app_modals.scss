@@ -1,0 +1,140 @@
+// Superfície padrão dos modais do Workstation.
+.app-modal {
+  --app-modal-surface: var(--bs-body-bg);
+  --app-modal-muted-surface: var(--bs-tertiary-bg);
+
+  .modal-dialog { margin: 1rem; }
+
+  .modal-content {
+    background: var(--app-modal-surface);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px;
+    box-shadow: 0 1.25rem 3rem rgba(2, 6, 23, .28);
+    color: var(--bs-body-color);
+    overflow: hidden;
+  }
+
+  .modal-header {
+    align-items: flex-start;
+    background: linear-gradient(110deg, rgba(var(--bs-primary-rgb), .1), var(--app-modal-muted-surface) 72%);
+    border-bottom: 1px solid var(--bs-border-color);
+    padding: 1.1rem 1.25rem .95rem;
+  }
+
+  .modal-title { color: var(--bs-body-color); font-size: 1.1rem; font-weight: 700; letter-spacing: -.01em; }
+  .modal-header .btn-close { margin: .05rem 0 0 .75rem; opacity: .72; }
+  .modal-header .btn-close:hover { opacity: 1; }
+  .modal-body { padding: 1.1rem 1.25rem; }
+  .modal-footer { background: transparent; border-top: 1px solid var(--bs-border-color); padding: .9rem 1.25rem; }
+
+  .form-label { color: var(--bs-secondary-color); font-size: .75rem; font-weight: 650; margin-bottom: .35rem; }
+  .form-control, .form-select { background-color: var(--app-modal-surface); border-color: var(--bs-border-color); border-radius: 9px; color: var(--bs-body-color); min-height: 40px; box-shadow: none; }
+  .form-control:focus, .form-select:focus { background-color: var(--app-modal-surface); border-color: var(--bs-primary); box-shadow: 0 0 0 .18rem rgba(var(--bs-primary-rgb), .14); color: var(--bs-body-color); }
+  .btn { border-radius: 9px; font-weight: 650; }
+  .btn-primary { background: var(--bs-primary); border-color: var(--bs-primary); }
+  .btn-outline-secondary { color: var(--bs-secondary-color); }
+
+  .alert { border-radius: 10px; font-size: .82rem; }
+}
+
+// Alguns componentes, como o Tom Select, precisam ultrapassar a superfície
+// do modal quando abrem menus suspensos.
+.app-modal--overflow-visible .modal-content { overflow: visible; }
+.app-modal--overflow-visible .ts-dropdown { z-index: 1080; }
+
+// Modal de tarefas: edição discreta, checklist integrada e responsáveis
+// tratados como uma área de trabalho própria. A divisão central permanece
+// como guia visual entre os detalhes e a atividade.
+.task-detail-modal {
+  .modal-content { border-radius: 16px; }
+  .modal-header { background: var(--bs-tertiary-bg); min-height: 62px; padding: .7rem 1rem; }
+  .modal-body { padding: .95rem 1.1rem 1.1rem; }
+  .modal-body > .row { --bs-gutter-x: 1.5rem; }
+
+  .task-detail-modal__title-form { margin: 0; }
+  .task-detail-modal__title-input {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    border-radius: 0;
+    color: var(--bs-body-color);
+    font-size: 1.08rem;
+    font-weight: 700;
+    line-height: 1.25;
+    max-width: 70vw;
+    padding: .05rem 0 .16rem;
+    transition: border-color .15s ease, background-color .15s ease;
+    width: 30rem;
+  }
+  .task-detail-modal__title-input:hover { border-bottom-color: var(--bs-border-color); }
+  .task-detail-modal__title-input:focus { background: rgba(var(--bs-primary-rgb), .05); border-bottom-color: var(--bs-primary); box-shadow: none; outline: 0; }
+  .task-detail-modal__created-at { color: var(--bs-secondary-color); display: block; font-size: .65rem; margin-top: .1rem; }
+
+  .task-detail-modal .users-field { margin-bottom: 1rem !important; }
+  .task-detail-modal__field-heading { align-items: baseline; display: flex; justify-content: space-between; margin-bottom: .35rem; }
+  .task-detail-modal__field-heading label { color: var(--bs-secondary-color); display: block; font-size: .7rem; font-weight: 700; margin: 0; text-transform: uppercase; }
+  .task-detail-modal__field-heading label i { color: var(--bs-primary); }
+  .task-detail-modal__field-heading small { color: var(--bs-secondary-color); font-size: .67rem; }
+
+  .task-detail-modal .users-field .ts-wrapper { background: transparent; }
+  .task-detail-modal .users-field .ts-control { align-items: center; background: var(--bs-body-bg) !important; border: 1px solid var(--bs-border-color) !important; border-radius: 9px !important; display: flex; gap: .3rem; min-height: 2.45rem; padding: .3rem .45rem !important; }
+  .task-detail-modal .users-field .ts-control > input { color: var(--bs-body-color); font-size: .76rem; }
+  .task-detail-modal .users-field .ts-control > input::placeholder { color: var(--bs-secondary-color); }
+  .task-detail-modal .users-field .item { align-items: center; background: rgba(var(--bs-primary-rgb), .1); border-radius: 999px; color: var(--bs-body-color); display: inline-flex; font-size: .7rem; gap: .25rem; padding: .22rem .4rem; }
+  .task-detail-modal .users-field .item .remove { border: 0; color: var(--bs-secondary-color); padding-left: .15rem; }
+  .task-detail-modal .users-field .ts-dropdown { background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius: 9px; box-shadow: 0 .7rem 1.5rem rgba(2, 6, 23, .25); color: var(--bs-body-color); margin-top: .3rem; overflow: hidden; }
+  .task-detail-modal .users-field .ts-dropdown .option { color: var(--bs-body-color); font-size: .76rem; padding: .5rem .65rem; }
+  .task-detail-modal .users-field .ts-dropdown .option.active { background: rgba(var(--bs-primary-rgb), .1); color: var(--bs-body-color); }
+
+  #taskModal .task-checklist-surface { background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; }
+  .task-detail-modal [data-controller="task-checklist"] > .d-flex { margin-bottom: .35rem !important; }
+  .task-detail-modal [data-controller="task-checklist"] h6 { color: var(--bs-secondary-color); font-size: .7rem; font-weight: 700; margin: 0; text-transform: uppercase; }
+  .task-detail-modal .task-checklist-action { color: var(--bs-secondary-color); font-size: .85rem; padding: .25rem .4rem; }
+  .task-detail-modal .task-checklist-action:hover { background: rgba(var(--bs-primary-rgb), .1); color: var(--bs-primary); }
+  .task-detail-modal .task-checklist-action.danger:hover { background: rgba(var(--bs-danger-rgb), .1); color: var(--bs-danger); }
+  .task-detail-modal .task-checklist-item { border-bottom: 0 !important; margin-bottom: .35rem !important; padding: .15rem 0 !important; }
+  .task-detail-modal .task-checklist-item:last-child { margin-bottom: 0 !important; }
+  .task-checklist-item__input {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: 0 !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--bs-border-color) 62%, transparent) !important;
+    border-radius: 0;
+    box-shadow: none !important;
+    color: var(--bs-body-color);
+    font-size: .82rem;
+    min-height: 38px;
+    padding-left: .25rem;
+    width: 100%;
+  }
+  .task-checklist-item__input:focus {
+    background: rgba(var(--bs-primary-rgb), .04) !important;
+    background-color: rgba(var(--bs-primary-rgb), .04) !important;
+    border-bottom-color: var(--bs-primary) !important;
+    box-shadow: none !important;
+    outline: 0;
+  }
+
+  .task-detail-modal .modal-body > .row > .col-md-5 { border-left-color: var(--bs-border-color) !important; }
+  .task-detail-modal .col-md-5 > h6 { color: var(--bs-secondary-color); font-size: .7rem; font-weight: 700; margin-bottom: .65rem; text-transform: uppercase; }
+  .task-detail-modal .comments-box { background: var(--bs-tertiary-bg); border-radius: 10px; padding: .65rem; }
+  .task-detail-modal .col-md-5 hr { border-color: var(--bs-border-color); margin: .7rem 0; opacity: .55; }
+}
+
+@media (max-width: 767.98px) {
+  .task-detail-modal .task-detail-modal__title-input { max-width: 58vw; width: 100%; }
+  .task-detail-modal .task-detail-modal__field-heading { align-items: flex-start; flex-direction: column; gap: .12rem; }
+  .task-detail-modal .modal-body > .row > .col-md-5 { border-left: 0 !important; border-top: 1px solid var(--bs-border-color) !important; margin-top: 1rem; padding-top: 1rem; }
+}
+
+.modal-backdrop.show { opacity: .72; }
+
+@media (min-width: 576px) {
+  .app-modal .modal-dialog { margin: 1.75rem auto; }
+}
+
+@media (max-width: 575.98px) {
+  .app-modal .modal-dialog { margin: .5rem; }
+  .app-modal .modal-header, .app-modal .modal-body { padding-left: 1rem; padding-right: 1rem; }
+  .app-modal .modal-footer { padding-left: 1rem; padding-right: 1rem; }
+}

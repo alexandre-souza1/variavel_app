@@ -1,20 +1,17 @@
-<div class="container-fluid py-4 fleet-availability-index">
+<div class="app-page fleet-availability-index">
 
-  <div class="fleet-availability-index__header mb-4">
+  <header class="app-page-header fleet-availability-index__header">
 
     <div>
 
-      <h2 class="fw-bold mb-1">
-        Disponibilidade da Frota
-      </h2>
+      <p class="app-page-eyebrow"><i class="bi bi-truck-front me-1"></i> Gestão · Frota</p>
+      <h1><i class="bi bi-calendar2-check me-2"></i>Disponibilidade da frota</h1>
 
-      <p class="text-muted mb-0">
-        Histórico das disponibilidades registradas.
-      </p>
+      <p>Consulte o histórico e acompanhe a cobertura da frota por quinzena.</p>
 
     </div>
 
-    <div class="fleet-availability-index__actions">
+    <div class="app-page-actions fleet-availability-index__actions">
       <%= link_to fleet_dimensionings_path,
                   class: "btn btn-outline-primary" do %>
         <i class="bi bi-calendar-range"></i>
@@ -29,25 +26,36 @@
       <% end %>
 
       <%= link_to new_fleet_availability_path,
-                  class: "btn btn-primary" do %>
+                  class: "btn btn-primary",
+                  data: { bs_toggle: "modal", bs_target: "#newFleetAvailabilityModal" } do %>
         <i class="bi bi-plus-circle"></i>
         <span>Nova <span class="fleet-action-text-optional">Disponibilidade</span></span>
       <% end %>
 
     </div>
 
-  </div>
+  </header>
 
-  <div class="card shadow-sm border-0 mb-4 fleet-filter-card">
-    <div class="card-body">
+  <section class="app-panel fleet-filter-card mb-4">
+    <div class="app-panel__body">
       <%= form_with url: fleet_availabilities_path,
                     method: :get,
                     local: true,
-                    class: "row g-3 align-items-end" do %>
-        <div class="col-md-6">
-          <label class="form-label text-muted small">
-            Filtrar por quinzena
-          </label>
+                    class: "fleet-period-filter" do %>
+        <div class="fleet-period-filter__summary">
+          <span class="fleet-period-filter__eyebrow"><i class="bi bi-calendar-range me-1"></i> Período selecionado</span>
+          <strong>
+            <% if @selected_dimensioning %>
+              <%= l(@selected_dimensioning.start_date) %> a <%= l(@selected_dimensioning.end_date) %>
+            <% else %>
+              Nenhuma quinzena cadastrada
+            <% end %>
+          </strong>
+          <small>Selecione uma quinzena para consultar os registros da frota.</small>
+        </div>
+
+        <div class="fleet-period-filter__control">
+          <%= label_tag :dimensioning_id, "Quinzena", class: "form-label" %>
           <%= select_tag :dimensioning_id,
                          options_from_collection_for_select(
                            @dimensioning_periods,
@@ -58,34 +66,14 @@
                          class: "form-select",
                          onchange: "this.form.requestSubmit()" %>
         </div>
-
-        <div class="col-md-4">
-          <span class="text-muted small d-block">
-            Período
-          </span>
-          <strong>
-            <% if @selected_dimensioning %>
-              <%= l(@selected_dimensioning.start_date) %>
-              até
-              <%= l(@selected_dimensioning.end_date) %>
-            <% else %>
-              Nenhuma quinzena cadastrada
-            <% end %>
-          </strong>
-        </div>
-
-        <div class="d-none">
-          <%= submit_tag "Filtrar",
-                         class: "btn btn-outline-primary" %>
-        </div>
       <% end %>
     </div>
-  </div>
+  </section>
 
   <div class="row g-3 mb-4 fleet-summary-grid">
 
     <div class="col-md-3">
-      <div class="card shadow-sm border-0 h-100 fleet-summary-card">
+      <div class="card h-100 fleet-summary-card">
         <div class="card-body">
           <span class="text-muted small">Dias registrados na quinzena</span>
           <strong class="d-block fs-3">
@@ -99,7 +87,7 @@
     </div>
 
     <div class="col-md-3">
-      <div class="card shadow-sm border-0 h-100 fleet-summary-card fleet-summary-card--success">
+      <div class="card h-100 fleet-summary-card fleet-summary-card--success">
         <div class="card-body">
           <span class="text-muted small">Cobertura média</span>
           <strong class="d-block fs-3">
@@ -113,7 +101,7 @@
     </div>
 
     <div class="col-md-3">
-      <div class="card shadow-sm border-0 h-100 fleet-summary-card fleet-summary-card--danger">
+      <div class="card h-100 fleet-summary-card fleet-summary-card--danger">
         <div class="card-body">
           <span class="text-muted small">Média de indisponibilidade</span>
           <strong class="d-block fs-3">
@@ -127,7 +115,7 @@
     </div>
 
     <div class="col-md-3">
-      <div class="card shadow-sm border-0 h-100 fleet-summary-card">
+      <div class="card h-100 fleet-summary-card">
         <div class="card-body">
           <span class="text-muted small">Placa mais indisponível</span>
           <strong class="d-block fs-4 text-truncate" title="<%= @fleet_summary[:most_unavailable_plate] %>">
@@ -142,17 +130,17 @@
 
   </div>
 
-  <div class="card shadow-sm border-0 fleet-history-card">
+  <section class="fleet-history-card">
 
-    <div class="card-body p-0">
+    <div class="fleet-history-card__body">
 
       <% if @fleet_availabilities.any? %>
 
-        <div class="table-responsive">
+        <div class="app-table-shell table-responsive">
 
-          <table class="table table-hover align-middle mb-0 fleet-availability-table">
+          <table class="table align-middle mb-0 app-table fleet-availability-table">
 
-            <thead class="table-light">
+            <thead>
 
               <tr>
 
@@ -244,26 +232,27 @@
 
                   <td class="text-end fleet-availability-table__actions">
 
-                    <div class="fleet-availability-row-actions">
+                    <div class="fleet-availability-row-actions btn-group btn-group-sm" role="group">
                       <%= link_to availability,
-                                  class: "btn btn-sm btn-outline-primary" do %>
-
-                        <i class="bi bi-eye"></i>
-                        Abrir
-
+                                  class: "icon-btn",
+                                  title: "Abrir disponibilidade",
+                                  aria: { label: "Abrir disponibilidade" } do %>
+                        <i class="bi bi-eye" aria-hidden="true"></i>
                       <% end %>
 
                       <% if current_user.admin? %>
                         <%= button_to availability,
                                       method: :delete,
-                                      class: "btn btn-sm btn-outline-danger",
+                                      class: "icon-btn danger",
+                                      title: "Apagar disponibilidade",
+                                      aria: { label: "Apagar disponibilidade" },
                                       form: {
+                                        class: "d-inline-block",
                                         data: {
                                           turbo_confirm: "Tem certeza que deseja apagar esta disponibilidade?"
                                         }
                                       } do %>
-                          <i class="bi bi-trash"></i>
-                          Apagar
+                          <i class="bi bi-trash" aria-hidden="true"></i>
                         <% end %>
                       <% end %>
                     </div>
@@ -308,12 +297,38 @@
 
     </div>
 
-  </div>
+  </section>
 
 </div>
 
+<div class="modal fade app-modal fleet-availability-modal" id="newFleetAvailabilityModal" tabindex="-1" aria-labelledby="newFleetAvailabilityModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <p class="fleet-availability-modal__eyebrow"><i class="bi bi-plus-circle me-1"></i> Nova operação</p>
+          <h2 class="modal-title" id="newFleetAvailabilityModalLabel">Nova disponibilidade</h2>
+          <p>Informe a data e use o dimensionamento da quinzena correspondente.</p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <% if @new_dimensioning_period.present? %>
+          <div class="fleet-availability-modal__period">
+            <i class="bi bi-calendar2-check"></i>
+            <div><strong><%= @new_dimensioning_period.label %></strong><span><%= l(@new_dimensioning_period.start_date) %> a <%= l(@new_dimensioning_period.end_date) %></span></div>
+          </div>
+        <% else %>
+          <div class="fleet-availability-modal__period is-warning"><i class="bi bi-exclamation-circle"></i><span>Nenhum dimensionamento cadastrado para a data selecionada.</span></div>
+        <% end %>
+        <%= render "form", fleet_availability: @new_fleet_availability, dimensioning_period: @new_dimensioning_period, modal: true %>
+      </div>
+    </div>
+  </div>
+</div>
+
 <% if current_user.admin? || current_user.sector_fleet? %>
-  <div class="modal fade" id="fleetAvailabilitySettingsModal" tabindex="-1" aria-labelledby="fleetAvailabilitySettingsModalLabel" aria-hidden="true">
+<div class="modal fade app-modal" id="fleetAvailabilitySettingsModal" tabindex="-1" aria-labelledby="fleetAvailabilitySettingsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <%= form_with model: @fleet_availability_setting,

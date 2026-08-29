@@ -16,23 +16,59 @@
   <%# Seção: dados básicos %>
   <div class="bg-light rounded border p-4 mb-4">
     <h5 class="mb-3">Informações da quinzena</h5>
-    <div class="row g-3">
-      <div class="col-12">
-        <%= f.label :label, "Nome", class: "form-label" %>
-        <%= f.text_field :label,
-                         class: "form-control",
-                         placeholder: "Ex: 1ª quinzena de julho",
+    <% if @fleet_dimensioning.new_record? %>
+      <div class="row g-3">
+        <div class="col-12 col-md-4">
+          <%= label_tag "fleet_dimensioning_period_year", "Ano", class: "form-label" %>
+          <%= select_tag "fleet_dimensioning[period_year]",
+                         options_for_select((Date.current.year - 1..Date.current.year + 2).to_a, @period_year),
+                         id: "fleet_dimensioning_period_year",
+                         class: "form-select",
                          required: true %>
+        </div>
+        <div class="col-12 col-md-4">
+          <%= label_tag "fleet_dimensioning_period_month", "Mês", class: "form-label" %>
+          <%= select_tag "fleet_dimensioning[period_month]",
+                         options_for_select((1..12).map { |month| [I18n.t("date.month_names")[month].capitalize, month] }, @period_month),
+                         id: "fleet_dimensioning_period_month",
+                         class: "form-select",
+                         required: true %>
+        </div>
+        <div class="col-12 col-md-4">
+          <%= label_tag "fleet_dimensioning_period_half", "Quinzena", class: "form-label" %>
+          <%= select_tag "fleet_dimensioning[period_half]",
+                         options_for_select([["Q1 · dias 01 a 15", "q1"], ["Q2 · dia 16 ao fim do mês", "q2"]], @period_half),
+                         id: "fleet_dimensioning_period_half",
+                         class: "form-select",
+                         required: true %>
+        </div>
       </div>
-      <div class="col-md-6">
-        <%= f.label :start_date, "Data inicial", class: "form-label" %>
-        <%= f.date_field :start_date, class: "form-control", required: true %>
+      <div class="form-text mt-3">
+        O nome e as datas serão gerados automaticamente, por exemplo: <strong>Q1 SETEMBRO 26 · 01/09/2026 a 15/09/2026</strong>.
       </div>
-      <div class="col-md-6">
-        <%= f.label :end_date, "Data final", class: "form-label" %>
-        <%= f.date_field :end_date, class: "form-control", required: true %>
+    <% else %>
+      <div class="row g-3">
+        <div class="col-12">
+          <%= f.label :label, "Nome", class: "form-label" %>
+          <%= f.text_field :label, class: "form-control", required: true %>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :start_date, "Data inicial", class: "form-label" %>
+          <%= f.date_field :start_date, class: "form-control", required: true %>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :end_date, "Data final", class: "form-label" %>
+          <%= f.date_field :end_date, class: "form-control", required: true %>
+        </div>
       </div>
-    </div>
+    <% end %>
+    <% if @fleet_dimensioning.new_record? %>
+      <div class="d-none">
+        <%= f.hidden_field :label %>
+        <%= f.hidden_field :start_date %>
+        <%= f.hidden_field :end_date %>
+      </div>
+    <% end %>
   </div>
 
   <%# Seção: quantidades %>

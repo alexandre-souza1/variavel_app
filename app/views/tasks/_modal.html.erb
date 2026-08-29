@@ -1,10 +1,22 @@
-<div class="modal fade" id="taskModal" tabindex="-1">
+<div class="modal fade app-modal app-modal--overflow-visible task-detail-modal" id="taskModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
 
       <div class="modal-header">
         <div>
-          <h5 class="modal-title">Editar Tarefa</h5>
+          <%= form_with model: [task.bucket.action_plan, task.bucket, task],
+              class: "task-detail-modal__title-form",
+              data: {
+                controller: "autosave-form",
+                action: "input->autosave-form#change change->autosave-form#change"
+              } do |title_form| %>
+            <%= title_form.label :title, "Título da tarefa", class: "visually-hidden" %>
+            <%= title_form.text_field :title,
+              class: "task-detail-modal__title-input",
+              aria: { label: "Título da tarefa" },
+              placeholder: "Título da tarefa" %>
+          <% end %>
+          <small class="task-detail-modal__created-at"><i class="bi bi-clock-history"></i> Criada em <%= task.created_at.strftime("%d/%m/%Y %H:%M") %></small>
         </div>
 
         <div class="d-flex gap-2 align-items-center">
@@ -67,18 +79,6 @@
                   controller: "autosave-form",
                   action: "input->autosave-form#change change->autosave-form#change"
                 } do |f| %>
-
-              <!-- TÍTULO -->
-              <div class="mb-3">
-                <%= f.text_field :title,
-                  class: "form-control form-control-lg #{'text-decoration-line-through opacity-50' if task.completed}",
-                  placeholder: "Título da tarefa" %>
-                <% if f.object.persisted? %>
-                  <small class="text-muted">
-                    Criado em: <%= f.object.created_at.strftime("%d/%m/%Y %H:%M") %>
-                  </small>
-                <% end %>
-              </div>
 
               <!-- RÓTULOS -->
               <div class="mb-3 labels-field">
@@ -152,7 +152,10 @@
               </div>
 
               <div class="mb-3 users-field">
-                <label>Responsáveis</label>
+                <div class="task-detail-modal__field-heading">
+                  <label><i class="bi bi-people me-1"></i> Responsáveis</label>
+                  <small>Quem deve executar esta tarefa</small>
+                </div>
 
                 <%= select_tag "task[user_ids][]",
                   options_from_collection_for_select(User.all, :id, :name, task.users.pluck(:id)),
