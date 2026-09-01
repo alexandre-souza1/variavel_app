@@ -8,14 +8,11 @@ class RoutineTemplatesController < ApplicationController
   ]
 
   def index
-    @routine_templates = RoutineTemplate.order(:name)
+    @routine_templates = RoutineTemplate.visible_to(current_user).order(:name)
   end
 
   def show
-    @routine_template = RoutineTemplate.find(params[:id])
-    # Para contar indicadores sem N+1 (já que tem has_many :routine_indicators through: :routine_categories)
-    @routine_template = RoutineTemplate.includes(routine_categories: :routine_indicators).find(params[:id])
-    # ou use counter_cache se preferir
+    @routine_template = RoutineTemplate.visible_to(current_user).includes(routine_categories: :routine_indicators).find(params[:id])
   end
 
   def new
@@ -55,14 +52,15 @@ class RoutineTemplatesController < ApplicationController
   private
 
   def set_routine_template
-    @routine_template = RoutineTemplate.find(params[:id])
+    @routine_template = RoutineTemplate.visible_to(current_user).find(params[:id])
   end
 
   def routine_template_params
     params.require(:routine_template).permit(
       :name,
       :description,
-      :active
+      :active,
+      :sector
     )
   end
 end

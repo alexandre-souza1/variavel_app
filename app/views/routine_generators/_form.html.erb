@@ -1,0 +1,247 @@
+<div class="template-show-page">
+  <header class="routine-show-header mb-4">
+    <div class="header-content">
+      <div>
+        <h1>
+          <i class="bi <%= show_period ? 'bi-plus-circle' : 'bi-pencil-square' %> me-2"></i>
+          <%= show_period ? 'Gerar Nova Rotina' : 'Editar Indicadores' %>
+        </h1>
+        <% if routine.present? %>
+          <p class="subtitle"><%= routine.title %></p>
+        <% end %>
+      </div>
+      <div class="header-actions">
+        <% if routine.present? %>
+          <%= link_to routine, class: "btn-outline" do %>
+            <i class="bi bi-arrow-left me-1"></i>Voltar
+          <% end %>
+        <% else %>
+          <%= link_to routine_templates_path, class: "btn-outline" do %>
+            <i class="bi bi-arrow-left me-1"></i>Voltar
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </header>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <i class="bi bi-file-earmark-text text-primary" style="font-size: 1.5rem;"></i>
+        <div>
+          <strong class="d-block"><%= routine.present? ? routine.title : 'Template' %></strong>
+          <span class="text-muted">
+            <% if routine.present? %>
+              <%= l(routine.period_start, format: "%d/%m/%Y") %> até <%= l(routine.period_end, format: "%d/%m/%Y") %>
+            <% else %>
+              <%= template.name %>
+            <% end %>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .indicator-toggle-checkbox {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .indicator-toggle-icon {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
+    }
+
+    .indicator-toggle-icon i {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
+    }
+
+    .indicator-toggle-icon-off {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .indicator-toggle-icon-on {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+
+    .indicator-toggle-checkbox + .form-check-label:hover .indicator-toggle-icon {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+    }
+
+    .indicator-toggle-checkbox:disabled + .form-check-label {
+      cursor: not-allowed;
+      opacity: 0.9;
+    }
+
+    .indicator-toggle-checkbox:disabled + .form-check-label .indicator-toggle-icon {
+      filter: grayscale(0.2);
+    }
+
+    .indicator-toggle-checkbox:checked + .form-check-label .indicator-toggle-icon-off {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+
+    .indicator-toggle-checkbox:checked + .form-check-label .indicator-toggle-icon-on {
+      opacity: 1;
+      transform: scale(1);
+    }
+  </style>
+
+  <div class="card">
+    <div class="card-body">
+  <%= form_with url: url, method: method, local: true do |f| %>
+        <% if show_period %>
+          <div class="mb-4">
+            <h5 class="card-subtitle mb-3">
+              <i class="bi bi-calendar-range me-2"></i>Período
+            </h5>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <%= label_tag :period_start, "Data Inicial", class: "form-label" %>
+                  <%= date_field_tag :period_start,
+                                     Date.current.beginning_of_month,
+                                     class: "form-control",
+                                     required: true %>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group">
+                  <%= label_tag :period_end, "Data Final", class: "form-label" %>
+                  <%= date_field_tag :period_end,
+                                     Date.current.end_of_month,
+                                     class: "form-control",
+                                     required: true %>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr>
+        <% end %>
+
+        <div class="mb-4">
+          <h5 class="card-subtitle mb-3">
+            <i class="bi bi-graph-up me-2"></i>Indicadores (KPIs)
+          </h5>
+
+          <% indicator_source = routine.present? ? routine.routine_template : template %>
+
+          <div class="accordion" id="indicatorAccordion">
+            <% indicator_source.routine_categories.order(:position).each_with_index do |category, index| %>
+              <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
+                <h2 class="accordion-header" id="indicator-category-heading-<%= category.id %>">
+                  <button class="accordion-button <%= 'collapsed' unless index.zero? %> py-3 px-3" type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#indicator-category-body-<%= category.id %>"
+                          aria-expanded="<%= index.zero? %>"
+                          aria-controls="indicator-category-body-<%= category.id %>">
+                    <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                      <span>
+                        <i class="bi bi-folder me-2"></i><%= category.name %>
+                      </span>
+                      <span class="badge text-bg-secondary rounded-pill">
+                        <%= category.routine_indicators.count %>
+                      </span>
+                    </div>
+                  </button>
+                </h2>
+
+                <div id="indicator-category-body-<%= category.id %>"
+                     class="accordion-collapse collapse <%= 'show' if index.zero? %>"
+                     aria-labelledby="indicator-category-heading-<%= category.id %>"
+                     data-bs-parent="#indicatorAccordion">
+                  <div class="accordion-body bg-body-tertiary p-3">
+                    <% category.routine_indicators.order(:position).each do |indicator| %>
+                      <% is_checked = if routine.present?
+                                        routine.selected_indicator_ids.include?(indicator.id)
+                                      else
+                                        true
+                                      end %>
+                      <% filled_value_count = routine.present? ? routine.routine_values.where(routine_indicator: indicator).count { |routine_value| !routine_value.value.to_s.strip.empty? } : 0 %>
+                      <% locked = routine.present? && filled_value_count.positive? %>
+
+                      <div class="form-check mb-2 px-2 py-2 rounded-2 border bg-body <%= 'opacity-75' if locked %>">
+                        <%= check_box_tag "indicator_ids[]", indicator.id, is_checked,
+                            class: "indicator-toggle-checkbox visually-hidden",
+                            id: "indicator_#{indicator.id}",
+                            disabled: locked,
+                            title: locked ? "Este KPI já possui valores preenchidos e não pode ser removido." : nil %>
+                        <label class="form-check-label d-flex align-items-center justify-content-between w-100 mb-0 <%= 'pe-none' if locked %>" for="indicator_<%= indicator.id %>">
+                          <span>
+                            <%= indicator.name %>
+                            <span class="badge bg-secondary ms-2">
+                              <%= RoutineIndicator::RESPONSE_FREQUENCY_LABELS[indicator.response_frequency] %>
+                            </span>
+                          </span>
+
+                          <span class="d-flex align-items-center gap-2">
+                            <% if routine.present? && is_checked && filled_value_count.positive? %>
+                              <span class="badge bg-success-subtle text-success-emphasis">
+                                <%= filled_value_count %> valores
+                              </span>
+                            <% end %>
+                            <% if locked %>
+                              <span class="badge bg-warning-subtle text-warning-emphasis me-1">
+                                <i class="bi bi-lock-fill"></i>
+                              </span>
+                            <% end %>
+                            <span class="indicator-toggle-icon" aria-hidden="true">
+                              <i class="bi bi-square text-secondary indicator-toggle-icon-off fs-5"></i>
+                              <i class="bi bi-check-square-fill text-primary indicator-toggle-icon-on fs-5"></i>
+                            </span>
+                          </span>
+                        </label>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <% if show_period %>
+            <small class="text-muted d-block mt-3">
+              <i class="bi bi-info-circle me-1"></i>
+              Selecione quais indicadores deseja incluir. Se nenhum for selecionado, todos serão inclusos.
+            </small>
+          <% else %>
+            <div class="alert alert-warning mt-3 mb-4" role="alert">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              <small>
+                <strong>Atenção:</strong> Remover indicadores vai apagar todos os valores preenchidos para aquele indicador.
+              </small>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <%= submit_tag submit_label, class: "btn btn-primary", type: "submit" %>
+          <% if routine.present? %>
+            <%= link_to "Cancelar", routine, class: "btn btn-outline-secondary" %>
+          <% else %>
+            <%= link_to "Cancelar", routine_templates_path, class: "btn btn-outline-secondary" %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

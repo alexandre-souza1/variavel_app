@@ -6,7 +6,7 @@ class RoutinesController < ApplicationController
   ]
 
   def index
-    @routines = Routine
+    @routines = Routine.visible_to(current_user)
       .includes(:routine_template, :created_by)
       .order(period_start: :desc)
   end
@@ -14,13 +14,24 @@ class RoutinesController < ApplicationController
   def show
     @days = (@routine.period_start..@routine.period_end).to_a
 
+    selected_indicator_ids = @routine.selected_indicator_ids
+
     @categories = @routine
                     .routine_template
                     .routine_categories
                     .includes(routine_indicators: :routine_indicator_targets)
                     .order(:position)
+                    .select do |category|
+                      category.routine_indicators.any? do |indicator|
+                        selected_indicator_ids.include?(indicator.id)
+                      end
+                    end
 
-    @indicators = @categories.flat_map(&:routine_indicators)
+    @indicators = @categories.flat_map do |category|
+      category.routine_indicators.select do |indicator|
+        selected_indicator_ids.include?(indicator.id)
+      end
+    end
 
     @expected_dates_by_indicator =
       @indicators.index_with do |indicator|
@@ -61,11 +72,14 @@ class RoutinesController < ApplicationController
 
     @frequency_sections.each_key do |frequency|
       @categories.each do |category|
+        selected_indicators_for_category = category.routine_indicators.select do |indicator|
+          selected_indicator_ids.include?(indicator.id) &&
+            indicator.response_frequency == frequency
+        end
+
         @indicators_by_frequency_and_category[
           [frequency, category.id]
-        ] = category.routine_indicators.select do |indicator|
-          indicator.response_frequency == frequency
-        end
+        ] = selected_indicators_for_category
       end
     end
 
@@ -75,9 +89,7 @@ class RoutinesController < ApplicationController
 
     @frequency_sections.each_key do |frequency|
       @categories.each do |category|
-        @indicators_by_frequency_and_category[
-          [frequency, category.id]
-        ].each do |indicator|
+        @indicators_by_frequency_and_category[[frequency, category.id]].to_a.each do |indicator|
           @row_index[indicator.id] = index
           index += 1
         end
@@ -108,6 +120,6 @@ class RoutinesController < ApplicationController
   private
 
   def set_routine
-    @routine = Routine.find(params[:id])
+    @routine = Routine.visible_to(current_user).includes(:routine_template).find(params[:id])
   end
 end

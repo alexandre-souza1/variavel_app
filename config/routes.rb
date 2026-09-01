@@ -98,6 +98,7 @@ Rails.application.routes.draw do
             only: %i[new create],
             controller: :routine_generators
 
+
     resources :routine_categories do
       resources :routine_indicators do
         resources :routine_indicator_targets,
@@ -107,6 +108,10 @@ Rails.application.routes.draw do
   end
 
   resources :routines, only: %i[index show destroy] do
+    resource :generator,
+             only: %i[edit update],
+             controller: :routine_generators
+
     resources :activities,
               only: :index,
               controller: :routine_activities

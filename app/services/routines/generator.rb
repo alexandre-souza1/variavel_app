@@ -5,11 +5,12 @@ module Routines
       new(...).call
     end
 
-    def initialize(template:, period_start:, period_end:, created_by:)
+    def initialize(template:, period_start:, period_end:, created_by:, indicator_ids: nil)
       @template = template
       @period_start = period_start
       @period_end = period_end
       @created_by = created_by
+      @indicator_ids = Array(indicator_ids).map(&:to_i)
     end
 
     def call
@@ -27,7 +28,8 @@ module Routines
     attr_reader :template,
                 :period_start,
                 :period_end,
-                :created_by
+                :created_by,
+                :indicator_ids
 
     def create_routine
       Routine.create!(
@@ -36,12 +38,22 @@ module Routines
         title: default_title,
         period_start: period_start,
         period_end: period_end,
-        status: :draft
+        status: :draft,
+        selected_indicator_ids: resolved_indicator_ids
       )
     end
 
     def create_values(routine)
-      routine.ensure_expected_values!
+      routine.ensure_expected_values!(indicators: routine.selected_indicators)
+    end
+
+    def resolved_indicator_ids
+      return template
+        .routine_categories
+        .includes(:routine_indicators)
+        .flat_map { |category| category.routine_indicators.map(&:id) } if indicator_ids.blank?
+
+      indicator_ids
     end
 
     def default_title

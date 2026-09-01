@@ -1,0 +1,7 @@
+<%= render "routine_generators/form",
+           template: nil,
+           routine: @routine,
+           url: routine_generator_path(id: @routine.id),
+           method: :patch,
+           submit_label: "Salvar Alterações",
+           show_period: false %>

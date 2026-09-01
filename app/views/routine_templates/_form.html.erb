@@ -43,6 +43,29 @@
                           placeholder: "Descreva o propósito e uso deste template..." %>
         </div>
 
+        <div class="mb-4">
+          <%= f.label :sector, class: "form-label fw-semibold" do %>
+            <i class="bi bi-diagram-3 me-1"></i> Setor do template
+          <% end %>
+
+          <div class="row g-3">
+            <% User::USER_SECTORS.each do |label, value| %>
+              <% selected = routine_template.sector == value.to_s %>
+              <div class="col-md-6 col-xl-4">
+                <label class="d-block w-100">
+                  <%= f.radio_button :sector, value, checked: selected, class: "btn-check" %>
+                  <span class="d-flex align-items-center justify-content-between w-100 px-3 py-2 border rounded-3 bg-body <%= selected ? 'border-primary shadow-sm' : 'border-secondary-subtle' %>">
+                    <span class="fw-medium"><%= label %></span>
+                    <i class="bi <%= selected ? 'bi-record-circle-fill text-primary' : 'bi-circle text-secondary' %>"></i>
+                  </span>
+                </label>
+              </div>
+            <% end %>
+          </div>
+
+          <small class="text-muted d-block mt-2">Usuários do setor selecionado enxergam este template e suas rotinas.</small>
+        </div>
+
         <div class="form-check form-switch mb-4">
           <%= f.check_box :active,
                           class: "form-check-input",
