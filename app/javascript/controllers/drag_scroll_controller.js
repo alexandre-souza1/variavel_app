@@ -9,11 +9,14 @@ export default class extends Controller {
     this.isDown = false
     this.isDragging = false
     this.startX = 0
+    this.elementLeft = 0
     this.scrollLeft = 0
     this.velocity = 0
     this.lastX = 0
     this.lastTime = 0
     this.raf = null
+    this.moveRaf = null
+    this.pendingPageX = null
     this.hasMovedEnough = false
 
     this.mouseDown = this.mouseDown.bind(this)
@@ -21,7 +24,7 @@ export default class extends Controller {
     this.mouseUp = this.mouseUp.bind(this)
 
     this.element.addEventListener("mousedown", this.mouseDown)
-    this.element.addEventListener("mousemove", this.mouseMove)
+    this.element.addEventListener("mousemove", this.mouseMove, { passive: false })
     this.element.addEventListener("mouseup", this.mouseUp)
     this.element.addEventListener("mouseleave", this.mouseUp)
 
@@ -29,6 +32,9 @@ export default class extends Controller {
     this.element.addEventListener("touchmove", this.mouseMove, { passive: false })
     this.element.addEventListener("touchend", this.mouseUp)
     this.element.addEventListener("touchcancel", this.mouseUp)
+    window.addEventListener("mouseup", this.mouseUp)
+    window.addEventListener("touchend", this.mouseUp)
+    window.addEventListener("touchcancel", this.mouseUp)
   }
 
   disconnect() {
@@ -40,10 +46,17 @@ export default class extends Controller {
     this.element.removeEventListener("touchmove", this.mouseMove)
     this.element.removeEventListener("touchend", this.mouseUp)
     this.element.removeEventListener("touchcancel", this.mouseUp)
+    window.removeEventListener("mouseup", this.mouseUp)
+    window.removeEventListener("touchend", this.mouseUp)
+    window.removeEventListener("touchcancel", this.mouseUp)
     cancelAnimationFrame(this.raf)
+    cancelAnimationFrame(this.moveRaf)
   }
 
   mouseDown(e) {
+    // Sortable owns task-card drags; the board scroller must stay idle.
+    if (e.target.closest(".task-card, [data-controller~='sortable']")) return
+
     const handleSelector = this.handleValue
     if (handleSelector) {
       const handleElement = e.target.closest(handleSelector)
@@ -60,11 +73,12 @@ export default class extends Controller {
 
     const pageX = e.touches ? e.touches[0].pageX : e.pageX
 
-    this.startX = pageX - this.element.offsetLeft
+    this.elementLeft = this.element.getBoundingClientRect().left
+    this.startX = pageX - this.elementLeft
     this.scrollLeft = this.element.scrollLeft
 
     this.lastX = pageX
-    this.lastTime = Date.now()
+    this.lastTime = performance.now()
     this.velocity = 0
 
     cancelAnimationFrame(this.raf)
@@ -75,35 +89,50 @@ export default class extends Controller {
     if (!this.isDown) return
 
     const pageX = e.touches ? e.touches[0].pageX : e.pageX
-    const x = pageX - this.element.offsetLeft
-    const walk = (x - this.startX) * 1.1
+    this.pendingPageX = pageX
 
-    if (Math.abs(walk) > 3) {
-      this.hasMovedEnough = true
-      e.preventDefault()
-    }
+    if (this.moveRaf) return
 
-    if (!this.hasMovedEnough) return
+    this.moveRaf = requestAnimationFrame(() => {
+      this.moveRaf = null
+      if (!this.isDown || this.pendingPageX === null) return
 
-    this.element.scrollLeft = this.scrollLeft - walk
-    this.isDragging = true
+      const currentPageX = this.pendingPageX
+      const x = currentPageX - this.elementLeft
+      const walk = (x - this.startX) * 1.1
 
-    const now = Date.now()
-    const dx = pageX - this.lastX
-    const dt = now - this.lastTime
-    this.velocity = dx / (dt || 1)
+      if (Math.abs(walk) > 3) {
+        this.hasMovedEnough = true
+        window.getSelection()?.removeAllRanges()
+      }
 
-    this.lastX = pageX
-    this.lastTime = now
+      if (!this.hasMovedEnough) return
+
+      this.element.scrollLeft = this.scrollLeft - walk
+      this.isDragging = true
+
+      const now = performance.now()
+      const dx = currentPageX - this.lastX
+      const dt = now - this.lastTime
+      this.velocity = dx / (dt || 1)
+
+      this.lastX = currentPageX
+      this.lastTime = now
+    })
+
+    if (this.hasMovedEnough && e.cancelable) e.preventDefault()
   }
 
   mouseUp() {
     if (!this.isDown) return
 
     this.isDown = false
+    this.pendingPageX = null
+    cancelAnimationFrame(this.moveRaf)
+    this.moveRaf = null
     this.element.classList.remove("dragging")
 
-    if (this.isDragging) {
+    if (this.isDragging && !this.handleValue) {
       this.startMomentum()
     }
   }

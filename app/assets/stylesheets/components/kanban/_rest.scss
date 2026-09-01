@@ -1,0 +1,1291 @@
+// ============================================================
+// TASK REMINDERS / MODAL / LIST STATE
+// ============================================================
+
+// Lembrete: switch e rotulo usados para alternar o lembrete de uma tarefa.
+.task-reminder-toggle {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
+  max-width: 100%;
+  min-height: 38px;
+  padding: 0;
+}
+
+.task-reminder-toggle-form {
+  margin: 0;
+}
+
+.task-reminder-toggle--header {
+  min-height: 31px;
+}
+
+.task-reminder-toggle__text {
+  color: var(--bs-secondary-color);
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.task-reminder-toggle__control {
+  align-items: center;
+  display: inline-flex;
+  margin: 0;
+  min-height: 0;
+  padding-left: 0;
+  position: relative;
+}
+
+.task-reminder-toggle .task-reminder-toggle__control.form-check.form-switch {
+  display: inline-flex;
+  margin-bottom: 0;
+  min-height: 0;
+  padding-left: 0;
+}
+
+.task-reminder-toggle .task-reminder-toggle__control.form-switch .form-check-input {
+  cursor: pointer;
+  height: 1.55rem;
+  margin-left: 0;
+  margin-top: 0;
+  width: 3.25rem;
+}
+
+.task-reminder-toggle .task-reminder-toggle__control.form-switch .form-check-input:checked {
+  background-color: #f0ad4e;
+  border-color: #f0ad4e;
+}
+
+.task-reminder-toggle__label {
+  align-items: center;
+  color: var(--bs-secondary-color);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0.58rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.task-reminder-toggle__label i {
+  color: var(--bs-secondary-color);
+  font-size: 0.78rem;
+}
+
+.task-reminder-toggle .task-reminder-toggle__control.form-switch .form-check-input:checked + .task-reminder-toggle__label {
+  left: 0.58rem;
+  right: auto;
+}
+
+.task-reminder-toggle .task-reminder-toggle__control.form-switch .form-check-input:checked + .task-reminder-toggle__label i {
+  color: #fff;
+}
+
+.task-modal-dialog {
+  --bs-modal-width: 980px;
+}
+
+// Modal de action plan: campos, checklist, atividade e comentarios da tarefa.
+.action-plan-task-modal {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+}
+
+.action-plan-task-modal__header {
+  background: var(--bs-tertiary-bg);
+  border-bottom: 1px solid var(--bs-border-color);
+  padding: 1rem 1.25rem;
+}
+
+.action-plan-task-modal__title {
+  align-items: center;
+  color: var(--bs-body-color);
+  display: flex;
+  font-size: 1rem;
+  font-weight: 600;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.action-plan-task-modal__title i {
+  color: var(--bs-primary);
+}
+
+.action-plan-task-modal__subtitle {
+  align-items: center;
+  color: var(--bs-secondary-color);
+  display: inline-flex;
+  font-size: 0.82rem;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.action-plan-task-modal__status {
+  align-items: center;
+  background: rgba(var(--bs-success-rgb), 0.1);
+  border: 1px solid rgba(var(--bs-success-rgb), 0.22);
+  border-radius: 999px;
+  color: var(--bs-success);
+  display: inline-flex;
+  font-weight: 600;
+  gap: 0.35rem;
+}
+
+.action-plan-task-modal__status--done {
+  background: var(--bs-success);
+  color: #fff;
+}
+
+.action-plan-task-modal__body {
+  padding: 1.25rem;
+}
+
+.action-plan-task-modal__section {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
+
+.action-plan-task-modal__title-input {
+  border: 0;
+  box-shadow: none !important;
+  font-weight: 600;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.action-plan-task-modal__created-at,
+.action-plan-task-modal__field-hint {
+  color: var(--bs-secondary-color);
+  font-size: 0.78rem;
+}
+
+.action-plan-task-modal__created-at {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.action-plan-task-modal__label {
+  color: var(--bs-body-color);
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+}
+
+.action-plan-task-modal__textarea {
+  min-height: 96px;
+}
+
+.action-plan-task-modal__field-hint {
+  margin-bottom: 0.35rem;
+}
+
+.action-plan-task-modal__checklist > .mt-4 {
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+}
+
+.action-plan-task-modal__checklist .bg-light {
+  background: var(--bs-tertiary-bg) !important;
+  border-color: var(--bs-border-color) !important;
+}
+
+.action-plan-task-modal__activity {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.action-plan-task-modal__activity-header {
+  background: var(--bs-tertiary-bg);
+  border-bottom: 1px solid var(--bs-border-color);
+  padding: 0.9rem 1rem;
+}
+
+.action-plan-task-modal__activity-header h6 {
+  align-items: center;
+  display: flex;
+  font-size: 0.9rem;
+  font-weight: 600;
+  gap: 0.45rem;
+  margin: 0;
+}
+
+.action-plan-task-modal__activity-header i {
+  color: var(--bs-primary);
+}
+
+.action-plan-task-modal__comments {
+  border: 0;
+  border-radius: 0;
+  flex: 1 1 auto;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.action-plan-task-modal__comment-form {
+  border-top: 1px solid var(--bs-border-color);
+  padding: 1rem;
+}
+
+// Cabecalho e resumo da pagina de action plan.
+.action-plan-show {
+  margin: 0;
+  max-width: none;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.action-plan-header {
+  margin-bottom: 1.5rem !important;
+}
+
+.action-plan-header__title {
+  min-width: 0;
+}
+
+.action-plan-header__title h1 {
+  overflow-wrap: anywhere;
+}
+
+.action-plan-show .btn-outline {
+  align-items: center;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 8px;
+  color: var(--bs-body-color);
+  display: inline-flex;
+  font-size: 0.875rem;
+  font-weight: 600;
+  gap: 0.4rem;
+  line-height: 1.2;
+  padding: 0.55rem 0.85rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.action-plan-show .btn-outline:hover,
+.action-plan-show .btn-outline.active {
+  background: rgba(var(--bs-primary-rgb), 0.08);
+  border-color: rgba(var(--bs-primary-rgb), 0.24);
+  color: var(--bs-primary);
+}
+
+.action-plan-mobile-summary {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: -0.55rem 0 1rem;
+}
+
+.action-plan-mobile-summary__item {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 10px;
+  min-width: 0;
+  padding: 0.75rem 0.45rem;
+  text-align: center;
+}
+
+.action-plan-mobile-summary__value,
+.action-plan-mobile-summary__label {
+  display: block;
+  line-height: 1.1;
+}
+
+.action-plan-mobile-summary__value {
+  color: var(--bs-body-color);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.action-plan-mobile-summary__label {
+  color: var(--bs-secondary-color);
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+  text-transform: uppercase;
+}
+
+// Alternancia de visualizacao e barra de busca da lista automatica.
+.kanban-container {
+  cursor: grab;
+  scroll-behavior: auto;
+}
+
+.kanban-container.dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.kanban-container * {
+  user-select: none;
+}
+
+.action-plan-auto-list {
+  display: none;
+}
+
+.action-plan-auto-kanban {
+  display: block;
+}
+
+.action-plan-list-toolbar {
+  align-items: center;
+  background: transparent;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.action-plan-list-search {
+  flex: 1 1 360px;
+  max-width: 520px;
+  position: relative;
+}
+
+.action-plan-list-search i {
+  color: var(--bs-secondary-color);
+  left: 0.75rem;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.action-plan-list-search .form-control {
+  background-color: var(--bs-body-bg);
+  border-color: var(--bs-border-color);
+  padding-left: 2.2rem;
+}
+
+.action-plan-list-completed-toggle {
+  flex-shrink: 0;
+}
+
+.action-plan-list-table {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  max-height: 68vh;
+  overflow-y: auto;
+}
+
+.action-plan-kanban-panel {
+  background: transparent;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+// Quadro Kanban: filtro, colunas, cards e criacao de novas tarefas.
+
+.action-plan-kanban-filter {
+  margin-bottom: 1rem;
+}
+
+.action-plan-kanban-filter__content {
+  align-items: center;
+  border-radius: 12px;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+}
+
+.action-plan-kanban-filter__label {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.action-plan-kanban-filter__icon {
+  align-items: center;
+  background: rgba(var(--bs-primary-rgb), 0.08);
+  border-radius: 10px;
+  color: var(--bs-primary);
+  display: inline-flex;
+  flex: 0 0 38px;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.action-plan-kanban-filter__label strong {
+  color: var(--bs-body-color);
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.action-plan-kanban-filter__label span:not(.action-plan-kanban-filter__icon) {
+  color: var(--bs-secondary-color);
+  display: block;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  margin-top: 0.15rem;
+}
+
+.action-plan-kanban-filter__search {
+  flex: 0 1 420px;
+  max-width: 420px;
+}
+
+.action-plan-kanban-filter__search .form-control {
+  border-radius: 10px;
+  min-height: 40px;
+}
+
+.action-plan-kanban-board.row {
+  column-gap: 0.75rem;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.action-plan-kanban-board.dragging,
+.action-plan-kanban-board.dragging * {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.action-plan-kanban-column {
+  flex: 0 0 310px;
+  max-width: 310px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.action-plan-kanban-card {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  color: var(--bs-body-color);
+  overflow: hidden;
+}
+
+.action-plan-kanban-card__header {
+  background: var(--bs-tertiary-bg);
+  border-bottom: 1px solid var(--bs-border-color);
+  min-height: 46px;
+  padding: 0.85rem 1rem;
+}
+
+.action-plan-kanban-card__heading {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.action-plan-kanban-card__title-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.action-plan-kanban-card__title {
+  color: var(--bs-body-color);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.action-plan-kanban-card__count {
+  color: var(--bs-secondary-color);
+  font-size: 0.74rem;
+  line-height: 1.2;
+  margin-top: 0.12rem;
+}
+
+.action-plan-kanban-card__remove {
+  border: 0;
+  flex-shrink: 0;
+  padding: 0.25rem 0.35rem;
+}
+
+.action-plan-kanban-card__composer {
+  background: transparent;
+  border-bottom: 1px solid var(--bs-border-color);
+  border-top: 0;
+  padding: 0.75rem 1rem;
+}
+
+.action-plan-kanban-add-task {
+  align-items: center;
+  background: transparent;
+  border: 1px dashed var(--bs-border-color);
+  border-radius: 8px;
+  color: var(--bs-secondary-color);
+  display: inline-flex;
+  font-size: 0.875rem;
+  font-weight: 500;
+  gap: 0.4rem;
+  justify-content: center;
+  padding: 0.55rem 0.75rem;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.action-plan-kanban-add-task:hover {
+  background: rgba(var(--bs-primary-rgb), 0.08);
+  border-color: rgba(var(--bs-primary-rgb), 0.24);
+  color: var(--bs-primary);
+}
+
+.action-plan-kanban-new-task {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.action-plan-kanban-form-toggle {
+  background: var(--bs-tertiary-bg) !important;
+  border: 1px solid var(--bs-border-color);
+  color: var(--bs-body-color) !important;
+  justify-content: flex-start;
+}
+
+.action-plan-kanban-card__body {
+  background: transparent;
+  padding: 1rem;
+}
+
+.action-plan-kanban-task-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.action-plan-kanban-card [id^="done-tasks-"] > .task-card + .task-card {
+  margin-top: 0.65rem !important;
+}
+
+.action-plan-kanban-card .task-card {
+  border: 1px solid var(--bs-border-color);
+  border-left: 4px solid var(--bs-primary);
+  border-radius: 10px;
+  box-shadow: none !important;
+  margin-bottom: 0 !important;
+  padding: 0.75rem !important;
+}
+
+.action-plan-kanban-card .task-card:hover {
+  background: var(--bs-tertiary-bg);
+}
+
+.action-plan-kanban-card .task-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.action-plan-kanban-card .task-labels .badge {
+  border-radius: 999px;
+  line-height: 1.1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.action-plan-kanban-card .task-footer {
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.action-plan-kanban-done-toggle {
+  align-items: center;
+  border-top: 1px solid var(--bs-border-color);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+}
+
+.action-plan-kanban-done-count {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.action-plan-kanban-done-icon {
+  color: var(--bs-secondary-color);
+  font-size: 0.82rem;
+}
+
+.action-plan-kanban-new-bucket {
+  border: 1px dashed var(--bs-border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  min-height: 120px;
+  width: 100%;
+}
+
+.action-plan-kanban-new-bucket__header {
+  align-items: center;
+  color: var(--bs-secondary-color);
+  display: flex;
+  font-weight: 500;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 0.85rem;
+}
+
+.action-plan-kanban-new-bucket__header i {
+  color: var(--bs-primary);
+  font-size: 1rem;
+}
+
+.drag-handle {
+  color: var(--bs-secondary-color);
+  cursor: grab;
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+// Tabela desktop de action plans, incluindo badges, datas e acoes.
+.action-plan-desktop-table {
+  margin-bottom: 0;
+  min-width: 980px;
+  table-layout: fixed;
+}
+
+.action-plan-desktop-table thead th {
+  background: var(--bs-tertiary-bg);
+  border-bottom: 1px solid var(--bs-border-color);
+  color: var(--bs-secondary-color);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 0.85rem;
+  position: sticky;
+  text-transform: uppercase;
+  top: 0;
+  z-index: 2;
+}
+
+.action-plan-desktop-table tbody td {
+  border-color: var(--bs-border-color);
+  padding: 0.8rem 0.85rem;
+  vertical-align: middle;
+}
+
+.action-plan-desktop-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.action-plan-desktop-table tbody tr:hover {
+  background: var(--bs-tertiary-bg);
+}
+
+.action-plan-desktop-table__status {
+  width: 128px;
+}
+
+.action-plan-desktop-table__task {
+  width: 30%;
+}
+
+.action-plan-desktop-table__bucket {
+  width: 15%;
+}
+
+.action-plan-desktop-table__users {
+  width: 18%;
+}
+
+.action-plan-desktop-table__date {
+  width: 132px;
+}
+
+.action-plan-desktop-table__labels {
+  width: 18%;
+}
+
+.action-plan-desktop-table__action {
+  width: 44px;
+}
+
+.action-plan-desktop-task-title,
+.action-plan-desktop-task-description {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-plan-desktop-task-title {
+  color: var(--bs-body-color);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.action-plan-desktop-task-description {
+  color: var(--bs-secondary-color);
+  font-size: 0.82rem;
+  margin-top: 0.15rem;
+}
+
+.action-plan-status-badge,
+.action-plan-bucket-badge,
+.action-plan-user-badge,
+.action-plan-label-badge {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.3rem;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.action-plan-status-badge {
+  border-radius: 999px;
+  padding: 0.42rem 0.6rem;
+}
+
+.action-plan-status-badge--open {
+  background: rgba(var(--bs-primary-rgb), 0.12);
+  color: var(--bs-primary) !important;
+}
+
+.action-plan-status-badge--done {
+  background: rgba(var(--bs-success-rgb), 0.13);
+  color: var(--bs-success) !important;
+}
+
+.action-plan-bucket-badge {
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color);
+  color: var(--bs-body-color) !important;
+  max-width: 100%;
+}
+
+.action-plan-user-badge {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  color: var(--bs-body-color) !important;
+  margin: 0.12rem 0.15rem 0.12rem 0;
+}
+
+.action-plan-label-badge {
+  color: #111827 !important;
+  margin: 0.12rem 0.15rem 0.12rem 0;
+  max-width: 8rem;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.action-plan-date {
+  align-items: center;
+  color: var(--bs-secondary-color);
+  display: inline-flex;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.action-plan-date--overdue {
+  color: var(--bs-danger);
+  font-weight: 700;
+}
+
+.filter-hidden {
+  display: none !important;
+}
+
+.action-plan-mobile-task-list {
+  display: grid;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+  width: 100%;
+}
+
+.action-plan-mobile-task {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+  color: var(--bs-body-color);
+  cursor: pointer;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.85rem;
+  width: 100%;
+}
+
+.action-plan-mobile-task:focus-visible {
+  border-color: rgba(var(--bs-primary-rgb), 0.45);
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.14);
+  outline: 0;
+}
+
+.action-plan-mobile-task__top,
+.action-plan-mobile-task__meta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.action-plan-mobile-task__top {
+  justify-content: space-between;
+}
+
+.action-plan-mobile-task__status {
+  max-width: 100%;
+}
+
+.action-plan-mobile-task__badges {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.action-plan-mobile-task__due {
+  align-items: center;
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 999px;
+  color: var(--bs-secondary-color);
+  display: inline-flex;
+  font-size: 0.76rem;
+  font-weight: 700;
+  gap: 0.3rem;
+  line-height: 1.2;
+  padding: 0.32rem 0.55rem;
+  white-space: nowrap;
+}
+
+.action-plan-mobile-task__due--overdue {
+  background: rgba(var(--bs-danger-rgb), 0.1);
+  border-color: rgba(var(--bs-danger-rgb), 0.24);
+  color: var(--bs-danger);
+}
+
+.action-plan-mobile-task__open-icon {
+  color: var(--bs-secondary-color);
+  flex: 0 0 auto;
+  font-size: 1rem;
+}
+
+.action-plan-mobile-task__bucket {
+  align-items: center;
+  color: var(--bs-secondary-color);
+  display: flex;
+  font-size: 0.8rem;
+  gap: 0.35rem;
+  line-height: 1.25;
+  margin-top: 0.55rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.action-plan-mobile-task__bucket span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-plan-mobile-task__title {
+  color: var(--bs-body-color);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0.65rem 0 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.action-plan-mobile-task__description {
+  color: var(--bs-secondary-color);
+  font-size: 0.875rem;
+  line-height: 1.35;
+  margin: 0.35rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.action-plan-mobile-task__meta {
+  font-size: 0.85rem;
+  justify-content: flex-start;
+  margin-top: 0.65rem;
+}
+
+.action-plan-mobile-task__meta > span {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.action-plan-mobile-task__labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+  min-width: 0;
+}
+
+.action-plan-mobile-task__labels .badge {
+  color: #111827 !important;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.action-plan-mobile-empty {
+  background: var(--bs-body-bg);
+  border: 1px dashed var(--bs-border-color);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.action-plan-list-empty {
+  background: var(--bs-body-bg);
+  border: 1px dashed var(--bs-border-color);
+  border-radius: 10px;
+  color: var(--bs-secondary-color);
+  padding: 1rem;
+  text-align: center;
+}
+
+// Lista mobile e ajustes de layout para telas estreitas.
+@media (max-width: 767.98px) {
+  .action-plan-show.dashboard-page {
+    padding: 1rem 0.75rem 1.5rem;
+  }
+
+  .action-plan-header {
+    margin-bottom: 1rem !important;
+  }
+
+  .action-plan-show .dashboard-header .header-content {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .action-plan-show .dashboard-header h1 {
+    align-items: flex-start;
+    font-size: 1.28rem;
+    line-height: 1.25;
+  }
+
+  .action-plan-show .dashboard-header .subtitle {
+    font-size: 0.82rem;
+  }
+
+  .action-plan-show .dashboard-header .header-actions {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 10px;
+    display: grid;
+    gap: 0.35rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 42px;
+    padding: 0.25rem;
+    width: 100%;
+  }
+
+  .action-plan-show .header-actions .btn-outline {
+    border-color: transparent;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0.55rem 0.5rem;
+    width: 100%;
+  }
+
+  .action-plan-show .header-actions .action-plan-back-link {
+    flex: 0 0 42px;
+    font-size: 0;
+    gap: 0;
+    height: 42px;
+    max-width: 42px;
+    min-width: 42px;
+    padding: 0;
+    width: 42px;
+  }
+
+  .action-plan-show .header-actions .action-plan-back-link .me-1 {
+    margin-right: 0 !important;
+  }
+
+  .action-plan-show .header-actions .action-plan-back-link i {
+    font-size: 0.95rem;
+  }
+
+  .action-plan-show--auto-view .action-plan-auto-list {
+    display: block;
+  }
+
+  .action-plan-show--auto-view .action-plan-auto-kanban {
+    display: none;
+  }
+
+  .action-plan-show--auto-view .action-plan-view-link--kanban.active {
+    background-color: transparent;
+    color: var(--bs-primary);
+  }
+
+  .action-plan-show--auto-view .action-plan-view-link--list {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+  }
+
+  .action-plan-list-toolbar {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    margin: 0 0 0.85rem;
+    padding: 0.65rem;
+    position: sticky;
+    top: 0.5rem;
+    z-index: 5;
+  }
+
+  .action-plan-list-search {
+    flex-basis: auto;
+    max-width: none;
+    width: 100%;
+  }
+
+  .action-plan-list-completed-toggle {
+    align-items: center;
+    background: var(--bs-tertiary-bg);
+    border-radius: 8px;
+    display: flex;
+    min-height: 42px;
+    padding: 0.55rem 0.7rem 0.55rem 2.55rem;
+    width: 100%;
+  }
+
+  .action-plan-list-completed-toggle .form-check-input {
+    margin-left: -1.85rem;
+    margin-top: 0;
+  }
+
+  .action-plan-list-completed-toggle .form-check-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  .action-plan-mobile-task-list {
+    gap: 0.65rem;
+  }
+
+  .action-plan-mobile-task {
+    border-radius: 12px;
+    padding: 0.9rem;
+  }
+
+  .action-plan-mobile-task__status {
+    padding: 0.38rem 0.56rem;
+  }
+
+  .action-plan-mobile-task__bucket {
+    margin-top: 0.7rem;
+  }
+
+  .action-plan-mobile-task__title {
+    font-size: 0.98rem;
+    margin-top: 0.55rem;
+  }
+
+  .action-plan-mobile-task__description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .action-plan-kanban-filter__content {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .action-plan-kanban-filter__label {
+    align-items: flex-start;
+  }
+
+  .action-plan-kanban-filter__search {
+    flex-basis: auto;
+    max-width: none;
+    width: 100%;
+  }
+
+  .kanban-scroll-top {
+    display: none;
+  }
+
+  .kanban-scroll-bottom {
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+    padding-left: 0.75rem;
+    scroll-padding-left: 0.75rem;
+  }
+
+  .action-plan-kanban-board {
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .action-plan-kanban-column {
+    flex-basis: 86vw;
+    max-width: 320px;
+  }
+
+  .task-modal-dialog {
+    margin: 0.75rem;
+  }
+
+  .action-plan-task-modal__body {
+    padding: 0.9rem;
+  }
+
+  .action-plan-task-modal__section {
+    padding: 0.85rem;
+  }
+
+  .action-plan-task-modal__activity {
+    min-height: 320px;
+  }
+}
+
+// Contraste do Kanban e dos modais no tema escuro.
+[data-bs-theme="dark"] .task-card {
+  background: #111827;
+  border-color: #273449;
+  border-left-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .task-card:hover {
+  background: #172033;
+}
+
+[data-bs-theme="dark"] .action-plan-task-modal {
+  border-color: #273449;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+[data-bs-theme="dark"] .action-plan-task-modal__header,
+[data-bs-theme="dark"] .action-plan-task-modal__activity-header {
+  background: #172033;
+  border-color: #273449;
+}
+
+[data-bs-theme="dark"] .action-plan-task-modal__section,
+[data-bs-theme="dark"] .action-plan-task-modal__activity {
+  background: #111827;
+  border-color: #273449;
+}
+
+[data-bs-theme="dark"] .action-plan-task-modal__checklist .bg-light {
+  background: #0b1220 !important;
+  border-color: #334155 !important;
+}
+
+[data-bs-theme="dark"] .action-plan-task-modal__comment-form {
+  border-color: #273449;
+}
+
+[data-bs-theme="dark"] .action-plan-mobile-task {
+  background: #111827;
+  border-color: #273449;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+[data-bs-theme="dark"] .action-plan-list-table {
+  background: #111827;
+  border-color: #273449;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+[data-bs-theme="dark"] .action-plan-desktop-table thead th {
+  background: #172033;
+  border-color: #273449;
+}
+
+[data-bs-theme="dark"] .action-plan-desktop-table tbody tr:hover {
+  background: #172033;
+}
+
+[data-bs-theme="dark"] .action-plan-bucket-badge,
+[data-bs-theme="dark"] .action-plan-user-badge {
+  background: #0b1220;
+  border-color: #334155;
+}
+
+[data-bs-theme="dark"] .action-plan-label-badge,
+[data-bs-theme="dark"] .action-plan-mobile-task__labels .badge {
+  color: #fff !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+[data-bs-theme="dark"] .action-plan-kanban-card {
+  background: #111827;
+  border-color: #273449;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+[data-bs-theme="dark"] .action-plan-kanban-card__header,
+[data-bs-theme="dark"] .action-plan-kanban-card__composer {
+  border-color: #273449;
+}
+
+[data-bs-theme="dark"] .action-plan-kanban-card .task-card {
+  background: #0b1220;
+  border-color: #273449;
+  border-left-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .action-plan-kanban-card .task-card:hover {
+  background: #172033;
+}
+
+[data-bs-theme="dark"] .action-plan-kanban-new-bucket {
+  border-color: #334155;
+}
+
+[data-bs-theme="dark"] .action-plan-mobile-empty {
+  background: #111827;
+  border-color: #273449;
+}

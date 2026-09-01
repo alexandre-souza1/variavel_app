@@ -1,0 +1,286 @@
+@import "../../custom/breakpoints";
+
+// Ajustes responsivos de planos, tarefas e KPIs do dashboard de tarefas.
+@media (max-width: $lg-max) {
+  .dashboard-tasks {
+    padding: 1rem;
+
+    .dashboard-header .header-content {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    // No mobile/tablet as colunas ficam uma debaixo da outra.
+    // Retiramos o position: absolute para elas não colapsarem a zero,
+    // e definimos uma altura máxima para forçar o scroll interno.
+    .plans-card-body .plans-scroll,
+    .chart-body.tasks-list-body > .tasks-list,
+    .chart-body.tasks-list-body > .empty-state-compact {
+      position: static;
+      max-height: 400px;
+    }
+  }
+}
+
+@media (max-width: $md-max) {
+  .dashboard-tasks {
+    padding: 1rem 0.75rem 1.5rem;
+
+    .dashboard-header {
+      margin-bottom: 1rem;
+
+      .header-content {
+        gap: 0.9rem;
+      }
+
+      h1 {
+        font-size: 1.35rem;
+        line-height: 1.25;
+      }
+
+      .subtitle {
+        font-size: 0.84rem;
+      }
+
+      .header-actions {
+        display: grid;
+        gap: 0.5rem;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        width: 100%;
+      }
+
+      .btn-outline,
+      .btn-primary-solid {
+        align-items: center;
+        display: inline-flex;
+        gap: 0.4rem;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0.65rem 0.7rem;
+        width: 100%;
+      }
+    }
+
+    .action-plans-kpi-grid {
+      --bs-gutter-x: 0.55rem;
+      --bs-gutter-y: 0.55rem;
+    }
+
+    .kpi-card {
+      align-items: flex-start;
+      border-radius: 10px;
+      gap: 0.55rem;
+      padding: 0.75rem;
+
+      .kpi-icon {
+        border-radius: 8px;
+        height: 34px;
+        width: 34px;
+
+        i {
+          font-size: 1rem;
+        }
+      }
+
+      .kpi-info {
+        min-width: 0;
+
+        .kpi-label {
+          font-size: 0.62rem;
+          line-height: 1.15;
+        }
+
+        .kpi-value {
+          font-size: 1.2rem;
+        }
+      }
+    }
+
+    .action-plans-content-grid {
+      --bs-gutter-y: 0.8rem;
+    }
+
+    .chart-card {
+      border-radius: 10px;
+
+      .chart-header {
+        padding: 0.75rem 0.9rem;
+
+        h5 {
+          font-size: 0.88rem;
+        }
+      }
+    }
+
+    .plan-item {
+      background: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: 10px;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+      padding: 0.8rem;
+
+      .plan-description {
+        margin-bottom: 0.65rem;
+      }
+
+      .plan-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 38px;
+        gap: 0.4rem;
+
+        .btn-sm,
+        .icon-btn {
+          justify-content: center;
+          min-height: 38px;
+          padding: 0.45rem 0.55rem;
+        }
+
+        .icon-btn {
+          width: 38px;
+        }
+      }
+    }
+
+    .plans-list {
+      gap: 0.55rem;
+    }
+
+    .plans-card-body .plans-scroll,
+    .chart-body.tasks-list-body > .tasks-list,
+    .chart-body.tasks-list-body > .empty-state-compact {
+      max-height: 300px; // Reduz no smartphone
+    }
+
+    .calendar-body {
+      overflow-x: auto;
+      padding: 0.4rem;
+      scrollbar-width: thin;
+    }
+
+    .calendar-body .simple-calendar {
+      min-width: 520px;
+
+      table {
+        border-spacing: 0.18rem;
+      }
+
+      .day {
+        border-radius: 8px;
+        height: 58px;
+        min-height: 58px;
+        padding: 0.22rem;
+      }
+
+      .calendar-day .calendar-task {
+        font-size: 0.58rem;
+        padding: 0.12rem 0.28rem;
+      }
+
+      .calendar-heading {
+        align-items: stretch;
+        flex-direction: row;
+        gap: 0.45rem;
+        margin: -0.4rem -0.4rem 0.45rem;
+        padding: 0.65rem 0.7rem;
+
+        .calendar-title {
+          align-items: center;
+          display: flex;
+          font-size: 0.86rem;
+        }
+
+        a {
+          justify-content: center;
+          padding: 0.4rem 0.5rem;
+        }
+      }
+    }
+
+    .tasks-list {
+      gap: 0.55rem;
+      padding: 0.65rem;
+
+      .task-item {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 10px;
+        padding: 0.75rem;
+
+        .task-item-header {
+          align-items: flex-start;
+
+          .task-title {
+            font-size: 0.9rem;
+            line-height: 1.25;
+            overflow-wrap: anywhere;
+          }
+        }
+
+        .task-item-meta {
+          flex-direction: column;
+          gap: 0.2rem;
+          font-size: 0.74rem;
+          margin-top: 0.35rem;
+
+          span {
+            min-width: 0;
+            overflow-wrap: anywhere;
+          }
+        }
+      }
+    }
+
+    .offcanvas {
+      border-left: 0;
+
+      .offcanvas-header {
+        padding: 0.9rem 1rem;
+      }
+
+      .offcanvas-body {
+        padding: 0.75rem;
+      }
+    }
+
+    .modal-task-item {
+      flex-direction: column;
+
+      .modal-task-action {
+        margin-left: 0;
+        width: 100%;
+
+        a {
+          justify-content: center;
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+[data-bs-theme="dark"] .dashboard-tasks {
+  .calendar-body .simple-calendar {
+    .day {
+      background: #111827;
+      border-color: #273449;
+
+      &:hover {
+        border-color: rgba(var(--bs-primary-rgb), 0.34);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.24);
+      }
+    }
+
+    .today {
+      background: rgba(var(--bs-primary-rgb), 0.12);
+    }
+  }
+
+  .modal-task-item {
+    background: #111827;
+    border-color: #273449;
+
+    &:hover {
+      border-color: rgba(var(--bs-primary-rgb), 0.34);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.24);
+    }
+  }
+}

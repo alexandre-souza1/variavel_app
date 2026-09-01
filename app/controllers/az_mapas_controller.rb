@@ -3,10 +3,42 @@ class AzMapasController < ApplicationController
 
   # GET /az_mapas or /az_mapas.json
   def index
-    @az_mapas = AzMapa.all
+    scope = AzMapa.all
 
-    @data_inicio = AzMapa.minimum(:data)
-    @data_fim = AzMapa.maximum(:data)
+    if params[:data].present?
+      begin
+        filtro_data = Date.parse(params[:data])
+        scope = scope.where(data: filtro_data)
+      rescue Date::Error
+        scope = scope
+      end
+    end
+
+    if params[:tipo].present?
+      scope = scope.where(tipo: params[:tipo])
+    end
+
+    if params[:turno].present?
+      turno = params[:turno].to_i
+      scope = scope.where("turno @> ARRAY[?]::integer[]", [turno])
+    end
+
+    if params[:atingiu_meta].present?
+      scope = scope.where(atingiu_meta: ActiveModel::Type::Boolean.new.cast(params[:atingiu_meta]))
+    end
+
+    if params[:mes].present?
+      scope = scope.where("EXTRACT(MONTH FROM data) = ?", params[:mes].to_i)
+    end
+
+    if params[:ano].present?
+      scope = scope.where("EXTRACT(YEAR FROM data) = ?", params[:ano].to_i)
+    end
+
+    @az_mapas = scope.order(data: :desc)
+
+    @data_inicio = @az_mapas.minimum(:data)
+    @data_fim = @az_mapas.maximum(:data)
     @dias_periodo = (@data_fim - @data_inicio).to_i if @data_inicio && @data_fim
   end
 

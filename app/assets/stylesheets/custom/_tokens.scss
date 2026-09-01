@@ -1,0 +1,16 @@
+// ============================================================
+// TOKENS GLOBAIS DE INTERFACE
+// ============================================================
+// Valores compartilhados ficam aqui para evitar números espalhados
+// pelos componentes e facilitar ajustes futuros.
+
+:root {
+  --app-routine-day-width: 68px;
+  --app-routine-cell-min-height: 64px;
+  --app-routine-label-width: 280px;
+  --app-routine-summary-width: 120px;
+
+  --app-radius-sm: 6px;
+  --app-radius-md: 8px;
+  --app-radius-lg: 12px;
+}

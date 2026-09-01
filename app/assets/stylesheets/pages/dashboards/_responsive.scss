@@ -1,0 +1,370 @@
+@import "../../custom/breakpoints";
+
+// Ajustes de grids, filtros e paineis do dashboard de frotas.
+@media (max-width: $lg-max) {
+  .dashboard-page {
+    .charts-grid,
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .kpi-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-header .header-content {
+      flex-direction: column;
+      align-items: stretch;
+
+      .header-actions {
+        flex-wrap: wrap;
+      }
+    }
+  }
+}
+
+@media (max-width: $md-max) {
+  .dashboard-page {
+    padding: 1rem;
+
+    .kpi-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .kpi-card {
+      padding: 1rem;
+
+      .kpi-icon {
+        width: 44px;
+        height: 44px;
+
+        i {
+          font-size: 1.4rem;
+        }
+      }
+
+      .kpi-info .kpi-value {
+        font-size: 1.5rem;
+      }
+    }
+
+    .summary-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .quick-access .quick-access-inner {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+
+      .quick-access-links {
+        justify-content: center;
+      }
+    }
+  }
+}
+
+.placas-sector-page {
+  .filter-panel {
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.045);
+  }
+
+  .plates-detail-section {
+    .app-table-section__header {
+      margin-bottom: 0.75rem;
+    }
+
+    .table-responsive {
+      overflow-x: visible;
+    }
+
+    table {
+      min-width: 0;
+    }
+  }
+
+  .panel-heading {
+    min-width: 0;
+  }
+
+  .sector-status-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  }
+
+  .sector-status-card {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+      transform: translateY(-2px);
+    }
+
+    &.is-complete {
+      border-color: rgba(var(--bs-success-rgb), 0.45);
+    }
+
+    &.is-pending {
+      border-color: rgba(var(--bs-danger-rgb), 0.4);
+    }
+  }
+
+  .sector-status-title {
+    color: var(--bs-body-color);
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0.2rem 0 0.35rem;
+  }
+
+  .sector-status-summary {
+    color: var(--bs-secondary-color);
+    font-size: 0.82rem;
+    margin: 0 0 0.85rem;
+  }
+
+  .status-pill {
+    border: 1px solid transparent;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.35rem 0.65rem;
+  }
+
+  .status-pill--success {
+    background: rgba(var(--bs-success-rgb), 0.1);
+    border-color: rgba(var(--bs-success-rgb), 0.2);
+    color: var(--bs-success-text-emphasis, var(--bs-success));
+  }
+
+  .status-pill--danger {
+    background: rgba(var(--bs-danger-rgb), 0.1);
+    border-color: rgba(var(--bs-danger-rgb), 0.2);
+    color: var(--bs-danger-text-emphasis, var(--bs-danger));
+  }
+
+  .plates-detail-section {
+    .table-responsive {
+      padding-bottom: 0.25rem;
+    }
+
+    table {
+      font-size: 0.76rem;
+      margin-bottom: 0;
+      vertical-align: middle;
+
+      thead th {
+        background: var(--bs-tertiary-bg);
+        border-bottom-color: var(--bs-border-color);
+        color: var(--bs-secondary-color);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      > :not(caption) > * > * {
+        padding-left: 0.55rem !important;
+        padding-right: 0.55rem !important;
+      }
+
+      > :not(caption) > * > :nth-child(n + 6) {
+        padding-left: 0.25rem !important;
+        padding-right: 0.25rem !important;
+        text-align: center;
+      }
+
+      tbody td {
+        border-color: var(--bs-border-color);
+      }
+    }
+  }
+}
+
+@media (max-width: 1100px) {
+  .placas-sector-page .plates-detail-section .table-responsive {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: $sm-max) {
+  .placas-sector-page {
+    padding-left: 1rem;
+    padding-right: 1rem;
+
+    .dashboard-header {
+      margin-bottom: 1.5rem;
+
+      h1 {
+        font-size: 1.4rem;
+      }
+    }
+
+    .sector-status-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .sector-status-card .app-panel__body {
+      padding-left: 0.7rem;
+      padding-right: 0.7rem;
+    }
+
+    .sector-status-title {
+      font-size: 1.15rem;
+    }
+
+    .sector-status-summary {
+      font-size: 0.75rem;
+    }
+
+    .status-pill {
+      font-size: 0.65rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-page {
+    .kpi-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .chart-card .chart-header {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+
+    .info-card .info-card-header {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+
+    .vehicle-list li {
+      flex-wrap: wrap;
+      gap: 0.25rem;
+    }
+  }
+}
+
+// ============================================================
+// PAINÉIS DA DASHBOARD
+// Mantém a mesma linguagem visual dos painéis do módulo financeiro.
+// ============================================================
+
+.dashboard-page {
+  .app-panel {
+    border-radius: 16px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.045);
+    overflow: hidden;
+  }
+
+  .app-panel__header {
+    align-items: flex-start;
+    background: transparent;
+    border-bottom: 0;
+    min-height: 58px;
+    padding: 0.95rem 1.25rem 0.8rem;
+    position: relative;
+
+    &::after {
+      border-bottom: 1px solid var(--bs-border-color);
+      bottom: 0;
+      content: "";
+      left: 1.25rem;
+      position: absolute;
+      right: 1.25rem;
+    }
+  }
+
+  .app-panel__body {
+    padding: 1rem 1.25rem;
+  }
+
+  .chart-card .chart-header,
+  .info-card .info-card-header {
+    background: transparent;
+    border: 0;
+  }
+
+  .dashboard-panel-heading {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .dashboard-panel-kicker {
+    color: var(--bs-primary);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .dashboard-panel-heading h2 {
+    color: var(--bs-body-color);
+    font-size: 0.92rem;
+    font-weight: 650;
+    line-height: 1.2;
+    margin: 0.18rem 0 0;
+  }
+
+  .dashboard-panel-heading small {
+    color: var(--bs-secondary-color);
+    font-size: 0.73rem;
+    line-height: 1.35;
+    margin-top: 0.2rem;
+  }
+
+  .app-panel .chart-actions {
+    align-self: center;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: $md-max) {
+  .dashboard-page {
+    .app-panel__header {
+      padding: 0.85rem 1rem 0.7rem;
+
+      &::after {
+        left: 1rem;
+        right: 1rem;
+      }
+    }
+
+    .app-panel__body {
+      padding: 0.9rem 1rem;
+    }
+
+    .chart-header {
+      align-items: stretch;
+      text-align: left;
+    }
+
+    .chart-actions {
+      justify-content: space-between;
+      margin-top: 0.65rem;
+      width: 100%;
+
+      .dropdown {
+        flex: 1;
+      }
+
+      .dropdown > button {
+        width: 100%;
+      }
+    }
+
+    .info-card-header {
+      align-items: flex-start;
+      text-align: left;
+    }
+  }
+}

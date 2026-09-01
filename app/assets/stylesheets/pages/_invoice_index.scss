@@ -1,3 +1,6 @@
+// Indice de notas: cabecalho, indicadores, filtros, tabela de resultados e paginacao.
+@import "../custom/breakpoints";
+
 .invoice-index-page {
   max-width: 1480px;
   margin: 0 auto;
@@ -148,7 +151,7 @@
     .invoice-index-actions { justify-content: flex-start; }
   }
 
-  @media (max-width: 575.98px) {
+  @media (max-width: $sm-max) {
     padding: 1rem .7rem 2rem;
     .invoice-index-summary { gap: .55rem; }
     .invoice-index-summary > div { min-height: 96px; padding: .75rem; }

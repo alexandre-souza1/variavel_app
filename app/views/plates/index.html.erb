@@ -1,23 +1,26 @@
 <div class="container py-4">
 
   <!-- Cabeçalho -->
-  <div class="card border-0 shadow-lg mb-4">
-    <div class="card-header bg-primary text-white py-3">
+  <div class="border-0 mb-4">
+    <div class="mapas-dashboard-header">
       <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h3 class="mb-0 fw-bold">
+            <i class="bi bi-truck-front-fill text-primary me-2"></i>
+            <%= params[:status] == "inactive" ? "Placas Inativas" : "Placas Ativas" %>
+          </h3>
+          <p>Lista de placas da operação.</p>
+        </div>
+        <div class="justify-content-end d-flex align-items-end gap-3">
+          <%= link_to new_plate_path, class: "btn btn-light" do %>
+            <i class="bi bi-plus-circle-fill me-1"></i>
+            Nova Placa
+          <% end %>
 
-        <h3 class="mb-0 fw-bold">
-          <i class="bi bi-truck-front-fill me-2"></i>
-          <%= params[:status] == "inactive" ? "Placas Inativas" : "Placas Ativas" %>
-        </h3>
-
-        <%= link_to new_plate_path, class: "btn btn-light" do %>
-          <i class="bi bi-plus-circle-fill me-1"></i>
-          Nova Placa
-        <% end %>
-
-        <%= link_to plates_path(status: params[:status] == "inactive" ? nil : "inactive"), class: "btn btn-outline-light ms-2" do %>
-          <%= params[:status] == "inactive" ? "Placas ativas" : "Placas inativas" %>
-        <% end %>
+          <%= link_to plates_path(status: params[:status] == "inactive" ? nil : "inactive"), class: "btn btn-outline-primary ms-2" do %>
+            <%= params[:status] == "inactive" ? "Placas ativas" : "Placas inativas" %>
+          <% end %>
+        </div>
 
       </div>
     </div>

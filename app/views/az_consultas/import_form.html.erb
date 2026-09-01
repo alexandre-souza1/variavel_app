@@ -51,6 +51,54 @@
     </div>
   </div>
 
+  <div class="card border-0 shadow-sm mt-4">
+    <div class="card-body p-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+          <p class="text-uppercase text-muted small fw-semibold mb-1">Armazém</p>
+          <h2 class="h5 mb-0">Lançamento manual de resultado diário</h2>
+        </div>
+        <%= link_to "Abrir cadastro completo", az_mapas_path, class: "btn btn-outline-secondary btn-sm" %>
+      </div>
+
+      <%= form_with model: @az_mapa, url: az_mapas_path, class: "row g-3", local: true, data: { controller: "resultado" } do |form| %>
+        <div class="col-12 col-md-6 col-lg-3">
+          <%= form.label :data, "Data", class: "form-label fw-semibold" %>
+          <%= form.date_field :data, required: true, class: "form-control" %>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+          <%= form.label :tipo, "Tipo de meta", class: "form-label fw-semibold" %>
+          <%= form.select :tipo,
+                AzMapa.tipos.keys.map { |k| [k.humanize.titleize, k] },
+                {},
+                { required: true, class: "form-select", data: { resultado_target: "tipo", action: "change->resultado#atualizar" } } %>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+          <div class="mb-2" data-resultado-target="grupo" style="display: none;">
+            <%= form.label :resultado, "Resultado", class: "form-label fw-semibold" %>
+            <div class="input-group" data-resultado-target="campoWrapper"></div>
+            <span class="input-group-text d-none" data-resultado-target="sufixo"></span>
+            <small data-resultado-target="unidade" class="text-muted d-block mt-1"></small>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3 d-flex align-items-end">
+          <div class="form-check mt-3">
+            <%= form.check_box :atingiu_meta, class: "form-check-input", id: "az_mapas_import_atingiu_meta" %>
+            <%= form.label :atingiu_meta, "Atingiu meta?", class: "form-check-label", for: "az_mapas_import_atingiu_meta" %>
+          </div>
+        </div>
+
+        <div class="col-12 d-flex flex-wrap align-items-center gap-3 pt-2 border-top">
+          <%= form.submit "Salvar lançamento", class: "btn btn-primary" %>
+          <span class="text-muted small">Os turnos do tipo escolhido são gerados automaticamente.</span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
   <% if @recent_imports.any? %>
     <section class="mt-5">
       <h2 class="h5 mb-3">Últimas importações</h2>

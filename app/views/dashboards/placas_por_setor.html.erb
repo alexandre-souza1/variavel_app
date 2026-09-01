@@ -65,17 +65,19 @@
   </div>
 
   <!-- Tabela de placas -->
-  <section class="app-panel plates-detail-panel">
-    <div class="app-panel__header">
+  <section class="app-table-section plates-detail-section">
+    <header class="app-table-section__header">
       <div class="panel-heading">
         <span class="app-panel__kicker"><i class="bi bi-calendar3 me-1"></i> Operação</span>
         <h2 class="app-panel__title">Detalhamento diário</h2>
         <small class="app-panel__subtitle">Movimentação das placas no período selecionado.</small>
       </div>
-    </div>
-    <div class="app-panel__body table-responsive">
-      <table class="table table-bordered table-hover table-sm">
-        <thead class="table-light">
+    </header>
+    <div class="app-table-section__body">
+      <div class="app-table-shell">
+        <div class="table-responsive">
+          <table class="table app-table app-table--data">
+        <thead>
           <tr>
             <th>Setor</th>
             <th>Placa</th>
@@ -111,14 +113,16 @@
                   <% if dias_rodados.include?(dia) %>
                     <span class="badge bg-success rounded-circle" style="width: 24px; height: 24px; display: inline-block;">✓</span>
                   <% else %>
-                    <span class="badge bg-light text-muted rounded-circle" style="width: 24px; height: 24px; display: inline-block;">-</span>
+                    <span class="badge bg-body-secondary text-body-secondary rounded-circle" style="width: 24px; height: 24px; display: inline-block;">-</span>
                   <% end %>
                 </td>
               <% end %>
             </tr>
           <% end %>
         </tbody>
-      </table>
+          </table>
+        </div>
+      </div>
     </div>
   </section>
 

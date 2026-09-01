@@ -1,0 +1,6 @@
+// Checklist: apresenta fotos anexadas em uma proporcao fixa sem distorcao.
+.checklist-photo {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}

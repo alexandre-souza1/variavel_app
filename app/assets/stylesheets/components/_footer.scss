@@ -1,3 +1,4 @@
+// Rodape global: mantem o footer no fim da viewport em layouts flexiveis.
 body {
   display: flex;
   flex-direction: column;
@@ -5,6 +6,8 @@ body {
 }
 
 footer {
+  background-color: var(--bs-footer-bg, #f8f9fa);
+  color: var(--bs-footer-color, #6c757d);
   margin-top: auto;
   padding: 1rem;
 }

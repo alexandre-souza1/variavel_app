@@ -1,3 +1,5 @@
+@import "../custom/breakpoints";
+
 // ============================================================
 // DOWNLOADS - CENTRAL DE PADRÕES
 // ============================================================
@@ -627,7 +629,7 @@
 // TABLET
 // ============================================================
 
-@media (max-width: 768px) {
+@media (max-width: $md-max) {
 
   .downloads-page {
     padding: 1.25rem 1rem;
@@ -673,7 +675,7 @@
 // MOBILE
 // ============================================================
 
-@media (max-width: 576px) {
+@media (max-width: $sm-max) {
 
   .downloads-page {
     padding: 0.85rem 0.75rem;

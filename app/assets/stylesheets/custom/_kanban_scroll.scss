@@ -1,0 +1,19 @@
+// Kanban: sincroniza as barras de rolagem superior e inferior do quadro.
+.kanban-scroll-top {
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 16px;
+}
+
+.kanban-scroll-top > div {
+  height: 1px;
+}
+
+.kanban-scroll-bottom {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.kanban-scroll-bottom::-webkit-scrollbar {
+  height: 6px;
+}

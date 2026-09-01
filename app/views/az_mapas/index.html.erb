@@ -1,4 +1,4 @@
-<div class="app-page">
+<div class="mapas-all-page az-mapas-page app-page">
   <div class="app-page-header">
     <div>
       <p class="app-page-eyebrow"><i class="bi bi-calendar-check me-1"></i>Resultados · AZ</p>
@@ -13,15 +13,15 @@
     </div>
   </div>
 
-  <div>
+  <div class="container">
     <div class="card shadow-sm rounded mb-4">
       <div class="card-body">
         <div class="row align-items-center">
           <div class="col-md-6">
             <h2 class="mb-1">
               <i class="bi bi-calendar-date"></i>
-              <%= @data_inicio&.strftime("%d/%m/%Y") %> a
-              <%= @data_fim&.strftime("%d/%m/%Y") %>
+              <%= @data_inicio&.strftime("%d/%m/%Y") || "-" %> a
+              <%= @data_fim&.strftime("%d/%m/%Y") || "-" %>
             </h2>
             <p class="text-muted mb-0">
               Total de Lançamentos: <%= @az_mapas.size %>
@@ -29,9 +29,9 @@
           </div>
           <div class="col-md-6 text-md-end">
             <% if current_user.admin? %>
-            <div class="d-flex gap-2 flex-row-reverse">
-              <%= button_to "Apagar todos os Lançamentos", destroy_all_az_mapas_path, method: :delete, data: { turbo_confirm: "Tem certeza que deseja apagar TODOS os Lançamentos?" }, class: "btn btn-danger" %>
-            </div>
+              <div class="d-flex gap-2 flex-row-reverse">
+                <%= button_to "Apagar todos os Lançamentos", destroy_all_az_mapas_path, method: :delete, data: { turbo_confirm: "Tem certeza que deseja apagar TODOS os Lançamentos?" }, class: "btn btn-danger" %>
+              </div>
             <% end %>
             <% if @data_inicio && @data_fim && @dias_periodo %>
               <p class="mb-1"><strong>Período:</strong> <%= @data_inicio.strftime("%d/%m/%Y") %> a <%= @data_fim.strftime("%d/%m/%Y") %></p>
@@ -42,65 +42,132 @@
       </div>
     </div>
 
-    <!-- Tabela de Mapas -->
-    <div class="card shadow-sm rounded mb-4">
-      <div class="card-header bg-light border-bottom">
-        <h5 class="mb-0"><i class="bi bi-map-fill me-2"></i>Detalhes dos Lançamentos</h5>
+    <div class="mapas-list-section">
+      <div class="mapas-list-section__header">
+        <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtros e lançamentos</h5>
       </div>
-      <div class="card-body">
-          <div class="table-responsive">
-            <div class="app-table-shell"><table class="table app-table app-table--data">
-              <thead class="table-primary text-center">
+
+      <div class="mapas-list-section__body">
+        <%= form_with url: az_mapas_path, method: :get, local: true, class: "mapas-filters" do |f| %>
+          <div>
+            <%= f.label :data, "Data", class: "form-label small text-muted mb-1" %>
+            <%= f.date_field :data, value: params[:data], class: "form-control" %>
+          </div>
+          <div>
+            <%= f.label :tipo, "Tipo", class: "form-label small text-muted mb-1" %>
+            <%= f.select :tipo,
+              options_for_select([
+                ["Todos", ""],
+                ["Tempo de atendimento", "tempo_atendimento"],
+                ["Eficiência de carregamento", "eficiencia_carregamento"],
+                ["Eficiência de descarga", "eficiencia_descarga"]
+              ], params[:tipo]),
+              {},
+              class: "form-select" %>
+          </div>
+          <div>
+            <%= f.label :turno, "Turno", class: "form-label small text-muted mb-1" %>
+            <%= f.select :turno,
+              options_for_select([["Todos", ""], ["A", 0], ["B", 1], ["C", 2]], params[:turno]),
+              {},
+              class: "form-select" %>
+          </div>
+          <div>
+            <%= f.label :atingiu_meta, "Meta", class: "form-label small text-muted mb-1" %>
+            <%= f.select :atingiu_meta,
+              options_for_select([["Todos", ""], ["Sim", true], ["Não", false]], params[:atingiu_meta]),
+              {},
+              class: "form-select" %>
+          </div>
+          <div>
+            <%= f.label :mes, "Mês", class: "form-label small text-muted mb-1" %>
+            <%= f.select :mes,
+              options_for_select([
+                ["Todos", ""],
+                ["Janeiro", "01"], ["Fevereiro", "02"], ["Março", "03"], ["Abril", "04"], ["Maio", "05"], ["Junho", "06"],
+                ["Julho", "07"], ["Agosto", "08"], ["Setembro", "09"], ["Outubro", "10"], ["Novembro", "11"], ["Dezembro", "12"]
+              ], params[:mes]),
+              {},
+              class: "form-select" %>
+          </div>
+          <div>
+            <%= f.label :ano, "Ano", class: "form-label small text-muted mb-1" %>
+            <%= f.select :ano,
+              options_for_select([['Todos', '']] + (Date.current.year - 2..Date.current.year + 1).map { |year| [year, year] }, params[:ano]),
+              {},
+              class: "form-select" %>
+          </div>
+          <div class="d-flex align-items-end gap-2">
+            <%= f.submit "Filtrar", class: "btn btn-primary" %>
+            <%= link_to "Limpar", az_mapas_path, class: "btn btn-outline-secondary btn-sm" %>
+          </div>
+          <div>
+            <span class="text-muted small">Exibindo <%= @az_mapas.size %> lançamento(s)</span>
+          </div>
+        <% end %>
+
+        <div class="table-responsive">
+          <div class="app-table-shell">
+            <table class="table app-table app-table--data az-mapas-table">
+              <thead>
                 <tr>
                   <th>Data</th>
                   <th>Turnos</th>
                   <th>Tipo</th>
-                  <th>Resultados</th>
-                  <th>Atingiu Meta</th>
+                  <th>Resultado</th>
+                  <th>Meta</th>
                   <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
-                <% @az_mapas.each do |az_mapa| %>
+                <% if @az_mapas.any? %>
+                  <% @az_mapas.each do |az_mapa| %>
+                    <tr>
+                      <td><%= az_mapa.data&.strftime("%d/%m/%Y") %></td>
+                      <td><%= az_mapa.turno.map { |t| turno_label(t) }.join(", ") %></td>
+                      <td><%= az_mapa.tipo.humanize.titleize %></td>
+                      <td>
+                        <% case az_mapa.tipo.to_s %>
+                        <% when "tempo_atendimento" %>
+                          <% decimal = az_mapa.resultado.to_f %>
+                          <% horas = decimal.floor %>
+                          <% minutos = ((decimal - horas) * 60).round %>
+                          <%= "#{horas}:#{minutos.to_s.rjust(2, '0')} h" %>
+                        <% when "eficiencia_carregamento", "eficiencia_descarga" %>
+                          <%= number_to_percentage(az_mapa.resultado, precision: 2) %>
+                        <% else %>
+                          <%= az_mapa.resultado %>
+                        <% end %>
+                      </td>
+                      <td>
+                        <% if az_mapa.atingiu_meta? %>
+                          <span class="badge bg-success">Sim</span>
+                        <% else %>
+                          <span class="badge bg-danger">Não</span>
+                        <% end %>
+                      </td>
+                      <td class="text-end">
+                        <div class="btn-group btn-group-sm" role="group">
+                          <%= link_to edit_az_mapa_path(az_mapa), class: 'icon-btn', title: 'Editar mapa AZ', aria: { label: 'Editar mapa AZ' } do %>
+                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                          <% end %>
+                          <%= link_to az_mapa_path(az_mapa), data: { turbo_method: :delete, turbo_confirm: 'Tem certeza?' }, class: 'icon-btn danger', title: 'Excluir mapa AZ', aria: { label: 'Excluir mapa AZ' } do %>
+                            <i class="bi bi-trash3" aria-hidden="true"></i>
+                          <% end %>
+                        </div>
+                      </td>
+                    </tr>
+                  <% end %>
+                <% else %>
                   <tr>
-                    <td><%= az_mapa.data&.strftime("%d/%m/%Y") %></td>
-                    <td><%= az_mapa.turno.map { |t| turno_label(t) }.join(", ") %></td>
-                    <td><%= az_mapa.tipo.humanize.titleize %></td>
-                    <td>
-                      <% case az_mapa.tipo.to_s %>
-                      <% when "tempo_atendimento" %>
-                        <% decimal = az_mapa.resultado.to_f %>
-                        <% horas = decimal.floor %>
-                        <% minutos = ((decimal - horas) * 60).round %>
-                        <%= "#{horas}:#{minutos.to_s.rjust(2, '0')} h" %>
-                      <% when "eficiencia_carregamento", "eficiencia_descarga" %>
-                        <%= number_to_percentage(az_mapa.resultado, precision: 2) %>
-                      <% else %>
-                        <%= az_mapa.resultado %>
-                      <% end %>
-                    </td>
-                    <td>
-                      <% if az_mapa.atingiu_meta? %>
-                        <span class="badge bg-success">Sim</span>
-                      <% else %>
-                        <span class="badge bg-danger">Não</span>
-                      <% end %>
-                    </td>
-                    <td class="text-end">
-                      <%= link_to edit_az_mapa_path(az_mapa), class: 'icon-btn', title: 'Editar mapa AZ', aria: { label: 'Editar mapa AZ' } do %>
-                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                      <% end %>
-                      <%= link_to az_mapa_path(az_mapa), data: { turbo_method: :delete, turbo_confirm: 'Tem certeza?' }, class: 'icon-btn danger', title: 'Excluir mapa AZ', aria: { label: 'Excluir mapa AZ' } do %>
-                        <i class="bi bi-trash3" aria-hidden="true"></i>
-                      <% end %>
-                    </td>
+                    <td colspan="6" class="text-center text-muted py-4">Nenhum lançamento encontrado para os filtros aplicados.</td>
                   </tr>
                 <% end %>
               </tbody>
-            </table></div>
+            </table>
           </div>
+        </div>
       </div>
-      <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
     </div>
   </div>
 </div>

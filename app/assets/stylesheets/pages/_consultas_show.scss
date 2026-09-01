@@ -1,6 +1,8 @@
 @import "../config/bootstrap_variables";
 
 // Estilos gerais
+@import "../custom/breakpoints";
+
 .driver-report-container {
   min-height: 100vh;
   padding-bottom: 2rem;
@@ -113,7 +115,7 @@
   }
 
   // Responsividade
-  @media (max-width: 768px) {
+  @media (max-width: $md-max) {
     .header {
       text-align: center;
 

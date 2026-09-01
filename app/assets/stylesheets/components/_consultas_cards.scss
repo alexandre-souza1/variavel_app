@@ -1,3 +1,5 @@
+@import "../custom/breakpoints";
+
 .card-category {
   cursor: pointer;
   transition: transform 0.2s ease;
@@ -15,7 +17,7 @@
   box-shadow: 0 0 15px rgba(0,0,0,0.2);
 
   // Media Queries específicas para .card-category
-  @media (min-width: 768px) {
+  @media (min-width: $md) {
     height: 200px;
     font-size: 28px;
   }
@@ -60,18 +62,18 @@
   grid-gap: 16px;
 
   // Media Queries específicas para .cards
-  // Smallest device (100px - 575px)
-  @media (min-width: 100px) and (max-width: 575px) {
+  // Mobile remains a single column until the small Bootstrap breakpoint.
+  @media (max-width: $sm-max) {
     grid-template-columns: 1fr;
   }
 
   // Small devices (576px and up)
-  @media (min-width: 576px) {
+  @media (min-width: $sm) {
     grid-template-columns: 1fr;
   }
 
   // Medium devices (768px and up)
-  @media (min-width: 768px) {
+  @media (min-width: $md) {
       .carousel-img {
     height: 70vh; /* aumenta para desktop */
   }
@@ -79,12 +81,8 @@
   }
 
   // Large devices (992px and up)
-  @media (min-width: 992px) {
+  @media (min-width: $lg) {
     grid-template-columns: 1fr 1fr 1fr;
   }
 
-  // Extra large devices (1200px and up)
-  @media (min-width: 1200px) {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
 }

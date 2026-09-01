@@ -1,17 +1,18 @@
-// Import page-specific CSS files here.
-@forward "consultas_show";
-@forward "az_consultas_show";
-@forward "invoice_show";
-@forward "invoice_index";
-@forward "admin_catalog";
-@forward "supplier_show";
-@forward "az_consultas_new";
-@forward "home";
-@forward "consultas";
-@forward "routines";
-@forward "dashboards";
-@forward "fleet_availability_email_settings";
-@forward "dashboard_finance.scss";
-@forward "downloads";
-@forward "invoice_entry";
-@forward "mechanic_tasks";
+// Indice de paginas: importa cada escopo de tela na ordem do manifesto.
+@import "consultas_show";
+@import "az_consultas_show";
+@import "invoice_show";
+@import "invoice_index";
+@import "admin_catalog";
+@import "supplier_show";
+@import "az_consultas_new";
+@import "home";
+@import "consultas";
+@import "routines";
+@import "tasks_index";
+@import "dashboards";
+@import "fleet_availability_email_settings";
+@import "dashboard_finance";
+@import "downloads";
+@import "invoice_entry";
+@import "mechanic_tasks";

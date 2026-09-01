@@ -1,3 +1,5 @@
+@import "../custom/breakpoints";
+
 /* SCSS - Media Queries encapsuladas nos seletores corretos */
 .card-category-index {
   cursor: pointer;
@@ -16,7 +18,7 @@
   box-shadow: 0 0 15px rgba(0,0,0,0.2);
 
   // Media Queries específicas para .card-category-index
-  @media (min-width: 768px) {
+  @media (min-width: $md) {
     height: 200px;
     font-size: 28px;
   }
@@ -32,23 +34,20 @@
   grid-gap: 16px;
 
   // Media Queries específicas para .cards-index
-  @media (min-width: 100px) and (max-width: 575px) {
+  @media (max-width: $sm-max) {
     grid-template-columns: 1fr;
   }
 
-  @media (min-width: 576px) {
+  @media (min-width: $sm) {
     grid-template-columns: 1fr;
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: $md) {
     grid-template-columns: 1fr 1fr;
   }
 
-  @media (min-width: 992px) {
+  @media (min-width: $lg) {
     grid-template-columns: 1fr 1fr;
   }
 
-  @media (min-width: 1200px) {
-    grid-template-columns: 1fr 1fr;
-  }
 }

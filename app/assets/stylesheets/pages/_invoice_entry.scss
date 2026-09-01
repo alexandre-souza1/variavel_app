@@ -1,3 +1,6 @@
+// Lancamento de notas: formulario, campos aninhados, anexos e acoes responsivas.
+@import "../custom/breakpoints";
+
 .invoice-entry-page {
   max-width: none;
   padding: 2rem 1.5rem;
@@ -138,7 +141,7 @@
     margin-bottom: .25rem !important;
   }
 
-  @media (max-width: 767px) {
+  @media (max-width: $md-max) {
     [data-invoice-numbers-target="container"] .nested-fields {
       flex-wrap: wrap;
     }
@@ -175,7 +178,7 @@
 
   .invoice-form-card .btn-primary { padding-inline: 1.5rem; }
 
-  @media (max-width: 767px) {
+  @media (max-width: $md-max) {
     padding: 1rem .75rem;
     .invoice-form-card > .card-body { padding: 1rem; }
     .dashboard-header .header-actions { width: 100%; }

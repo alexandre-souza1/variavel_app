@@ -1,3 +1,7 @@
-// Import page-specific CSS files here.
-@forward "components";
-@forward "variables";
+// Índice de customizações compartilhadas: variáveis, tokens e elementos globais.
+// Keep the shared foundation before the app components so page-level styles can
+// override it predictably without tripping over late custom imports.
+@import "variables";
+@import "tokens";
+@import "breakpoints";
+@import "components";

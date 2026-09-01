@@ -35,14 +35,14 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body class="app-shell">
   <%= render "shared/navbar" %>
   <%= render "layouts/#{secondary_nav}" if secondary_nav.present? %>
   <div id="flash-container">
     <%= render 'shared/flashes' %>
   </div>
-  <main class="flex-grow-1">
-    <div class="m-5">
+  <main class="app-main flex-grow-1">
+    <div class="app-content m-5">
     <%= yield %>
     </div>
   </main>

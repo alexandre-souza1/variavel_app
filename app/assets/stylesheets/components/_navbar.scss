@@ -1,3 +1,5 @@
+@import "../custom/breakpoints";
+
 // ============================================================
 // NAVBAR PRINCIPAL
 // ============================================================
@@ -726,7 +728,7 @@
 // ============================================================
 
 // Tablets e telas médias (até 992px)
-@media (max-width: 992px) {
+@media (max-width: $lg-max) {
   .app-navbar {
     .navbar-nav {
       gap: 0.2rem;
@@ -778,7 +780,7 @@
 }
 
 // Smartphones (até 768px)
-@media (max-width: 768px) {
+@media (max-width: $md-max) {
   .app-navbar {
     .navbar-brand .brand-text {
       font-size: 1rem;

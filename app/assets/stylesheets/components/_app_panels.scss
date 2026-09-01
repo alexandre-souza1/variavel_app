@@ -1,3 +1,5 @@
+@import "../custom/breakpoints";
+
 // Superfícies reutilizáveis do Workstation.
 .app-panel {
   background: var(--bs-body-bg);
@@ -77,6 +79,8 @@
 
   // O Bootstrap pinta cada célula individualmente. Mantemos a cor da
   // superfície da tabela e deixamos o hover ser controlado por nós.
+  // Os !important são intencionais: as variáveis e o hover da tabela do
+  // Bootstrap também usam prioridade alta.
   > :not(caption) > * > * {
     background-color: var(--bs-body-bg) !important;
     border-bottom-width: 0 !important;
@@ -255,7 +259,8 @@
     }
   }
 
-  .mapas-all-table {
+  .mapas-all-table,
+  .az-mapas-table {
     font-size: .74rem;
     min-width: 0;
     table-layout: fixed;
@@ -275,6 +280,23 @@
     th:nth-child(6), td:nth-child(6) { line-height: 1.15; }
     th:nth-child(14), td:nth-child(14) { width: 112px; }
     td:last-child { overflow: visible; }
+  }
+}
+
+.az-mapas-page {
+  .mapas-filters {
+    grid-template-columns: repeat(4, minmax(140px, 1fr)) 120px 100px minmax(150px, 180px);
+  }
+
+  .mapas-filters > div:last-child {
+    align-items: end;
+    display: flex;
+    gap: .5rem;
+    justify-content: flex-start;
+  }
+
+  .mapas-filters .btn {
+    min-height: 38px;
   }
 }
 
@@ -337,13 +359,10 @@
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: $sm-max) {
   .app-table { font-size: .82rem; min-width: 560px; }
   .app-table thead th,
   .app-table tbody td { padding-left: .75rem; padding-right: .75rem; }
-}
-
-@media (max-width: 576px) {
   .app-panel__header { padding: .85rem 1rem .7rem; }
   .app-panel__header::after { left: 1rem; right: 1rem; }
   .app-panel__body { padding-left: 1rem; padding-right: 1rem; }

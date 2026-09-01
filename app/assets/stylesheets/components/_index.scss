@@ -1,15 +1,16 @@
-// Import your components CSS files here.
-@forward "alert";
-@forward "avatar";
-@forward "navbar";
-@forward "notifications";
-@forward "consultas_cards";
-@forward "consultas_cards_index";
-@forward "footer";
-@forward "components/comments";
-@forward "components/kanban";
-@forward "tasks";
-@forward "fleet_availability";
-@forward "custom_cards";
-@forward "app_panels";
-@forward "app_modals";
+// Indice de componentes: a ordem abaixo define a ordem de emissao do CSS.
+// Cada import aponta para um grupo reutilizavel da interface.
+@import "alert";
+@import "avatar";
+@import "navbar";
+@import "notifications";
+@import "consultas_cards";
+@import "consultas_cards_index";
+@import "footer";
+@import "comments";
+@import "kanban";
+@import "tasks";
+@import "fleet_availability";
+@import "custom_cards";
+@import "app_panels";
+@import "app_modals";

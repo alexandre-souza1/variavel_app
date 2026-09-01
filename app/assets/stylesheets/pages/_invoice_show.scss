@@ -1,3 +1,6 @@
+// Detalhe da nota: status, fornecedor, documentos, observacoes e auditoria.
+@import "../custom/breakpoints";
+
 .invoice-show-page {
   .az-report-header {
     margin-bottom: 1.35rem;
@@ -105,7 +108,7 @@
     font-size: .78rem;
   }
 
-  @media (max-width: 767.98px) {
+  @media (max-width: $md-max) {
     padding-inline: .75rem;
 
     .az-report-header-content { gap: 1rem; }

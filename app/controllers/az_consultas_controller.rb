@@ -13,6 +13,7 @@ class AzConsultasController < ApplicationController
 
   def import_form
     @recent_imports = AzRvImport.recent.limit(10)
+    @az_mapa = AzMapa.new
   end
 
   def import

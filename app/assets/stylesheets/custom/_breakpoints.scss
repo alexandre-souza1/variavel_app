@@ -1,0 +1,12 @@
+// ============================================================
+// BREAKPOINTS RESPONSIVOS
+// ============================================================
+// Mantemos os limites alinhados aos breakpoints do Bootstrap. Os valores
+// maximos usam 0.02px a menos para nao sobrepor o proximo breakpoint.
+
+$sm: 576px;
+$sm-max: 575.98px;
+$md: 768px;
+$md-max: 767.98px;
+$lg: 992px;
+$lg-max: 991.98px;
