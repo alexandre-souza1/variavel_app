@@ -1,35 +1,19 @@
-<div class="container py-4">
+<div class="app-page">
+  <div class="app-page-header">
+    <div>
+      <p class="app-page-eyebrow"><i class="bi bi-shield-lock me-1"></i>Administração</p>
+      <h1><i class="bi bi-person-plus-fill me-2"></i>Criar Novo Usuário</h1>
+      <p>Cadastre um novo usuário com seus acessos e permissões.</p>
+    </div>
+    <div class="app-page-actions">
+      <%= link_to admin_users_path, class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left me-1"></i> Voltar
+      <% end %>
+    </div>
+  </div>
 
-  <div class="row justify-content-center">
-
-    <div class="col-xl-8">
-
-      <div class="card border-0 shadow-lg">
-
-        <!-- Cabeçalho -->
-        <div class="card-header bg-primary text-white py-3">
-
-          <div class="d-flex justify-content-between align-items-center">
-
-            <h3 class="mb-0 fw-bold">
-              <i class="bi bi-person-plus-fill me-2"></i>
-              Criar Novo Usuário
-            </h3>
-
-            <%= link_to admin_users_path,
-                class: "btn btn-light" do %>
-
-              <i class="bi bi-arrow-left"></i>
-              Voltar
-
-            <% end %>
-
-          </div>
-
-        </div>
-
-        <!-- Corpo -->
-        <div class="card-body p-5">
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-5">
 
           <% if @user.errors.any? %>
             <div class="alert alert-danger">
@@ -118,11 +102,30 @@
 
               </div>
 
+              <div class="mb-4">
+
+                <%= f.label :sector, "Setor", class: "form-label fw-semibold" %>
+
+                <div class="input-group">
+
+                  <span class="input-group-text">
+                    <i class="bi bi-building"></i>
+                  </span>
+
+                  <%= f.select :sector,
+                      User::USER_SECTORS.map { |label, value| [label, value] },
+                      { include_blank: "Selecione um setor" },
+                      class: "form-select" %>
+
+                </div>
+
+              </div>
+
             <% end %>
 
             <!-- Segurança -->
 
-            <div class="bg-light rounded-3 p-4 mt-5">
+            <div class="border rounded-3 p-4 mt-5" style="background: var(--bs-tertiary-bg);">
 
               <h5 class="fw-bold mb-4">
                 <i class="bi bi-key-fill me-2"></i>
@@ -204,12 +207,6 @@
 
           <% end %>
 
-        </div>
-
       </div>
-
     </div>
-
   </div>
-
-</div>
