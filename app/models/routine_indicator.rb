@@ -105,12 +105,12 @@ class RoutineIndicator < ApplicationRecord
     if routine_indicator_targets.loaded?
       return routine_indicator_targets
         .select do |target|
-          target.starts_at <= date &&
+          (target.starts_at.blank? || target.starts_at <= date) &&
             (target.ends_at.blank? || target.ends_at >= date)
         end
         .sort_by do |target|
           [
-            -target.starts_at.to_time.to_i,
+            target.starts_at.blank? ? 0 : -target.starts_at.to_time.to_i,
             target.ends_at.nil? ? 1 : 0,
             target.ends_at || Date.new(9999, 12, 31)
           ]
@@ -119,7 +119,7 @@ class RoutineIndicator < ApplicationRecord
     end
 
     routine_indicator_targets
-      .where("starts_at <= ?", date)
+      .where("starts_at IS NULL OR starts_at <= ?", date)
       .where("ends_at IS NULL OR ends_at >= ?", date)
       .order(starts_at: :desc)
       .order(Arel.sql("ends_at IS NULL ASC"))

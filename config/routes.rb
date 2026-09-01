@@ -108,6 +108,16 @@ Rails.application.routes.draw do
   end
 
   resources :routines, only: %i[index show destroy] do
+    collection do
+      get :archived
+    end
+
+    member do
+      patch :close
+      patch :archive
+      patch :reopen
+    end
+
     resource :generator,
              only: %i[edit update],
              controller: :routine_generators

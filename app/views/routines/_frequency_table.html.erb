@@ -32,6 +32,7 @@
 
           <% indicators.each do |indicator| %>
             <% calculation = calculation_results[indicator.id] %>
+            <% routine_target = indicator.target_for(routine.period_start) %>
 
             <tr class="indicator-row">
               <td class="indicator-name">
@@ -43,6 +44,16 @@
 
               <td class="text-center goal-value">
                 <%= routine_value_display(indicator, calculation[:goal]) %>
+                <% if routine.open? %>
+                  <button type="button"
+                          class="routine-goal-trigger"
+                          data-bs-toggle="modal"
+                          data-bs-target="#routineGoalModal-<%= indicator.id %>"
+                          title="<%= routine_target ? 'Alterar meta do período' : 'Cadastrar meta para o período' %>"
+                          aria-label="<%= routine_target ? 'Alterar meta' : 'Cadastrar meta' %> para <%= indicator.name %>">
+                    <i class="bi <%= routine_target ? 'bi-pencil' : 'bi-plus-lg' %>"></i>
+                  </button>
+                <% end %>
               </td>
 
               <td
@@ -113,9 +124,23 @@
                 <% end %>
               <% end %>
             </tr>
+
           <% end %>
         <% end %>
       </tbody>
     </table>
   </div>
+
+  <% if routine.open? %>
+    <% categories.each do |category| %>
+      <% indicators_by_category[[frequency, category.id]].each do |indicator| %>
+        <% routine_target = indicator.target_for(routine.period_start) %>
+        <%= render "routines/goal_modal",
+                   routine: routine,
+                   indicator: indicator,
+                   category: category,
+                   target: routine_target %>
+      <% end %>
+    <% end %>
+  <% end %>
 </div>

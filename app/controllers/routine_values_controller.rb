@@ -3,6 +3,12 @@ class RoutineValuesController < ApplicationController
   before_action :set_routine_value
 
   def update
+    if @routine_value.routine.closed? || @routine_value.routine.archived?
+      render json: { error: "Esta rotina não aceita mais preenchimentos." },
+             status: :unprocessable_entity
+      return
+    end
+
     ActiveRecord::Base.transaction do
       @routine_value.assign_attributes(
         normalized_routine_value_params.merge(

@@ -6,9 +6,11 @@
       <div>
         <h1>
           <i class="bi bi-calendar-check"></i>
-          Rotinas
+          <%= @show_archived ? "Rotinas arquivadas" : "Rotinas" %>
         </h1>
-        <p class="subtitle">Histórico de rotinas geradas a partir dos templates</p>
+        <p class="subtitle">
+          <%= @show_archived ? "Histórico de rotinas encerradas e arquivadas" : "Rotinas abertas e encerradas" %>
+        </p>
       </div>
       <div class="header-actions">
         <%= link_to dashboard_path, class: "btn-outline" do %>
@@ -17,6 +19,11 @@
         <% end %>
         <%= link_to routine_templates_path, class: "btn-primary-solid" do %>
           <i class="bi bi-pie-chart-fill"></i> Painel de Gerots
+        <% end %>
+        <% unless @show_archived %>
+          <%= link_to archived_routines_path, class: "btn-outline" do %>
+            <i class="bi bi-archive me-1"></i> Arquivadas
+          <% end %>
         <% end %>
       </div>
     </div>
@@ -40,19 +47,32 @@
             <td><%= routine.title %></td>
             <td><%= l(routine.period_start) %> até <%= l(routine.period_end) %></td>
             <td>
-              <% badge_class = routine.status.in?(['completed', 'active']) ? 'active' : 'inactive' %>
+              <% badge_class = routine.open? ? 'active' : 'inactive' %>
               <span class="status-badge <%= badge_class %>">
-                <%= routine.status.humanize %>
+                <%= routine_status_label(routine) %>
               </span>
             </td>
             <td>
               <div class="table-actions">
                 <%= link_to "Abrir", routine, class: "btn-primary-solid btn-sm" %>
-                <%= button_to routine_path(routine),
-                              method: :delete,
-                              class: "icon-btn danger",
-                              form: { data: { turbo_confirm: "Tem certeza que deseja excluir esta rotina? Os preenchimentos também serão apagados." } } do %>
-                  <i class="bi bi-trash3"></i>
+                <% if @show_archived && current_user.admin? %>
+                  <%= button_to routine_path(routine),
+                                method: :delete,
+                                class: "icon-btn danger",
+                                title: "Excluir rotina",
+                                aria: { label: "Excluir rotina" },
+                                form: { data: { turbo_confirm: "Excluir esta rotina permanentemente? Os preenchimentos e comentários também serão apagados." } } do %>
+                    <i class="bi bi-trash3"></i>
+                  <% end %>
+                <% elsif !@show_archived %>
+                  <%= button_to archive_routine_path(routine),
+                                method: :patch,
+                                class: "icon-btn danger",
+                                title: "Arquivar rotina",
+                                aria: { label: "Arquivar rotina" },
+                                form: { data: { turbo_confirm: "Arquivar esta rotina? Ela sairá da lista principal, mas seus dados serão preservados." } } do %>
+                    <i class="bi bi-archive"></i>
+                  <% end %>
                 <% end %>
               </div>
             </td>

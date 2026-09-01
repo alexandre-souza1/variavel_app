@@ -3,12 +3,28 @@ class RoutinesController < ApplicationController
   before_action :set_routine, only: %i[
     show
     destroy
+    close
+    archive
+    reopen
   ]
+  before_action :authorize_admin_destroy, only: :destroy
+  before_action :authorize_routine_management, only: %i[close archive]
+  before_action :authorize_admin_reopen, only: :reopen
 
   def index
     @routines = Routine.visible_to(current_user)
       .includes(:routine_template, :created_by)
+      .where.not(status: :archived)
       .order(period_start: :desc)
+  end
+
+  def archived
+    @show_archived = true
+    @routines = Routine.visible_to(current_user)
+      .includes(:routine_template, :created_by)
+      .where(status: :archived)
+      .order(period_start: :desc)
+    render :index
   end
 
   def show
@@ -117,9 +133,62 @@ class RoutinesController < ApplicationController
                 notice: "Rotina removida com sucesso."
   end
 
+  def close
+    transition_routine(:closed, "Rotina encerrada com sucesso.")
+  end
+
+  def archive
+    transition_routine(:archived, "Rotina arquivada com sucesso.")
+  end
+
+  def reopen
+    unless @routine.closed? || @routine.archived?
+      redirect_to @routine,
+                  alert: "Somente rotinas encerradas ou arquivadas podem ser reabertas."
+      return
+    end
+
+    @routine.open!
+    redirect_to @routine, notice: "Rotina reaberta para preenchimento."
+  end
+
   private
 
   def set_routine
     @routine = Routine.visible_to(current_user).includes(:routine_template).find(params[:id])
+  end
+
+  def authorize_routine_management
+    return if current_user.admin? || @routine.created_by == current_user
+
+    redirect_to routines_path, alert: "Você não tem permissão para gerenciar esta rotina."
+  end
+
+  def authorize_admin_destroy
+    return if current_user.admin?
+
+    redirect_to routines_path, alert: "Somente administradores podem excluir uma rotina."
+  end
+
+  def authorize_admin_reopen
+    return if current_user.admin?
+
+    redirect_to @routine, alert: "Somente administradores podem reabrir uma rotina."
+  end
+
+  def transition_routine(status, notice)
+    allowed_transitions = {
+      "open" => :closed,
+      "closed" => :archived
+    }
+
+    unless allowed_transitions[@routine.status] == status
+      redirect_to @routine,
+                  alert: "Não é possível alterar o status de uma rotina #{@routine.status.humanize.downcase} para #{status.to_s.humanize.downcase}."
+      return
+    end
+
+    @routine.public_send("#{status}!")
+    redirect_to @routine, notice: notice
   end
 end

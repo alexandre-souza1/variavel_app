@@ -167,6 +167,30 @@
     background: rgba(var(--bs-primary-rgb), .05);
     cursor: pointer;
   }
+
+}
+
+.routine-goal-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  margin-left: 0.15rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--bs-secondary-color);
+  font-size: 0.7rem;
+  vertical-align: middle;
+  transition: color .15s ease, background-color .15s ease;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), .1);
+  }
 }
 
 .routine-day--sunday {

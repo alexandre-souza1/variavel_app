@@ -249,6 +249,7 @@ module Routines
       return :manual if indicator.manual_calculation?
       return :no_data if filled_days.zero?
       return :no_goal if target.blank?
+      return :danger if routine.closed? && !complete?
       return :partial unless complete?
 
       achieved?(result, target) ? :success : :danger

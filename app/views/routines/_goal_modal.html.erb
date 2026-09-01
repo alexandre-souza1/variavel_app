@@ -1,0 +1,76 @@
+<div class="modal fade"
+     id="routineGoalModal-<%= indicator.id %>"
+     tabindex="-1"
+     aria-labelledby="routineGoalModalLabel-<%= indicator.id %>"
+     aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="routineGoalModalLabel-<%= indicator.id %>">
+          <%= target ? "Alterar meta" : "Cadastrar meta" %>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <%= form_with model: [
+            routine.routine_template,
+            category,
+            indicator,
+            target || indicator.routine_indicator_targets.new(
+              starts_at: routine.period_start,
+              ends_at: routine.period_end
+            )
+          ], local: true do |f| %>
+        <div class="modal-body">
+          <p class="text-muted mb-3">
+            <strong><%= indicator.name %></strong><br>
+            <% if target %>
+              <span class="d-block mt-1">
+                Vigência:
+                <% if target.starts_at.present? && target.ends_at.present? %>
+                  <%= l(target.starts_at) %> até <%= l(target.ends_at) %>
+                <% elsif target.starts_at.present? %>
+                  a partir de <%= l(target.starts_at) %>
+                <% elsif target.ends_at.present? %>
+                  até <%= l(target.ends_at) %>
+                <% else %>
+                  sem período definido
+                <% end %>
+              </span>
+            <% else %>
+              <span class="d-block mt-1">
+                Vigência da rotina:
+                <%= l(routine.period_start) %> até <%= l(routine.period_end) %>
+              </span>
+            <% end %>
+          </p>
+
+          <%= f.label :goal, "Meta", class: "form-label" %>
+          <% if indicator.integer? %>
+            <%= f.number_field :goal, step: 1, class: "form-control", required: true %>
+          <% elsif indicator.decimal? || indicator.percentage? || indicator.currency? %>
+            <%= f.text_field :goal, class: "form-control", inputmode: "decimal", required: true %>
+          <% elsif indicator.date? %>
+            <%= f.date_field :goal, class: "form-control", required: true %>
+          <% elsif indicator.time? %>
+            <%= f.time_field :goal, class: "form-control", step: 60, required: true %>
+          <% elsif indicator.duration? %>
+            <%= f.text_field :goal, class: "form-control", inputmode: "numeric", placeholder: "mm:ss", required: true %>
+          <% elsif indicator.boolean? %>
+            <%= f.select :goal, [["Sim", "true"], ["Não", "false"]], {}, class: "form-select", required: true %>
+          <% else %>
+            <%= f.text_field :goal, class: "form-control", required: true %>
+          <% end %>
+
+          <%= f.hidden_field :starts_at %>
+          <%= f.hidden_field :ends_at %>
+          <%= hidden_field_tag :routine_id, routine.id %>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <%= f.submit "Salvar meta", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -30,7 +30,7 @@ module Routines
         title: "Test Routine",
         period_start: Date.new(2026, 7, 1),
         period_end: Date.new(2026, 7, 31),
-        status: :draft
+        status: :open
       )
 
       @routine.ensure_expected_values!
@@ -55,7 +55,7 @@ module Routines
         title: "Test Routine 2",
         period_start: Date.new(2026, 6, 1),
         period_end: Date.new(2026, 6, 30),
-        status: :draft
+        status: :open
       )
 
       routine.ensure_expected_values!(indicators: [@daily_indicator])
@@ -96,7 +96,6 @@ module Routines
     end
   end
 end
-
 
 
 

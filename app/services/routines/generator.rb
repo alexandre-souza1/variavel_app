@@ -38,7 +38,7 @@ module Routines
         title: default_title,
         period_start: period_start,
         period_end: period_end,
-        status: :draft,
+        status: :open,
         selected_indicator_ids: resolved_indicator_ids
       )
     end

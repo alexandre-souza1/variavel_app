@@ -28,8 +28,13 @@ class RoutineIndicatorTargetsController < ApplicationController
       )
 
     if @routine_indicator_target.save
-      redirect_to targets_path,
-                  notice: "Meta criada com sucesso."
+      if params[:routine_id].present?
+        routine = Routine.visible_to(current_user).find(params[:routine_id])
+        redirect_to routine, notice: "Meta criada com sucesso."
+      else
+        redirect_to targets_path,
+                    notice: "Meta criada com sucesso."
+      end
     else
       render :new, status: :unprocessable_entity
     end
@@ -40,8 +45,13 @@ class RoutineIndicatorTargetsController < ApplicationController
 
   def update
     if @routine_indicator_target.update(normalized_target_params)
-      redirect_to targets_path,
-                  notice: "Meta atualizada com sucesso."
+      if params[:routine_id].present?
+        routine = Routine.visible_to(current_user).find(params[:routine_id])
+        redirect_to routine, notice: "Meta atualizada com sucesso."
+      else
+        redirect_to targets_path,
+                    notice: "Meta atualizada com sucesso."
+      end
     else
       render :edit, status: :unprocessable_entity
     end

@@ -98,10 +98,9 @@ class RoutineGeneratorsControllerTest < ActionDispatch::IntegrationTest
       title: "Test Routine #{Time.current.to_i}",
       period_start: Date.new(2026, 7, 1),
       period_end: Date.new(2026, 7, 31),
-      status: :draft
+      status: :open
     ).tap { |routine| routine.ensure_expected_values! }
   end
 end
-
 
 

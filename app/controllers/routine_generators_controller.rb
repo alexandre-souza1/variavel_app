@@ -20,9 +20,12 @@ class RoutineGeneratorsController < ApplicationController
   end
 
   def edit
+    return unless ensure_editable_routine
   end
 
   def update
+    return unless ensure_editable_routine
+
     selected_indicator_ids = params[:indicator_ids]&.reject(&:blank?)
     
     Routines::IndicatorUpdater.call(
@@ -42,5 +45,12 @@ class RoutineGeneratorsController < ApplicationController
 
   def set_routine
     @routine = Routine.visible_to(current_user).includes(:routine_template).find(params[:routine_id])
+  end
+
+  def ensure_editable_routine
+    return true unless @routine.closed? || @routine.archived?
+
+    redirect_to @routine, alert: "Esta rotina não permite mais editar os indicadores."
+    false
   end
 end

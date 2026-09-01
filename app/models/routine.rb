@@ -53,10 +53,9 @@ class Routine < ApplicationRecord
   end
 
   enum :status, {
-    draft: 0,
-    open: 1,
-    closed: 2,
-    archived: 3
+    open: 0,
+    closed: 1,
+    archived: 2
   }
 
   validates :period_start,
