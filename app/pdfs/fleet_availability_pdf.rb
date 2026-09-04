@@ -17,6 +17,7 @@ class FleetAvailabilityPdf < Prawn::Document
              .fleet_availability_items
              .includes(:plate)
              .ordered
+             .select { |item| item.plate.active? }
     @standard_plate_by_position =
       FleetAvailability
       .dimensioning_period_for(fleet_availability.date)
@@ -243,7 +244,7 @@ class FleetAvailabilityPdf < Prawn::Document
       end
 
     # Larguras fixas para as 5 primeiras colunas (ordem atual)
-    fixed_widths = [50, 50]   # soma = 245
+    fixed_widths = [50, 60]   # soma = 245
     obs_width = bounds.width - fixed_widths.sum  # o resto para Observação
 
     col_widths = fixed_widths + [obs_width]
