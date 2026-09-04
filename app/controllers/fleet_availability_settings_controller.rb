@@ -20,8 +20,9 @@ class FleetAvailabilitySettingsController < ApplicationController
   private
 
   def fleet_availability_setting_params
-    params.require(:fleet_availability_setting)
-          .permit(:auto_lock_time, :auto_open_time)
+    params
+      .require(:fleet_availability_setting)
+      .permit(:auto_open_time, :auto_lock_time)
   end
 
   def require_fleet_settings_access!

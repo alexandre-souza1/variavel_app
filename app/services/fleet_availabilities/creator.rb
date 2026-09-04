@@ -1,4 +1,3 @@
-
 module FleetAvailabilities
   class Creator
     def self.call(...)
@@ -28,19 +27,9 @@ module FleetAvailabilities
         if @copy_from.present?
           copy_all_items(availability, @copy_from)
         elsif @copy_previous_day
-          previous = previous_day_availability
-          if previous
-            copy_all_items(availability, previous)
-          else
-            create_default_items(availability)
-          end
+          copy_previous_day_items(availability)
         else
-          previous = previous_day_availability
-          if previous
-            create_items_with_unavailable_from_previous(availability, previous)
-          else
-            create_default_items(availability)
-          end
+          create_items_from_previous_day(availability)
         end
 
         availability
@@ -58,7 +47,6 @@ module FleetAvailabilities
       )
     end
 
-    # Cria todos os itens com as chaves padronizadas
     def base_item_attributes(availability_id)
       {
         fleet_availability_id: availability_id,
@@ -70,16 +58,31 @@ module FleetAvailabilities
       }
     end
 
-    # Cria itens padrão: primeiros N como "available", resto como "exchange"
+    def copy_previous_day_items(availability)
+      previous = previous_day_availability
+
+      if previous
+        copy_all_items(availability, previous)
+      else
+        create_default_items(availability)
+      end
+    end
+
     def create_default_items(availability)
       base = base_item_attributes(availability.id)
 
-      items = Plate.active.where(setor: "ROTA")
+      items = Plate.active
+                   .where(setor: "ROTA")
                    .ordered
-                   .each_with_index.map do |plate, index|
-        status = index < availability.agreed_quantity.to_i ?
-                   FleetAvailabilityItem.statuses[:available] :
-                   FleetAvailabilityItem.statuses[:exchange]
+                   .each_with_index
+                   .map do |plate, index|
+
+        status =
+          if index < availability.agreed_quantity.to_i
+            FleetAvailabilityItem.statuses[:available]
+          else
+            FleetAvailabilityItem.statuses[:exchange]
+          end
 
         base.merge(
           plate_id: plate.id,
@@ -91,15 +94,12 @@ module FleetAvailabilities
       FleetAvailabilityItem.insert_all!(items) if items.any?
     end
 
-    # Copia todos os itens de uma disponibilidade fonte
     def copy_all_items(availability, source)
-      items = source.fleet_availability_items
-                    .includes(:plate)
-                    .map do |item|
+      items = source.fleet_availability_items.map do |item|
         {
           fleet_availability_id: availability.id,
           plate_id: item.plate_id,
-          status: FleetAvailabilityItem.statuses[item.status],
+          status: FleetAvailabilityItem.statuses.fetch(item.status),
           position: item.position,
           reason: item.reason,
           observation: item.observation,
@@ -112,18 +112,31 @@ module FleetAvailabilities
       FleetAvailabilityItem.insert_all!(items) if items.any?
     end
 
-    # Cria itens mesclando:
-    # - Copia os itens com status "unavailable" do dia anterior (mantendo posição, observações, reason, special_route)
-    # - Para as demais posições, preenche com "available" ou "exchange" conforme a quantidade acordada
+    # Mantido para os fluxos que não fazem uma cópia integral.
+    def create_items_from_previous_day(availability)
+      previous = previous_day_availability
+
+      if previous
+        create_items_with_unavailable_from_previous(availability, previous)
+      else
+        create_default_items(availability)
+      end
+    end
+
     def create_items_with_unavailable_from_previous(availability, previous)
       base = base_item_attributes(availability.id)
       total_positions = availability.agreed_quantity.to_i
-      all_plates = Plate.active.where(setor: "ROTA").ordered.to_a
 
-      # 1. Mapeia os itens unavailable do dia anterior
+      all_plates = Plate.active
+                        .where(setor: "ROTA")
+                        .ordered
+                        .to_a
+
       unavailable_items = previous.fleet_availability_items
-                                  .where(status: FleetAvailabilityItem.statuses[:unavailable])
-                                  .order(:position)
+                                   .where(
+                                     status: FleetAvailabilityItem.statuses[:unavailable]
+                                   )
+                                   .order(:position)
 
       unavailable_by_position = {}
       extra_unavailable = []
@@ -141,68 +154,78 @@ module FleetAvailabilities
         if item.position < total_positions
           unavailable_by_position[item.position] = data
         else
-          extra_unavailable << data.dup
+          extra_unavailable << data
         end
       end
 
-      # 2. Construir a lista final de itens
       items = []
       occupied_positions = Set.new
 
-      # Adiciona os unavailable que cabem nas posições
-      unavailable_by_position.each do |pos, data|
+      unavailable_by_position.each do |position, data|
         items << base.merge(
           plate_id: data[:plate_id],
           status: data[:status],
-          position: pos,
+          position: position,
           reason: data[:reason],
           observation: data[:observation],
           special_route: data[:special_route]
         )
-        occupied_positions.add(pos)
+
+        occupied_positions.add(position)
       end
 
-      # 3. Preencher posições vazias com available (usando placas não utilizadas)
-      used_plate_ids = items.map { |i| i[:plate_id] }.compact
-      available_plates = all_plates.reject { |p| used_plate_ids.include?(p.id) }
+      used_plate_ids = items.filter_map { |item| item[:plate_id] }
 
-      position_index = 0
+      available_plates = all_plates.reject do |plate|
+        used_plate_ids.include?(plate.id)
+      end
+
+      position = 0
+
       available_plates.each do |plate|
-        position_index += 1 while occupied_positions.include?(position_index)
-        break if position_index >= total_positions
+        position += 1 while occupied_positions.include?(position)
+
+        break if position >= total_positions
 
         items << base.merge(
           plate_id: plate.id,
           status: FleetAvailabilityItem.statuses[:available],
-          position: position_index
+          position: position
         )
-        occupied_positions.add(position_index)
-        position_index += 1
+
+        occupied_positions.add(position)
+        position += 1
       end
 
-      # 4. Adicionar os extra_unavailable (que estavam além do total) como unavailable realocados
-      extra_unavailable.each_with_index do |data, idx|
-        pos = total_positions + idx
+      extra_unavailable.each_with_index do |data, index|
+        position = total_positions + index
+
         items << base.merge(
           plate_id: data[:plate_id],
-          status: FleetAvailabilityItem.statuses[:unavailable],
-          position: pos,
+          status: data[:status],
+          position: position,
           reason: data[:reason],
           observation: data[:observation],
           special_route: data[:special_route]
         )
       end
 
-      # 5. Placas restantes viram exchange
-      used_plate_ids_after = items.map { |i| i[:plate_id] }.compact
-      remaining_plates = all_plates.reject { |p| used_plate_ids_after.include?(p.id) }
+      used_plate_ids = items.filter_map { |item| item[:plate_id] }
 
-      remaining_plates.each_with_index do |plate, idx|
-        pos = total_positions + extra_unavailable.size + idx
+      remaining_plates = all_plates.reject do |plate|
+        used_plate_ids.include?(plate.id)
+      end
+
+      remaining_plates.each_with_index do |plate, index|
+        position =
+          total_positions +
+          extra_unavailable.size +
+          index
+
         items << base.merge(
           plate_id: plate.id,
           status: FleetAvailabilityItem.statuses[:exchange],
-          position: pos
+          position: position
         )
       end
 
