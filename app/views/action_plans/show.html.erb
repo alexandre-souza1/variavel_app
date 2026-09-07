@@ -1,9 +1,11 @@
-<div class="container-fluid action-plan-show dashboard-page <%= 'action-plan-show--auto-view' if params[:view].blank? %>"
-     data-controller="open-task"
-     data-open-task-task-id-value="<%= @task_to_open&.id %>">
+<div
+  class="container-fluid action-plan-show dashboard-page <%= 'action-plan-show--auto-view' if params[:view].blank? %>"
+  data-controller="open-task"
+  data-open-task-task-id-value="<%= @task_to_open&.id %>"
+>
   <%= turbo_stream_from "tasks_action_plan_#{@action_plan.id}" %>
-  <div class="dashboard-header action-plan-header">
 
+  <div class="dashboard-header action-plan-header">
     <div class="header-content">
 
       <div class="action-plan-header__title">
@@ -18,45 +20,90 @@
       </div>
 
       <div class="header-actions">
+
+        <!-- DEFINIR RESPONSÁVEIS -->
+        <button
+          type="button"
+          class="btn-outline action-plan-assign-link"
+          data-bs-toggle="modal"
+          data-bs-target="#assignTasksModal"
+        >
+          <i class="bi bi-people"></i>
+          <span>Definir responsáveis</span>
+        </button>
+
+        <!-- KANBAN -->
         <%= link_to action_plan_path(@action_plan, view: "kanban"),
             class: "btn-outline action-plan-view-link action-plan-view-link--kanban #{params[:view] != 'list' ? 'active' : ''}" do %>
           <i class="bi bi-kanban"></i>
           <span>Kanban</span>
         <% end %>
 
+        <!-- LISTA -->
         <%= link_to action_plan_path(@action_plan, view: "list"),
             class: "btn-outline action-plan-view-link action-plan-view-link--list #{params[:view] == 'list' ? 'active' : ''}" do %>
           <i class="bi bi-list-check"></i>
           <span>Lista</span>
         <% end %>
 
-        <%= link_to action_plans_path, class: "btn-outline action-plan-back-link", aria: { label: "Voltar para planos" } do %>
-          <i class="fas fa-arrow-left me-1"></i> Voltar
+        <!-- VOLTAR -->
+        <%= link_to action_plans_path,
+            class: "btn-outline action-plan-back-link",
+            aria: { label: "Voltar para planos" } do %>
+          <i class="fas fa-arrow-left me-1"></i>
+          Voltar
         <% end %>
+
       </div>
     </div>
   </div>
 
+
+  <!-- RESUMO MOBILE -->
   <div class="action-plan-mobile-summary d-md-none">
+
     <div class="action-plan-mobile-summary__item">
-      <span class="action-plan-mobile-summary__value"><%= @open_tasks_count %></span>
-      <span class="action-plan-mobile-summary__label">Abertas</span>
+      <span class="action-plan-mobile-summary__value">
+        <%= @open_tasks_count %>
+      </span>
+
+      <span class="action-plan-mobile-summary__label">
+        Abertas
+      </span>
     </div>
 
     <div class="action-plan-mobile-summary__item">
-      <span class="action-plan-mobile-summary__value"><%= @overdue_tasks_count %></span>
-      <span class="action-plan-mobile-summary__label">Atrasadas</span>
+      <span class="action-plan-mobile-summary__value">
+        <%= @overdue_tasks_count %>
+      </span>
+
+      <span class="action-plan-mobile-summary__label">
+        Atrasadas
+      </span>
     </div>
 
     <div class="action-plan-mobile-summary__item">
-      <span class="action-plan-mobile-summary__value"><%= @done_tasks_count %></span>
-      <span class="action-plan-mobile-summary__label">Concluídas</span>
+      <span class="action-plan-mobile-summary__value">
+        <%= @done_tasks_count %>
+      </span>
+
+      <span class="action-plan-mobile-summary__label">
+        Concluídas
+      </span>
     </div>
+
   </div>
 
+
+  <!-- CONTEÚDO DO PLANO -->
   <% if params[:view] == "list" %>
-    <%= render "list_view", buckets: @buckets, action_plan: @action_plan %>
+
+    <%= render "list_view",
+        buckets: @buckets,
+        action_plan: @action_plan %>
+
   <% elsif params[:view] == "kanban" %>
+
     <div data-controller="kanban-scroll">
 
       <!-- SCROLL TOP -->
@@ -73,16 +120,31 @@
         class="kanban-scroll-bottom"
       >
         <div class="action-plan-kanban-panel">
-          <%= render "kanban_view", buckets: @buckets, action_plan: @action_plan %>
+
+          <%= render "kanban_view",
+              buckets: @buckets,
+              action_plan: @action_plan %>
+
         </div>
       </div>
-    </div>
-  <% else %>
-    <div class="action-plan-auto-list">
-      <%= render "list_view", buckets: @buckets, action_plan: @action_plan %>
+
     </div>
 
-    <div class="action-plan-auto-kanban" data-controller="kanban-scroll">
+  <% else %>
+
+    <!-- VISÃO AUTOMÁTICA -->
+    <div class="action-plan-auto-list">
+
+      <%= render "list_view",
+          buckets: @buckets,
+          action_plan: @action_plan %>
+
+    </div>
+
+    <div
+      class="action-plan-auto-kanban"
+      data-controller="kanban-scroll"
+    >
 
       <!-- SCROLL TOP -->
       <div
@@ -98,9 +160,155 @@
         class="kanban-scroll-bottom"
       >
         <div class="action-plan-kanban-panel">
-          <%= render "kanban_view", buckets: @buckets, action_plan: @action_plan %>
+
+          <%= render "kanban_view",
+              buckets: @buckets,
+              action_plan: @action_plan %>
+
         </div>
       </div>
+
     </div>
+
   <% end %>
+
+
+  <!-- ===================================================== -->
+  <!-- MODAL - DEFINIR RESPONSÁVEIS -->
+  <!-- ===================================================== -->
+
+  <div
+    class="modal fade"
+    id="assignTasksModal"
+    tabindex="-1"
+    aria-labelledby="assignTasksModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+
+      <div class="modal-content">
+
+        <!-- HEADER -->
+        <div class="modal-header">
+
+          <div>
+            <h5
+              class="modal-title"
+              id="assignTasksModalLabel"
+            >
+              <i class="bi bi-people me-2"></i>
+              Definir responsáveis
+            </h5>
+
+            <p class="text-muted mb-0 mt-1">
+              Atribuir todas as tarefas abertas deste plano
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Fechar"
+          ></button>
+
+        </div>
+
+
+        <!-- FORM -->
+        <%= form_with(
+          url: assign_open_tasks_action_plan_path(@action_plan),
+          method: :patch,
+          local: true
+        ) do |form| %>
+
+          <div class="modal-body">
+
+            <!-- MANTÉM A VISÃO ATUAL -->
+            <%= hidden_field_tag :view, params[:view] %>
+
+
+            <!-- RESPONSÁVEIS -->
+            <div class="mb-3">
+
+              <label class="form-label fw-semibold">
+                Responsáveis
+              </label>
+
+              <div class="border rounded p-2">
+
+                <% @users.each do |user| %>
+
+                  <div class="form-check">
+
+                    <%= check_box_tag(
+                      "user_ids[]",
+                      user.id,
+                      false,
+                      class: "form-check-input",
+                      id: "user_#{user.id}"
+                    ) %>
+
+                    <%= label_tag(
+                      "user_#{user.id}",
+                      user.name,
+                      class: "form-check-label"
+                    ) %>
+
+                  </div>
+
+                <% end %>
+
+              </div>
+
+              <div class="form-text">
+                Você pode selecionar mais de um responsável.
+              </div>
+
+            </div>
+
+
+            <!-- AVISO -->
+            <div class="alert alert-warning d-flex align-items-start gap-2 mb-0">
+
+              <i class="bi bi-exclamation-triangle mt-1"></i>
+
+              <div>
+                <strong>Atenção:</strong>
+                todas as tarefas
+                <strong>abertas</strong>
+                deste plano terão seus responsáveis atuais substituídos
+                pelos usuários selecionados.
+                As tarefas concluídas não serão alteradas.
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- FOOTER -->
+          <div class="modal-footer">
+
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+
+            <%= form.submit(
+              "Atribuir tarefas",
+              class: "btn btn-primary"
+            ) %>
+
+          </div>
+
+        <% end %>
+
+      </div>
+    </div>
+  </div>
+
 </div>
