@@ -1,8 +1,10 @@
 class TaskImportService
-  # Constantes para evitar strings mágicas
-  BUCKET_NAME_KEYS = ["Nome do Bucket", "Bucket Name"].freeze
+  # Constantes para evitar strings mágicas e suportar múltiplos padrões
+  BUCKET_NAME_KEYS = ["Nome do Bucket", "Bucket Name", "Categoria"].freeze
   LABEL_KEYS = ["Rótulos", "Labels"].freeze
   CHECKLIST_KEYS = ["Itens da lista de verificação", "Checklist items"].freeze
+  DESCRIPTION_KEYS = ["Descrição", "Notas"].freeze
+  STATUS_KEYS = ["Progresso", "Status"].freeze
 
   def initialize(file, current_user)
     @file = file
@@ -133,12 +135,12 @@ class TaskImportService
   def task_attributes(row)
     {
       title: row["Nome da tarefa"],
-      description: row["Descrição"],
+      description: find_value(row, DESCRIPTION_KEYS),
       start_at: parse_date(row["Data de início"]),
       due_at: parse_date(row["Data de conclusão"]),
       completed: row["Concluído em"].present?,
       completed_at: parse_date(row["Concluído em"]),
-      status: map_status(row["Progresso"]),
+      status: map_status(find_value(row, STATUS_KEYS)),
       creator: @current_user,
       assignee_id: @current_user.id,
       bucket: find_bucket(row)
@@ -161,12 +163,9 @@ class TaskImportService
 
   def create_tasklist(task, row)
     items = parse_checklist_items(row)
-    return if items.empty?                     # sem itens, não precisa fazer nada (a tasklist vazia já existe)
+    return if items.empty?
 
-    # Use a tasklist existente (criada pelo callback) ou crie uma nova
     tasklist = task.tasklist || task.create_tasklist(title: "Checklist")
-
-    # Evita duplicar itens se a planilha for reimportada
     return if tasklist.tasklist_items.any?
 
     TasklistItem.insert_all(
