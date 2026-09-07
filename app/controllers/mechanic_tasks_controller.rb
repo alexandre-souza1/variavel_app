@@ -5,15 +5,18 @@ class MechanicTasksController < ApplicationController
   def index
     @status = params[:status].presence_in(%w[open completed all]) || "open"
 
-    # Planos de ação que possuem tarefas atribuídas ao mecânico atual
     @action_plans = ActionPlan
-      .joins(buckets: :tasks)
-      .where(tasks: { user_id: current_user.id })
+      .joins(buckets: { tasks: :task_assignments })
+      .where(task_assignments: { user_id: current_user.id })
       .distinct
       .order(:name)
 
-    # Todas as tarefas do mecânico
-    all_tasks = current_user.tasks
+    assigned_task_ids = TaskAssignment
+      .where(user_id: current_user.id)
+      .select(:task_id)
+
+    all_tasks = Task
+      .where(id: assigned_task_ids)
       .includes(
         :labels,
         :comments,
@@ -21,36 +24,46 @@ class MechanicTasksController < ApplicationController
         bucket: :action_plan
       )
 
-    # Filtro por plano de ação
     if params[:action_plan_id].present?
       all_tasks = all_tasks
-        .joins(bucket: :action_plan)
-        .where(action_plans: { id: params[:action_plan_id] })
+        .joins(:bucket)
+        .where(buckets: { action_plan_id: params[:action_plan_id] })
     end
 
-    # Ordenação
-    all_tasks = all_tasks.order(
+    @open_count = all_tasks
+      .where(tasks: { completed: [false, nil] })
+      .count
+
+    @completed_count = all_tasks
+      .where(tasks: { completed: true })
+      .count
+
+    @total_count = @open_count + @completed_count
+
+    @tasks =
+      case @status
+      when "completed"
+        all_tasks.where(tasks: { completed: true })
+
+      when "all"
+        all_tasks
+
+      else
+        all_tasks.where(tasks: { completed: [false, nil] })
+      end
+
+    @tasks = @tasks.order(
       Arel.sql(
-        "completed ASC,
-         CASE WHEN due_at IS NULL THEN 1 ELSE 0 END,
-         due_at ASC"
+        <<~SQL.squish
+          tasks.completed ASC,
+          CASE
+            WHEN tasks.due_at IS NULL THEN 1
+            ELSE 0
+          END,
+          tasks.due_at ASC
+        SQL
       )
     )
-
-    # Filtro de status
-    @tasks = case @status
-             when "completed"
-               all_tasks.where(completed: true)
-             when "all"
-               all_tasks
-             else
-               all_tasks.where(completed: [false, nil])
-             end
-
-    # Resumo sempre respeitando o plano selecionado
-    @open_count = all_tasks.where(completed: [false, nil]).count
-    @completed_count = all_tasks.where(completed: true).count
-    @total_count = @open_count + @completed_count
   end
 
   private

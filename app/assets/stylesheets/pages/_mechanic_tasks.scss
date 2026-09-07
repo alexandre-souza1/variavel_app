@@ -1,106 +1,833 @@
-// Tarefas do mecanico: resumo, filtros, cards, checklist, comentarios e estados.
+
+// Tarefas do mecânico: resumo, filtros, cards, checklist, comentários e estados.
+
 .mechanic-tasks-page {
   background: transparent !important;
   max-width: 900px;
   margin: 0 auto;
   padding: 1.25rem 1rem 3rem;
+
+  // -------------------------------------------------------
+  // FORMULÁRIOS
+  // -------------------------------------------------------
+
+  .form-control {
+    background-color: color-mix(in srgb, var(--bs-body-bg) 78%, #000);
+    border-color: var(--bs-border-color);
+    border-radius: 8px;
+    color: var(--bs-body-color);
+    font-size: 0.78rem;
+    line-height: 1.35;
+    box-shadow: none;
+  }
+
+  .form-control:focus {
+    background-color: var(--bs-body-bg);
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.15rem color-mix(in srgb, var(--bs-primary) 18%, transparent);
+    color: var(--bs-body-color);
+  }
+
+  .form-check-input {
+    background-color: var(--bs-body-bg);
+    border-color: var(--bs-border-color);
+    box-shadow: none;
+  }
+
+  .form-check-input:checked {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+  }
+
+  .btn-outline-primary {
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, var(--bs-border-color));
+    border-radius: 8px;
+    color: var(--bs-primary);
+    font-size: 0.72rem;
+    font-weight: 650;
+    min-height: 2.25rem;
+    padding: 0.45rem 0.7rem;
+  }
+
+  .btn-outline-primary:hover {
+    background: var(--bs-primary);
+    color: #fff;
+  }
+
+  .btn-link {
+    color: var(--bs-primary);
+    text-decoration: none;
+  }
 }
+
+
+// =========================================================
+// CABEÇALHO
+// =========================================================
 
 .mechanic-tasks-header {
   align-items: center;
-  background: linear-gradient(115deg, color-mix(in srgb, var(--bs-primary) 16%, var(--bs-body-bg)), var(--bs-body-bg) 58%);
+  background: linear-gradient(
+    115deg,
+    color-mix(in srgb, var(--bs-primary) 16%, var(--bs-body-bg)),
+    var(--bs-body-bg) 58%
+  );
   border: 1px solid var(--bs-border-color);
   border-left: 3px solid var(--bs-primary);
   border-radius: 14px;
   display: flex;
-  gap: .85rem;
-  margin-bottom: 1rem;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
   padding: 1rem;
-}
-.mechanic-tasks-header__icon { align-items: center; background: color-mix(in srgb, var(--bs-primary) 18%, transparent); border-radius: 12px; color: var(--bs-primary); display: flex; flex: 0 0 2.65rem; font-size: 1.35rem; height: 2.65rem; justify-content: center; }
-.mechanic-tasks-header__content { min-width: 0; }
-.mechanic-tasks-header h1 { font-size: clamp(1.35rem, 5vw, 1.8rem); font-weight: 700; line-height: 1.15; }
-.mechanic-tasks-header p:not(.mechanic-tasks-eyebrow) { font-size: .78rem; line-height: 1.35; }
-.mechanic-tasks-toolbar { align-items: end; border-bottom: 1px solid var(--bs-border-color); display: flex; gap: 1rem; justify-content: space-between; margin-bottom: .8rem; padding-bottom: .7rem; }
-.mechanic-tasks-toolbar h2 { color: var(--bs-body-color); font-size: 1rem; font-weight: 650; margin: 0; }
-.mechanic-tasks-toolbar__eyebrow { margin-bottom: .15rem; }
-.mechanic-task-stat { background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius: 10px; padding: .65rem .55rem; text-align: center; }
-.mechanic-task-stat strong { color: var(--bs-body-color); display: block; font-size: 1.2rem; line-height: 1; }
-.mechanic-task-stat span { color: var(--bs-secondary-color); display: block; font-size: .68rem; margin-top: .3rem; }
-.mechanic-task-stat.is-primary { border-color: color-mix(in srgb, var(--bs-primary) 60%, var(--bs-border-color)); }
-.mechanic-task-stat.is-primary strong { color: var(--bs-primary); }
 
-.mechanic-tasks-header { margin-bottom: 1.25rem; }
-.mechanic-tasks-eyebrow { color: var(--bs-primary); font-size: .72rem; font-weight: 700; letter-spacing: .1em; margin: 0 0 .35rem; text-transform: uppercase; }
-.mechanic-tasks-header h1 { color: var(--bs-body-color); font-size: clamp(1.45rem, 5vw, 2rem); font-weight: 650; margin: 0; }
-.mechanic-tasks-header h1 i { color: var(--bs-primary); }
-.mechanic-tasks-header p:not(.mechanic-tasks-eyebrow) { color: var(--bs-secondary-color); font-size: .9rem; margin: .35rem 0 0; }
-.mechanic-tasks-summary { display: grid; gap: .55rem; grid-template-columns: repeat(3, 1fr); margin-bottom: 1.25rem; }
-.mechanic-tasks-filters { display: flex; gap: .4rem; margin-bottom: 1rem; overflow-x: auto; }
-.mechanic-tasks-toolbar .mechanic-tasks-filters { margin-bottom: 0; }
-.mechanic-tasks-filters a { border: 1px solid var(--bs-border-color); border-radius: 999px; color: var(--bs-secondary-color); font-size: .78rem; padding: .45rem .8rem; text-decoration: none; white-space: nowrap; }
-.mechanic-tasks-filters a.is-active { background: var(--bs-primary); border-color: var(--bs-primary); color: #fff; }
-.mechanic-tasks-list { background: none !important; display: grid; gap: .8rem; }
-.mechanic-task { background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius: 14px; padding: 1rem; }
-.mechanic-task h2 { color: var(--bs-body-color); font-size: 1rem; font-weight: 650; margin: .6rem 0 .25rem; }
-.mechanic-task.is-completed { opacity: .72; }
-.mechanic-task__topline, .mechanic-task__footer { align-items: center; display: flex; gap: .6rem; justify-content: space-between; }
-.mechanic-task__status, .mechanic-task__date, .mechanic-task__location { color: var(--bs-secondary-color); font-size: .72rem; }
-.mechanic-task__status i { color: var(--bs-primary); }
-.mechanic-task__status.is-done i, .mechanic-task__status.is-done { color: var(--bs-success); }
-.mechanic-task__status.is-overdue, .mechanic-task__date.is-overdue { color: var(--bs-danger); }
-.mechanic-task__location { margin: 0 0 .7rem; }
-.mechanic-task__description { color: var(--bs-body-color); font-size: .84rem; line-height: 1.45; margin: 0 0 .8rem; white-space: pre-line; }
-.mechanic-task__checklist { border-top: 1px solid var(--bs-border-color); color: var(--bs-secondary-color); font-size: .78rem; padding-top: .65rem; }
-.mechanic-task__checklist summary { cursor: pointer; font-weight: 600; }
-.mechanic-task__checklist ul { list-style: none; margin: .55rem 0 0; padding: 0; }
-.mechanic-task__checklist li { padding: .25rem 0; }
-.mechanic-task__checklist li.is-done { text-decoration: line-through; }
-.mechanic-task__checklist ul { margin-bottom: .2rem; }
-.mechanic-task__checklist-item { padding: .25rem 0 !important; text-decoration: none !important; }
-.mechanic-task__checklist-item form, .mechanic-task__new-item, .mechanic-task__comment-form { align-items: center; display: flex; gap: .4rem; }
-.mechanic-task__checklist-item .form-control { flex: 1; min-width: 0; }
-.mechanic-task__checklist-item .btn, .mechanic-task__comment-form .btn { flex: 0 0 auto; padding-left: .4rem; padding-right: .4rem; }
-.mechanic-task__new-item { border-top: 1px dashed var(--bs-border-color); margin-top: .45rem; padding-top: .6rem; }
-.mechanic-task__new-item .form-control { min-width: 0; }
-.mechanic-task__comments { border-top: 1px solid var(--bs-border-color); color: var(--bs-secondary-color); font-size: .76rem; margin-top: .65rem; padding-top: .6rem; }
-.mechanic-task__comments summary { cursor: pointer; font-weight: 600; }
-.mechanic-task__comments-list { display: grid; gap: .45rem; margin: .55rem 0; }
-.mechanic-task__comment { background: var(--bs-tertiary-bg); border-radius: 8px; padding: .45rem .55rem; }
-.mechanic-task__comment strong { color: var(--bs-body-color); font-size: .72rem; }
-.mechanic-task__comment span { float: right; font-size: .65rem; }
-.mechanic-task__comment p { color: var(--bs-body-color); margin: .25rem 0 0; white-space: pre-line; }
-.mechanic-task__comment-form { align-items: stretch; display: grid; gap: .55rem; grid-template-columns: minmax(0, 1fr) auto; margin-top: .7rem; }
-.mechanic-task__comment-form textarea { flex: 1; min-height: 3.2rem; min-width: 0; resize: vertical; }
-.mechanic-task__comment-form .btn { align-self: stretch; min-width: 4.8rem; }
-.mechanic-task__footer { justify-content: flex-end; margin-top: .8rem; }
-.mechanic-tasks-page .form-control {
-  background-color: color-mix(in srgb, var(--bs-body-bg) 78%, #000);
-  border-color: var(--bs-border-color);
-  border-radius: 8px;
-  color: var(--bs-body-color);
-  font-size: .78rem;
-  line-height: 1.35;
-  box-shadow: none;
+  &__icon {
+    align-items: center;
+    background: color-mix(in srgb, var(--bs-primary) 18%, transparent);
+    border-radius: 12px;
+    color: var(--bs-primary);
+    display: flex;
+    flex: 0 0 2.65rem;
+    font-size: 1.35rem;
+    height: 2.65rem;
+    justify-content: center;
+  }
+
+  &__content {
+    min-width: 0;
+  }
+
+  .mechanic-tasks-eyebrow {
+    color: var(--bs-primary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin: 0 0 0.35rem;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    color: var(--bs-body-color);
+    font-size: clamp(1.45rem, 5vw, 2rem);
+    font-weight: 650;
+    line-height: 1.15;
+    margin: 0;
+
+    i {
+      color: var(--bs-primary);
+    }
+  }
+
+  p:not(.mechanic-tasks-eyebrow) {
+    color: var(--bs-secondary-color);
+    font-size: 0.9rem;
+    line-height: 1.35;
+    margin: 0.35rem 0 0;
+  }
 }
-.mechanic-tasks-page .form-control:focus { background-color: var(--bs-body-bg); border-color: var(--bs-primary); box-shadow: 0 0 0 .15rem color-mix(in srgb, var(--bs-primary) 18%, transparent); color: var(--bs-body-color); }
-.mechanic-tasks-page .form-check-input { background-color: var(--bs-body-bg); border-color: var(--bs-border-color); box-shadow: none; }
-.mechanic-tasks-page .form-check-input:checked { background-color: var(--bs-primary); border-color: var(--bs-primary); }
-.mechanic-tasks-page .btn-outline-primary { background: transparent; border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, var(--bs-border-color)); border-radius: 8px; color: var(--bs-primary); font-size: .72rem; font-weight: 650; min-height: 2.25rem; padding: .45rem .7rem; }
-.mechanic-tasks-page .btn-outline-primary:hover { background: var(--bs-primary); color: #fff; }
-.mechanic-tasks-page .btn-link { color: var(--bs-primary); text-decoration: none; }
-.mechanic-task__labels { display: flex; flex-wrap: wrap; gap: .3rem; margin-right: auto; }
-.mechanic-task__labels span { background: color-mix(in srgb, var(--label-color) 18%, transparent); border-radius: 999px; color: var(--bs-body-color); font-size: .68rem; padding: .25rem .5rem; }
-.mechanic-task__complete { background: var(--bs-primary); border: 0; border-radius: 9px; color: #fff; font-size: .78rem; font-weight: 650; padding: .55rem .7rem; white-space: nowrap; }
-.mechanic-task__complete.is-done { background: transparent; border: 1px solid var(--bs-border-color); color: var(--bs-secondary-color); }
-.mechanic-tasks-empty { color: var(--bs-secondary-color); padding: 3rem 1rem; text-align: center; }
-.mechanic-tasks-empty i { color: var(--bs-success); font-size: 2.5rem; }
-.mechanic-tasks-empty h2 { color: var(--bs-body-color); font-size: 1rem; }
-.mechanic-tasks-empty p { font-size: .82rem; }
+
+
+// =========================================================
+// RESUMO
+// =========================================================
+
+.mechanic-tasks-summary {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 1.25rem;
+}
+
+.mechanic-task-stat {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 10px;
+  padding: 0.65rem 0.55rem;
+  text-align: center;
+
+  strong {
+    color: var(--bs-body-color);
+    display: block;
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+
+  span {
+    color: var(--bs-secondary-color);
+    display: block;
+    font-size: 0.68rem;
+    margin-top: 0.3rem;
+  }
+
+  &.is-primary {
+    border-color: color-mix(
+      in srgb,
+      var(--bs-primary) 60%,
+      var(--bs-border-color)
+    );
+
+    strong {
+      color: var(--bs-primary);
+    }
+  }
+}
+
+
+// =========================================================
+// TOOLBAR
+// =========================================================
+
+.mechanic-tasks-toolbar {
+  align-items: flex-end;
+  border-bottom: 1px solid var(--bs-border-color);
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.7rem;
+
+  > div:first-child {
+    min-width: 0;
+  }
+
+  h2 {
+    color: var(--bs-body-color);
+    font-size: 1rem;
+    font-weight: 650;
+    margin: 0;
+  }
+
+  &__eyebrow {
+    color: var(--bs-primary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.15rem;
+    text-transform: uppercase;
+  }
+
+  &__filters {
+    align-items: flex-end;
+    display: flex;
+    flex: 1 1 auto;
+    gap: 0.9rem;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+}
+
+
+// =========================================================
+// FILTRO DE PLANO DE AÇÃO
+// =========================================================
+
+.mechanic-tasks-plan-filter {
+  align-items: flex-end;
+  display: flex;
+  gap: 0.55rem;
+  margin: 0;
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    min-width: 250px;
+
+    label {
+      align-items: center;
+      color: var(--bs-secondary-color);
+      display: flex;
+      font-size: 0.68rem;
+      font-weight: 700;
+      gap: 0.3rem;
+      letter-spacing: 0.04em;
+      line-height: 1;
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+
+      i {
+        color: var(--bs-primary);
+        font-size: 0.75rem;
+      }
+    }
+
+    .form-select {
+      background-color: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: 9px;
+      color: var(--bs-body-color);
+      font-size: 0.8rem;
+      font-weight: 500;
+      min-height: 2.25rem;
+      min-width: 0;
+      padding: 0.45rem 2.25rem 0.45rem 0.75rem;
+      box-shadow: none;
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+
+      &:hover {
+        border-color: color-mix(
+          in srgb,
+          var(--bs-primary) 35%,
+          var(--bs-border-color)
+        );
+      }
+
+      &:focus {
+        background-color: var(--bs-body-bg);
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.15rem color-mix(
+          in srgb,
+          var(--bs-primary) 15%,
+          transparent
+        );
+        color: var(--bs-body-color);
+      }
+    }
+  }
+
+  > .btn {
+    border-radius: 9px;
+    font-size: 0.74rem;
+    font-weight: 650;
+    min-height: 2.25rem;
+    padding: 0.45rem 0.8rem;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    box-shadow: none;
+  }
+
+  .btn-outline-secondary {
+    background: transparent;
+  }
+}
+
+
+// =========================================================
+// FILTROS DE STATUS
+// =========================================================
+
+.mechanic-tasks-filters {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0;
+  overflow-x: auto;
+  padding-bottom: 1px;
+
+  a {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 999px;
+    color: var(--bs-secondary-color);
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 0.42rem 0.75rem;
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+
+    &:hover {
+      border-color: color-mix(
+        in srgb,
+        var(--bs-primary) 35%,
+        var(--bs-border-color)
+      );
+      color: var(--bs-body-color);
+    }
+
+    &.is-active {
+      background: var(--bs-primary);
+      border-color: var(--bs-primary);
+      color: #fff;
+    }
+  }
+}
+
+
+// =========================================================
+// LISTA DE TAREFAS
+// =========================================================
+
+.mechanic-tasks-list {
+  background: none !important;
+  display: grid;
+  gap: 0.8rem;
+}
+
+
+// =========================================================
+// CARD DA TAREFA
+// =========================================================
+
+.mechanic-task {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 14px;
+  padding: 1rem;
+
+  h2 {
+    color: var(--bs-body-color);
+    font-size: 1rem;
+    font-weight: 650;
+    margin: 0.6rem 0 0.25rem;
+  }
+
+  &.is-completed {
+    opacity: 0.72;
+  }
+}
+
+
+// =========================================================
+// TOPO / RODAPÉ DO CARD
+// =========================================================
+
+.mechanic-task__topline,
+.mechanic-task__footer {
+  align-items: center;
+  display: flex;
+  gap: 0.6rem;
+  justify-content: space-between;
+}
+
+.mechanic-task__status,
+.mechanic-task__date,
+.mechanic-task__location {
+  color: var(--bs-secondary-color);
+  font-size: 0.72rem;
+}
+
+.mechanic-task__status {
+  i {
+    color: var(--bs-primary);
+  }
+
+  &.is-done {
+    color: var(--bs-success);
+
+    i {
+      color: var(--bs-success);
+    }
+  }
+
+  &.is-overdue {
+    color: var(--bs-danger);
+  }
+}
+
+.mechanic-task__date.is-overdue {
+  color: var(--bs-danger);
+}
+
+.mechanic-task__location {
+  margin: 0 0 0.7rem;
+}
+
+
+// =========================================================
+// DESCRIÇÃO
+// =========================================================
+
+.mechanic-task__description {
+  color: var(--bs-body-color);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  margin: 0 0 0.8rem;
+  white-space: pre-line;
+}
+
+
+// =========================================================
+// CHECKLIST
+// =========================================================
+
+.mechanic-task__checklist {
+  border-top: 1px solid var(--bs-border-color);
+  color: var(--bs-secondary-color);
+  font-size: 0.78rem;
+  padding-top: 0.65rem;
+
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0.55rem 0 0.2rem;
+    padding: 0;
+  }
+
+  li {
+    padding: 0.25rem 0;
+
+    &.is-done {
+      text-decoration: line-through;
+    }
+  }
+}
+
+.mechanic-task__checklist-item {
+  padding: 0.25rem 0 !important;
+  text-decoration: none !important;
+
+  form {
+    align-items: center;
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .form-control {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .btn {
+    flex: 0 0 auto;
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+}
+
+.mechanic-task__new-item {
+  align-items: center;
+  border-top: 1px dashed var(--bs-border-color);
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.45rem;
+  padding-top: 0.6rem;
+
+  .form-control {
+    min-width: 0;
+  }
+}
+
+
+// =========================================================
+// COMENTÁRIOS
+// =========================================================
+
+.mechanic-task__comments {
+  border-top: 1px solid var(--bs-border-color);
+  color: var(--bs-secondary-color);
+  font-size: 0.76rem;
+  margin-top: 0.65rem;
+  padding-top: 0.6rem;
+
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+}
+
+.mechanic-task__comments-list {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.55rem 0;
+}
+
+.mechanic-task__comment {
+  background: var(--bs-tertiary-bg);
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+
+  strong {
+    color: var(--bs-body-color);
+    font-size: 0.72rem;
+  }
+
+  span {
+    float: right;
+    font-size: 0.65rem;
+  }
+
+  p {
+    color: var(--bs-body-color);
+    margin: 0.25rem 0 0;
+    white-space: pre-line;
+  }
+}
+
+.mechanic-task__comment-form {
+  align-items: stretch;
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-top: 0.7rem;
+
+  textarea {
+    flex: 1;
+    min-height: 3.2rem;
+    min-width: 0;
+    resize: vertical;
+  }
+
+  .btn {
+    align-self: stretch;
+    min-width: 4.8rem;
+  }
+}
+
+
+// =========================================================
+// LABELS
+// =========================================================
+
+.mechanic-task__labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-right: auto;
+
+  span {
+    background: color-mix(in srgb, var(--label-color) 18%, transparent);
+    border-radius: 999px;
+    color: var(--bs-body-color);
+    font-size: 0.68rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+
+// =========================================================
+// BOTÃO CONCLUIR
+// =========================================================
+
+.mechanic-task__complete {
+  background: var(--bs-primary);
+  border: 0;
+  border-radius: 9px;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 650;
+  padding: 0.55rem 0.7rem;
+  white-space: nowrap;
+
+  &.is-done {
+    background: transparent;
+    border: 1px solid var(--bs-border-color);
+    color: var(--bs-secondary-color);
+  }
+}
+
+
+// =========================================================
+// ESTADO VAZIO
+// =========================================================
+
+.mechanic-tasks-empty {
+  color: var(--bs-secondary-color);
+  padding: 3rem 1rem;
+  text-align: center;
+
+  i {
+    color: var(--bs-success);
+    font-size: 2.5rem;
+  }
+
+  h2 {
+    color: var(--bs-body-color);
+    font-size: 1rem;
+  }
+
+  p {
+    font-size: 0.82rem;
+  }
+}
+
+
+// =========================================================
+// TABLET
+// =========================================================
+
+@media (max-width: 850px) {
+  .mechanic-tasks-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.7rem;
+
+    &__filters {
+      align-items: stretch;
+      flex-direction: column;
+      justify-content: stretch;
+      width: 100%;
+    }
+  }
+
+  .mechanic-tasks-plan-filter {
+    width: 100%;
+
+    &__field {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  .mechanic-tasks-filters {
+    width: 100%;
+
+    a {
+      flex: 1;
+      text-align: center;
+    }
+  }
+}
+
+
+// =========================================================
+// CELULAR
+// =========================================================
 
 @media (max-width: 520px) {
-  .mechanic-tasks-toolbar { align-items: stretch; flex-direction: column; gap: .65rem; }
-  .mechanic-tasks-filters a { flex: 1; text-align: center; }
+  .mechanic-tasks-page {
+    padding: 1rem 0.75rem 2.5rem;
+  }
+
+  .mechanic-tasks-header {
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.85rem;
+
+    &__icon {
+      flex-basis: 2.45rem;
+      font-size: 1.2rem;
+      height: 2.45rem;
+    }
+
+    h1 {
+      font-size: 1.45rem;
+    }
+
+    p:not(.mechanic-tasks-eyebrow) {
+      font-size: 0.8rem;
+    }
+  }
+
+  .mechanic-tasks-summary {
+    gap: 0.4rem;
+  }
+
+  .mechanic-task-stat {
+    padding: 0.55rem 0.4rem;
+
+    strong {
+      font-size: 1.05rem;
+    }
+
+    span {
+      font-size: 0.64rem;
+    }
+  }
+
+  .mechanic-tasks-toolbar {
+    gap: 0.8rem;
+  }
+
+  .mechanic-tasks-plan-filter {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    width: 100%;
+
+    &__field {
+      min-width: 0;
+
+      label {
+        font-size: 0.65rem;
+      }
+
+      .form-select {
+        min-height: 2.55rem;
+        font-size: 0.76rem;
+      }
+    }
+
+    > .btn {
+      min-height: 2.55rem;
+    }
+
+    // O Limpar vai para uma linha inteira
+    > .btn-outline-secondary {
+      grid-column: 1 / -1;
+      width: 100%;
+    }
+  }
+
+  .mechanic-tasks-filters {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.3rem;
+    overflow: visible;
+    width: 100%;
+
+    a {
+      min-width: 0;
+      padding: 0.45rem 0.2rem;
+      text-align: center;
+    }
+  }
+
+  .mechanic-task {
+    padding: 0.85rem;
+  }
+
+  .mechanic-task__topline,
+  .mechanic-task__footer {
+    align-items: flex-start;
+  }
+
+  .mechanic-task__footer {
+    flex-wrap: wrap;
+  }
+
+  .mechanic-task__complete {
+    margin-left: auto;
+  }
 }
 
-@media (min-width: 700px) { .mechanic-tasks-page { padding-top: 2rem; } .mechanic-tasks-summary { max-width: 300px; } }
+
+// =========================================================
+// CELULARES MUITO PEQUENOS
+// =========================================================
+
+@media (max-width: 380px) {
+  .mechanic-tasks-plan-filter {
+    grid-template-columns: 1fr;
+
+    > .btn {
+      width: 100%;
+    }
+
+    > .btn-outline-secondary {
+      grid-column: auto;
+    }
+  }
+
+  .mechanic-tasks-filters a {
+    font-size: 0.7rem;
+  }
+
+  .mechanic-task__complete {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+
+// =========================================================
+// DESKTOP
+// =========================================================
+
+@media (min-width: 700px) {
+  .mechanic-tasks-page {
+    padding-top: 2rem;
+  }
+
+  .mechanic-tasks-summary {
+    max-width: 300px;
+  }
+}

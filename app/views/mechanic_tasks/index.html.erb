@@ -46,39 +46,51 @@
     </div>
 
     <div class="mechanic-tasks-toolbar__filters">
-      <%= form_with url: mechanic_tasks_path, method: :get, local: true, class: "mechanic-tasks-plan-filter" do %>
 
-        <%= hidden_field_tag :status, @status %>
+      <div class="mechanic-tasks-filter-group">
 
-        <div class="mechanic-tasks-plan-filter__field">
-          <label for="action_plan_id">
-            <i class="bi bi-kanban me-1"></i>
-            Plano de ação
-          </label>
+        <%= form_with url: mechanic_tasks_path,
+            method: :get,
+            local: true,
+            class: "mechanic-tasks-plan-filter" do %>
 
-          <%= select_tag :action_plan_id,
-            options_from_collection_for_select(
-              @action_plans,
-              :id,
-              :name,
-              params[:action_plan_id]
-            ),
-            include_blank: "Todos os planos",
-            class: "form-select",
-            id: "action_plan_id" %>
-        </div>
+          <%= hidden_field_tag :status, @status %>
 
-        <%= submit_tag "Filtrar", class: "btn btn-primary" %>
+          <div class="mechanic-tasks-plan-filter__field">
+            <label for="action_plan_id">
+              <i class="bi bi-kanban"></i>
+              Plano de ação
+            </label>
 
-        <% if params[:action_plan_id].present? %>
-          <%= link_to "Limpar",
-              mechanic_tasks_path(status: @status),
-              class: "btn btn-outline-secondary" %>
+            <%= select_tag :action_plan_id,
+              options_from_collection_for_select(
+                @action_plans,
+                :id,
+                :name,
+                params[:action_plan_id]
+              ),
+              include_blank: "Todos os planos",
+              class: "form-select",
+              id: "action_plan_id" %>
+          </div>
+
+          <%= submit_tag "Filtrar",
+              class: "btn btn-primary" %>
+
+          <% if params[:action_plan_id].present? %>
+            <%= link_to "Limpar",
+                mechanic_tasks_path(status: @status),
+                class: "btn btn-outline-secondary" %>
+          <% end %>
+
         <% end %>
 
-      <% end %>
+      </div>
 
-      <nav class="mechanic-tasks-filters" aria-label="Filtrar tarefas">
+      <nav
+        class="mechanic-tasks-filters"
+        aria-label="Filtrar tarefas"
+      >
         <%= link_to "Abertas",
             mechanic_tasks_path(
               status: "open",
@@ -100,6 +112,7 @@
             ),
             class: ("is-active" if @status == "all") %>
       </nav>
+
     </div>
   </section>
 
