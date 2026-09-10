@@ -43,7 +43,8 @@ module FleetAvailabilityItems
             fleet_availability_item: @item,
             user: @user,
             from_status: old_status,
-            to_status: @item.status
+            to_status: @item.status,
+            observation: @observation
           )
 
         end

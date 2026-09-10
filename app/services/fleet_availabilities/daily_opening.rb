@@ -16,7 +16,11 @@ module FleetAvailabilities
     end
 
     def call
-      locked_count = FleetAvailability.auto_lock_expired!(now: @now)
+      closing_result = FleetAvailabilities::AutoCloser.call(
+        user: @user,
+        now: @now
+      )
+      locked_count = closing_result.locked_count
 
       return skipped_result(locked_count, :missing_user) unless @user
 

@@ -50,6 +50,26 @@ class FleetAvailabilities::DailyOpeningTest < ActiveSupport::TestCase
     assert fleet_availabilities(:two).reload.locked?
   end
 
+  test "fills empty positions from the deposit before automatic closing" do
+    FleetAvailabilitySetting.current.update!(auto_lock_time: "16:00")
+    item = fleet_availability_items(:one)
+
+    FleetAvailabilities::DailyOpening.call(
+      user: users(:one),
+      now: Time.zone.local(2026, 7, 20, 16, 0)
+    )
+
+    item.reload
+    assert item.available?
+    assert_equal 0, item.position
+    assert_includes item.observation, "Movimentação automática no fechamento"
+    assert_equal 1, FleetAvailabilityChange.where(
+      fleet_availability_item: item,
+      from_status: :exchange,
+      to_status: :available
+    ).count
+  end
+
   test "copies the previous day's layout when opening automatically" do
     previous = fleet_availabilities(:two)
     previous.fleet_availability_items.first.update!(
