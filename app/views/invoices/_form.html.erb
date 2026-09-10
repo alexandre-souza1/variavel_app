@@ -15,13 +15,6 @@
   </header>
 
   <div class="invoice-entry-content">
-    <% if notice %>
-      <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <%= notice %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-      </div>
-    <% end %>
-
     <% if invoice.errors.any? %>
       <div class="alert alert-danger mb-4">
         <h5><%= pluralize(invoice.errors.count, "erro") %> impedem o salvamento da NF:</h5>

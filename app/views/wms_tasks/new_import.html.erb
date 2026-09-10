@@ -2,7 +2,6 @@
   <h1 class="h3 mb-4">Importar Tarefas WMS</h1>
 
   <div id="import-status">
-    <%= render 'shared/flashes' %>
   </div>
 
   <%= form_with url: import_wms_tasks_path, local: true, html: { multipart: true }, class: "card p-4 shadow-sm" do |form| %>
