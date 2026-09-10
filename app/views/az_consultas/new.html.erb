@@ -10,9 +10,7 @@
       <%= link_to az_consultas_import_path, class: "az-new-link" do %>
         <i class="bi bi-upload"></i> Importação
       <% end %>
-      <%= link_to downloads_path, class: "az-new-link az-new-link--primary" do %>
-        <i class="bi bi-file-earmark-text"></i> Central de padrões
-      <% end %>
+      <%= render "shared/unit_dream" %>
     </div>
   </header>
 
@@ -22,7 +20,12 @@
         <h2 id="turnos-heading"><i class="bi bi-clock-history"></i> Selecione o turno</h2>
         <p>A matrícula identifica automaticamente se o colaborador é operador ou ajudante.</p>
       </div>
-      <span class="text-muted small">Toque novamente no turno para fechar a consulta</span>
+      <div class="az-new-section-heading__actions">
+        <span class="text-muted small">Toque novamente no turno para fechar a consulta</span>
+        <%= link_to downloads_path, class: "az-new-link az-new-link--primary" do %>
+          <i class="bi bi-file-earmark-text"></i> Central de padrões
+        <% end %>
+      </div>
     </div>
 
     <div class="az-turno-grid">

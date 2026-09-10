@@ -20,6 +20,43 @@
     margin-bottom: 2rem;
   }
 
+  .unit-dream-card {
+    flex: 0 0 280px;
+    width: 280px;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 12px;
+    box-shadow: 0 7px 18px rgba(15, 23, 42, .12);
+  }
+
+  .unit-dream-card__link {
+    position: relative;
+    display: flex;
+    height: 148px;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: hidden;
+    padding: 0;
+    background-position: center;
+    background-size: cover;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      outline: 3px solid rgba(var(--bs-primary-rgb), .55);
+      outline-offset: 2px;
+    }
+  }
+
+  .az-new-section-heading__actions {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    gap: .55rem;
+    text-align: right;
+  }
+
   .az-new-eyebrow {
     margin: 0 0 .45rem;
     color: var(--bs-primary);
@@ -434,6 +471,21 @@
     .az-new-section-heading {
       align-items: flex-start;
       flex-direction: column;
+    }
+
+    .az-new-section-heading__actions {
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .unit-dream-card {
+      flex-basis: 100%;
+      width: 100%;
+    }
+
+    .unit-dream-card__link {
+      height: auto;
+      aspect-ratio: 1.45;
     }
 
     .az-new-form-header,
