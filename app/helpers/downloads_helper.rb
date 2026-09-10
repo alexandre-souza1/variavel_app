@@ -30,4 +30,26 @@ module DownloadsHelper
     open_download_url(download)
   end
 
+  def sector_title(sector)
+    {
+      "FROTA" => "Frota",
+      "ENTREGA" => "Distribuição",
+      "ARMAZEM" => "Armazém",
+      "RH" => "RH",
+      "FINANCEIRO" => "Financeiro",
+      "SEGURANÇA" => "Segurança"
+    }.fetch(sector, sector.to_s.humanize)
+  end
+
+  def sector_icon(sector)
+    {
+      "FROTA" => "bi bi-truck",
+      "ENTREGA" => "bi bi-box-seam",
+      "ARMAZEM" => "bi bi-building",
+      "RH" => "bi bi-people",
+      "FINANCEIRO" => "bi bi-cash-stack",
+      "SEGURANÇA" => "bi bi-shield-check"
+    }.fetch(sector, "bi bi-diagram-3")
+  end
+
 end

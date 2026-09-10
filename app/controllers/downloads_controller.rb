@@ -19,6 +19,7 @@ class DownloadsController < ApplicationController
     @downloads = Download
       .with_attached_file
       .order(:category, :title)
+    @downloads_by_category = @downloads.group_by(&:category)
   end
 
   def new

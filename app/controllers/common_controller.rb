@@ -11,5 +11,6 @@ class CommonController < ApplicationController
   end
 
   def padroes
+    redirect_to downloads_path
   end
 end

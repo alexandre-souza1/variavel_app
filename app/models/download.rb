@@ -11,7 +11,7 @@ class Download < ApplicationRecord
     onedrive.live.com
   ].freeze
 
-  SECTOR = [
+  SECTORS = [
     'FROTA',
     'ENTREGA',
     'ARMAZEM',
@@ -19,6 +19,9 @@ class Download < ApplicationRecord
     'FINANCEIRO',
     'SEGURANÇA'
   ].freeze
+
+  # Mantém compatibilidade com os formulários existentes.
+  SECTOR = SECTORS
 
   validates :title, :category, :sector, presence: true
 

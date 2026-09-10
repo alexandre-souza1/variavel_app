@@ -1,4 +1,4 @@
-<div class="downloads-page" data-controller="filter">
+<div class="downloads-page" data-controller="downloads-filter">
 
   <!-- ========== CABEÇALHO ========== -->
   <header class="downloads-header">
@@ -36,49 +36,67 @@
   </header>
 
 
-  <!-- ========== FILTROS ========== -->
-  <section class="filters-card">
-
-    <div class="filters-header">
-      <div class="filters-title">
-        <i class="bi bi-funnel"></i>
-        <span>Filtrar por tipo</span>
+  <!-- ========== ABAS ========== -->
+  <section class="downloads-tabs" aria-label="Setores e categorias">
+    <div class="downloads-tabs__header">
+      <div>
+        <span class="downloads-tabs__eyebrow">Biblioteca operacional</span>
+        <h2>Escolha um setor</h2>
       </div>
+      <i class="bi bi-layout-three-columns"></i>
     </div>
 
-    <div class="filters-body">
+    <nav class="downloads-sector-tabs" role="tablist" aria-label="Setores">
+      <button
+        type="button"
+        class="downloads-tab active"
+        data-filter-sector="all"
+        data-action="click->downloads-filter#filterSector"
+        data-downloads-filter-target="sectorButton"
+        role="tab"
+        aria-selected="true">
+        <i class="bi bi-grid-1x2"></i>
+        <span>Todos</span>
+        <small><%= @downloads.size %></small>
+      </button>
 
-      <div
-        class="filter-buttons"
-        role="group"
-        aria-label="Filtrar documentos">
-
+      <% Download::SECTORS.each do |sector| %>
+        <% sector_count = @downloads.count { |download| download.sector == sector } %>
         <button
           type="button"
-          class="btn-filter active"
-          data-filter="all"
-          data-action="click->filter#filter"
-          data-filter-target="filterButton">
-          Todos
+          class="downloads-tab"
+          data-filter-sector="<%= sector %>"
+          data-action="click->downloads-filter#filterSector"
+          data-downloads-filter-target="sectorButton"
+          role="tab"
+          aria-selected="false">
+          <i class="<%= sector_icon(sector) %>"></i>
+          <span><%= sector_title(sector) %></span>
+          <small><%= sector_count %></small>
         </button>
+      <% end %>
+    </nav>
 
-        <% Download::CATEGORIES.each do |category| %>
-
-          <button
-            type="button"
-            class="btn-filter"
-            data-filter="<%= category %>"
-            data-action="click->filter#filter"
-            data-filter-target="filterButton">
-
-            <%= category_title(category) %>
-
-          </button>
-
-        <% end %>
-
-      </div>
-
+    <div class="downloads-category-tabs" role="group" aria-label="Categorias">
+      <span class="downloads-category-tabs__label">Tipo de documento</span>
+      <button
+        type="button"
+        class="downloads-category-tab active"
+        data-filter-category="all"
+        data-action="click->downloads-filter#filterCategory"
+        data-downloads-filter-target="categoryButton">
+        Todos
+      </button>
+      <% Download::CATEGORIES.each do |category| %>
+        <button
+          type="button"
+          class="downloads-category-tab"
+          data-filter-category="<%= category %>"
+          data-action="click->downloads-filter#filterCategory"
+          data-downloads-filter-target="categoryButton">
+          <%= category_title(category) %>
+        </button>
+      <% end %>
     </div>
   </section>
 
@@ -88,14 +106,14 @@
 
     <% Download::CATEGORIES.each do |category| %>
 
-      <% downloads = Download.where(category: category) %>
+      <% downloads = @downloads_by_category[category] || [] %>
 
       <% next if downloads.empty? %>
 
       <section
         class="download-category"
         data-category="<%= category %>"
-        data-filter-target="category">
+        data-downloads-filter-target="category">
 
         <!-- Cabeçalho da categoria -->
 
@@ -134,7 +152,11 @@
 
           <% downloads.each do |download| %>
 
-            <article class="download-item">
+            <article
+              class="download-item"
+              data-downloads-filter-target="item"
+              data-category="<%= category %>"
+              data-sector="<%= download.sector %>">
 
               <div class="download-main">
 
