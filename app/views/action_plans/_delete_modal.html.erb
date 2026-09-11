@@ -19,11 +19,11 @@
                data-action="input->confirm-delete#validate">
       </div>
       <div class="modal-footer">
-        <button class="btn-outline" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
         <%= button_to "Excluir definitivamente",
                       action_plan_path(plan),
                       method: :delete,
-                      class: "btn-danger",
+                      class: "btn btn-danger",
                       disabled: true,
                       data: { confirm_delete_target: "button" } %>
       </div>
