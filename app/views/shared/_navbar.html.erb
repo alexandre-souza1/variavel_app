@@ -170,7 +170,7 @@
                 <%= link_to import_parametro_calculos_path, class: "dropdown-item app-dropdown-item" do %>
                   <i class="bi bi-download me-2"></i> Importar Parâmetros
                 <% end %>
-                <%= link_to admin_users_path, class: "dropdown-item app-dropdown-item" do %>
+                <%= link_to(current_user.admin? ? admin_users_path : admin_users_path(edit_user_id: current_user.id), class: "dropdown-item app-dropdown-item") do %>
                   <i class="bi bi-person-lines-fill me-2"></i> Usuários
                 <% end %>
               <% end %>
@@ -189,7 +189,7 @@
               </div>
               <div class="dropdown-divider"></div>
 
-              <%= link_to edit_user_registration_path, class: "dropdown-item app-dropdown-item" do %>
+              <%= link_to admin_users_path(edit_user_id: current_user.id), class: "dropdown-item app-dropdown-item" do %>
                 <i class="bi bi-person-circle me-2"></i> Editar cadastro
               <% end %>
               <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "dropdown-item app-dropdown-item text-danger fw-bold" do %>

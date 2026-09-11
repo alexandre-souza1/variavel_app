@@ -1,0 +1,79 @@
+<div class="user-editor-card">
+  <div class="user-editor-card__header">
+    <div>
+      <p class="app-page-eyebrow mb-1"><i class="bi bi-pencil-square me-1"></i>Cadastro selecionado</p>
+      <h2 id="userEditorModalTitle"><%= user == current_user ? "Meu cadastro" : "Editar usuário" %></h2>
+      <p class="text-muted mb-0"><%= user.email %></p>
+    </div>
+    <%= link_to admin_users_path, class: "btn btn-outline-secondary btn-sm" do %>
+      <i class="bi bi-x-lg me-1"></i>Fechar
+    <% end %>
+  </div>
+
+  <% if user.errors.any? %>
+    <div class="alert alert-danger mb-4">
+      <strong>Não foi possível salvar.</strong>
+      <ul class="mb-0 mt-2">
+        <% user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with(model: [:admin, user], local: true, html: { multipart: true }) do |f| %>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <%= f.label :name, "Nome", class: "form-label fw-semibold" %>
+        <%= f.text_field :name, class: "form-control", placeholder: "Nome completo" %>
+      </div>
+      <div class="col-md-6">
+        <%= f.label :email, "E-mail", class: "form-label fw-semibold" %>
+        <%= f.email_field :email, class: "form-control", placeholder: "usuario@email.com" %>
+      </div>
+      <div class="col-md-6">
+        <%= f.label :photo, "Foto de perfil", class: "form-label fw-semibold" %>
+        <%= f.file_field :photo, class: "form-control" %>
+      </div>
+      <% if current_user.admin? %>
+        <div class="col-md-3">
+          <%= f.label :role, "Perfil", class: "form-label fw-semibold" %>
+          <%= f.select :role, User.roles.keys.map { |role| [role.titleize, role] }, {}, class: "form-select" %>
+        </div>
+        <div class="col-md-3">
+          <%= f.label :sector, "Setor", class: "form-label fw-semibold" %>
+          <%= f.select :sector, User::USER_SECTORS.map { |label, value| [label, value] }, { include_blank: "Selecione" }, class: "form-select" %>
+        </div>
+      <% end %>
+    </div>
+
+    <% if user.photo.attached? %>
+      <div class="user-editor-card__photo mt-3">
+        <%= image_tag user.photo.variant(resize_to_limit: [72, 72]), class: "rounded-circle", alt: user.name %>
+        <div class="form-check">
+          <%= f.check_box :remove_photo, class: "form-check-input" %>
+          <%= f.label :remove_photo, "Remover foto", class: "form-check-label" %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="user-editor-card__security mt-4">
+      <h3><i class="bi bi-key-fill me-2"></i>Alterar senha</h3>
+      <p>Preencha apenas se quiser definir uma nova senha.</p>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <%= f.label :password, "Nova senha", class: "form-label fw-semibold" %>
+          <%= f.password_field :password, class: "form-control" %>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :password_confirmation, "Confirmar senha", class: "form-label fw-semibold" %>
+          <%= f.password_field :password_confirmation, class: "form-control" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end mt-4">
+      <%= f.submit "Salvar cadastro", class: "btn btn-primary px-4" %>
+    </div>
+  <% end %>
+</div>

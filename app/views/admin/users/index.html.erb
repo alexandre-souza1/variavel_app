@@ -2,20 +2,23 @@
   <div class="app-page-header">
     <div>
       <p class="app-page-eyebrow"><i class="bi bi-shield-lock me-1"></i>Administração</p>
-      <h1><i class="bi bi-people me-2"></i>Gerenciamento de Usuários</h1>
-      <p>Cadastre, edite e gerencie os acessos ao sistema.</p>
+      <h1><i class="bi bi-people me-2"></i><%= current_user.admin? ? "Usuários e cadastros" : "Meu cadastro" %></h1>
+      <p><%= current_user.admin? ? "Selecione um usuário para editar seus dados e acessos." : "Atualize seus dados pessoais e credenciais." %></p>
     </div>
 
     <div class="app-page-actions">
-      <%= link_to new_admin_user_path, class: "btn btn-primary" do %>
-        <i class="bi bi-person-plus me-1"></i> Novo Usuário
+      <% if current_user.admin? %>
+        <%= link_to new_admin_user_path, class: "btn btn-primary" do %>
+          <i class="bi bi-person-plus me-1"></i> Novo Usuário
+        <% end %>
       <% end %>
       <%= link_to "Voltar", root_path, class: "btn btn-outline-secondary" %>
     </div>
   </div>
 
 
-  <div class="row g-3 mb-4">
+  <% if current_user.admin? %>
+    <div class="row g-3 mb-4">
     <div class="col-md-4">
       <div class="card border-0 shadow-sm h-100">
         <div class="card-body">
@@ -42,7 +45,8 @@
         </div>
       </div>
     </div>
-  </div>
+    </div>
+  <% end %>
 
   <div class="app-table-section">
     <div class="app-table-section__body">
@@ -122,7 +126,7 @@
 
                   <td class="text-end">
                     <div class="btn-group">
-                      <%= link_to edit_admin_user_path(user), class: "icon-btn", title: "Editar usuário", aria: { label: "Editar usuário" } do %>
+                      <%= link_to admin_users_path(edit_user_id: user.id), class: "icon-btn", title: "Editar usuário", aria: { label: "Editar usuário" } do %>
                         <i class="bi bi-pencil-square" aria-hidden="true"></i>
                       <% end %>
 
@@ -146,6 +150,22 @@
       </div>
     </div>
   </div>
+
+  <% if @selected_user.present? %>
+    <div class="modal fade show d-block user-editor-modal"
+         id="userEditorModal"
+         tabindex="-1"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="userEditorModalTitle">
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <%= render "editor", user: @selected_user %>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+  <% end %>
 
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
     <small class="text-muted">Exibindo <strong><%= @users.size %></strong> usuários cadastrados.</small>

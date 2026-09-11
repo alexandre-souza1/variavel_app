@@ -1,12 +1,13 @@
 class Admin::UsersController < ApplicationController
   before_action :authenticate_user!
   before_action :set_user, only: [:edit, :update, :destroy]
-  before_action :only_admin, except: [:edit, :update] # Aplica only_admin apenas para ações não relacionadas a edição
+  before_action :only_admin, except: [:index, :edit, :update]
   before_action :authorize_user_edit, only: [:edit, :update] # Nova verificação para edit/update
 
   def index
-    scope = params[:status] == "inactive" ? User.inactive : User.active
-    @users = scope.order(:id)
+    load_user_index
+    @selected_user = @users.find_by(id: params[:edit_user_id])
+    @selected_user ||= @users.first unless current_user.admin?
   end
 
   def new
@@ -27,6 +28,9 @@ class Admin::UsersController < ApplicationController
   end
 
   def edit
+    load_user_index
+    @selected_user = @user
+    render :index
   end
 
   def update
@@ -40,13 +44,14 @@ class Admin::UsersController < ApplicationController
     end
 
     if @user.update(user_params)
-      if current_user.admin?
-        redirect_to admin_users_path, notice: "Usuário atualizado com sucesso."
-      else
-        redirect_to edit_admin_user_path(@user), notice: "Perfil atualizado com sucesso."
-      end
+      load_user_index
+      @selected_user = @user
+      flash.now[:notice] = current_user.admin? ? "Usuário atualizado com sucesso." : "Perfil atualizado com sucesso."
+      render :index
     else
-      render :edit
+      load_user_index
+      @selected_user = @user
+      render :index, status: :unprocessable_entity
     end
   end
 
@@ -60,6 +65,12 @@ class Admin::UsersController < ApplicationController
   end
 
   private
+
+  def load_user_index
+    scope = params[:status] == "inactive" ? User.inactive : User.active
+    scope = scope.where(id: current_user.id) unless current_user.admin?
+    @users = scope.order(:id)
+  end
 
   def set_user
     @user = User.find(params[:id])

@@ -8,6 +8,17 @@
 [data-bs-theme="dark"] {
   color-scheme: dark;
 
+  // Acentos compartilhados com o tema claro, adaptados para o contraste escuro.
+  --bs-primary: #2d9596;
+  --bs-primary-rgb: 45, 149, 150;
+  --bs-primary-text-emphasis: #9ad0c2;
+  --bs-link-color: #9ad0c2;
+  --bs-link-hover-color: #ecf4d6;
+  --bs-navbar-bg: #265073;
+  --bs-navbar-color: #ecf4d6;
+  --bs-navbar-hover-color: #ffffff;
+  --bs-admin-nav-bg: #265073;
+
   body,
   .app-shell,
   .app-main,
@@ -60,8 +71,8 @@
 
   .dropdown-item:hover,
   .dropdown-item:focus {
-    background-color: #243047;
-    color: #ffffff;
+    background-color: #265073;
+    color: #ecf4d6;
   }
 
   .text-muted {
@@ -119,6 +130,29 @@
     --bs-btn-hover-color: #ffffff;
   }
 
+  .btn-primary {
+    --bs-btn-color: #ffffff;
+    --bs-btn-bg: #2d9596;
+    --bs-btn-border-color: #2d9596;
+    --bs-btn-hover-color: #ffffff;
+    --bs-btn-hover-bg: #265073;
+    --bs-btn-hover-border-color: #2d9596;
+    --bs-btn-active-color: #ffffff;
+    --bs-btn-active-bg: #265073;
+    --bs-btn-active-border-color: #2d9596;
+  }
+
+  .btn-outline-primary {
+    --bs-btn-color: #9ad0c2;
+    --bs-btn-border-color: #2d9596;
+    --bs-btn-hover-color: #ffffff;
+    --bs-btn-hover-bg: #2d9596;
+    --bs-btn-hover-border-color: #2d9596;
+    --bs-btn-active-color: #ffffff;
+    --bs-btn-active-bg: #265073;
+    --bs-btn-active-border-color: #2d9596;
+  }
+
   footer {
     --bs-footer-bg: var(--bs-admin-nav-bg, #1e293b);
     --bs-footer-color: #e5e7eb;
@@ -134,7 +168,7 @@
   .task-card {
     background: #111827;
     border-color: #273449;
-    border-left-color: #60a5fa;
+    border-left-color: #2d9596;
     color: #e5e7eb;
 
     &:hover {
