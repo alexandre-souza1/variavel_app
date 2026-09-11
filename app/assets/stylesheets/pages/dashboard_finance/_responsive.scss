@@ -176,7 +176,6 @@
         border: 1px solid var(--bs-border-color);
         border-radius: 12px;
         background: var(--bs-tertiary-bg);
-        box-shadow: 0 4px 12px rgba(15, 23, 42, .045);
       }
 
       tbody tr:first-child { margin-top: .65rem; }
@@ -223,6 +222,119 @@
       tbody td[data-label="Ações"]::before { content: "Abrir lançamento"; }
       tbody td[data-label="NFs"] .badge,
       tbody td[data-label="Centro de custo"] .badge { margin-bottom: .2rem; }
+    }
+
+    // O app-table dos últimos lançamentos tem um comportamento isolado para
+    // não alterar as demais tabelas que usam o mesmo componente.
+    .latest-invoices-table {
+      display: block;
+      min-width: 0;
+      width: 100%;
+      table-layout: fixed;
+
+      thead { display: none; }
+      tbody, tr, td { display: block; width: 100%; }
+
+      tbody {
+        box-sizing: border-box;
+        padding: 0 .65rem .65rem;
+      }
+
+      tbody tr {
+        box-sizing: border-box;
+        width: 100%;
+        margin: 0 0 .7rem;
+        padding: .65rem .75rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 12px;
+        background: var(--bs-body-bg);
+      }
+
+      tbody tr:first-child { margin-top: .65rem; }
+      tbody tr:last-child { border-bottom: 1px solid var(--bs-border-color); }
+
+      tbody td {
+        box-sizing: border-box;
+        display: grid;
+        grid-template-columns: 7.2rem minmax(0, 1fr);
+        gap: .55rem;
+        align-items: center;
+        padding: .48rem 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        text-align: left !important;
+        font-size: .78rem;
+      }
+
+      tbody td > * { min-width: 0; }
+      tbody td[data-label="Fornecedor"] strong { font-size: .84rem; }
+      tbody td[data-label="Fornecedor"] small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      tbody td[data-label="NFs"],
+      tbody td[data-label="Centro de custo"] { align-items: start; }
+      tbody td[data-label="NFs"] .badge,
+      tbody td[data-label="Centro de custo"] .badge,
+      tbody td[data-label="Categoria"] .status-badge { justify-self: start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+      tbody td::before {
+        content: attr(data-label);
+        color: var(--bs-secondary-color);
+        font-size: .67rem;
+        font-weight: 700;
+        letter-spacing: .035em;
+        text-transform: uppercase;
+      }
+
+      tbody td[data-label="Valor"] { color: var(--bs-success-text-emphasis); }
+      tbody td[data-label="Ações"] { border-top: 1px solid var(--bs-border-color) !important; margin-top: .25rem; padding-top: .65rem !important; }
+      tbody td[data-label="Ações"]::before { content: "Abrir lançamento"; }
+      tbody td[data-label="NFs"] .badge,
+      tbody td[data-label="Centro de custo"] .badge { margin-bottom: .2rem; }
+
+      // Replica o acabamento dos cards da tabela de gastos por categoria.
+      tbody { padding: 0; }
+
+      tbody tr {
+        padding: .5rem .8rem;
+        margin: .7rem .75rem;
+        width: auto;
+      }
+
+      tbody tr:first-child { margin-top: .7rem; }
+
+      tbody td {
+        align-items: baseline;
+        border-bottom: 1px solid var(--bs-border-color) !important;
+        display: flex;
+        gap: .8rem;
+        justify-content: space-between;
+        overflow-wrap: anywhere;
+        padding: .5rem 0 !important;
+        text-align: right !important;
+      }
+
+      tbody td::before {
+        flex: 0 0 38%;
+        line-height: 1.25;
+        text-align: left;
+      }
+
+      tbody td:last-child,
+      tbody td[data-label="Ações"] {
+        border-bottom: 0 !important;
+        border-top: 0 !important;
+        margin-top: 0;
+        padding-top: .5rem !important;
+      }
+
+      tbody td[data-label="Fornecedor"] small,
+      tbody td[data-label="NFs"] .badge,
+      tbody td[data-label="Centro de custo"] .badge,
+      tbody td[data-label="Categoria"] .status-badge {
+        max-width: none;
+        overflow: visible;
+        text-overflow: clip;
+        white-space: normal;
+      }
     }
 
     .category-grid-wrapper .category-grid {

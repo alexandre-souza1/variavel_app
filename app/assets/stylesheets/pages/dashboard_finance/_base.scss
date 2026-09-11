@@ -531,6 +531,71 @@
   }
 }
 
+// No celular, os lançamentos da categoria seguem o padrão de relatórios:
+// cada linha vira um cartão legível, sem exigir rolagem horizontal.
+@media (max-width: 640px) {
+  .invoice-dashboard-page .category-expenses-panel {
+    .app-panel__header {
+      align-items: flex-start;
+      gap: .75rem;
+    }
+
+    .app-table-shell {
+      overflow-x: visible;
+    }
+
+    .app-table {
+      display: block;
+      min-width: 0;
+
+      thead { display: none; }
+
+      tbody,
+      tr,
+      td {
+        display: block;
+        width: 100%;
+      }
+
+      tbody tr {
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 10px;
+        box-sizing: border-box;
+        margin: .7rem .75rem;
+        padding: .5rem .8rem;
+        width: auto;
+      }
+
+      tbody td {
+        align-items: baseline;
+        border-bottom: 1px solid var(--bs-border-color) !important;
+        display: flex;
+        gap: .8rem;
+        justify-content: space-between;
+        overflow-wrap: anywhere;
+        padding: .5rem 0 !important;
+        text-align: right !important;
+
+        &::before {
+          color: var(--bs-secondary-color);
+          content: attr(data-label);
+          flex: 0 0 38%;
+          font-size: .68rem;
+          font-weight: 700;
+          letter-spacing: .04em;
+          line-height: 1.25;
+          text-align: left;
+          text-transform: uppercase;
+        }
+
+        &:last-child { border-bottom: 0 !important; }
+      }
+    }
+
+  }
+}
+
 .invoice-dashboard-page {
   .invoice-dashboard-eyebrow,
   .invoice-entry-eyebrow { margin: 0 0 .4rem; color: var(--bs-primary); font-size: .74rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }

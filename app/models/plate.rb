@@ -2,8 +2,9 @@ require "csv"
 class Plate < ApplicationRecord
   validates :placa, presence: true, uniqueness: true
   has_many :checklists
-  has_many :stress_test_events, dependent: :nullify
   has_many :fleet_availability_items, dependent: :destroy
+  has_many :fleet_availability_changes, through: :fleet_availability_items
+  has_many :stress_test_events, dependent: :nullify
   has_many :fleet_availabilities, through: :fleet_availability_items
 
   # Se quiser validar opções específicas

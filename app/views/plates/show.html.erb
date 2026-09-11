@@ -1,0 +1,145 @@
+<div class="dashboard-page plate-profile-page">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div>
+        <p class="dashboard-eyebrow"><i class="bi bi-grid-1x2 me-1"></i> Frota · Perfil da placa</p>
+        <h1><i class="bi bi-truck-front-fill"></i> <%= @plate.placa %></h1>
+        <p class="subtitle"><i class="bi bi-info-circle me-1"></i> Acompanhamento operacional, histórico de saídas e tarefas relacionadas</p>
+      </div>
+      <div class="header-actions">
+        <%= link_to plates_path, class: "btn-outline" do %>
+          <i class="bi bi-arrow-left"></i> Placas
+        <% end %>
+        <%= link_to edit_plate_path(@plate), class: "btn-primary-solid" do %>
+          <i class="bi bi-pencil-square"></i> Editar placa
+        <% end %>
+      </div>
+    </div>
+  </header>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon bg-primary-soft"><i class="bi bi-toggle-on text-primary"></i></div>
+      <div class="kpi-info"><span class="kpi-label">Status</span><span class="kpi-value"><%= @plate.active? ? "Ativa" : "Inativa" %></span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon bg-success-soft"><i class="bi bi-sign-turn-right text-success"></i></div>
+      <div class="kpi-info"><span class="kpi-label">Saídas nos mapas</span><span class="kpi-value"><%= @mapa_exits.size %></span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon bg-warning-soft"><i class="bi bi-chat-left-text text-warning"></i></div>
+      <div class="kpi-info"><span class="kpi-label">Observação de hoje</span><span class="kpi-value plate-current-observation"><%= @current_observation&.dig(:text).presence || "Sem observação no dia atual" %></span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon bg-danger-soft"><i class="bi bi-kanban text-danger"></i></div>
+      <div class="kpi-info"><span class="kpi-label">Tasks mencionadas</span><span class="kpi-value"><%= @mentioned_tasks.size %></span></div>
+    </div>
+  </div>
+
+  <div class="app-panel info-card mb-4">
+    <div class="app-panel__header info-card-header">
+      <div class="dashboard-panel-heading">
+        <span class="dashboard-panel-kicker"><i class="bi bi-sign-turn-right me-1"></i> Operação</span>
+        <h2>Saídas registradas nos mapas</h2>
+        <small>Histórico de mapas associados à placa e motorista mais frequente</small>
+      </div>
+    </div>
+    <div class="app-panel__body info-card-body">
+      <div class="summary-grid mb-3">
+        <div class="summary-item">
+          <span class="summary-label">Setor e tipo</span>
+          <span class="summary-value"><%= @plate.setor.presence || "-" %></span>
+          <small class="text-muted"><%= @plate.tipo.presence || "Tipo não informado" %> · <%= @plate.perfil.presence || "Sem perfil" %></small>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Motorista mais frequente</span>
+          <% if @most_common_driver %>
+            <span class="summary-value"><%= @most_common_driver[:name].presence || "Matrícula #{@most_common_driver[:matricula]}" %></span>
+            <small class="text-muted"><%= @most_common_driver[:matricula] %> · <%= pluralize(@most_common_driver[:count], "saída", "saídas") %></small>
+          <% else %>
+            <span class="summary-value">-</span>
+            <small class="text-muted">Nenhum motorista identificado</small>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @mapa_exits.any? %>
+        <div class="app-table-shell">
+          <table class="table app-table app-table--data">
+            <thead><tr><th>Data</th><th>Mapa</th><th>Motorista</th><th>Matrícula</th></tr></thead>
+            <tbody>
+              <% @mapa_exits.first(10).each do |mapa| %>
+                <tr>
+                  <td><%= l(mapa.data_formatada || mapa.created_at.to_date, format: :default) %></td>
+                  <td class="fw-semibold"><%= mapa.mapa.presence || "-" %></td>
+                  <td><%= mapa.driver&.nome.presence || "Não identificado" %></td>
+                  <td><%= mapa.matric_motorista.presence || "-" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+        <% if @mapa_exits.size > 10 %>
+          <small class="text-muted d-block mt-2">Exibindo as 10 saídas mais recentes de <%= @mapa_exits.size %>.</small>
+        <% end %>
+      <% else %>
+        <div class="empty-state-compact"><i class="bi bi-sign-turn-right"></i><span>Nenhuma saída encontrada nos mapas para esta placa.</span></div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="info-grid">
+    <div class="app-panel info-card">
+      <div class="app-panel__header info-card-header">
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="bi bi-chat-left-text me-1"></i> Histórico</span>
+          <h2>Últimas observações</h2>
+          <small>Registros associados diretamente à placa</small>
+        </div>
+      </div>
+      <div class="app-panel__body info-card-body">
+        <% if @observations.any? %>
+          <ul class="activity-list">
+            <% @observations.each do |observation| %>
+              <li>
+                <div class="d-flex justify-content-between gap-3">
+                  <strong><%= observation[:source] %></strong>
+                  <small><%= l(observation[:date], format: :short) %></small>
+                </div>
+                <div class="mt-1"><%= observation[:text] %></div>
+                <small><%= observation[:author].presence || "Sistema" %> · <%= link_to "Ver registro", observation[:path], class: "text-primary" %></small>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <div class="empty-state-compact"><i class="bi bi-chat-square-dots"></i><span>Nenhuma observação registrada.</span></div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="app-panel info-card">
+      <div class="app-panel__header info-card-header">
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="bi bi-kanban me-1"></i> Acompanhamento</span>
+          <h2>Tasks relacionadas</h2>
+          <small>Onde <strong><%= @plate.placa %></strong> foi mencionada</small>
+        </div>
+      </div>
+      <div class="app-panel__body info-card-body">
+        <% if @mentioned_tasks.any? %>
+          <ul class="task-list-compact">
+            <% @mentioned_tasks.each do |task| %>
+              <li>
+                <i class="bi bi-<%= task.completed? ? 'check-circle text-success' : 'exclamation-circle text-warning' %>"></i>
+                <%= link_to truncate(task.title.presence || "Task sem título", length: 38), action_plan_bucket_task_path(task.bucket.action_plan, task.bucket, task), class: "task-link" %>
+                <span class="task-date"><%= l(task.updated_at, format: :short) %></span>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <div class="empty-state-compact"><i class="bi bi-kanban"></i><span>Nenhuma task mencionou esta placa.</span></div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

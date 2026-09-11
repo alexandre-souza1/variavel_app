@@ -128,6 +128,15 @@
     border-color: rgba(var(--bs-primary-rgb), .3);
   }
 
+  .plate-current-observation {
+    display: -webkit-box;
+    font-size: .82rem !important;
+    line-height: 1.35;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
   // Cores para ícones (tema claro/escuro compatível)
   .bg-primary-soft {
     background: rgba(var(--bs-primary-rgb), 0.08);
