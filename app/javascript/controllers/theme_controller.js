@@ -30,6 +30,6 @@ export default class extends Controller {
   updateBrowserColor(theme) {
     document
       .querySelector("meta[name='theme-color']")
-      ?.setAttribute("content", theme === "dark" ? "#111827" : "#3f8efc")
+      ?.setAttribute("content", theme === "dark" ? "#111827" : "#265073")
   }
 }

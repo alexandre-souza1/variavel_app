@@ -1,0 +1,431 @@
+// ============================================================
+// TEMA CLARO — PALETA WORKSTATION
+// ============================================================
+// A paleta fica totalmente dentro do seletor do tema claro para não alterar
+// as variáveis e os contrastes já definidos para o tema escuro.
+
+html[data-bs-theme="light"] {
+  --bs-primary: #2d9596;
+  --bs-primary-rgb: 45, 149, 150;
+  --bs-primary-text-emphasis: #265073;
+  --bs-link-color: #2d9596;
+  --bs-link-hover-color: #265073;
+
+  --bs-body-bg: #ecf4d6;
+  --bs-body-color: #265073;
+  --bs-emphasis-color: #265073;
+  --bs-emphasis-color-rgb: 38, 80, 115;
+  --bs-secondary-bg: #dcebd0;
+  --bs-tertiary-bg: #f5f9e7;
+  --bs-border-color: #9ad0c2;
+  --bs-border-color-translucent: rgba(45, 149, 150, 0.2);
+  --bs-secondary-color: #527286;
+  --bs-tertiary-color: #7694a0;
+  --bs-card-bg: #f9fced;
+  --bs-card-cap-bg: #dcebd0;
+  --bs-modal-bg: #f9fced;
+  --bs-dropdown-bg: #f9fced;
+  --bs-light-rgb: 236, 244, 214;
+
+  --bs-navbar-bg: #265073;
+  --bs-navbar-color: #ffffff;
+  --bs-navbar-hover-color: #ffffff;
+  --bs-admin-nav-bg: #265073;
+
+  body,
+  .app-shell,
+  .app-main,
+  .app-content {
+    background-color: var(--bs-body-bg);
+  }
+
+  .card,
+  .modal-content,
+  .offcanvas,
+  .list-group-item,
+  .accordion-item,
+  .template-card,
+  .category-card,
+  .app-panel {
+    background-color: var(--bs-card-bg);
+    border-color: var(--bs-border-color);
+  }
+
+  .card-header,
+  .card-footer,
+  .bg-light,
+  .bg-white {
+    background-color: var(--bs-card-cap-bg) !important;
+    border-color: var(--bs-border-color);
+  }
+
+  // Todos os card-body usam uma camada interna própria no tema claro.
+  .card > .card-body {
+    background-color: var(--bs-tertiary-bg);
+  }
+
+  .card > .card-body:first-child {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+  }
+
+  .card > .card-body:last-child {
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+  }
+
+  .card > .card-body:only-child {
+    border-radius: inherit;
+  }
+
+  .form-control,
+  .form-select,
+  .ts-control,
+  .ts-dropdown {
+    background-color: #f9fced;
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
+  }
+
+  // Menus suspensos ficam em uma superfície branca própria, separada do fundo.
+  --bs-dropdown-bg: var(--bs-tertiary-bg);
+  --bs-dropdown-color: #265073;
+  --bs-dropdown-link-color: #265073;
+  --bs-dropdown-link-hover-bg: #ecf4d6;
+  --bs-dropdown-link-hover-color: #265073;
+
+  .dropdown-menu,
+  .app-dropdown-menu,
+  .workstation-sector-picker__menu,
+  .ts-dropdown {
+    background-color: var(--bs-tertiary-bg) !important;
+    border-color: #9ad0c2;
+    box-shadow: 0 10px 24px rgba(38, 80, 115, 0.16);
+  }
+
+  .dropdown-menu .dropdown-item,
+  .app-dropdown-menu .app-dropdown-item,
+  .workstation-sector-picker__menu .workstation-sector-option,
+  .ts-dropdown .option {
+    color: #265073;
+
+    &:hover,
+    &:focus,
+    &.active {
+      background-color: #ecf4d6;
+      color: #265073;
+    }
+  }
+
+  // Botões Bootstrap seguem a mesma identidade teal/navy do restante do app.
+  .btn-primary {
+    --bs-btn-color: #ffffff;
+    --bs-btn-bg: #2d9596;
+    --bs-btn-border-color: #2d9596;
+    --bs-btn-hover-color: #ffffff;
+    --bs-btn-hover-bg: #265073;
+    --bs-btn-hover-border-color: #265073;
+    --bs-btn-active-color: #ffffff;
+    --bs-btn-active-bg: #265073;
+    --bs-btn-active-border-color: #265073;
+    --bs-btn-disabled-color: #ffffff;
+    --bs-btn-disabled-bg: #9ad0c2;
+    --bs-btn-disabled-border-color: #9ad0c2;
+    box-shadow: 0 2px 6px rgba(38, 80, 115, 0.14);
+  }
+
+  .btn-outline-primary {
+    --bs-btn-color: #2d9596;
+    --bs-btn-border-color: #2d9596;
+    --bs-btn-hover-color: #ffffff;
+    --bs-btn-hover-bg: #2d9596;
+    --bs-btn-hover-border-color: #2d9596;
+    --bs-btn-active-color: #ffffff;
+    --bs-btn-active-bg: #265073;
+    --bs-btn-active-border-color: #265073;
+  }
+
+  // KPIs precisam ser uma camada própria, e não uma extensão do fundo da página.
+  .kpi-card {
+    background: #f9fced;
+    border-color: #9ad0c2;
+    box-shadow: 0 5px 16px rgba(38, 80, 115, 0.1);
+
+    &:hover {
+      border-color: #2d9596;
+      box-shadow: 0 9px 22px rgba(38, 80, 115, 0.15);
+    }
+  }
+
+  .kpi-card:first-child,
+  .kpi-card.kpi-card--total {
+    background: linear-gradient(135deg, rgba(45, 149, 150, 0.16), #f9fced 76%);
+    border-color: rgba(45, 149, 150, 0.48);
+  }
+
+  // Superfícies internas: evitam que o conteúdo dos cards desapareça no fundo.
+  .chart-body,
+  .calendar-body,
+  .tasks-list-body,
+  .plans-scroll,
+  .quick-access-inner,
+  .info-card-body,
+  .table-card-body,
+  .app-panel__body,
+  .app-table-section__body {
+    background-color: var(--bs-tertiary-bg);
+  }
+
+  .app-table {
+    background-color: var(--bs-tertiary-bg);
+
+    > :not(caption) > * > * {
+      background-color: var(--bs-tertiary-bg) !important;
+    }
+
+    thead th {
+      background-color: var(--bs-secondary-bg) !important;
+    }
+  }
+
+  // Tabelas legadas e específicas de páginas também ganham uma superfície.
+  .routines-table,
+  .table-routine,
+  .table-custom,
+  .az-report-table {
+    --bs-table-bg: var(--bs-tertiary-bg);
+    --bs-table-striped-bg: var(--bs-secondary-bg);
+    background-color: var(--bs-tertiary-bg);
+  }
+
+  .routines-table thead,
+  .table-routine thead,
+  .table-custom thead,
+  .az-report-table thead {
+    background-color: var(--bs-secondary-bg);
+  }
+
+  .routines-table tbody tr:hover,
+  .table-routine tbody tr:hover,
+  .table-custom tbody tr:hover,
+  .az-report-table tbody tr:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+  }
+
+  // Downloads: separa os containers, cabeçalhos e a lista de documentos.
+  .downloads-page {
+    .filters-card,
+    .downloads-tabs,
+    .download-category {
+      background: var(--bs-card-bg);
+      border-color: var(--bs-border-color);
+    }
+
+    .filters-header,
+    .downloads-tabs__header,
+    .category-header {
+      background: var(--bs-secondary-bg);
+    }
+
+    .filters-body,
+    .downloads-sector-tabs,
+    .downloads-category-tabs,
+    .download-list {
+      background: var(--bs-tertiary-bg);
+    }
+
+    .download-item {
+      background: var(--bs-tertiary-bg);
+
+      &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.1);
+      }
+    }
+
+    .download-source-option {
+      background: var(--bs-card-bg);
+    }
+  }
+
+  // A tela de detalhes dos planos tem superfícies próprias de lista e Kanban.
+  .action-plan-show {
+    .action-plan-mobile-summary__item,
+    .action-plan-list-table,
+    .action-plan-kanban-filter__content,
+    .action-plan-kanban-card__body,
+    .action-plan-task-modal__body {
+      background-color: var(--bs-tertiary-bg);
+    }
+
+    .action-plan-kanban-card,
+    .action-plan-kanban-new-task,
+    .action-plan-task-card,
+    .action-plan-task-modal__section,
+    .action-plan-task-modal__activity {
+      background-color: var(--bs-card-bg);
+    }
+
+    .action-plan-list-table,
+    .action-plan-desktop-table {
+      border-color: var(--bs-border-color);
+    }
+
+    .action-plan-desktop-table,
+    .action-plan-desktop-table tbody td {
+      background-color: var(--bs-tertiary-bg) !important;
+    }
+
+    .action-plan-desktop-table thead th,
+    .action-plan-desktop-table tbody tr:hover {
+      background-color: var(--bs-secondary-bg) !important;
+    }
+  }
+
+  // Fleet Availabilities usa card-body como área de conteúdo interna.
+  .fleet-availability-index .card-body,
+  .fleet-availability-page .card-body {
+    background-color: var(--bs-tertiary-bg);
+  }
+
+  .fleet-availability-index .card,
+  .fleet-availability-page .card {
+    overflow: hidden;
+  }
+
+  // Fleet Availabilities: card, área de trabalho e placas em camadas distintas.
+  .fleet-availability-page {
+    .fleet-kpi-panel,
+    .fleet-profile-panel,
+    .fleet-board-card,
+    .fleet-special-route-card,
+    .fleet-plate-card {
+      background: var(--bs-card-bg);
+      border-color: var(--bs-border-color);
+    }
+
+    .fleet-board-card__header {
+      background: var(--bs-secondary-bg);
+      border-bottom-color: var(--bs-border-color);
+    }
+
+    .fleet-list,
+    .fleet-special-routes__body {
+      background: var(--bs-secondary-bg) !important;
+    }
+
+    .fleet-special-route-list,
+    .fleet-empty-slot {
+      background: var(--bs-tertiary-bg);
+    }
+
+    .fleet-plate-card {
+      box-shadow: 0 2px 8px rgba(38, 80, 115, 0.08);
+    }
+
+    .fleet-plate-card:hover {
+      border-color: #2d9596;
+      box-shadow: 0 5px 14px rgba(38, 80, 115, 0.14);
+    }
+
+    .fleet-readonly-alert {
+      background: var(--bs-secondary-bg);
+      border-color: var(--bs-border-color);
+    }
+  }
+
+  // Rolagem global e áreas internas seguem a mesma paleta do app.
+  &,
+  * {
+    scrollbar-color: #9ad0c2 var(--bs-tertiary-bg);
+    scrollbar-width: thin;
+  }
+
+  &::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    height: 9px;
+    width: 9px;
+  }
+
+  &::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-track {
+    background: var(--bs-tertiary-bg) !important;
+  }
+
+  &::-webkit-scrollbar-thumb,
+  *::-webkit-scrollbar-thumb {
+    background: #9ad0c2 !important;
+    border: 2px solid var(--bs-tertiary-bg);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover,
+  *::-webkit-scrollbar-thumb:hover {
+    background: #2d9596 !important;
+  }
+
+  // A navbar é a âncora visual da paleta: navy estrutural, teal nos estados.
+  .app-navbar,
+  .app-admin-nav {
+    color: var(--bs-navbar-color);
+    border-bottom-color: rgba(236, 244, 214, 0.22);
+    box-shadow: 0 4px 16px rgba(38, 80, 115, 0.2);
+
+    .navbar-brand,
+    .nav-link,
+    .user-name,
+    .user-sector,
+    .workstation-sector-trigger,
+    .app-mobile-menu-btn,
+    .app-navbar-action {
+      color: #ffffff !important;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus,
+    .nav-link:hover,
+    .nav-link:focus,
+    .user-name:hover,
+    .workstation-sector-trigger:hover,
+    .app-mobile-menu-btn:hover,
+    .app-mobile-menu-btn:focus {
+      color: var(--bs-navbar-hover-color);
+    }
+
+    .navbar-brand i,
+    .workstation-sector-trigger > i:first-child,
+    .user-sector i {
+      color: #9ad0c2;
+    }
+
+    .navbar-nav .nav-link {
+      color: #ffffff !important;
+
+      i {
+        color: inherit;
+      }
+
+      &:hover,
+      &:focus {
+        background: #2d9596;
+        color: #ffffff !important;
+
+        i {
+          color: inherit;
+        }
+      }
+    }
+
+    .app-navbar-action {
+      --bs-btn-color: var(--bs-navbar-color);
+      --bs-btn-border-color: #9ad0c2;
+      --bs-btn-hover-bg: #2d9596;
+      --bs-btn-hover-border-color: #9ad0c2;
+      --bs-btn-hover-color: #ffffff;
+    }
+  }
+
+  footer {
+    --bs-footer-bg: #dcebd0;
+    --bs-footer-color: #265073;
+  }
+}
