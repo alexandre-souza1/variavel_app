@@ -21,8 +21,9 @@ export default class extends Controller {
 
   setColor(event) {
     const colorTheme = event.target.value
+    const userId = document.body.dataset.userId || "guest"
 
-    localStorage.setItem("colorTheme", colorTheme)
+    localStorage.setItem(`colorTheme:${userId}`, colorTheme)
     document.documentElement.dataset.colorTheme = colorTheme
     this.updateBrowserColor(document.documentElement.dataset.bsTheme || "light")
   }

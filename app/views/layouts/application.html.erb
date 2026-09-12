@@ -14,11 +14,13 @@
       (() => {
         const storedTheme = localStorage.getItem("theme");
         const userColorTheme = "<%= current_user&.color_theme || 'blue_teal' %>";
+        const userId = "<%= current_user&.id || 'guest' %>";
+        const storedColorTheme = localStorage.getItem(`colorTheme:${userId}`) || localStorage.getItem("colorTheme");
         const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         const theme = storedTheme || preferredTheme;
 
         document.documentElement.dataset.bsTheme = theme;
-        document.documentElement.dataset.colorTheme = userColorTheme;
+        document.documentElement.dataset.colorTheme = storedColorTheme || userColorTheme;
         document.querySelector("meta[name='theme-color']")?.setAttribute(
           "content",
           theme === "dark" ? "#0b0f0b" : "#3368A0"
@@ -37,7 +39,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="app-shell">
+  <body class="app-shell" data-user-id="<%= current_user&.id || 'guest' %>">
   <%= render "shared/navbar" %>
   <%= render "layouts/#{secondary_nav}" if secondary_nav.present? %>
   <div id="flash-container">
