@@ -268,7 +268,7 @@ html[data-bs-theme="dark"] .workstation-home {
 
   .workstation-hero {
     background:
-      radial-gradient(circle at 88% 18%, rgba(37, 99, 235, .24), transparent 20rem),
-      linear-gradient(135deg, rgba(37, 99, 235, .14), var(--bs-body-bg) 62%);
+      radial-gradient(circle at 88% 18%, rgba(var(--app-primary-rgb), .24), transparent 20rem),
+      linear-gradient(135deg, rgba(var(--app-primary-rgb), .14), var(--bs-body-bg) 62%);
   }
 }

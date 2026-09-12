@@ -5,32 +5,66 @@
 // as variáveis e os contrastes já definidos para o tema escuro.
 
 html[data-bs-theme="light"] {
-  --bs-primary: #2d9596;
-  --bs-primary-rgb: 45, 149, 150;
-  --bs-primary-text-emphasis: #265073;
-  --bs-link-color: #2d9596;
-  --bs-link-hover-color: #265073;
+  --app-primary: #3368a0;
+  --app-primary-rgb: 51, 104, 160;
+  --app-strong: #3368a0;
+  --app-soft: #66a3bf;
+  --app-page-bg: #f2efe7;
+  --app-surface: #fffdf8;
+  --app-secondary-bg: #c8dfdb;
+  --app-tertiary-bg: #f8fbfa;
+  --app-muted: #617178;
 
-  --bs-body-bg: #ecf4d6;
-  --bs-body-color: #265073;
-  --bs-emphasis-color: #265073;
-  --bs-emphasis-color-rgb: 38, 80, 115;
-  --bs-secondary-bg: #dcebd0;
-  --bs-tertiary-bg: #f5f9e7;
-  --bs-border-color: #9ad0c2;
-  --bs-border-color-translucent: rgba(45, 149, 150, 0.2);
-  --bs-secondary-color: #527286;
-  --bs-tertiary-color: #7694a0;
-  --bs-card-bg: #f9fced;
-  --bs-card-cap-bg: #dcebd0;
-  --bs-modal-bg: #f9fced;
-  --bs-dropdown-bg: #f9fced;
-  --bs-light-rgb: 236, 244, 214;
+  &[data-color-theme="sage_teal"] {
+    --app-primary: #2d9596;
+    --app-primary-rgb: 45, 149, 150;
+    --app-strong: #265073;
+    --app-soft: #9ad0c2;
+    --app-page-bg: #ecf4d6;
+    --app-surface: #f9fced;
+    --app-secondary-bg: #dcebd0;
+    --app-tertiary-bg: #f5f9e7;
+    --app-muted: #6f8278;
+  }
 
-  --bs-navbar-bg: #265073;
+  &[data-color-theme="retro_orange"] {
+    --app-primary: #ee7214;
+    --app-primary-rgb: 238, 114, 20;
+    --app-strong: #527853;
+    --app-soft: #f7b787;
+    --app-page-bg: #f9e8d9;
+    --app-surface: #fffaf5;
+    --app-secondary-bg: #f7b787;
+    --app-tertiary-bg: #fff4ec;
+    --app-muted: #7b6b5e;
+  }
+
+  --bs-primary: var(--app-primary);
+  --bs-primary-rgb: var(--app-primary-rgb);
+  --bs-primary-text-emphasis: var(--app-strong);
+  --bs-link-color: var(--app-primary);
+  --bs-link-hover-color: var(--app-strong);
+
+  --bs-body-bg: var(--app-page-bg);
+  --bs-body-color: var(--app-strong);
+  --bs-emphasis-color: var(--app-strong);
+  --bs-emphasis-color-rgb: var(--app-primary-rgb);
+  --bs-secondary-bg: var(--app-secondary-bg);
+  --bs-tertiary-bg: var(--app-tertiary-bg);
+  --bs-border-color: var(--app-soft);
+  --bs-border-color-translucent: rgba(var(--app-primary-rgb), 0.2);
+  --bs-secondary-color: var(--app-muted);
+  --bs-tertiary-color: var(--app-muted);
+  --bs-card-bg: var(--app-surface);
+  --bs-card-cap-bg: var(--app-soft);
+  --bs-modal-bg: var(--app-surface);
+  --bs-dropdown-bg: var(--app-surface);
+  --bs-light-rgb: var(--app-primary-rgb);
+
+  --bs-navbar-bg: var(--app-strong);
   --bs-navbar-color: #ffffff;
   --bs-navbar-hover-color: #ffffff;
-  --bs-admin-nav-bg: #265073;
+  --bs-admin-nav-bg: var(--app-strong);
 
   body,
   .app-shell,
@@ -82,85 +116,118 @@ html[data-bs-theme="light"] {
   .form-select,
   .ts-control,
   .ts-dropdown {
-    background-color: #f9fced;
+    background-color: var(--app-surface);
     border-color: var(--bs-border-color);
     color: var(--bs-body-color);
   }
 
   // Menus suspensos ficam em uma superfície branca própria, separada do fundo.
   --bs-dropdown-bg: var(--bs-tertiary-bg);
-  --bs-dropdown-color: #265073;
-  --bs-dropdown-link-color: #265073;
-  --bs-dropdown-link-hover-bg: #ecf4d6;
-  --bs-dropdown-link-hover-color: #265073;
+  --bs-dropdown-color: var(--app-strong);
+  --bs-dropdown-link-color: var(--app-strong);
+  --bs-dropdown-link-hover-bg: var(--app-page-bg);
+  --bs-dropdown-link-hover-color: var(--app-strong);
 
   .dropdown-menu,
   .app-dropdown-menu,
   .workstation-sector-picker__menu,
   .ts-dropdown {
     background-color: var(--bs-tertiary-bg) !important;
-    border-color: #9ad0c2;
-    box-shadow: 0 10px 24px rgba(38, 80, 115, 0.16);
+    border-color: var(--app-soft);
+    box-shadow: 0 10px 24px rgba(82, 120, 83, 0.16);
   }
 
   .dropdown-menu .dropdown-item,
   .app-dropdown-menu .app-dropdown-item,
   .workstation-sector-picker__menu .workstation-sector-option,
   .ts-dropdown .option {
-    color: #265073;
+    color: var(--app-strong);
 
     &:hover,
     &:focus,
     &.active {
-      background-color: #ecf4d6;
-      color: #265073;
+      background-color: var(--app-page-bg);
+      color: var(--app-strong);
     }
   }
 
   // Botões Bootstrap seguem a mesma identidade teal/navy do restante do app.
   .btn-primary {
     --bs-btn-color: #ffffff;
-    --bs-btn-bg: #2d9596;
-    --bs-btn-border-color: #2d9596;
+    --bs-btn-bg: var(--app-primary);
+    --bs-btn-border-color: var(--app-primary);
     --bs-btn-hover-color: #ffffff;
-    --bs-btn-hover-bg: #265073;
-    --bs-btn-hover-border-color: #265073;
+    --bs-btn-hover-bg: var(--app-strong);
+    --bs-btn-hover-border-color: var(--app-strong);
     --bs-btn-active-color: #ffffff;
-    --bs-btn-active-bg: #265073;
-    --bs-btn-active-border-color: #265073;
+    --bs-btn-active-bg: var(--app-strong);
+    --bs-btn-active-border-color: var(--app-strong);
     --bs-btn-disabled-color: #ffffff;
-    --bs-btn-disabled-bg: #9ad0c2;
-    --bs-btn-disabled-border-color: #9ad0c2;
-    box-shadow: 0 2px 6px rgba(38, 80, 115, 0.14);
+    --bs-btn-disabled-bg: var(--app-soft);
+    --bs-btn-disabled-border-color: var(--app-soft);
+    box-shadow: 0 2px 6px rgba(82, 120, 83, 0.14);
   }
 
   .btn-outline-primary {
-    --bs-btn-color: #2d9596;
-    --bs-btn-border-color: #2d9596;
+    --bs-btn-color: var(--app-primary);
+    --bs-btn-border-color: var(--app-primary);
     --bs-btn-hover-color: #ffffff;
-    --bs-btn-hover-bg: #2d9596;
-    --bs-btn-hover-border-color: #2d9596;
+    --bs-btn-hover-bg: var(--app-primary);
+    --bs-btn-hover-border-color: var(--app-primary);
     --bs-btn-active-color: #ffffff;
-    --bs-btn-active-bg: #265073;
-    --bs-btn-active-border-color: #265073;
+    --bs-btn-active-bg: var(--app-strong);
+    --bs-btn-active-border-color: var(--app-strong);
   }
 
   // KPIs precisam ser uma camada própria, e não uma extensão do fundo da página.
   .kpi-card {
-    background: #f9fced;
-    border-color: #9ad0c2;
-    box-shadow: 0 5px 16px rgba(38, 80, 115, 0.1);
+    background: var(--app-surface);
+    border-color: var(--app-soft);
+    box-shadow: 0 5px 16px rgba(82, 120, 83, 0.1);
 
     &:hover {
-      border-color: #2d9596;
-      box-shadow: 0 9px 22px rgba(38, 80, 115, 0.15);
+      border-color: var(--app-primary);
+      box-shadow: 0 9px 22px rgba(82, 120, 83, 0.15);
     }
   }
 
   .kpi-card:first-child,
   .kpi-card.kpi-card--total {
-    background: linear-gradient(135deg, rgba(45, 149, 150, 0.16), #f9fced 76%);
-    border-color: rgba(45, 149, 150, 0.48);
+    background: linear-gradient(135deg, rgba(var(--app-primary-rgb), 0.16), var(--app-surface) 76%);
+    border-color: rgba(var(--app-primary-rgb), 0.48);
+  }
+
+  .fleet-availability-index .fleet-summary-card {
+    background: var(--app-surface);
+    border: 1px solid var(--bs-border-color) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .invoice-index-page .invoice-index-summary > div {
+    background: var(--app-surface);
+  }
+
+  .invoice-index-page .invoice-index-summary > .invoice-summary-total {
+    background: linear-gradient(135deg, rgba(var(--app-primary-rgb), .12), var(--app-surface) 72%);
+  }
+
+  .invoice-index-page .invoice-filter-section {
+    background: var(--app-surface);
+    border-color: var(--bs-border-color);
+  }
+
+  .consultation-card,
+  .az-operator-report-page .az-overview-card,
+  .az-operator-report-page .az-report-panel,
+  .az-helper-report-page .az-overview-card,
+  .az-helper-report-page .az-report-panel {
+    background: var(--app-surface);
+  }
+
+  .az-operator-report-page .az-overview-card--total,
+  .az-helper-report-page .az-overview-card--total {
+    background: linear-gradient(135deg, rgba(var(--app-primary-rgb), .12), var(--app-surface) 72%);
   }
 
   // Superfícies internas: evitam que o conteúdo dos cards desapareça no fundo.
@@ -319,12 +386,12 @@ html[data-bs-theme="light"] {
     }
 
     .fleet-plate-card {
-      box-shadow: 0 2px 8px rgba(38, 80, 115, 0.08);
+      box-shadow: 0 2px 8px rgba(82, 120, 83, 0.08);
     }
 
     .fleet-plate-card:hover {
-      border-color: #2d9596;
-      box-shadow: 0 5px 14px rgba(38, 80, 115, 0.14);
+      border-color: var(--app-primary);
+      box-shadow: 0 5px 14px rgba(82, 120, 83, 0.14);
     }
 
     .fleet-readonly-alert {
@@ -336,7 +403,7 @@ html[data-bs-theme="light"] {
   // Rolagem global e áreas internas seguem a mesma paleta do app.
   &,
   * {
-    scrollbar-color: #9ad0c2 var(--bs-tertiary-bg);
+    scrollbar-color: var(--app-soft) var(--bs-tertiary-bg);
     scrollbar-width: thin;
   }
 
@@ -353,22 +420,22 @@ html[data-bs-theme="light"] {
 
   &::-webkit-scrollbar-thumb,
   *::-webkit-scrollbar-thumb {
-    background: #9ad0c2 !important;
+    background: var(--app-soft) !important;
     border: 2px solid var(--bs-tertiary-bg);
     border-radius: 999px;
   }
 
   &::-webkit-scrollbar-thumb:hover,
   *::-webkit-scrollbar-thumb:hover {
-    background: #2d9596 !important;
+    background: var(--app-primary) !important;
   }
 
-  // A navbar é a âncora visual da paleta: navy estrutural, teal nos estados.
+  // A navbar concentra o verde estrutural e o laranja nos estados.
   .app-navbar,
   .app-admin-nav {
     color: var(--bs-navbar-color);
-    border-bottom-color: rgba(236, 244, 214, 0.22);
-    box-shadow: 0 4px 16px rgba(38, 80, 115, 0.2);
+    border-bottom-color: rgba(249, 232, 217, 0.22);
+    box-shadow: 0 4px 16px rgba(82, 120, 83, 0.2);
 
     .navbar-brand,
     .nav-link,
@@ -394,7 +461,7 @@ html[data-bs-theme="light"] {
     .navbar-brand i,
     .workstation-sector-trigger > i:first-child,
     .user-sector i {
-      color: #9ad0c2;
+      color: var(--app-soft);
     }
 
     .navbar-nav .nav-link {
@@ -406,7 +473,7 @@ html[data-bs-theme="light"] {
 
       &:hover,
       &:focus {
-        background: #2d9596;
+        background: var(--app-primary);
         color: #ffffff !important;
 
         i {
@@ -417,15 +484,15 @@ html[data-bs-theme="light"] {
 
     .app-navbar-action {
       --bs-btn-color: var(--bs-navbar-color);
-      --bs-btn-border-color: #9ad0c2;
-      --bs-btn-hover-bg: #2d9596;
-      --bs-btn-hover-border-color: #9ad0c2;
+      --bs-btn-border-color: var(--app-soft);
+      --bs-btn-hover-bg: var(--app-primary);
+      --bs-btn-hover-border-color: var(--app-soft);
       --bs-btn-hover-color: #ffffff;
     }
   }
 
   footer {
-    --bs-footer-bg: #dcebd0;
-    --bs-footer-color: #265073;
+    --bs-footer-bg: var(--app-secondary-bg);
+    --bs-footer-color: var(--app-strong);
   }
 }

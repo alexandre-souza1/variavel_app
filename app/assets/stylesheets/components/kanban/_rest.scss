@@ -1192,66 +1192,66 @@
 
 // Contraste do Kanban e dos modais no tema escuro.
 [data-bs-theme="dark"] .task-card {
-  background: #111827;
-  border-color: #273449;
+  background: var(--app-dark-surface);
+  border-color: var(--app-dark-border);
   border-left-color: var(--bs-primary);
 }
 
 [data-bs-theme="dark"] .task-card:hover {
-  background: #172033;
+  background: var(--app-dark-elevated);
 }
 
 [data-bs-theme="dark"] .action-plan-task-modal {
-  border-color: #273449;
+  border-color: var(--app-dark-border);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
 }
 
 [data-bs-theme="dark"] .action-plan-task-modal__header,
 [data-bs-theme="dark"] .action-plan-task-modal__activity-header {
-  background: #172033;
-  border-color: #273449;
+  background: var(--app-dark-elevated);
+  border-color: var(--app-dark-border);
 }
 
 [data-bs-theme="dark"] .action-plan-task-modal__section,
 [data-bs-theme="dark"] .action-plan-task-modal__activity {
-  background: #111827;
-  border-color: #273449;
+  background: var(--app-dark-surface);
+  border-color: var(--app-dark-border);
 }
 
 [data-bs-theme="dark"] .action-plan-task-modal__checklist .bg-light {
-  background: #0b1220 !important;
-  border-color: #334155 !important;
+  background: var(--app-dark-input) !important;
+  border-color: var(--app-dark-border) !important;
 }
 
 [data-bs-theme="dark"] .action-plan-task-modal__comment-form {
-  border-color: #273449;
+  border-color: var(--app-dark-border);
 }
 
 [data-bs-theme="dark"] .action-plan-mobile-task {
-  background: #111827;
-  border-color: #273449;
+  background: var(--app-dark-surface);
+  border-color: var(--app-dark-border);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
 }
 
 [data-bs-theme="dark"] .action-plan-list-table {
-  background: #111827;
-  border-color: #273449;
+  background: var(--app-dark-surface);
+  border-color: var(--app-dark-border);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
 }
 
 [data-bs-theme="dark"] .action-plan-desktop-table thead th {
-  background: #172033;
-  border-color: #273449;
+  background: var(--app-dark-elevated);
+  border-color: var(--app-dark-border);
 }
 
 [data-bs-theme="dark"] .action-plan-desktop-table tbody tr:hover {
-  background: #172033;
+  background: var(--app-dark-elevated);
 }
 
 [data-bs-theme="dark"] .action-plan-bucket-badge,
 [data-bs-theme="dark"] .action-plan-user-badge {
-  background: #0b1220;
-  border-color: #334155;
+  background: var(--app-dark-input);
+  border-color: var(--app-dark-border);
 }
 
 [data-bs-theme="dark"] .action-plan-label-badge,
@@ -1261,31 +1261,31 @@
 }
 
 [data-bs-theme="dark"] .action-plan-kanban-card {
-  background: #111827;
-  border-color: #273449;
+  background: var(--app-dark-surface);
+  border-color: var(--app-dark-border);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
 }
 
 [data-bs-theme="dark"] .action-plan-kanban-card__header,
 [data-bs-theme="dark"] .action-plan-kanban-card__composer {
-  border-color: #273449;
+  border-color: var(--app-dark-border);
 }
 
 [data-bs-theme="dark"] .action-plan-kanban-card .task-card {
-  background: #0b1220;
-  border-color: #273449;
+  background: var(--app-dark-input);
+  border-color: var(--app-dark-border);
   border-left-color: var(--bs-primary);
 }
 
 [data-bs-theme="dark"] .action-plan-kanban-card .task-card:hover {
-  background: #172033;
+  background: var(--app-dark-elevated);
 }
 
 [data-bs-theme="dark"] .action-plan-kanban-new-bucket {
-  border-color: #334155;
+  border-color: var(--app-dark-border);
 }
 
 [data-bs-theme="dark"] .action-plan-mobile-empty {
-  background: #111827;
-  border-color: #273449;
+  background: var(--app-dark-surface);
+  border-color: var(--app-dark-border);
 }

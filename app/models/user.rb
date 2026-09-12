@@ -1,4 +1,12 @@
 class User < ApplicationRecord
+  COLOR_THEMES = {
+    "Blue-Teal" => "blue_teal",
+    "Sage-Teal" => "sage_teal",
+    "Retro-orange" => "retro_orange"
+  }.freeze
+
+  validates :color_theme, inclusion: { in: COLOR_THEMES.values }
+
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,

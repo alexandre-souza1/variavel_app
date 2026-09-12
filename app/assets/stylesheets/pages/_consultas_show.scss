@@ -137,7 +137,7 @@ html[data-bs-theme="dark"] {
   .driver-report-container {
     background:
       linear-gradient(180deg, rgba(37, 99, 235, 0.08), transparent 18rem),
-      #0f172a !important;
+      var(--app-dark-page) !important;
     color: #e5e7eb;
 
     .container,
@@ -153,8 +153,8 @@ html[data-bs-theme="dark"] {
     }
 
     .card {
-      background-color: #111827 !important;
-      border: 1px solid #273449 !important;
+      background-color: var(--app-dark-surface) !important;
+      border: 1px solid var(--app-dark-border) !important;
       box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22) !important;
       color: #e5e7eb;
     }
@@ -165,22 +165,22 @@ html[data-bs-theme="dark"] {
     }
 
     .card-header.bg-light {
-      background-color: #172033 !important;
+      background-color: var(--app-dark-elevated) !important;
       color: #f8fafc !important;
     }
 
     .table-responsive {
       box-shadow: none;
-      background: #111827 !important;
+      background: var(--app-dark-surface) !important;
     }
 
     .table {
-      --bs-table-bg: #111827;
+      --bs-table-bg: var(--app-dark-surface);
       --bs-table-color: #e5e7eb;
       --bs-table-border-color: #2f3c52;
-      --bs-table-hover-bg: #1f2937;
+      --bs-table-hover-bg: var(--app-dark-hover);
       --bs-table-hover-color: #ffffff;
-      background-color: #111827 !important;
+      background-color: var(--app-dark-surface) !important;
       color: #e5e7eb !important;
     }
 
@@ -226,7 +226,7 @@ html[data-bs-theme="dark"] {
     .list-group-item {
       background-color: transparent !important;
       color: #e5e7eb !important;
-      border-color: #273449 !important;
+      border-color: var(--app-dark-border) !important;
     }
 
     .alert-warning {

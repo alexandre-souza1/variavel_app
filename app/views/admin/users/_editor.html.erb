@@ -1,7 +1,6 @@
-<div class="user-editor-card">
+<div class="user-editor-card" data-controller="theme">
   <div class="user-editor-card__header">
     <div>
-      <p class="app-page-eyebrow mb-1"><i class="bi bi-pencil-square me-1"></i>Cadastro selecionado</p>
       <h2 id="userEditorModalTitle"><%= user == current_user ? "Meu cadastro" : "Editar usuário" %></h2>
       <p class="text-muted mb-0"><%= user.email %></p>
     </div>
@@ -23,39 +22,84 @@
 
   <%= form_with(model: [:admin, user], local: true, html: { multipart: true }) do |f| %>
     <div class="row g-3">
-      <div class="col-md-6">
+      <div class="col-md-8">
         <%= f.label :name, "Nome", class: "form-label fw-semibold" %>
         <%= f.text_field :name, class: "form-control", placeholder: "Nome completo" %>
-      </div>
-      <div class="col-md-6">
         <%= f.label :email, "E-mail", class: "form-label fw-semibold" %>
         <%= f.email_field :email, class: "form-control", placeholder: "usuario@email.com" %>
       </div>
-      <div class="col-md-6">
-        <%= f.label :photo, "Foto de perfil", class: "form-label fw-semibold" %>
-        <%= f.file_field :photo, class: "form-control" %>
+      <div class="col-md-4">
+        <div class="user-editor-photo-panel">
+          <span class="form-label fw-semibold">Foto de perfil</span>
+          <% if user.photo.attached? %>
+            <%= image_tag user.photo.variant(resize_to_limit: [88, 88]), class: "user-editor-photo-panel__image", alt: user.name %>
+          <% else %>
+            <span class="user-editor-photo-panel__placeholder"><i class="bi bi-person"></i></span>
+          <% end %>
+          <%= f.label :photo, "Escolher outra foto", class: "btn btn-sm btn-outline-primary" %>
+          <%= f.file_field :photo, class: "visually-hidden" %>
+          <% if user.photo.attached? %>
+            <div class="form-check mt-1">
+              <%= f.check_box :remove_photo, class: "form-check-input" %>
+              <%= f.label :remove_photo, "Remover foto", class: "form-check-label" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      <div class="col-12">
+        <%= f.label :color_theme, "Tema de cores", class: "form-label fw-semibold" %>
+        <div class="theme-picker" role="radiogroup" aria-label="Tema de cores">
+          <% theme_descriptions = {
+            "blue_teal" => "Azul equilibrado com detalhes em azul-petróleo.",
+            "sage_teal" => "Verde-azulado suave e corporativo.",
+            "retro_orange" => "Creme, verde e laranja com personalidade."
+          } %>
+          <% theme_swatches = {
+            "blue_teal" => %w[#3368A0 #66A3BF #C8DFDB #F2EFE7],
+            "sage_teal" => %w[#2D9596 #265073 #9AD0C2 #ECF4D6],
+            "retro_orange" => %w[#527853 #F9E8D9 #F7B787 #EE7214]
+          } %>
+          <% User::COLOR_THEMES.each do |label, value| %>
+            <%= f.radio_button :color_theme, value, class: "theme-picker__input", id: "user_color_theme_#{value}", data: { theme_target: "colorSelect", action: "change->theme#setColor" } %>
+            <%= f.label :color_theme, value: value, for: "user_color_theme_#{value}", class: "theme-picker__option" do %>
+              <span class="theme-picker__topline">
+                <strong><%= label %></strong>
+                <span class="theme-picker__check"><i class="bi bi-check2"></i></span>
+              </span>
+              <span class="theme-picker__description"><%= theme_descriptions.fetch(value) %></span>
+              <span class="theme-picker__swatches" aria-hidden="true">
+                <% theme_swatches.fetch(value).each do |color| %>
+                  <span style="--theme-swatch: <%= color %>"></span>
+                <% end %>
+              </span>
+            <% end %>
+          <% end %>
+        </div>
+        <div class="form-text">A escolha vale para o claro e o escuro. O modo de exibição continua separado.</div>
       </div>
       <% if current_user.admin? %>
         <div class="col-md-3">
-          <%= f.label :role, "Perfil", class: "form-label fw-semibold" %>
-          <%= f.select :role, User.roles.keys.map { |role| [role.titleize, role] }, {}, class: "form-select" %>
+          <%= f.label :role, "Perfil de acesso", class: "form-label fw-semibold" %>
+          <div class="input-group user-editor-select-group">
+            <span class="input-group-text" aria-hidden="true"><i class="bi bi-person-badge user-editor-select-icon"></i></span>
+            <%= f.select :role,
+              [["Usuário", "user"], ["Supervisor", "supervisor"], ["Administrador", "admin"], ["Mecânico", "mechanical"]],
+              {}, class: "form-select", data: { icon_map: { user: "bi-person", supervisor: "bi-person-workspace", admin: "bi-shield-lock-fill", mechanical: "bi-tools" }.to_json, action: "change->theme#setSelectionIcon" } %>
+          </div>
         </div>
         <div class="col-md-3">
           <%= f.label :sector, "Setor", class: "form-label fw-semibold" %>
-          <%= f.select :sector, User::USER_SECTORS.map { |label, value| [label, value] }, { include_blank: "Selecione" }, class: "form-select" %>
+          <div class="input-group user-editor-select-group">
+            <span class="input-group-text" aria-hidden="true"><i class="bi bi-building user-editor-select-icon"></i></span>
+            <%= f.select :sector,
+              User::USER_SECTORS.map { |label, value| [label == "Planejamento" ? "Gestão" : label, value] },
+              { include_blank: "Selecione" },
+              class: "form-select",
+              data: { icon_map: { fleet: "bi-truck", du: "bi-signpost-2", warehouse: "bi-box-seam", hr: "bi-people", safety: "bi-shield-check", finance: "bi-cash-stack", planning: "bi-person-workspace" }.to_json, action: "change->theme#setSelectionIcon" } %>
+          </div>
         </div>
       <% end %>
     </div>
-
-    <% if user.photo.attached? %>
-      <div class="user-editor-card__photo mt-3">
-        <%= image_tag user.photo.variant(resize_to_limit: [72, 72]), class: "rounded-circle", alt: user.name %>
-        <div class="form-check">
-          <%= f.check_box :remove_photo, class: "form-check-input" %>
-          <%= f.label :remove_photo, "Remover foto", class: "form-check-label" %>
-        </div>
-      </div>
-    <% end %>
 
     <div class="user-editor-card__security mt-4">
       <h3><i class="bi bi-key-fill me-2"></i>Alterar senha</h3>

@@ -89,7 +89,7 @@ class Admin::UsersController < ApplicationController
   end
 
   def user_params
-    permitted = [:email, :name, :photo, :remove_photo]
+    permitted = [:email, :name, :photo, :remove_photo, :color_theme]
 
     if current_user.admin?
       permitted << :role

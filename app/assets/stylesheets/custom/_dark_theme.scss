@@ -8,22 +8,70 @@
 [data-bs-theme="dark"] {
   color-scheme: dark;
 
+  --app-primary: #3368a0;
+  --app-primary-rgb: 51, 104, 160;
+  --app-strong: #3368a0;
+  --app-soft: #66a3bf;
+  --app-dark-page: #142536;
+  --app-dark-surface: #212529;
+  --app-dark-elevated: #172033;
+  --app-dark-border: #273449;
+  --app-dark-input: #0b1220;
+  --app-dark-hover: #1f2937;
+  --app-dark-deep: #020617;
+  --app-dark-text: #e5e7eb;
+  --app-dark-muted: #a5b4c7;
+
+  &[data-color-theme="sage_teal"] {
+    --app-primary: #2d9596;
+    --app-primary-rgb: 45, 149, 150;
+    --app-strong: #265073;
+    --app-soft: #9ad0c2;
+    --app-dark-page: #0f172a;
+  }
+
+  &[data-color-theme="retro_orange"] {
+    --app-primary: #ee7214;
+    --app-primary-rgb: 238, 114, 20;
+    --app-strong: #527853;
+    --app-soft: #f7b787;
+    --app-dark-page: #151a16;
+    --app-dark-surface: #212529;
+    --app-dark-elevated: #252d25;
+    --app-dark-border: #384638;
+    --app-dark-input: #101510;
+    --app-dark-hover: #303a30;
+    --app-dark-deep: #0b0f0b;
+    --app-dark-text: #f9e8d9;
+    --app-dark-muted: #cbbcaf;
+  }
+
   // Acentos compartilhados com o tema claro, adaptados para o contraste escuro.
-  --bs-primary: #2d9596;
-  --bs-primary-rgb: 45, 149, 150;
-  --bs-primary-text-emphasis: #9ad0c2;
-  --bs-link-color: #9ad0c2;
-  --bs-link-hover-color: #ecf4d6;
-  --bs-navbar-bg: #265073;
-  --bs-navbar-color: #ecf4d6;
+  --bs-primary: var(--app-primary);
+  --bs-primary-rgb: var(--app-primary-rgb);
+  --bs-primary-text-emphasis: var(--app-soft);
+  --bs-link-color: var(--app-soft);
+  --bs-link-hover-color: #f9e8d9;
+  --bs-navbar-bg: var(--app-strong);
+  --bs-navbar-color: #f9e8d9;
   --bs-navbar-hover-color: #ffffff;
-  --bs-admin-nav-bg: #265073;
+  --bs-admin-nav-bg: var(--app-strong);
+
+  --bs-body-bg: var(--app-dark-page);
+  --bs-body-color: var(--app-dark-text);
+  --bs-secondary-bg: var(--app-dark-surface);
+  --bs-tertiary-bg: var(--app-dark-elevated);
+  --bs-border-color: var(--app-dark-border);
+  --bs-secondary-color: var(--app-dark-muted);
+  --bs-tertiary-color: var(--app-dark-muted);
+  --bs-card-bg: var(--app-dark-surface);
+  --bs-card-cap-bg: var(--app-dark-elevated);
 
   body,
   .app-shell,
   .app-main,
   .app-content {
-    background-color: #0f172a;
+    background-color: var(--app-dark-page);
     color: var(--bs-body-color);
   }
 
@@ -33,9 +81,165 @@
   .list-group-item,
   .accordion-item,
   .offcanvas {
-    background-color: #111827;
-    border-color: #273449;
-    color: #e5e7eb;
+    background-color: var(--app-dark-surface);
+    border-color: var(--app-dark-border);
+    color: var(--app-dark-text);
+  }
+
+  // Cards devem se destacar do fundo da página, como no layout original.
+  // Isso também corrige componentes que declaravam explicitamente
+  // `background: var(--bs-body-bg)`.
+  .card,
+  .card-body,
+  .app-panel,
+  .chart-card,
+  .info-card,
+  .table-card,
+  .kpi-card,
+  .plans-card,
+  .quick-access-card,
+  .action-plan-kanban-card,
+  .action-plan-list-table {
+    background-color: var(--app-dark-surface) !important;
+  }
+
+  .app-panel__body,
+  .chart-body,
+  .calendar-body,
+  .tasks-list-body,
+  .plans-scroll,
+  .quick-access-inner,
+  .info-card-body,
+  .table-card-body,
+  .fleet-list,
+  .fleet-special-routes__body {
+    background-color: var(--app-dark-surface) !important;
+  }
+
+  .card:first-child,
+  .card:first-of-type {
+    background-color: var(--app-dark-surface) !important;
+  }
+
+  .dashboard-page .kpi-card:first-child,
+  .dashboard-page .kpi-card:first-of-type {
+    background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.14), var(--app-dark-surface) 72%);
+    border-color: rgba(var(--bs-primary-rgb), 0.3);
+  }
+
+  .fleet-availability-index .fleet-summary-card {
+    background: var(--app-dark-surface);
+    border: 1px solid var(--app-dark-border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .invoice-index-page .invoice-index-summary > div {
+    background: var(--app-dark-surface);
+  }
+
+  .invoice-index-page .invoice-index-summary > .invoice-summary-total,
+  .invoice-dashboard-page .kpi-card--total {
+    background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), .12), var(--app-dark-surface) 72%);
+    border-color: rgba(var(--bs-primary-rgb), .3);
+  }
+
+  .invoice-index-page .invoice-filter-section {
+    background: var(--app-dark-surface);
+    border-color: var(--app-dark-border);
+  }
+
+  .consultation-card,
+  .az-operator-report-page .az-overview-card,
+  .az-operator-report-page .az-report-panel,
+  .az-helper-report-page .az-overview-card,
+  .az-helper-report-page .az-report-panel {
+    background: var(--app-dark-surface);
+  }
+
+  .az-operator-report-page .az-overview-card--total,
+  .az-helper-report-page .az-overview-card--total {
+    background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), .12), var(--app-dark-surface) 72%);
+  }
+
+  .table,
+  .table-responsive,
+  .app-table,
+  .table-custom,
+  .table-routine,
+  .routines-table {
+    background-color: var(--app-dark-surface) !important;
+    --bs-table-bg: var(--app-dark-surface);
+    --bs-table-striped-bg: var(--app-dark-surface);
+  }
+
+  // O app-table pinta cada célula com --bs-body-bg; sobrescrevemos também
+  // as células para impedir que a tabela fique da mesma cor da página.
+  .table > :not(caption) > * > *,
+  .app-table > :not(caption) > * > * {
+    background-color: var(--app-dark-surface) !important;
+    color: var(--app-dark-text) !important;
+  }
+
+  .table > thead > tr > th,
+  .table > thead > tr > td,
+  .app-table > thead > tr > th,
+  .app-table > thead > tr > td {
+    background-color: var(--app-dark-elevated) !important;
+    border-bottom-color: var(--app-dark-border) !important;
+    color: var(--app-dark-text) !important;
+  }
+
+  .card,
+  .app-panel,
+  .app-table,
+  .table {
+    background-clip: padding-box;
+    overflow: hidden;
+  }
+
+  .app-table,
+  .table {
+    border-radius: .75rem;
+  }
+
+  .table-responsive,
+  .app-table-shell {
+    background: var(--app-dark-surface);
+    border-radius: .75rem;
+    overflow: auto;
+  }
+
+  .table > thead > tr:first-child > :first-child,
+  .app-table > thead > tr:first-child > :first-child {
+    border-top-left-radius: .75rem;
+  }
+
+  .table > thead > tr:first-child > :last-child,
+  .app-table > thead > tr:first-child > :last-child {
+    border-top-right-radius: .75rem;
+  }
+
+  .table > tbody > tr:last-child > :first-child,
+  .app-table > tbody > tr:last-child > :first-child {
+    border-bottom-left-radius: .75rem;
+  }
+
+  .table > tbody > tr:last-child > :last-child,
+  .app-table > tbody > tr:last-child > :last-child {
+    border-bottom-right-radius: .75rem;
+  }
+
+  .card > .card-body:first-child,
+  .app-panel__body:first-child {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+  }
+
+  .card > .card-body:last-child,
+  .app-panel__body:last-child {
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
   }
 
   .card-header,
@@ -43,21 +247,21 @@
   .modal-header,
   .modal-footer,
   .bg-light {
-    background-color: #172033;
-    border-color: #273449;
-    color: #e5e7eb;
+    background-color: var(--app-dark-elevated);
+    border-color: var(--app-dark-border);
+    color: var(--app-dark-text);
   }
 
   .fleet-dimensioning-page {
     .bg-light {
-      background-color: #172033 !important;
-      border-color: #273449 !important;
-      color: #e5e7eb !important;
+      background-color: var(--app-dark-elevated) !important;
+      border-color: var(--app-dark-border) !important;
+      color: var(--app-dark-text) !important;
     }
 
     .form-text,
     .text-body-secondary {
-      color: #a5b4c7 !important;
+      color: var(--app-dark-muted) !important;
     }
   }
 
@@ -66,21 +270,21 @@
   .navbar-brand,
   .form-label,
   .form-check-label {
-    color: #e5e7eb;
+    color: var(--app-dark-text);
   }
 
   .dropdown-item:hover,
   .dropdown-item:focus {
-    background-color: #265073;
-    color: #ecf4d6;
+    background-color: var(--app-strong);
+    color: var(--app-dark-text);
   }
 
   .text-muted {
-    color: #9ca3af;
+    color: var(--app-dark-muted);
   }
 
   .text-dark {
-    color: #e5e7eb;
+    color: var(--app-dark-text);
   }
 
   .border,
@@ -88,7 +292,7 @@
   .border-bottom,
   .border-start,
   .border-end {
-    border-color: #273449;
+    border-color: var(--app-dark-border);
   }
 
   .form-control,
@@ -96,105 +300,105 @@
   .ts-control,
   .ts-dropdown,
   .page-link {
-    background-color: #0b1220;
-    border-color: #334155;
-    color: #e5e7eb;
+    background-color: var(--app-dark-input);
+    border-color: var(--app-dark-border);
+    color: var(--app-dark-text);
   }
 
   .form-control::placeholder {
-    color: #94a3b8;
+    color: var(--app-dark-muted);
   }
 
   .table {
-    --bs-table-bg: #111827;
-    --bs-table-color: #e5e7eb;
-    --bs-table-border-color: #273449;
-    --bs-table-striped-bg: #172033;
-    --bs-table-striped-color: #e5e7eb;
-    --bs-table-hover-bg: #1f2a3d;
+    --bs-table-bg: var(--app-dark-surface);
+    --bs-table-color: var(--app-dark-text);
+    --bs-table-border-color: var(--app-dark-border);
+    --bs-table-striped-bg: var(--app-dark-elevated);
+    --bs-table-striped-color: var(--app-dark-text);
+    --bs-table-hover-bg: var(--app-dark-hover);
     --bs-table-hover-color: #ffffff;
   }
 
   .table-light {
-    --bs-table-bg: #1f2937;
-    --bs-table-color: #f9fafb;
-    --bs-table-border-color: #374151;
+    --bs-table-bg: var(--app-dark-hover);
+    --bs-table-color: var(--app-dark-text);
+    --bs-table-border-color: var(--app-dark-border);
   }
 
   .btn-light {
-    --bs-btn-bg: #1f2937;
-    --bs-btn-border-color: #334155;
-    --bs-btn-color: #e5e7eb;
-    --bs-btn-hover-bg: #273449;
-    --bs-btn-hover-border-color: #3b4a63;
+    --bs-btn-bg: var(--app-dark-hover);
+    --bs-btn-border-color: var(--app-dark-border);
+    --bs-btn-color: var(--app-dark-text);
+    --bs-btn-hover-bg: var(--app-dark-border);
+    --bs-btn-hover-border-color: #527853;
     --bs-btn-hover-color: #ffffff;
   }
 
   .btn-primary {
     --bs-btn-color: #ffffff;
-    --bs-btn-bg: #2d9596;
-    --bs-btn-border-color: #2d9596;
+    --bs-btn-bg: var(--app-primary);
+    --bs-btn-border-color: var(--app-primary);
     --bs-btn-hover-color: #ffffff;
-    --bs-btn-hover-bg: #265073;
-    --bs-btn-hover-border-color: #2d9596;
+    --bs-btn-hover-bg: var(--app-strong);
+    --bs-btn-hover-border-color: var(--app-soft);
     --bs-btn-active-color: #ffffff;
-    --bs-btn-active-bg: #265073;
-    --bs-btn-active-border-color: #2d9596;
+    --bs-btn-active-bg: var(--app-strong);
+    --bs-btn-active-border-color: var(--app-soft);
   }
 
   .btn-outline-primary {
-    --bs-btn-color: #9ad0c2;
-    --bs-btn-border-color: #2d9596;
+    --bs-btn-color: var(--app-soft);
+    --bs-btn-border-color: var(--app-primary);
     --bs-btn-hover-color: #ffffff;
-    --bs-btn-hover-bg: #2d9596;
-    --bs-btn-hover-border-color: #2d9596;
+    --bs-btn-hover-bg: var(--app-primary);
+    --bs-btn-hover-border-color: var(--app-primary);
     --bs-btn-active-color: #ffffff;
-    --bs-btn-active-bg: #265073;
-    --bs-btn-active-border-color: #2d9596;
+    --bs-btn-active-bg: var(--app-strong);
+    --bs-btn-active-border-color: var(--app-soft);
   }
 
   footer {
-    --bs-footer-bg: var(--bs-admin-nav-bg, #1e293b);
-    --bs-footer-color: #e5e7eb;
+    --bs-footer-bg: var(--bs-admin-nav-bg, #527853);
+    --bs-footer-color: #f9e8d9;
     background-color: var(--bs-footer-bg) !important;
     border-top-color: rgba(255, 255, 255, 0.06) !important;
     color: var(--bs-footer-color) !important;
 
     .text-muted {
-      color: #cbd5e1 !important;
+      color: #f7d8be !important;
     }
   }
 
   .task-card {
-    background: #111827;
-    border-color: #273449;
-    border-left-color: #2d9596;
-    color: #e5e7eb;
+    background: var(--app-dark-surface);
+    border-color: var(--app-dark-border);
+    border-left-color: var(--app-primary);
+    color: var(--app-dark-text);
 
     &:hover {
-      background: #1f2937;
+      background: var(--app-dark-hover);
     }
   }
 
   .task-title {
-    color: #f9fafb;
+    color: var(--app-dark-text);
   }
 
   .task-desc,
   .task-footer {
-    color: #a5b4c7;
+    color: var(--app-dark-muted);
   }
 
   .comments-box {
-    background: #0b1220;
+    background: var(--app-dark-input);
   }
 
   .comment-bubble {
-    background: #172033;
-    color: #e5e7eb;
+    background: var(--app-dark-elevated);
+    color: var(--app-dark-text);
   }
 
   .ticker-container {
-    background: #020617;
+    background: var(--app-dark-deep);
   }
 }

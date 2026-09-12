@@ -9,17 +9,19 @@
     <%= favicon_link_tag 'logo.png', type: 'image/png' %>
 
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#265073"> <!-- Cor da barra do Chrome -->
+    <meta name="theme-color" content="#3368A0"> <!-- Cor da barra do Chrome -->
     <script nonce="<%= request.content_security_policy_nonce %>">
       (() => {
         const storedTheme = localStorage.getItem("theme");
+        const userColorTheme = "<%= current_user&.color_theme || 'blue_teal' %>";
         const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         const theme = storedTheme || preferredTheme;
 
         document.documentElement.dataset.bsTheme = theme;
+        document.documentElement.dataset.colorTheme = userColorTheme;
         document.querySelector("meta[name='theme-color']")?.setAttribute(
           "content",
-          theme === "dark" ? "#111827" : "#265073"
+          theme === "dark" ? "#0b0f0b" : "#3368A0"
         );
       })();
     </script>

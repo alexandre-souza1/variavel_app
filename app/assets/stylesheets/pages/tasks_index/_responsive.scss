@@ -260,8 +260,8 @@
 [data-bs-theme="dark"] .dashboard-tasks {
   .calendar-body .simple-calendar {
     .day {
-      background: #111827;
-      border-color: #273449;
+      background: var(--app-dark-surface);
+      border-color: var(--app-dark-border);
 
       &:hover {
         border-color: rgba(var(--bs-primary-rgb), 0.34);
@@ -275,8 +275,8 @@
   }
 
   .modal-task-item {
-    background: #111827;
-    border-color: #273449;
+    background: var(--app-dark-surface);
+    border-color: var(--app-dark-border);
 
     &:hover {
       border-color: rgba(var(--bs-primary-rgb), 0.34);
