@@ -13,8 +13,8 @@
     <script nonce="<%= request.content_security_policy_nonce %>">
       (() => {
         const storedTheme = localStorage.getItem("theme");
-        const userColorTheme = <%= json_escape((current_user&.color_theme || 'blue_teal').to_json) %>;
-        const userId = <%= json_escape((current_user&.id || 'guest').to_json) %>;
+        const userColorTheme = <%= raw(json_escape((current_user&.color_theme || 'blue_teal').to_json)) %>;
+        const userId = <%= raw(json_escape((current_user&.id || 'guest').to_json)) %>;
         const storedColorTheme = localStorage.getItem(`colorTheme:${userId}`) || localStorage.getItem("colorTheme");
         const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         const theme = storedTheme || preferredTheme;
