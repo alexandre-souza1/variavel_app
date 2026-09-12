@@ -163,37 +163,16 @@
   }
 
   .table,
-  .table-responsive,
   .app-table,
   .table-custom,
-  .table-routine,
   .routines-table {
-    background-color: var(--app-dark-surface) !important;
     --bs-table-bg: var(--app-dark-surface);
     --bs-table-striped-bg: var(--app-dark-surface);
-  }
-
-  // O app-table pinta cada célula com --bs-body-bg; sobrescrevemos também
-  // as células para impedir que a tabela fique da mesma cor da página.
-  .table > :not(caption) > * > *,
-  .app-table > :not(caption) > * > * {
-    background-color: var(--app-dark-surface) !important;
-    color: var(--app-dark-text) !important;
-  }
-
-  .table > thead > tr > th,
-  .table > thead > tr > td,
-  .app-table > thead > tr > th,
-  .app-table > thead > tr > td {
-    background-color: var(--app-dark-elevated) !important;
-    border-bottom-color: var(--app-dark-border) !important;
-    color: var(--app-dark-text) !important;
+    background-color: var(--bs-table-bg);
   }
 
   .card,
-  .app-panel,
-  .app-table,
-  .table {
+  .app-panel {
     background-clip: padding-box;
     overflow: hidden;
   }
@@ -344,6 +323,12 @@
     --bs-btn-active-color: #ffffff;
     --bs-btn-active-bg: var(--app-strong);
     --bs-btn-active-border-color: var(--app-soft);
+  }
+
+  .theme-toggle-group .btn.active {
+    background-color: var(--app-primary);
+    border-color: var(--app-primary);
+    color: #ffffff;
   }
 
   .btn-outline-primary {

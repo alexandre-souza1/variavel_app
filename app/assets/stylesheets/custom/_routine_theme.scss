@@ -1,0 +1,207 @@
+// A grade de rotinas tem células editáveis e colunas sticky próprias.
+// Mantemos sua pintura isolada para que as regras genéricas de .table não
+// sobrescrevam os estados calculados pelo controller.
+.routine-show-page .table-routine {
+    --routine-grid-bg: var(--bs-body-bg);
+    --routine-header-bg: var(--bs-tertiary-bg);
+    --routine-cell-bg: var(--routine-grid-bg);
+    --routine-cell-text: var(--bs-body-color);
+
+    background-color: var(--routine-grid-bg);
+    border-collapse: separate;
+    border-spacing: 0;
+
+    thead,
+    > thead > tr > th {
+      background-color: var(--routine-header-bg);
+      color: var(--routine-cell-text);
+    }
+
+    > tbody > tr > td,
+    > tbody > tr > th {
+      background-color: var(--routine-cell-bg);
+      color: var(--routine-cell-text);
+    }
+
+    > tbody > tr > .routine-cell {
+      --routine-cell-bg: var(--routine-grid-bg);
+      padding: 0;
+      background-color: var(--routine-cell-bg);
+      transition: background-color .15s ease, box-shadow .15s ease;
+
+      .routine-cell__display,
+      .routine-cell__input {
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        // O fundo pertence ao td. Repeti-lo aqui duplica a composição do
+        // rgba e deixa success/danger visualmente mais fortes.
+        background-color: transparent;
+        color: var(--routine-cell-text);
+      }
+
+      .routine-cell__display {
+        min-height: var(--routine-cell-min-height);
+        padding: .25rem .75rem;
+      }
+
+      &.routine-cell--success {
+        --routine-cell-bg: rgba(var(--bs-success-rgb), .14);
+        box-shadow: inset 0 0 0 1px rgba(var(--bs-success-rgb), .28);
+      }
+
+      &.routine-cell--danger {
+        --routine-cell-bg: rgba(var(--bs-danger-rgb), .14);
+        box-shadow: inset 0 0 0 1px rgba(var(--bs-danger-rgb), .28);
+      }
+
+      &.routine-cell--saving {
+        box-shadow: inset 0 0 0 2px rgba(var(--bs-warning-rgb), .35);
+      }
+
+      &.routine-cell--error {
+        outline: 2px solid var(--bs-danger);
+      }
+
+      &.routine-cell--today:not(.routine-cell--success):not(.routine-cell--danger) {
+        --routine-cell-bg: rgba(255, 193, 7, .10);
+      }
+
+      &.routine-cell--sunday:not(.routine-cell--success):not(.routine-cell--danger) {
+        --routine-cell-bg: rgba(var(--bs-danger-rgb), .06);
+      }
+
+      &.routine-cell--today.routine-cell--sunday:not(.routine-cell--success):not(.routine-cell--danger) {
+        --routine-cell-bg: rgba(var(--bs-danger-rgb), .06);
+      }
+
+      &:hover:not(.routine-cell--sunday-locked) {
+        background-color: var(--routine-cell-bg);
+      }
+
+      .routine-cell__input:focus {
+        background-color: transparent;
+      }
+    }
+
+    > tbody > tr > .empty-cell {
+      --routine-cell-bg: var(--routine-grid-bg);
+      background-color: var(--routine-cell-bg);
+
+      &.routine-day--today {
+        --routine-cell-bg: rgba(255, 193, 7, .10);
+      }
+
+      &.routine-day--sunday {
+        --routine-cell-bg: rgba(var(--bs-danger-rgb), .06);
+      }
+    }
+
+    > tbody > tr.category-row > td,
+    > tbody > tr.category-row > td.category-row__spacer,
+    > tbody > tr.category-row > td.category-row__label {
+      background-color: var(--routine-header-bg);
+      color: var(--routine-cell-text);
+    }
+
+    .indicator-name,
+    .category-row__label,
+    thead .col-indicator {
+      position: sticky;
+      left: 0;
+    }
+
+    .indicator-name {
+      z-index: 10;
+      background-color: var(--routine-grid-bg);
+    }
+
+    .category-row__label {
+      z-index: 10;
+      background-color: var(--routine-header-bg);
+    }
+
+    thead .col-indicator {
+      z-index: 11;
+      background-color: var(--routine-header-bg);
+    }
+}
+
+.routine-show-page .routine-table-wrapper {
+  overflow: visible;
+
+  .table-responsive,
+  .table-routine {
+    border-radius: 0;
+  }
+
+  .table-responsive {
+    background: transparent;
+  }
+}
+
+// O raio pertence ao contorno da tabela, não às linhas internas.
+.routine-show-page #routineFrequencyAccordion .table-routine {
+  tbody tr,
+  tbody tr > td,
+  tbody tr > th {
+    border-radius: 0;
+  }
+}
+
+// O Bootstrap usa --bs-primary-bg-subtle no botão aberto por padrão.
+// Nesta página o acordeão acompanha as superfícies do tema, sem ficar azul.
+.routine-show-page #routineFrequencyAccordion {
+  --bs-accordion-bg: var(--bs-tertiary-bg);
+  --bs-accordion-color: var(--bs-body-color);
+  --bs-accordion-btn-bg: var(--bs-tertiary-bg);
+  --bs-accordion-btn-color: var(--bs-body-color);
+  --bs-accordion-active-bg: var(--bs-secondary-bg);
+  --bs-accordion-active-color: var(--bs-body-color);
+  --bs-accordion-border-color: var(--bs-border-color);
+  --bs-accordion-btn-focus-box-shadow: 0 0 0 .25rem rgba(var(--bs-primary-rgb), .18);
+
+  .accordion-button,
+  .accordion-button:not(.collapsed) {
+    background-color: var(--bs-accordion-btn-bg);
+    color: var(--bs-accordion-btn-color);
+  }
+
+  .accordion-button:not(.collapsed) {
+    background-color: var(--bs-accordion-active-bg);
+    color: var(--bs-accordion-active-color);
+  }
+
+  .accordion-collapse,
+  .accordion-body {
+    background-color: var(--bs-accordion-bg);
+    color: var(--bs-accordion-color);
+  }
+}
+
+[data-bs-theme="dark"] .routine-show-page #routineFrequencyAccordion {
+  --bs-accordion-bg: var(--app-dark-surface);
+  --bs-accordion-btn-bg: var(--app-dark-elevated);
+  --bs-accordion-btn-color: var(--app-dark-text);
+  --bs-accordion-active-bg: rgba(var(--bs-primary-rgb), .18);
+  --bs-accordion-active-color: var(--app-dark-text);
+  --bs-accordion-color: var(--app-dark-text);
+  --bs-accordion-border-color: var(--app-dark-border);
+
+  .accordion-button,
+  .accordion-button:not(.collapsed),
+  .accordion-collapse,
+  .accordion-body {
+    border-color: var(--app-dark-border);
+  }
+
+  .accordion-button::after {
+    filter: grayscale(1) brightness(1.8);
+  }
+}
+
+[data-bs-theme="dark"] .routine-show-page .table-routine {
+  --routine-grid-bg: var(--app-dark-surface);
+  --routine-header-bg: var(--app-dark-elevated);
+  --routine-cell-text: var(--app-dark-text);
+}

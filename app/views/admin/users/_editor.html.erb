@@ -63,7 +63,7 @@
             <%= f.radio_button :color_theme, value, class: "theme-picker__input", id: "user_color_theme_#{value}", data: { theme_target: "colorSelect", action: "change->theme#setColor" } %>
             <%= f.label :color_theme, value: value, for: "user_color_theme_#{value}", class: "theme-picker__option" do %>
               <span class="theme-picker__topline">
-                <strong><%= label %></strong>
+                <strong><%= label.upcase %></strong>
                 <span class="theme-picker__check"><i class="bi bi-check2"></i></span>
               </span>
               <span class="theme-picker__description"><%= theme_descriptions.fetch(value) %></span>

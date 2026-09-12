@@ -59,7 +59,7 @@
                 <i class="bi bi-database me-1"></i> Cadastros
               </button>
               <ul class="dropdown-menu app-dropdown-menu">
-                <% 
+                <%
                   visible_items = NavbarHelper::REGISTRATION_SUBITEMS.select do |key, sub|
                     can_view_subitem?(key, current_user)
                   end
@@ -186,6 +186,22 @@
                     <i class="bi bi-moon-stars me-1"></i> Escuro
                   </button>
                 </div>
+                <label class="form-label small mt-3 mb-1" for="navbarColorTheme">Tema</label>
+                <select id="navbarColorTheme"
+                        class="form-select form-select-sm theme-color-select"
+                        data-action="change->theme#setColor">
+                  <% User::COLOR_THEMES.each do |label, value| %>
+                    <option value="<%= value %>" <%= "selected" if (current_user.color_theme || "blue_teal") == value %>>
+                      <%= label.upcase %>
+                    </option>
+                  <% end %>
+                </select>
+                <div class="theme-color-preview" data-theme-target="preview" aria-label="Cores da paleta selecionada">
+                  <span class="theme-color-preview__swatch" data-theme-preview-color="primary"></span>
+                  <span class="theme-color-preview__swatch" data-theme-preview-color="soft"></span>
+                  <span class="theme-color-preview__swatch" data-theme-preview-color="accent"></span>
+                  <span class="theme-color-preview__swatch" data-theme-preview-color="page"></span>
+                </div>
               </div>
               <div class="dropdown-divider"></div>
 
@@ -247,10 +263,10 @@
       <!-- ACORDEÃO DU -->
       <% if can_view_du_menu?(current_user) %>
         <div class="app-mobile-nav-section">
-          <button class="app-mobile-nav-section__title w-100 text-start" 
-                  type="button" 
-                  data-bs-toggle="collapse" 
-                  data-bs-target="#mobileDuCollapse" 
+          <button class="app-mobile-nav-section__title w-100 text-start"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#mobileDuCollapse"
                   aria-expanded="false">
             <i class="bi bi-truck"></i> DU
           </button>
@@ -268,10 +284,10 @@
       <!-- ACORDEÃO AZ -->
       <% if can_view_az_menu?(current_user) %>
         <div class="app-mobile-nav-section">
-          <button class="app-mobile-nav-section__title w-100 text-start" 
-                  type="button" 
-                  data-bs-toggle="collapse" 
-                  data-bs-target="#mobileAzCollapse" 
+          <button class="app-mobile-nav-section__title w-100 text-start"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#mobileAzCollapse"
                   aria-expanded="false">
             <i class="bi bi-house-door"></i> AZ
           </button>
@@ -302,10 +318,10 @@
       <!-- ACORDEÃO CADASTROS -->
       <% if can_view_registration_dropdown?(current_user) %>
         <div class="app-mobile-nav-section">
-          <button class="app-mobile-nav-section__title w-100 text-start" 
-                  type="button" 
-                  data-bs-toggle="collapse" 
-                  data-bs-target="#mobileRegCollapse" 
+          <button class="app-mobile-nav-section__title w-100 text-start"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#mobileRegCollapse"
                   aria-expanded="false">
             <i class="bi bi-database"></i> Cadastros
           </button>

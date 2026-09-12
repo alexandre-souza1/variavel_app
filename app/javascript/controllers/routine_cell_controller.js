@@ -120,10 +120,12 @@ export default class extends Controller {
   }
 
   updateCellStatus(data) {
-    this.element.classList.remove(
+    const statusClasses = [
       "routine-cell--success",
       "routine-cell--danger"
-    )
+    ]
+
+    this.element.classList.remove(...statusClasses)
 
     if (data.cell_status === "success") {
       this.element.classList.add("routine-cell--success")
@@ -334,11 +336,6 @@ export default class extends Controller {
     this.saving = false
 
     this.element.classList.remove("routine-cell--saving")
-    this.element.classList.add("routine-cell--saved")
-
-    setTimeout(() => {
-      this.element.classList.remove("routine-cell--saved")
-    }, 600)
   }
 
   async save() {

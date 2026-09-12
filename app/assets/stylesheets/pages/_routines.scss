@@ -194,19 +194,19 @@
 }
 
 .routine-day--sunday {
-  background: rgba(var(--bs-danger-rgb), .05) !important;
+  background: rgba(var(--bs-danger-rgb), .05);
   color: var(--bs-danger-text-emphasis);
 }
 
 .table-routine thead th.routine-day--today,
 .table-routine td.empty-cell.routine-day--today,
-.table-routine .routine-cell.routine-cell--today {
-  background-color: rgba(255, 193, 7, 0.10) !important;
+.table-routine .routine-cell.routine-cell--today:not(.routine-cell--success):not(.routine-cell--danger) {
+  background-color: rgba(255, 193, 7, 0.10);
   color: var(--bs-body-color);
 }
 
 .routine-day--today.routine-day--sunday {
-  background: rgba(var(--bs-danger-rgb), .05) !important;
+  background: rgba(var(--bs-danger-rgb), .05);
   color: var(--bs-danger-text-emphasis);
 }
 

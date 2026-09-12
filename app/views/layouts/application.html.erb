@@ -39,7 +39,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="app-shell" data-user-id="<%= current_user&.id || 'guest' %>">
+  <body class="app-shell" data-user-id="<%= current_user&.id || 'guest' %>" data-controller="chart-theme">
   <%= render "shared/navbar" %>
   <%= render "layouts/#{secondary_nav}" if secondary_nav.present? %>
   <div id="flash-container">

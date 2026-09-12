@@ -20,36 +20,36 @@
         </p>
       </div>
       <div class="header-actions">
-        <%= link_to routines_path, class: "btn-outline" do %>
+        <%= link_to routines_path, class: "btn btn-outline-secondary" do %>
           <i class="bi bi-arrow-left me-1"></i>
           Voltar
         <% end %>
         <% unless @routine.closed? || @routine.archived? %>
-          <%= link_to edit_routine_generator_path(@routine), class: "btn-outline" do %>
+          <%= link_to edit_routine_generator_path(@routine), class: "btn btn-primary" do %>
             <i class="bi bi-pencil-square me-1"></i>
             Editar KPIs
           <% end %>
         <% end %>
         <% if @routine.open? %>
-          <%= button_to close_routine_path(@routine), method: :patch, class: "btn-outline" do %>
+          <%= button_to close_routine_path(@routine), method: :patch, class: "btn btn-primary" do %>
             <i class="bi bi-check2-circle me-1"></i>
             Encerrar rotina
           <% end %>
         <% elsif @routine.closed? %>
-          <%= button_to archive_routine_path(@routine), method: :patch, class: "btn-outline" do %>
+          <%= button_to archive_routine_path(@routine), method: :patch, class: "btn btn-secondary" do %>
             <i class="bi bi-archive me-1"></i>
             Arquivar
           <% end %>
         <% end %>
         <% if current_user.admin? && (@routine.closed? || @routine.archived?) %>
-          <%= button_to reopen_routine_path(@routine), method: :patch, class: "btn-outline" do %>
+          <%= button_to reopen_routine_path(@routine), method: :patch, class: "btn btn-primary" do %>
             <i class="bi bi-arrow-counterclockwise me-1"></i>
             Reabrir rotina
           <% end %>
         <% end %>
         <button
           type="button"
-          class="btn-outline"
+          class="btn btn-outline-secondary"
           data-bs-toggle="offcanvas"
           data-bs-target="#routineActivitiesOffcanvas"
           aria-controls="routineActivitiesOffcanvas">

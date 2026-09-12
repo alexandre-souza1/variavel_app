@@ -168,6 +168,12 @@ html[data-bs-theme="light"] {
     box-shadow: 0 2px 6px rgba(82, 120, 83, 0.14);
   }
 
+  .theme-toggle-group .btn.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #ffffff;
+  }
+
   .btn-outline-primary {
     --bs-btn-color: var(--app-primary);
     --bs-btn-border-color: var(--app-primary);
