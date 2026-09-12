@@ -190,11 +190,10 @@
                 <select id="navbarColorTheme"
                         class="form-select form-select-sm theme-color-select"
                         data-action="change->theme#setColor">
-                  <% User::COLOR_THEMES.each do |label, value| %>
-                    <option value="<%= value %>" <%= "selected" if (current_user.color_theme || "blue_teal") == value %>>
-                      <%= label.upcase %>
-                    </option>
-                  <% end %>
+                  <%= options_for_select(
+                        User::COLOR_THEMES.map { |label, value| [label.upcase, value] },
+                        current_user.color_theme || "blue_teal"
+                      ) %>
                 </select>
                 <div class="theme-color-preview" data-theme-target="preview" aria-label="Cores da paleta selecionada">
                   <span class="theme-color-preview__swatch" data-theme-preview-color="primary"></span>
