@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Erro 500 - Algo deu errado</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { margin: 0; padding: 20px; font-family: Arial, sans-serif; background: #f7f7f7; color: #333; text-align: center; }
+    .container { max-width: 500px; margin: 60px auto; padding: 24px; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+    h1 { color: #d9534f; font-size: 24px; margin-bottom: 10px; }
+    p { font-size: 16px; line-height: 1.5; margin-bottom: 20px; color: #555; }
+    .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .button { display: inline-flex; align-items: center; padding: 12px 18px; color: #fff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px; }
+    .download-btn { background: #3368a0; }
+    .whatsapp-btn { background: #25d366; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Ops! Algo deu errado.</h1>
+    <p>Ocorreu um erro inesperado no sistema. Baixe o relatório técnico ou entre em contato para que possamos resolver.</p>
+    <div class="actions">
+      <a class="button download-btn" href="<%= error_log_path(report_id) %>">Baixar log do erro</a>
+      <a class="button whatsapp-btn" href="https://wa.me/554999786513?text=Olá,%20encontrei%20um%20erro%20no%20workstation." target="_blank" rel="noopener">Falar no WhatsApp</a>
+    </div>
+  </div>
+</body>
+</html>

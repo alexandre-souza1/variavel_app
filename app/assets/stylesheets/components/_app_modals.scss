@@ -93,6 +93,8 @@
   #taskModal .task-checklist-surface { background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; }
   .task-detail-modal [data-controller="task-checklist"] > .d-flex { margin-bottom: .35rem !important; }
   .task-detail-modal [data-controller="task-checklist"] h6 { color: var(--bs-secondary-color); font-size: .7rem; font-weight: 700; margin: 0; text-transform: uppercase; }
+  .task-checklist-help { color: var(--bs-primary); cursor: help; font-size: .62rem; line-height: 1; }
+  .task-checklist-help .bi::before { font-size: .62rem !important; font-weight: 400 !important; }
   .task-detail-modal .task-checklist-action { color: var(--bs-secondary-color); font-size: .85rem; padding: .25rem .4rem; }
   .task-detail-modal .task-checklist-action:hover { background: rgba(var(--bs-primary-rgb), .1); color: var(--bs-primary); }
   .tasklist-clone-toggle-button { color: var(--bs-secondary-color); }
