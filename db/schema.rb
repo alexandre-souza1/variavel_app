@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_14_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_14_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -507,6 +507,24 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_14_120000) do
     t.index ["matric_motorista"], name: "index_mapas_on_matric_motorista"
   end
 
+  create_table "meeting_minutes", force: :cascade do |t|
+    t.bigint "action_plan_id", null: false
+    t.bigint "creator_id", null: false
+    t.string "title", null: false
+    t.date "meeting_date", null: false
+    t.string "status", default: "processing", null: false
+    t.text "transcript"
+    t.text "summary"
+    t.jsonb "decisions", default: [], null: false
+    t.jsonb "pending_items", default: [], null: false
+    t.jsonb "tasks_suggestions", default: [], null: false
+    t.text "error_message"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["action_plan_id"], name: "index_meeting_minutes_on_action_plan_id"
+    t.index ["creator_id"], name: "index_meeting_minutes_on_creator_id"
+  end
+
   create_table "notifications", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "actor_id"
@@ -885,6 +903,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_14_120000) do
   add_foreign_key "invoices", "suppliers"
   add_foreign_key "invoices", "users", column: "purchaser_id"
   add_foreign_key "labels", "action_plans"
+  add_foreign_key "meeting_minutes", "action_plans"
+  add_foreign_key "meeting_minutes", "users", column: "creator_id"
   add_foreign_key "notifications", "users"
   add_foreign_key "notifications", "users", column: "actor_id"
   add_foreign_key "remuneration_category_values", "budget_categories"

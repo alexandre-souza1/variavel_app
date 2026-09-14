@@ -2,6 +2,7 @@ class ActionPlan < ApplicationRecord
   belongs_to :user
   has_many :buckets, dependent: :destroy
   has_many :labels, dependent: :destroy
+  has_many :meeting_minutes, dependent: :destroy
 
   validates :name, presence: true
 

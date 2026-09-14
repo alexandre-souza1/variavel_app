@@ -1,0 +1,70 @@
+<div class="meeting-minute-page">
+  <div class="meeting-minute-page__header">
+    <div>
+      <span class="meeting-minute-page__eyebrow">Ata de reunião</span>
+      <h1><i class="bi bi-file-earmark-text me-2"></i><%= @meeting.title %></h1>
+      <p><%= l(@meeting.meeting_date, format: :long) %> · <%= @action_plan.name %></p>
+    </div>
+    <%= link_to action_plan_path(@action_plan), class: "btn-outline" do %>
+      <i class="bi bi-arrow-left me-1"></i> Action plan
+    <% end %>
+  </div>
+
+  <% if @meeting.failed? %>
+    <div class="alert alert-danger"><strong>Não foi possível gerar a ata.</strong> <%= @meeting.error_message %></div>
+  <% elsif @meeting.queued? || @meeting.processing? %>
+    <div class="meeting-minute-card" data-controller="meeting-status">
+      <i class="bi bi-hourglass-split me-2"></i>
+      A ata está sendo processada em segundo plano. Esta página será atualizada automaticamente.
+    </div>
+  <% else %>
+    <div class="meeting-minute-content">
+      <section class="meeting-minute-card">
+        <h2><i class="bi bi-card-text"></i> Resumo</h2>
+        <div class="meeting-minute-summary"><%= simple_format(@meeting.summary) %></div>
+      </section>
+
+      <div class="meeting-minute-columns">
+        <section class="meeting-minute-card">
+          <h2><i class="bi bi-check2-circle"></i> Decisões</h2>
+          <ul><% @meeting.decisions.each do |item| %><li><%= item %></li><% end %></ul>
+        </section>
+        <section class="meeting-minute-card">
+          <h2><i class="bi bi-hourglass-split"></i> Pendências</h2>
+          <ul><% @meeting.pending_items.each do |item| %><li><%= item %></li><% end %></ul>
+        </section>
+      </div>
+
+      <section class="meeting-minute-card">
+        <div class="meeting-minute-section-heading">
+          <div>
+            <h2><i class="bi bi-list-task"></i> Tarefas sugeridas</h2>
+            <p>Revise as sugestões e confirme quais devem ser criadas.</p>
+          </div>
+        </div>
+
+        <% if @meeting.tasks_suggestions.empty? %>
+          <div class="meeting-minute-empty">Nenhuma tarefa foi identificada nesta reunião.</div>
+        <% else %>
+          <%= form_with url: create_tasks_action_plan_meeting_minute_path(@action_plan, @meeting), method: :post, local: true do |form| %>
+            <div class="meeting-minute-task-list">
+              <% @meeting.tasks_suggestions.each_with_index do |suggestion, index| %>
+                <div class="meeting-minute-task-row">
+                  <%= check_box_tag "suggestion_ids[]", index, true, id: "suggestion_#{index}", class: "form-check-input" %>
+                  <div class="meeting-minute-task-row__main">
+                    <label for="suggestion_<%= index %>"><strong><%= suggestion["title"] %></strong></label>
+                    <p><%= suggestion["description"] %></p>
+                    <small><%= suggestion["due_date"].presence || "Sem prazo definido" %></small>
+                  </div>
+                  <%= select_tag "bucket_ids[#{index}]", options_from_collection_for_select(@buckets, :id, :name, @buckets.first&.id), class: "form-select form-select-sm", aria: { label: "Bucket da tarefa" } %>
+                  <%= select_tag "assignee_ids[#{index}]", options_from_collection_for_select(@users, :id, :name), include_blank: "Sem responsável", class: "form-select form-select-sm", aria: { label: "Responsável da tarefa" } %>
+                </div>
+              <% end %>
+            </div>
+            <%= form.submit "Criar tarefas selecionadas", class: "btn btn-primary mt-3" %>
+          <% end %>
+        <% end %>
+      </section>
+    </div>
+  <% end %>
+</div>

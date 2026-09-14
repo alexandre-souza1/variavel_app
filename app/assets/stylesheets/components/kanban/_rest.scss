@@ -55,6 +55,44 @@
   .action-plan-labels-result-count { align-self: flex-end; }
 }
 
+.meeting-minute-page { margin: 0 auto; max-width: 1100px; }
+.meeting-minute-page__header { align-items: flex-start; display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+.meeting-minute-page__eyebrow { color: var(--bs-primary); font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.meeting-minute-page__header h1 { color: var(--bs-body-color); font-size: 1.55rem; margin: .25rem 0; }
+.meeting-minute-page__header p { color: var(--bs-secondary-color); margin: 0; }
+.meeting-minute-card { background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius: 16px; box-shadow: 0 .5rem 1.5rem rgba(15,23,42,.06); padding: 1.25rem; }
+.meeting-minute-form-grid { display: grid; gap: 1rem; grid-template-columns: 2fr 1fr; margin-bottom: 1.25rem; }
+.meeting-minute-recorder { align-items: center; background: rgba(var(--bs-primary-rgb), .08); border: 1px solid rgba(var(--bs-primary-rgb), .18); border-radius: 14px; display: flex; gap: .85rem; padding: 1rem; }
+.meeting-minute-recorder__icon { align-items: center; background: var(--bs-primary); border-radius: 50%; color: #fff; display: flex; height: 2.5rem; justify-content: center; width: 2.5rem; }
+.meeting-minute-recorder__copy { display: grid; gap: .15rem; }
+.meeting-minute-recorder__copy strong { color: var(--bs-body-color); font-size: .85rem; }
+.meeting-minute-recorder__copy span { color: var(--bs-secondary-color); font-size: .75rem; }
+.meeting-minute-recorder__copy span.is-error { color: var(--bs-danger); }
+.meeting-minute-recorder__timer { color: var(--bs-primary); font-variant-numeric: tabular-nums; font-weight: 700; margin-left: auto; }
+.meeting-minute-actions { display: flex; flex-wrap: wrap; gap: .65rem; justify-content: flex-end; margin-top: 1rem; }
+.meeting-minute-content { display: grid; gap: 1rem; }
+.meeting-minute-card h2 { align-items: center; color: var(--bs-body-color); display: flex; font-size: 1rem; gap: .45rem; margin: 0 0 .8rem; }
+.meeting-minute-card h2 i { color: var(--bs-primary); }
+.meeting-minute-summary { color: var(--bs-body-color); line-height: 1.65; }
+.meeting-minute-columns { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.meeting-minute-card ul { color: var(--bs-body-color); line-height: 1.55; margin: 0; padding-left: 1.15rem; }
+.meeting-minute-section-heading { align-items: center; display: flex; justify-content: space-between; }
+.meeting-minute-section-heading p { color: var(--bs-secondary-color); font-size: .75rem; margin: -.45rem 0 .9rem; }
+.meeting-minute-task-list { display: grid; gap: .55rem; }
+.meeting-minute-task-row { align-items: center; background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color); border-radius: 11px; display: grid; gap: .7rem; grid-template-columns: auto 1fr 150px 180px; padding: .65rem .75rem; }
+.meeting-minute-task-row__main { min-width: 0; }
+.meeting-minute-task-row__main label { color: var(--bs-body-color); cursor: pointer; display: block; font-size: .82rem; }
+.meeting-minute-task-row__main p { color: var(--bs-secondary-color); font-size: .74rem; margin: .2rem 0; }
+.meeting-minute-task-row__main small { color: var(--bs-primary); font-size: .68rem; }
+.meeting-minute-empty { color: var(--bs-secondary-color); font-size: .82rem; padding: 1rem 0; }
+
+@media (max-width: 768px) {
+  .meeting-minute-page__header { flex-direction: column; }
+  .meeting-minute-form-grid, .meeting-minute-columns { grid-template-columns: 1fr; }
+  .meeting-minute-task-row { grid-template-columns: auto 1fr; }
+  .meeting-minute-task-row .form-select { grid-column: 2; width: 100%; }
+}
+
 // Lembrete: switch e rotulo usados para alternar o lembrete de uma tarefa.
 .task-reminder-toggle {
   align-items: center;

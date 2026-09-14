@@ -1,0 +1,50 @@
+<div class="meeting-minute-page">
+  <div class="meeting-minute-page__header">
+    <div>
+      <span class="meeting-minute-page__eyebrow">Nova ata</span>
+      <h1><i class="bi bi-mic me-2"></i>Gravar reunião</h1>
+      <p>Action plan: <strong><%= @action_plan.name %></strong></p>
+    </div>
+    <%= link_to action_plan_path(@action_plan), class: "btn-outline" do %>
+      <i class="bi bi-arrow-left me-1"></i> Voltar
+    <% end %>
+  </div>
+
+  <%= form_with model: [@action_plan, @meeting], multipart: true, data: { controller: "meeting-recorder" }, class: "meeting-minute-card" do |form| %>
+    <% if @meeting.errors.any? %>
+      <div class="alert alert-danger"><%= @meeting.errors.full_messages.to_sentence %></div>
+    <% end %>
+
+    <div class="meeting-minute-form-grid">
+      <div>
+        <%= form.label :title, "Título da reunião", class: "form-label" %>
+        <%= form.text_field :title, class: "form-control", required: true %>
+      </div>
+      <div>
+        <%= form.label :meeting_date, "Data", class: "form-label" %>
+        <%= form.date_field :meeting_date, class: "form-control", required: true %>
+      </div>
+    </div>
+
+    <div class="meeting-minute-recorder">
+      <div class="meeting-minute-recorder__icon"><i class="bi bi-mic-fill"></i></div>
+      <div class="meeting-minute-recorder__copy">
+        <strong>Gravação da reunião</strong>
+        <span data-meeting-recorder-target="status">Clique em iniciar quando todos estiverem prontos. Gravações de até <%= MeetingMinute.max_audio_size_mb %> MB são aceitas.</span>
+      </div>
+      <span class="meeting-minute-recorder__timer" data-meeting-recorder-target="timer">00:00</span>
+    </div>
+
+    <%= form.file_field :audio, accept: "audio/*", class: "d-none", required: true, data: { meeting_recorder_target: "file" } %>
+
+    <div class="meeting-minute-actions">
+      <button type="button" class="btn btn-primary" data-meeting-recorder-target="start" data-action="click->meeting-recorder#start">
+        <i class="bi bi-record-circle me-1"></i> Iniciar gravação
+      </button>
+      <button type="button" class="btn btn-outline-danger d-none" data-meeting-recorder-target="stop" data-action="click->meeting-recorder#stop">
+        <i class="bi bi-stop-circle me-1"></i> Parar gravação
+      </button>
+      <%= form.submit "Gerar ata com IA", class: "btn btn-success", disabled: true, data: { meeting_recorder_target: "submit" } %>
+    </div>
+  <% end %>
+</div>

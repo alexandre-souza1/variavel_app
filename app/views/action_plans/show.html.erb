@@ -34,6 +34,11 @@
           </button>
         <% end %>
 
+        <%= link_to new_action_plan_meeting_minute_path(@action_plan), class: "btn-outline action-plan-view-link" do %>
+          <i class="bi bi-mic"></i>
+          <span>Nova ata</span>
+        <% end %>
+
         <!-- KANBAN -->
         <%= link_to action_plan_path(@action_plan, view: "kanban"),
             class: "btn-outline action-plan-view-link action-plan-view-link--kanban #{params[:view] != 'list' ? 'active' : ''}" do %>
