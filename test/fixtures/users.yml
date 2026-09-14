@@ -8,9 +8,11 @@ one:
   email: user_one@example.com
   encrypted_password: <%= Devise::Encryptor.digest(User, "password") %>
   role: 0
+  sector: 0
 
 two:
   email: user_two@example.com
   encrypted_password: <%= Devise::Encryptor.digest(User, "password") %>
   role: 0
+  sector: 0
 # column: value

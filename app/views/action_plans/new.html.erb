@@ -1,45 +1,96 @@
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="dashboard-tasks">
+<div class="action-plan-form-page">
+<div class="d-flex justify-content-between align-items-center mb-4 action-plan-form-header">
   <h2 class="mb-0">
-    <i class="fas fa-plus me-2"></i> Novo Plano de Ação
+    <i class="bi bi-file-earmark-plus me-2"></i> Novo Plano de Ação
   </h2>
-  <div class="d-flex gap-1">
-    <%= link_to action_plans_path, class: "btn btn-outline-secondary" do %>
-      <i class="fas fa-arrow-left me-1"></i> Voltar
-    <% end %>
-    <%= link_to new_task_import_path, class: "btn btn-outline-primary" do %>
-      <i class="fas fa-file-import me-1"></i>
-      Ou Importar do Teams
-    <% end %>
+    <div class="d-flex gap-1">
+      <%= link_to action_plans_path, class: "btn btn-outline-secondary" do %>
+        <i class="fas fa-arrow-left me-1"></i> Voltar
+      <% end %>
+      <%= link_to new_task_import_path, class: "btn btn-outline-primary" do %>
+        <i class="fas fa-file-import me-1"></i>
+        Ou Importar do Teams
+      <% end %>
+    </div>
+  </div>
+
+<div class="card shadow-sm action-plan-form-card">
+    <div class="card-body">
+    <%= form_with model: @action_plan, class: "action-plan-form" do |f| %>
+
+        <!-- Nome -->
+      <div class="mb-3 action-plan-form-field">
+        <%= f.label :name, class: "form-label" do %>
+          <i class="bi bi-type me-1"></i> Nome do plano
+        <% end %>
+          <%= f.text_field :name,
+                class: "form-control",
+                placeholder: "Ex: Plano de melhoria logística" %>
+        </div>
+
+        <!-- Descrição -->
+      <div class="mb-3 action-plan-form-field">
+        <%= f.label :description, class: "form-label" do %>
+          <i class="bi bi-card-text me-1"></i> Descrição
+        <% end %>
+          <%= f.text_area :description,
+                class: "form-control",
+                rows: 4,
+                placeholder: "Descreva os objetivos e ações..." %>
+        </div>
+
+        <% if current_user.admin? %>
+          <!-- Setor -->
+        <div class="mb-3 action-plan-form-field">
+          <%= f.label :sector, class: "form-label" do %>
+              <i class="bi bi-diagram-3 me-1"></i> Setor do plano
+            <% end %>
+
+            <% sector_icons = {
+              fleet: "bi-truck",
+              du: "bi-diagram-3",
+              warehouse: "bi-building",
+              hr: "bi-people",
+              safety: "bi-shield-check",
+              finance: "bi-cash-coin",
+              planning: "bi-clipboard-check"
+            } %>
+            <div class="row g-3 action-plan-sector-options">
+              <% User::USER_SECTORS.each do |label, value| %>
+                <% selected = @action_plan.sector == value.to_s %>
+                <div class="col-auto">
+                  <label class="action-plan-sector-option d-block w-100">
+                    <%= f.radio_button :sector, value, checked: selected, class: "btn-check" %>
+                    <span class="action-plan-sector-card border rounded-3 bg-body">
+                      <i class="action-plan-sector-card__icon bi <%= sector_icons[value] %>"></i>
+                      <span class="action-plan-sector-card__label"><%= label %></span>
+                    </span>
+                  </label>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- Visibilidade -->
+      <div class="action-plan-visibility mb-3">
+        <%= f.label :public, class: "action-plan-visibility__switch" do %>
+          <%= f.check_box :public, class: "action-plan-visibility__input", role: "switch" %>
+          <span class="action-plan-visibility__track" aria-hidden="true"><span></span></span>
+          <span class="action-plan-visibility__title"><i class="bi bi-globe2"></i> Plano público</span>
+        <% end %>
+        <small>Desmarcado: visível apenas para o setor do plano e usuários relacionados às tarefas.</small>
+      </div>
+
+        <!-- Ações -->
+      <div class="d-flex justify-content-end gap-2 action-plan-form-actions">
+          <%= link_to "Cancelar", action_plans_path, class: "btn btn-outline-secondary" %>
+          <%= f.submit "Criar plano", class: "btn btn-primary" %>
+        </div>
+
+      <% end %>
+    </div>
   </div>
 </div>
-
-<div class="card shadow-sm">
-  <div class="card-body">
-    <%= form_with model: @action_plan do |f| %>
-
-      <!-- Nome -->
-      <div class="mb-3">
-        <%= f.label :name, "Nome do Plano", class: "form-label fw-semibold" %>
-        <%= f.text_field :name,
-              class: "form-control",
-              placeholder: "Ex: Plano de melhoria logística" %>
-      </div>
-
-      <!-- Descrição -->
-      <div class="mb-3">
-        <%= f.label :description, "Descrição", class: "form-label fw-semibold" %>
-        <%= f.text_area :description,
-              class: "form-control",
-              rows: 4,
-              placeholder: "Descreva os objetivos e ações..." %>
-      </div>
-
-      <!-- Ações -->
-      <div class="d-flex justify-content-end gap-2">
-        <%= link_to "Cancelar", action_plans_path, class: "btn btn-outline-secondary" %>
-        <%= f.submit "Criar plano", class: "btn btn-primary" %>
-      </div>
-
-    <% end %>
-  </div>
 </div>

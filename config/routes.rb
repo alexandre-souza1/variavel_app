@@ -167,6 +167,7 @@ Rails.application.routes.draw do
   resources :fleet_dimensionings, except: :show
 
   resources :action_plans do
+    post :toggle_hidden, on: :member
     patch :sort_buckets, on: :member
     patch :assign_open_tasks, on: :member
     resources :labels, only: :destroy

@@ -23,17 +23,7 @@ class CommentsController < ApplicationController
   private
 
   def accessible_action_plans
-    return ActionPlan.all if current_user.admin?
-
-    ActionPlan
-      .left_joins(buckets: { tasks: :task_assignments })
-      .where(
-        "action_plans.user_id = :user_id
-         OR tasks.creator_id = :user_id
-         OR task_assignments.user_id = :user_id",
-        user_id: current_user.id
-      )
-      .distinct
+    ActionPlan.visible_to(current_user)
   end
 
   def accessible_tasks

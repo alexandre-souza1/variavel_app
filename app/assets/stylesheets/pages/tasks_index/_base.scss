@@ -135,8 +135,8 @@
     gap: 0;
   }
 
-  .plan-item {
-    padding: 0.75rem 1.25rem;
+    .plan-item {
+      padding: 0.75rem 1.25rem;
     border-bottom: 1px solid var(--bs-border-color);
     transition: background 0.15s ease;
     min-width: 0;
@@ -151,6 +151,34 @@
 
     .plan-item-content {
       min-width: 0;
+    }
+
+    .plan-meta {
+      bottom: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: var(--bs-secondary-color);
+      line-height: 1;
+    }
+
+    .plan-meta__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.35rem;
+      height: 1.35rem;
+      border-radius: 50%;
+      font-size: 0.78rem;
+      transition: background-color 0.15s ease, color 0.15s ease;
+
+      &:hover {
+        color: var(--bs-primary);
+      }
+
+      &.is-private {
+        color: var(--bs-secondary-color);
+      }
     }
 
     .plan-name {
@@ -175,6 +203,7 @@
       display: flex;
       gap: 0.3rem;
       flex-wrap: wrap;
+      padding-right: 4.5rem;
 
       .btn-sm {
         font-size: 0.75rem;

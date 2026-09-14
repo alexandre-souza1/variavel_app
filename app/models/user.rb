@@ -17,6 +17,7 @@ class User < ApplicationRecord
   has_many :checklists
   has_many :invoices, foreign_key: 'purchaser_id', dependent: :nullify
   has_many :action_plans, dependent: :destroy
+  has_many :hidden_action_plans, dependent: :destroy
   has_many :task_assignments
   has_many :tasks, through: :task_assignments
   has_many :stress_test_imports, dependent: :destroy

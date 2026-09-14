@@ -4,9 +4,27 @@ class ActionPlansController < ApplicationController
   before_action :require_admin!, only: :assign_open_tasks
   before_action :set_owned_action_plan, only: [:edit, :update, :destroy]
 
+  def toggle_hidden
+    @action_plan = accessible_action_plans.find(params[:id])
+    hidden_action_plan = current_user.hidden_action_plans.find_by(action_plan: @action_plan)
+
+    if hidden_action_plan
+      hidden_action_plan.destroy!
+      notice = "Plano exibido novamente."
+    else
+      current_user.hidden_action_plans.create!(action_plan: @action_plan)
+      notice = "Plano ocultado da sua lista."
+    end
+
+    redirect_back fallback_location: action_plans_path, notice: notice
+  end
+
   def index
     # Planos que o usuário pode acessar
     @action_plans = accessible_action_plans
+    @hidden_action_plan_ids = current_user.hidden_action_plans.pluck(:action_plan_id)
+    @show_hidden_action_plans = params[:show_hidden] == "1"
+    @action_plans = @action_plans.where.not(id: @hidden_action_plan_ids) unless @show_hidden_action_plans
 
     # Busca continua funcionando
     if params[:query].present?
@@ -156,7 +174,7 @@ class ActionPlansController < ApplicationController
   end
 
   def new
-    @action_plan = ActionPlan.new
+    @action_plan = ActionPlan.new(sector: current_user.sector)
   end
 
   def create
@@ -221,20 +239,13 @@ class ActionPlansController < ApplicationController
   end
 
   def accessible_action_plans
-    return ActionPlan.all if current_user.admin?
-
-    ActionPlan
-      .left_joins(buckets: { tasks: :task_assignments })
-      .where(
-        "action_plans.user_id = :user_id
-         OR tasks.creator_id = :user_id
-         OR task_assignments.user_id = :user_id",
-        user_id: current_user.id
-      )
-      .distinct
+    ActionPlan.visible_to(current_user)
   end
 
   def action_plan_params
-    params.require(:action_plan).permit(:name, :description)
+    permitted = [:name, :description, :public]
+    permitted << :sector if current_user.admin?
+
+    params.require(:action_plan).permit(permitted)
   end
 end

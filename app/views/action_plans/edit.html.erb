@@ -1,99 +1,150 @@
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="dashboard-tasks">
+<div class="action-plan-form-page">
+<div class="d-flex justify-content-between align-items-center mb-4 action-plan-form-header">
   <h2 class="mb-0">
-    <i class="fas fa-edit me-2"></i> Editar Plano de Ação
-  </h2>
+    <i class="bi bi-pencil-square me-2"></i> Editar Plano de Ação
+    </h2>
 
-  <%= link_to action_plans_path, class: "btn btn-outline-secondary" do %>
-    <i class="fas fa-arrow-left me-1"></i> Voltar
-  <% end %>
-</div>
-
-<div class="card shadow-sm">
-  <div class="card-body">
-    <%= form_with model: @action_plan do |f| %>
-
-      <!-- Nome -->
-      <div class="mb-3">
-        <%= f.label :name, "Nome do Plano", class: "form-label fw-semibold" %>
-        <%= f.text_field :name, class: "form-control", placeholder: "Ex: Plano de melhoria logística" %>
-      </div>
-
-      <!-- Descrição -->
-      <div class="mb-3">
-        <%= f.label :description, "Descrição", class: "form-label fw-semibold" %>
-        <%= f.text_area :description, class: "form-control", rows: 4, placeholder: "Descreva os objetivos e ações..." %>
-      </div>
-
-      <!-- Ações -->
-      <div class="d-flex justify-content-end gap-2">
-        <%= link_to "Cancelar", action_plans_path, class: "btn btn-outline-secondary" %>
-        <%= f.submit "Salvar alterações", class: "btn btn-success" %>
-      </div>
-
+    <%= link_to action_plans_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left me-1"></i> Voltar
     <% end %>
+  </div>
 
-    <hr>
+<div class="card shadow-sm action-plan-form-card">
+    <div class="card-body">
+    <%= form_with model: @action_plan, class: "action-plan-form" do |f| %>
 
-    <div class="list-group">
+        <!-- Nome -->
+      <div class="mb-3 action-plan-form-field">
+        <%= f.label :name, class: "form-label" do %>
+          <i class="bi bi-type me-1"></i> Nome do plano
+        <% end %>
+          <%= f.text_field :name, class: "form-control", placeholder: "Ex: Plano de melhoria logística" %>
+        </div>
 
-      <% @buckets.each do |bucket| %>
-        <div class="list-group-item">
+        <!-- Descrição -->
+      <div class="mb-3 action-plan-form-field">
+        <%= f.label :description, class: "form-label" do %>
+          <i class="bi bi-card-text me-1"></i> Descrição
+        <% end %>
+          <%= f.text_area :description, class: "form-control", rows: 4, placeholder: "Descreva os objetivos e ações..." %>
+        </div>
 
-          <div class="d-flex justify-content-between align-items-center">
-
-            <!-- EDIT INLINE AUTO SAVE -->
-            <%= form_with model: [@action_plan, bucket],
-                  class: "d-flex gap-2 w-100",
-                  data: {
-                    controller: "auto-save",
-                    action: "blur->auto-save#submit keydown.enter->auto-save#submit"
-                  } do |f| %>
-
-              <%= f.text_field :name,
-                    class: "form-control form-control-sm",
-                    data: { auto_save_target: "input" } %>
-
-              <!-- contador -->
-              <span class="badge bg-secondary align-self-center">
-                <%= bucket.tasks.count %>
-              </span>
-
+        <% if current_user.admin? %>
+          <!-- Setor -->
+        <div class="mb-3 action-plan-form-field">
+          <%= f.label :sector, class: "form-label" do %>
+              <i class="bi bi-diagram-3 me-1"></i> Setor do plano
             <% end %>
 
-            <!-- DELETE -->
-            <%= button_to "Excluir",
-                  action_plan_bucket_path(@action_plan, bucket),
-                  method: :delete,
-                  class: "btn btn-outline-danger btn-sm ms-2",
-                  data: {
-                    turbo_confirm: "Tem certeza? Todas as tasks deste bucket serão excluídas."
-                  } %>
+            <% sector_icons = {
+              fleet: "bi-truck",
+              du: "bi-diagram-3",
+              warehouse: "bi-building",
+              hr: "bi-people",
+              safety: "bi-shield-check",
+              finance: "bi-cash-coin",
+              planning: "bi-clipboard-check"
+            } %>
+            <div class="row g-3 action-plan-sector-options">
+              <% User::USER_SECTORS.each do |label, value| %>
+                <% selected = @action_plan.sector == value.to_s %>
+                <div class="col-auto">
+                  <label class="action-plan-sector-option d-block w-100">
+                    <%= f.radio_button :sector, value, checked: selected, class: "btn-check" %>
+                    <span class="action-plan-sector-card border rounded-3 bg-body">
+                      <i class="action-plan-sector-card__icon bi <%= sector_icons[value] %>"></i>
+                      <span class="action-plan-sector-card__label"><%= label %></span>
+                    </span>
+                  </label>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- Visibilidade -->
+      <div class="action-plan-visibility mb-3">
+        <%= f.label :public, class: "action-plan-visibility__switch" do %>
+          <%= f.check_box :public, class: "action-plan-visibility__input", role: "switch" %>
+          <span class="action-plan-visibility__track" aria-hidden="true"><span></span></span>
+          <span class="action-plan-visibility__title"><i class="bi bi-globe2"></i> Plano público</span>
+        <% end %>
+        <small>Desmarcado: visível apenas para o setor do plano e usuários relacionados às tarefas.</small>
+      </div>
+
+        <!-- Ações -->
+      <div class="d-flex justify-content-end gap-2 action-plan-form-actions">
+          <%= link_to "Cancelar", action_plans_path, class: "btn btn-outline-secondary" %>
+          <%= f.submit "Salvar alterações", class: "btn btn-success" %>
+        </div>
+
+      <% end %>
+
+      <hr>
+
+      <div class="list-group">
+
+        <% @buckets.each do |bucket| %>
+          <div class="list-group-item">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+              <!-- EDIT INLINE AUTO SAVE -->
+              <%= form_with model: [@action_plan, bucket],
+                    class: "d-flex gap-2 w-100",
+                    data: {
+                      controller: "auto-save",
+                      action: "blur->auto-save#submit keydown.enter->auto-save#submit"
+                    } do |f| %>
+
+                <%= f.text_field :name,
+                      class: "form-control form-control-sm",
+                      data: { auto_save_target: "input" } %>
+
+                <!-- contador -->
+                <span class="badge bg-secondary align-self-center">
+                  <%= bucket.tasks.count %>
+                </span>
+
+              <% end %>
+
+              <!-- DELETE -->
+              <%= button_to "Excluir",
+                    action_plan_bucket_path(@action_plan, bucket),
+                    method: :delete,
+                    class: "btn btn-outline-danger btn-sm ms-2",
+                    data: {
+                      turbo_confirm: "Tem certeza? Todas as tasks deste bucket serão excluídas."
+                    } %>
+
+            </div>
 
           </div>
+        <% end %>
 
-        </div>
-      <% end %>
+      </div>
+
+      <!-- CRIAR NOVO BUCKET -->
+      <div class="mt-3">
+        <%= form_with model: [@action_plan, @bucket],
+              class: "d-flex gap-2",
+              data: {
+                controller: "auto-save",
+                action: "keydown.enter->auto-save#submit"
+              } do |f| %>
+
+          <%= f.text_field :name,
+                class: "form-control",
+                placeholder: "Digite um novo bucket e pressione Enter...",
+                data: { auto_save_target: "input" } %>
+
+          <%= f.submit "Adicionar", class: "btn btn-primary" %>
+
+        <% end %>
+      </div>
 
     </div>
-
-    <!-- CRIAR NOVO BUCKET -->
-    <div class="mt-3">
-      <%= form_with model: [@action_plan, @bucket],
-            class: "d-flex gap-2",
-            data: {
-              controller: "auto-save",
-              action: "keydown.enter->auto-save#submit"
-            } do |f| %>
-
-        <%= f.text_field :name,
-              class: "form-control",
-              placeholder: "Digite um novo bucket e pressione Enter...",
-              data: { auto_save_target: "input" } %>
-
-        <%= f.submit "Adicionar", class: "btn btn-primary" %>
-
-      <% end %>
-    </div>
-
   </div>
+</div>
 </div>

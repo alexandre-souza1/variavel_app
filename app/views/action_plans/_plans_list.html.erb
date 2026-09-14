@@ -1,10 +1,41 @@
 <% if action_plans.any? %>
   <div class="plans-list">
     <% action_plans.each do |plan| %>
-      <div class="plan-item">
+      <div class="plan-item position-relative">
         <div class="plan-item-content">
           <h6 class="plan-name"><%= plan.name %></h6>
+          <% sector_key = plan.sector&.to_sym %>
+          <% sector_icons = {
+            fleet: "bi-truck",
+            du: "bi-diagram-3",
+            warehouse: "bi-building",
+            hr: "bi-people",
+            safety: "bi-shield-check",
+            finance: "bi-cash-coin",
+            planning: "bi-clipboard-check"
+          } %>
           <p class="plan-description"><%= plan.description&.truncate(80) %></p>
+        </div>
+
+        <div class="plan-meta position-absolute end-0 m-3">
+          <span
+            class="plan-meta__icon"
+            title="<%= User::USER_SECTORS.invert[sector_key] || 'Sem setor' %>"
+            aria-label="Setor: <%= User::USER_SECTORS.invert[sector_key] || 'Sem setor' %>"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+          >
+            <i class="bi <%= sector_icons[sector_key] || 'bi-diagram-3' %>"></i>
+          </span>
+          <span
+            class="plan-meta__icon <%= plan.public? ? 'is-public' : 'is-private' %>"
+            title="<%= plan.public? ? 'Plano público' : 'Plano privado' %>"
+            aria-label="<%= plan.public? ? 'Plano público' : 'Plano privado' %>"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+          >
+            <i class="bi <%= plan.public? ? 'bi-globe2' : 'bi-lock-fill' %>"></i>
+          </span>
         </div>
 
         <div class="plan-actions">
@@ -22,6 +53,14 @@
             <button class="icon-btn danger" data-bs-toggle="modal" data-bs-target="#deleteModal-<%= plan.id %>">
               <i class="bi bi-trash3"></i>
             </button>
+          <% end %>
+
+          <%= button_to toggle_hidden_action_plan_path(plan),
+                        method: :post,
+                        class: "icon-btn",
+                        title: hidden_action_plan_ids.include?(plan.id) ? "Mostrar plano" : "Ocultar plano",
+                        aria: { label: hidden_action_plan_ids.include?(plan.id) ? "Mostrar plano" : "Ocultar plano" } do %>
+            <i class="bi <%= hidden_action_plan_ids.include?(plan.id) ? 'bi-eye' : 'bi-eye-slash' %>"></i>
           <% end %>
         </div>
       </div>

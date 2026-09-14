@@ -31,11 +31,20 @@
       <div class="plans-card w-100">
         <div class="plans-card-header">
           <h5><i class="bi bi-kanban-fill me-2"></i> Meus Planos</h5>
-          <span class="badge bg-primary-soft text-primary"><%= @action_plans.count %></span>
+          <div class="d-flex align-items-center gap-2">
+            <% if @hidden_action_plan_ids.any? %>
+              <%= link_to action_plans_path(show_hidden: @show_hidden_action_plans ? nil : 1),
+                          class: "text-secondary small",
+                          title: @show_hidden_action_plans ? "Ocultar planos ocultos" : "Ver planos ocultos" do %>
+                <i class="bi <%= @show_hidden_action_plans ? 'bi-eye-slash' : 'bi-eye' %>"></i>
+              <% end %>
+            <% end %>
+            <span class="badge bg-primary-soft text-primary"><%= @action_plans.count %></span>
+          </div>
         </div>
         <div class="plans-card-body">
           <div class="plans-scroll">
-            <%= render "plans_list", action_plans: @action_plans %>
+            <%= render "plans_list", action_plans: @action_plans, hidden_action_plan_ids: @hidden_action_plan_ids %>
           </div>
         </div>
         <div class="plans-card-footer">
@@ -185,7 +194,7 @@
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body">
-      <%= render "plans_list", action_plans: @action_plans %>
+      <%= render "plans_list", action_plans: @action_plans, hidden_action_plan_ids: @hidden_action_plan_ids %>
       <div class="mt-3">
         <%= link_to new_action_plan_path, class: "btn-primary-solid w-100" do %>
           <i class="bi bi-plus-circle me-1"></i> Novo Plano

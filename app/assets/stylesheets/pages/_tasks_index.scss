@@ -6,3 +6,220 @@
 
 @import "tasks_index/base";
 @import "tasks_index/responsive";
+
+.dashboard-tasks .action-plan-form-page {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.dashboard-tasks .action-plan-form-header {
+  align-items: flex-end;
+  margin-bottom: 1.75rem !important;
+  padding: 0 0.25rem;
+
+  h2 {
+    margin-top: 0.25rem;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  h2 i {
+    color: var(--bs-primary);
+  }
+
+  .action-plan-form-eyebrow {
+    display: block;
+    color: var(--bs-primary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+}
+
+.dashboard-tasks .action-plan-form-card {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+
+  .card-body {
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+  }
+}
+
+.dashboard-tasks .action-plan-form-field {
+  .form-label {
+    display: block;
+    margin-bottom: 0.55rem;
+    color: var(--bs-body-color);
+    font-weight: 650;
+  }
+
+  .form-label i {
+    color: var(--bs-primary);
+  }
+
+  .form-control {
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.12);
+  }
+}
+
+.dashboard-tasks .action-plan-sector-options {
+  margin-top: 0.15rem;
+}
+
+.dashboard-tasks .action-plan-visibility {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  margin-top: 1.5rem;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: var(--bs-tertiary-bg);
+
+  &__switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    cursor: pointer;
+  }
+
+  &__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  &__track {
+    display: inline-flex;
+    align-items: center;
+    width: 2.65rem;
+    height: 1.45rem;
+    padding: 0.16rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 999px;
+    background: var(--bs-secondary-bg);
+    transition: background-color 0.18s ease, border-color 0.18s ease;
+
+    span {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 50%;
+      background: var(--bs-secondary-color);
+      box-shadow: 0 1px 3px rgba(16, 24, 40, 0.2);
+      transition: transform 0.18s ease, background-color 0.18s ease;
+    }
+  }
+
+  .action-plan-visibility__input:checked + .action-plan-visibility__track {
+    border-color: var(--bs-primary);
+    background: var(--bs-primary);
+
+    span {
+      background: #fff;
+      transform: translateX(1.2rem);
+    }
+  }
+
+  .action-plan-visibility__input:focus-visible + .action-plan-visibility__track {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+  }
+
+  &__title {
+    color: var(--bs-body-color);
+    font-weight: 650;
+  }
+
+  &__title i {
+    color: var(--bs-primary);
+  }
+
+  small {
+    display: block;
+    color: var(--bs-secondary-color);
+  }
+}
+
+.dashboard-tasks .action-plan-form-actions {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--bs-border-color);
+
+  .btn {
+    border-radius: 9px;
+    padding-inline: 1.1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-tasks .action-plan-form-header {
+    align-items: flex-start;
+    flex-direction: column;
+
+    .btn,
+    .action-plan-form-header > div {
+      width: 100%;
+    }
+  }
+
+  .dashboard-tasks .action-plan-form-actions {
+    flex-direction: column-reverse;
+
+    .btn {
+      width: 100%;
+    }
+  }
+}
+
+.action-plan-sector-option {
+  cursor: pointer;
+
+  .btn-check {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .action-plan-sector-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.75rem;
+    width: 6.25rem;
+    height: 6.25rem;
+    max-width: 100%;
+    margin-inline: auto;
+    border-color: var(--bs-border-color) !important;
+    color: var(--bs-secondary-color);
+    text-align: center;
+    transition: border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .action-plan-sector-card__icon {
+    font-size: 1.6rem;
+  }
+
+  .action-plan-sector-card__label {
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .btn-check:checked + .action-plan-sector-card {
+    border-color: var(--bs-primary) !important;
+    box-shadow: 0 0 0 0.15rem rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+  }
+}

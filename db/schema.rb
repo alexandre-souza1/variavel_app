@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_14_140000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_14_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -21,6 +21,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_14_140000) do
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "sector"
+    t.boolean "public", default: true, null: false
     t.index ["user_id"], name: "index_action_plans_on_user_id"
   end
 
@@ -428,6 +430,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_14_140000) do
     t.string "period"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "hidden_action_plans", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "action_plan_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["action_plan_id"], name: "index_hidden_action_plans_on_action_plan_id"
+    t.index ["user_id", "action_plan_id"], name: "index_hidden_action_plans_on_user_id_and_action_plan_id", unique: true
+    t.index ["user_id"], name: "index_hidden_action_plans_on_user_id"
   end
 
   create_table "invoice_goal_categories", force: :cascade do |t|
@@ -902,6 +914,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_14_140000) do
   add_foreign_key "fleet_availability_items", "plates"
   add_foreign_key "fleet_dimensioning_standard_plates", "fleet_dimensionings"
   add_foreign_key "fleet_dimensioning_standard_plates", "plates"
+  add_foreign_key "hidden_action_plans", "action_plans"
+  add_foreign_key "hidden_action_plans", "users"
   add_foreign_key "invoice_goal_categories", "budget_categories"
   add_foreign_key "invoice_goal_categories", "invoice_goals"
   add_foreign_key "invoice_numbers", "cost_centers"
