@@ -95,6 +95,13 @@
   .task-detail-modal [data-controller="task-checklist"] h6 { color: var(--bs-secondary-color); font-size: .7rem; font-weight: 700; margin: 0; text-transform: uppercase; }
   .task-detail-modal .task-checklist-action { color: var(--bs-secondary-color); font-size: .85rem; padding: .25rem .4rem; }
   .task-detail-modal .task-checklist-action:hover { background: rgba(var(--bs-primary-rgb), .1); color: var(--bs-primary); }
+  .tasklist-clone-toggle-button { color: var(--bs-secondary-color); }
+  .tasklist-clone-toggle:checked + .tasklist-clone-toggle-button {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 .15rem rgba(var(--bs-primary-rgb), .2);
+    color: #fff;
+  }
   .task-detail-modal .task-checklist-action.danger:hover { background: rgba(var(--bs-danger-rgb), .1); color: var(--bs-danger); }
   .task-detail-modal .task-checklist-item { border-bottom: 0 !important; margin-bottom: .35rem !important; padding: .15rem 0 !important; }
   .task-detail-modal .task-checklist-item:last-child { margin-bottom: 0 !important; }

@@ -8,6 +8,17 @@
   <div class="d-flex justify-content-between align-items-center mb-2">
     <h6 class="mb-0">Lista de verificação</h6>
     <div>
+      <%= f.check_box :clone_tasklist_on_recurrence,
+        class: "visually-hidden tasklist-clone-toggle" %>
+      <%= f.label :clone_tasklist_on_recurrence,
+        class: "icon-btn task-checklist-action tasklist-clone-toggle-button",
+        data: {
+          task_checklist_target: "cloneToggleButton"
+        },
+        title: "Clonar lista de verificação ao repetir",
+        aria: { label: "Clonar lista de verificação ao repetir" } do %>
+        <i class="bi bi-repeat" aria-hidden="true"></i>
+      <% end %>
       <button type="button" class="icon-btn task-checklist-action" title="Adicionar item" aria-label="Adicionar item" data-action="click->task-checklist#addItem">
         <i class="bi bi-plus-lg" aria-hidden="true"></i>
       </button>

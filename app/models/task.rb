@@ -52,6 +52,7 @@ class Task < ApplicationRecord
       start_at: Time.current,
       due_at: next_date,
       recurrence: recurrence,
+      clone_tasklist_on_recurrence: clone_tasklist_on_recurrence,
       due_notification_enabled: due_notification_enabled,
       creator: creator,
       user_ids: user_ids,      # ← usa os IDs
@@ -59,6 +60,7 @@ class Task < ApplicationRecord
     )
 
     if new_task.save
+      clone_tasklist_to(new_task) if clone_tasklist_on_recurrence?
       broadcast_new_task(new_task)
     else
       Rails.logger.error "❌ Falha ao criar tarefa recorrente: #{new_task.errors.full_messages}"
@@ -123,6 +125,20 @@ class Task < ApplicationRecord
 
   def reset_due_notification_sent_at
     self.due_notification_sent_at = nil
+  end
+
+  def clone_tasklist_to(new_task)
+    return if tasklist.blank? || tasklist.tasklist_items.empty?
+
+    new_task.tasklist.update!(title: tasklist.title)
+    new_task.tasklist.tasklist_items.create!(
+      tasklist.tasklist_items.map do |item|
+        {
+          content: item.content,
+          completed: false
+        }
+      end
+    )
   end
 
   def notify_due_soon_if_needed
