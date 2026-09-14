@@ -2,6 +2,59 @@
 // TASK REMINDERS / MODAL / LIST STATE
 // ============================================================
 
+.action-plan-labels-page {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+
+.action-plan-labels-page__header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.action-plan-labels-page__header h2 { color: var(--bs-body-color); font-size: 1.15rem; margin: 0; }
+.action-plan-labels-page__header p { color: var(--bs-secondary-color); font-size: .82rem; margin: .35rem 0 0; }
+
+.action-plan-labels-toolbar { align-items: center; display: flex; gap: .75rem; justify-content: space-between; margin-bottom: 1.25rem; }
+.action-plan-labels-search { align-items: center; background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius: 10px; display: flex; max-width: 360px; padding: .15rem .55rem; width: 100%; }
+.action-plan-labels-search > i { color: var(--bs-secondary-color); }
+.action-plan-labels-search input { background: transparent; border: 0; color: var(--bs-body-color); min-height: 35px; outline: 0; padding: .35rem .5rem; width: 100%; }
+.action-plan-labels-search input::placeholder { color: var(--bs-secondary-color); }
+.action-plan-labels-search__clear { background: transparent; border: 0; color: var(--bs-secondary-color); padding: .25rem; }
+.action-plan-labels-search__clear:hover { color: var(--bs-primary); }
+.action-plan-labels-result-count { color: var(--bs-secondary-color); font-size: .75rem; white-space: nowrap; }
+.action-plan-label-cloud { align-items: center; display: flex; flex-wrap: wrap; gap: .8rem 1.05rem; justify-content: center; margin: 0 auto; max-width: 1000px; min-height: 9rem; padding: 1.25rem .75rem; }
+.action-plan-label-cloud__item { align-items: center; background: transparent; border: 1px solid transparent; border-radius: 999px; display: inline-flex; gap: .45rem; padding: .28rem .35rem .28rem .65rem; transform: translateY(var(--cloud-offset, 0)) scale(var(--label-scale, 1)); transform-origin: center; transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+.action-plan-label-cloud__item.is-hidden { display: none; }
+.action-plan-label-cloud__item:hover { background: var(--bs-tertiary-bg); border-color: var(--bs-primary); box-shadow: 0 .45rem 1rem rgba(var(--bs-primary-rgb), .16); transform: translateY(calc(var(--cloud-offset, 0) - 2px)) scale(calc(var(--label-scale, 1) + .06)); }
+.action-plan-label-cloud__badge { border-radius: 999px; font-size: calc(.78rem * var(--label-scale, 1)); font-weight: 750; letter-spacing: .01em; padding: .35rem .7rem; transition: filter .2s ease; }
+.action-plan-label-cloud__item:hover .action-plan-label-cloud__badge { filter: saturate(1.18) brightness(1.04); }
+.action-plan-label-cloud__item small,
+.action-plan-label-cloud__delete { max-width: 0; opacity: 0; overflow: hidden; pointer-events: none; transition: max-width .2s ease, opacity .2s ease; }
+.action-plan-label-cloud__item small { color: var(--bs-secondary-color); font-size: .7rem; white-space: nowrap; }
+.action-plan-label-cloud__delete { align-items: center; background: transparent; border: 0; border-radius: 50%; color: var(--bs-secondary-color); display: inline-flex; height: 1.55rem; justify-content: center; padding: 0; width: 0; }
+.action-plan-label-cloud__item:hover small,
+.action-plan-label-cloud__item:hover .action-plan-label-cloud__delete,
+.action-plan-label-cloud__item:focus-within small,
+.action-plan-label-cloud__item:focus-within .action-plan-label-cloud__delete { max-width: 6rem; opacity: 1; pointer-events: auto; }
+.action-plan-label-cloud__item:hover .action-plan-label-cloud__delete,
+.action-plan-label-cloud__item:focus-within .action-plan-label-cloud__delete { width: 1.55rem; }
+.action-plan-label-cloud__delete:hover { background: rgba(var(--bs-danger-rgb), .12); color: var(--bs-danger); }
+.action-plan-labels-empty { color: var(--bs-secondary-color); padding: 2rem; text-align: center; }
+.action-plan-labels-empty i { display: block; font-size: 2rem; margin-bottom: .5rem; }
+
+@media (max-width: 768px) {
+  .action-plan-labels-page__header { align-items: flex-start; flex-direction: column; }
+  .action-plan-labels-toolbar { align-items: stretch; flex-direction: column; }
+  .action-plan-labels-search { max-width: none; }
+  .action-plan-labels-result-count { align-self: flex-end; }
+}
+
 // Lembrete: switch e rotulo usados para alternar o lembrete de uma tarefa.
 .task-reminder-toggle {
   align-items: center;
@@ -88,6 +141,35 @@
 
 .task-modal-dialog {
   --bs-modal-width: 980px;
+}
+
+.action-plan-assign-modal .modal-dialog { max-width: 560px; }
+.action-plan-assign-modal .modal-content { border: 1px solid var(--bs-border-color); border-radius: 18px; box-shadow: 0 1.5rem 4rem rgba(15,23,42,.24); overflow: hidden; }
+.action-plan-assign-modal .modal-header { align-items: flex-start; background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), .12), var(--bs-tertiary-bg) 70%); border-bottom: 1px solid var(--bs-border-color); padding: 1.35rem 1.45rem 1.15rem; }
+.action-plan-assign-modal__eyebrow { color: var(--bs-primary); font-size: .65rem; font-weight: 800; letter-spacing: .1em; margin: 0 0 .35rem; text-transform: uppercase; }
+.action-plan-assign-modal .modal-title { align-items: center; color: var(--bs-body-color); display: flex; font-size: 1.1rem; gap: .45rem; }
+.action-plan-assign-modal .modal-title i { color: var(--bs-primary); }
+.action-plan-assign-modal__subtitle { color: var(--bs-secondary-color); font-size: .78rem; margin: .35rem 0 0; }
+.action-plan-assign-modal .modal-body { padding: 1.35rem 1.45rem; }
+.action-plan-assign-modal__section { margin-bottom: 1rem; }
+.action-plan-assign-modal__section-heading { align-items: center; display: flex; justify-content: space-between; margin-bottom: .6rem; }
+.action-plan-assign-modal__section-heading .form-label { color: var(--bs-body-color); font-size: .82rem; font-weight: 750; margin: 0; }
+.action-plan-assign-modal__section-heading small { color: var(--bs-secondary-color); display: block; font-size: .7rem; margin-top: .15rem; }
+.action-plan-assign-modal__section-heading > i { color: var(--bs-primary); font-size: 1.2rem; }
+.action-plan-assign-modal__user-grid { background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color); border-radius: 13px; display: grid; gap: .45rem; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: .65rem; }
+.action-plan-assign-modal__user-option { align-items: center; border: 1px solid transparent; border-radius: 9px; cursor: pointer; display: flex; gap: .55rem; min-width: 0; padding: .55rem .6rem; transition: background-color .18s ease, border-color .18s ease; }
+.action-plan-assign-modal__user-option:hover { background: var(--bs-body-bg); border-color: rgba(var(--bs-primary-rgb), .25); }
+.action-plan-assign-modal__user-option:has(.form-check-input:checked) { background: rgba(var(--bs-primary-rgb), .1); border-color: rgba(var(--bs-primary-rgb), .42); }
+.action-plan-assign-modal__user-option span { color: var(--bs-body-color); font-size: .78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.action-plan-assign-modal__warning { align-items: flex-start; background: rgba(var(--bs-warning-rgb), .1); border: 1px solid rgba(var(--bs-warning-rgb), .28); border-radius: 12px; color: var(--bs-warning-text-emphasis); display: flex; gap: .65rem; padding: .75rem .85rem; }
+.action-plan-assign-modal__warning > i { font-size: 1.05rem; margin-top: .05rem; }
+.action-plan-assign-modal__warning strong { display: block; font-size: .76rem; }
+.action-plan-assign-modal__warning span { display: block; font-size: .72rem; line-height: 1.45; margin-top: .18rem; }
+.action-plan-assign-modal .modal-footer { background: var(--bs-tertiary-bg); border-top: 1px solid var(--bs-border-color); padding: .85rem 1.45rem; }
+
+@media (max-width: 576px) {
+  .action-plan-assign-modal .modal-dialog { margin: .5rem; }
+  .action-plan-assign-modal__user-grid { grid-template-columns: 1fr; }
 }
 
 // Modal de action plan: campos, checklist, atividade e comentarios da tarefa.

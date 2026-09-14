@@ -164,6 +164,7 @@ Rails.application.routes.draw do
   resources :action_plans do
     patch :sort_buckets, on: :member
     patch :assign_open_tasks, on: :member
+    resources :labels, only: :destroy
 
     resources :buckets do
       member do

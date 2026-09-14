@@ -1,0 +1,78 @@
+<div class="action-plan-labels-page" data-controller="labels-cloud">
+  <div class="action-plan-labels-page__header">
+    <div>
+      <h2><i class="bi bi-tags me-2"></i>Labels do plano</h2>
+      <p>Gerencie as labels usadas nas tarefas deste plano.</p>
+    </div>
+    <%= link_to action_plan_path(action_plan, view: "kanban"), class: "btn-outline" do %>
+      <i class="bi bi-arrow-left me-1"></i> Voltar para tarefas
+    <% end %>
+  </div>
+
+  <% if labels.empty? %>
+    <div class="action-plan-labels-empty">
+      <i class="bi bi-tags"></i>
+      <p>Este plano ainda não possui labels.</p>
+    </div>
+  <% else %>
+    <div class="action-plan-labels-toolbar">
+      <div class="action-plan-labels-search">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <%= text_field_tag :label_query, nil,
+            placeholder: "Filtrar labels...",
+            autocomplete: "off",
+            aria: { label: "Filtrar labels" },
+            data: {
+              labels_cloud_target: "query",
+              action: "input->labels-cloud#filter"
+            } %>
+        <button type="button"
+                class="action-plan-labels-search__clear"
+                title="Limpar filtro"
+                aria-label="Limpar filtro"
+                data-action="click->labels-cloud#clear">
+          <i class="bi bi-x-circle" aria-hidden="true"></i>
+        </button>
+      </div>
+      <span class="action-plan-labels-result-count" data-labels-cloud-target="resultCount"></span>
+    </div>
+
+    <div class="action-plan-label-cloud" aria-label="Labels do plano" data-labels-cloud-target="cloud">
+      <% labels.each do |label| %>
+        <% tasks_count = label.tasks.size %>
+        <% confirmation = if tasks_count.positive?
+                            "A label ‘#{label.name}’ está sendo usada em #{tasks_count} tarefa(s). Ao excluí-la, ela será removida dessas tarefas. Deseja continuar?"
+                          else
+                            "Excluir a label ‘#{label.name}’?"
+                          end %>
+        <div class="action-plan-label-cloud__item"
+             data-labels-cloud-target="item"
+             data-label-name="<%= label.name %>"
+             data-usage-count="<%= tasks_count %>">
+          <span class="action-plan-label-cloud__badge"
+                data-color="<%= label.color %>"
+                style="background-color: <%= label.color %>;">
+            <%= label.name %>
+          </span>
+          <small><%= tasks_count %> <%= tasks_count == 1 ? "tarefa" : "tarefas" %></small>
+
+          <% if can_manage_labels %>
+            <%= button_to action_plan_label_path(action_plan, label),
+                method: :delete,
+                class: "action-plan-label-cloud__delete",
+                title: "Excluir label",
+                aria: { label: "Excluir label #{label.name}" },
+                data: { turbo_confirm: confirmation } do %>
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="action-plan-labels-empty d-none" data-labels-cloud-target="empty">
+      <i class="bi bi-search"></i>
+      <p>Nenhuma label encontrada para este filtro.</p>
+    </div>
+  <% end %>
+</div>

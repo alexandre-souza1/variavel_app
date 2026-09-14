@@ -1,6 +1,7 @@
 class ActionPlansController < ApplicationController
   before_action :authenticate_user!
   before_action :set_action_plan, only: [:show, :assign_open_tasks]
+  before_action :require_admin!, only: :assign_open_tasks
   before_action :set_owned_action_plan, only: [:edit, :update, :destroy]
 
   def index
@@ -83,6 +84,8 @@ class ActionPlansController < ApplicationController
 
     # Usuários disponíveis para receber as tarefas
     @users = User.order(:name)
+    @labels = @action_plan.labels.includes(:tasks).order(:name)
+    @can_manage_labels = current_user.admin? || @action_plan.user_id == current_user.id
   end
 
   def assign_open_tasks

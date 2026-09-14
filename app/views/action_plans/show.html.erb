@@ -22,15 +22,17 @@
       <div class="header-actions">
 
         <!-- DEFINIR RESPONSÁVEIS -->
-        <button
-          type="button"
-          class="btn-outline action-plan-assign-link"
-          data-bs-toggle="modal"
-          data-bs-target="#assignTasksModal"
-        >
-          <i class="bi bi-people"></i>
-          <span>Definir responsáveis</span>
-        </button>
+        <% if current_user.admin? %>
+          <button
+            type="button"
+            class="btn-outline action-plan-assign-link"
+            data-bs-toggle="modal"
+            data-bs-target="#assignTasksModal"
+          >
+            <i class="bi bi-people"></i>
+            <span>Definir responsáveis</span>
+          </button>
+        <% end %>
 
         <!-- KANBAN -->
         <%= link_to action_plan_path(@action_plan, view: "kanban"),
@@ -44,6 +46,13 @@
             class: "btn-outline action-plan-view-link action-plan-view-link--list #{params[:view] == 'list' ? 'active' : ''}" do %>
           <i class="bi bi-list-check"></i>
           <span>Lista</span>
+        <% end %>
+
+        <!-- LABELS -->
+        <%= link_to action_plan_path(@action_plan, view: "labels"),
+            class: "btn-outline action-plan-view-link #{params[:view] == 'labels' ? 'active' : ''}" do %>
+          <i class="bi bi-tags"></i>
+          <span>Labels</span>
         <% end %>
 
         <!-- VOLTAR -->
@@ -96,7 +105,11 @@
 
 
   <!-- CONTEÚDO DO PLANO -->
-  <% if params[:view] == "list" %>
+  <% if params[:view] == "labels" %>
+
+    <%= render "labels_view", labels: @labels, action_plan: @action_plan, can_manage_labels: @can_manage_labels %>
+
+  <% elsif params[:view] == "list" %>
 
     <%= render "list_view",
         buckets: @buckets,
@@ -177,13 +190,14 @@
   <!-- MODAL - DEFINIR RESPONSÁVEIS -->
   <!-- ===================================================== -->
 
-  <div
-    class="modal fade"
-    id="assignTasksModal"
-    tabindex="-1"
-    aria-labelledby="assignTasksModalLabel"
-    aria-hidden="true"
-  >
+  <% if current_user.admin? %>
+    <div
+      class="modal fade action-plan-assign-modal"
+      id="assignTasksModal"
+      tabindex="-1"
+      aria-labelledby="assignTasksModalLabel"
+      aria-hidden="true"
+    >
     <div class="modal-dialog modal-dialog-centered">
 
       <div class="modal-content">
@@ -192,6 +206,7 @@
         <div class="modal-header">
 
           <div>
+            <p class="action-plan-assign-modal__eyebrow">Administração do plano</p>
             <h5
               class="modal-title"
               id="assignTasksModalLabel"
@@ -200,8 +215,8 @@
               Definir responsáveis
             </h5>
 
-            <p class="text-muted mb-0 mt-1">
-              Atribuir todas as tarefas abertas deste plano
+            <p class="action-plan-assign-modal__subtitle">
+              Distribua as tarefas abertas entre os responsáveis escolhidos.
             </p>
           </div>
 
@@ -229,17 +244,21 @@
 
 
             <!-- RESPONSÁVEIS -->
-            <div class="mb-3">
+            <div class="action-plan-assign-modal__section">
 
-              <label class="form-label fw-semibold">
-                Responsáveis
-              </label>
+              <div class="action-plan-assign-modal__section-heading">
+                <div>
+                  <label class="form-label">Responsáveis</label>
+                  <small>Selecione uma ou mais pessoas</small>
+                </div>
+                <i class="bi bi-check2-square" aria-hidden="true"></i>
+              </div>
 
-              <div class="border rounded p-2">
+              <div class="action-plan-assign-modal__user-grid">
 
                 <% @users.each do |user| %>
 
-                  <div class="form-check">
+                  <label class="action-plan-assign-modal__user-option" for="user_<%= user.id %>">
 
                     <%= check_box_tag(
                       "user_ids[]",
@@ -249,37 +268,31 @@
                       id: "user_#{user.id}"
                     ) %>
 
-                    <%= label_tag(
-                      "user_#{user.id}",
-                      user.name,
-                      class: "form-check-label"
-                    ) %>
+                    <span><%= user.name %></span>
 
-                  </div>
+                  </label>
 
                 <% end %>
 
-              </div>
-
-              <div class="form-text">
-                Você pode selecionar mais de um responsável.
               </div>
 
             </div>
 
 
             <!-- AVISO -->
-            <div class="alert alert-warning d-flex align-items-start gap-2 mb-0">
+            <div class="action-plan-assign-modal__warning">
 
               <i class="bi bi-exclamation-triangle mt-1"></i>
 
               <div>
-                <strong>Atenção:</strong>
+                <strong>As tarefas abertas serão redistribuídas</strong>
+                <span>
                 todas as tarefas
                 <strong>abertas</strong>
                 deste plano terão seus responsáveis atuais substituídos
                 pelos usuários selecionados.
                 As tarefas concluídas não serão alteradas.
+                </span>
               </div>
 
             </div>
@@ -298,10 +311,7 @@
               Cancelar
             </button>
 
-            <%= form.submit(
-              "Atribuir tarefas",
-              class: "btn btn-primary"
-            ) %>
+            <%= form.submit "Atribuir tarefas", class: "btn btn-primary" %>
 
           </div>
 
@@ -309,6 +319,7 @@
 
       </div>
     </div>
-  </div>
+    </div>
+  <% end %>
 
 </div>
