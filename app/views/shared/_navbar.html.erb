@@ -164,6 +164,9 @@
                 <% end %>
               <% end %>
               <% if current_user.admin? %>
+                <%= link_to edit_admin_ai_setting_path, class: "dropdown-item app-dropdown-item" do %>
+                  <i class="bi bi-stars me-2"></i> Configurações de IA
+                <% end %>
                 <%= link_to plates_path, class: "dropdown-item app-dropdown-item" do %>
                   <i class="bi bi-car-front me-2"></i> Placas Cadastradas
                 <% end %>

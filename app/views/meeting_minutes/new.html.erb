@@ -10,7 +10,7 @@
     <% end %>
   </div>
 
-  <%= form_with model: [@action_plan, @meeting], multipart: true, data: { controller: "meeting-recorder" }, class: "meeting-minute-card" do |form| %>
+  <%= form_with model: [@action_plan, @meeting], multipart: true, data: { controller: "meeting-recorder", meeting_recorder_max_duration_value: AiSetting.current.meeting_audio_max_minutes }, class: "meeting-minute-card" do |form| %>
     <% if @meeting.errors.any? %>
       <div class="alert alert-danger"><%= @meeting.errors.full_messages.to_sentence %></div>
     <% end %>
@@ -30,7 +30,7 @@
       <div class="meeting-minute-recorder__icon"><i class="bi bi-mic-fill"></i></div>
       <div class="meeting-minute-recorder__copy">
         <strong>Gravação da reunião</strong>
-        <span data-meeting-recorder-target="status">Clique em iniciar quando todos estiverem prontos. Gravações de até <%= MeetingMinute.max_audio_size_mb %> MB são aceitas.</span>
+        <span data-meeting-recorder-target="status">Clique em iniciar quando todos estiverem prontos. Gravações de até <%= AiSetting.current.meeting_audio_max_minutes %> minutos são aceitas.</span>
       </div>
       <span class="meeting-minute-recorder__timer" data-meeting-recorder-target="timer">00:00</span>
     </div>

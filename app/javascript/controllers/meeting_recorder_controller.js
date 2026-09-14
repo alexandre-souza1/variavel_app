@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["start", "stop", "submit", "file", "status", "timer"]
+  static values = { maxDuration: Number }
 
   connect() {
     this.chunks = []
@@ -45,6 +46,13 @@ export default class extends Controller {
     this.setStatus("Processando gravação...")
   }
 
+  stopAtLimit() {
+    if (!this.recorder || this.recorder.state === "inactive") return
+
+    this.setStatus("Duração máxima atingida. Finalizando gravação...")
+    this.stop()
+  }
+
   finishRecording() {
     const mimeType = this.recorder.mimeType || "audio/webm"
     const extension = mimeType.includes("mp4") ? "mp4" : "webm"
@@ -59,6 +67,11 @@ export default class extends Controller {
 
   updateTimer() {
     const elapsed = Math.floor((Date.now() - this.startedAt) / 1000)
+    if (this.maxDurationValue > 0 && elapsed >= this.maxDurationValue * 60) {
+      this.stopAtLimit()
+      return
+    }
+
     const minutes = String(Math.floor(elapsed / 60)).padStart(2, "0")
     const seconds = String(elapsed % 60).padStart(2, "0")
     this.timerTarget.textContent = minutes + ":" + seconds

@@ -3,7 +3,8 @@ require "json"
 
 class GeminiMeetingService
   ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/interactions"
-  MODEL = "gemini-3.6-flash"
+  DEFAULT_MODEL = "gemini-3.6-flash"
+  DEFAULT_FALLBACK_MODELS = %w[gemini-3.1-flash-lite gemini-3.5-flash-lite gemini-2.5-flash-lite].freeze
 
   def initialize(meeting)
     @meeting = meeting
@@ -14,26 +15,34 @@ class GeminiMeetingService
     raise "GEMINI_API_KEY não configurada." if api_key.blank?
     raise "O áudio da reunião não está disponível." unless @meeting.audio.attached?
 
-    response = Faraday.post(ENDPOINT) do |request|
-      request.headers["x-goog-api-key"] = api_key
-      request.headers["Content-Type"] = "application/json"
-      request.body = JSON.generate(payload)
-      request.options.timeout = 180
-      request.options.open_timeout = 15
+    last_response = nil
+
+    model_candidates.each do |model|
+      @model = model
+      response = Faraday.post(ENDPOINT) do |request|
+        request.headers["x-goog-api-key"] = api_key
+        request.headers["Content-Type"] = "application/json"
+        request.body = JSON.generate(payload)
+        request.options.timeout = 180
+        request.options.open_timeout = 15
+      end
+
+      return parse_response(response.body) if response.success?
+
+      last_response = response
+      break unless fallback_eligible?(response)
+
+      Rails.logger.warn("Modelo Gemini #{model} indisponível ou limitado (#{response.status}); tentando o próximo modelo para a ata.")
     end
 
-    unless response.success?
-      raise "Gemini retornou #{response.status}: #{response.body.to_s.truncate(500)}"
-    end
-
-    parse_response(response.body)
+    raise "Gemini retornou #{last_response.status}: #{last_response.body.to_s.truncate(500)}"
   end
 
   private
 
   def payload
     {
-      model: MODEL,
+      model: @model,
       input: [
         { type: "text", text: prompt },
         {
@@ -51,6 +60,17 @@ class GeminiMeetingService
         temperature: 0.2
       }
     }
+  end
+
+  def model_candidates
+    configured = AiSetting.current.primary_model
+    fallbacks = ENV["GEMINI_FALLBACK_MODELS"].to_s.split(",").map(&:strip).reject(&:blank?)
+    fallbacks = DEFAULT_FALLBACK_MODELS if fallbacks.empty?
+    ([configured] + fallbacks).uniq
+  end
+
+  def fallback_eligible?(response)
+    response.status == 404 || response.status == 429 || response.body.to_s.match?(/RESOURCE_EXHAUSTED|rate.?limit|quota/i)
   end
 
   def prompt

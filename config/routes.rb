@@ -33,6 +33,7 @@ Rails.application.routes.draw do
     get 'users/index'
     get 'users/edit'
     get 'users/update'
+    resource :ai_setting, only: %i[edit update], path: "configuracoes-ia"
   end
 
   devise_for :users
@@ -49,6 +50,10 @@ Rails.application.routes.draw do
   get 'variaveis', to: 'common#home', defaults: { force_home: 'true' }, as: :variaveis
   get "consulta", to: "consultas#show"
   get "az_consulta", to: "az_consultas#show"
+  get "chat-variaveis", to: "public_variable_chat#index", as: :public_variable_chat
+  post "chat-variaveis/identificar", to: "public_variable_chat#identify", as: :identify_public_variable_chat
+  post "chat-variaveis/mensagem", to: "public_variable_chat#message", as: :message_public_variable_chat
+  delete "chat-variaveis/sessao", to: "public_variable_chat#logout", as: :logout_public_variable_chat
 
   resources :downloads do
     member do

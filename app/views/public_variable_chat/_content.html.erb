@@ -1,0 +1,87 @@
+<% identity = local_assigns.fetch(:identity) %>
+<% history = local_assigns.fetch(:history, []) %>
+<% compact = local_assigns.fetch(:compact, false) %>
+
+<% unless compact %>
+  <section class="public-variable-chat-hero">
+    <span class="public-variable-chat-eyebrow"><i class="bi bi-stars me-1"></i> Consulta inteligente</span>
+    <h1>Converse com sua variável</h1>
+    <p>Consulte ganhos, períodos, devoluções e metas usando os dados disponíveis no sistema.</p>
+  </section>
+<% end %>
+
+<% unless identity %>
+  <section class="public-variable-chat-card public-variable-chat-identification">
+    <div class="public-variable-chat-card__heading">
+      <span class="public-variable-chat-icon"><i class="bi bi-shield-lock"></i></span>
+      <div>
+        <h2>Identifique-se para começar</h2>
+        <p>Usaremos sua matrícula e data de nascimento apenas para localizar seu cadastro.</p>
+      </div>
+    </div>
+
+    <%= form_with url: identify_public_variable_chat_path, method: :post, local: true, data: { turbo: false } do |form| %>
+      <%= hidden_field_tag :return_to, request.fullpath %>
+      <div class="public-variable-chat-form-grid">
+        <div>
+          <%= form.label :profile, "Perfil", class: "form-label" %>
+          <%= form.select :profile,
+            [["Motorista", "motorista"], ["Operador", "operador"], ["Ajudante", "ajudante"], ["Ajudante do armazém", "az_ajudante"]],
+            { prompt: "Selecione seu perfil" }, class: "form-select", required: true %>
+        </div>
+        <div>
+          <%= form.label :registration, "Matrícula", class: "form-label" %>
+          <%= form.text_field :registration, class: "form-control", inputmode: "numeric", autocomplete: "off", required: true %>
+        </div>
+        <div>
+          <%= form.label :birth_date, "Data de nascimento", class: "form-label" %>
+          <%= form.date_field :birth_date, class: "form-control", autocomplete: "bday", required: true %>
+        </div>
+      </div>
+      <%= form.submit "Entrar na consulta", class: "btn btn-primary mt-3" %>
+    <% end %>
+
+    <small class="public-variable-chat-note"><i class="bi bi-info-circle me-1"></i> Não informe sua senha ou dados bancários.</small>
+  </section>
+<% else %>
+  <section class="public-variable-chat-card public-variable-chat-session">
+    <div class="public-variable-chat-session__person">
+      <span class="public-variable-chat-icon"><i class="bi bi-person-check"></i></span>
+      <div>
+        <strong><%= identity.name %></strong>
+        <span><%= identity.label %> · matrícula <%= identity.registration %></span>
+      </div>
+    </div>
+    <%= button_to logout_public_variable_chat_path, method: :delete, params: { return_to: request.fullpath }, class: "btn btn-sm btn-outline-secondary" do %>
+      <i class="bi bi-box-arrow-right me-1"></i> Encerrar
+    <% end %>
+  </section>
+
+  <section class="public-variable-chat-card public-variable-chat-conversation" data-controller="public-variable-chat">
+    <div class="public-variable-chat-messages" data-public-variable-chat-target="messages" aria-live="polite">
+      <% if history.empty? %>
+        <div class="public-variable-chat-welcome">
+          <i class="bi bi-chat-heart"></i>
+          <strong>Olá, <%= identity.name.split.first %>!</strong>
+          <% if %w[operador az_ajudante].include?(identity.profile) %>
+            <span>Pergunte, por exemplo: “quanto ganhei este mês?” ou “estou batendo minha meta de TMA?”</span>
+          <% else %>
+            <span>Pergunte, por exemplo: “quanto ganhei este mês?” ou “estou batendo minha meta de devolução?”</span>
+          <% end %>
+        </div>
+      <% else %>
+        <% history.each do |item| %>
+          <div class="public-variable-chat-message public-variable-chat-message--<%= item["role"] == "user" ? "user" : "assistant" %>">
+            <span><%= item["role"] == "user" ? "Você" : "Assistente" %></span>
+            <div><%= simple_format(clean_public_variable_chat_text(item["content"])) %></div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%= form_with url: message_public_variable_chat_path, method: :post, local: true, class: "public-variable-chat-composer", data: { turbo: false, action: "submit->public-variable-chat#submit", public_variable_chat_target: "form" } do |form| %>
+      <%= form.text_area :question, rows: 2, class: "form-control", placeholder: "Digite sua pergunta... (Enter envia)", required: true, maxlength: 500, data: { public_variable_chat_target: "question", action: "keydown->public-variable-chat#handleKeydown" } %>
+      <%= form.submit "Perguntar", class: "btn btn-primary", data: { public_variable_chat_target: "submit" } %>
+    <% end %>
+  </section>
+<% end %>

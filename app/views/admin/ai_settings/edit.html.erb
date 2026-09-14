@@ -1,0 +1,42 @@
+<div class="ai-settings-page">
+  <div class="ai-settings-header">
+    <div>
+      <p class="ai-settings-eyebrow"><i class="bi bi-stars me-1"></i> Administração · Inteligência artificial</p>
+      <h1><i class="bi bi-sliders2-vertical me-2"></i>Configurações de IA</h1>
+      <p>Defina o modelo prioritário do aplicativo e os limites das gravações de reuniões.</p>
+    </div>
+  </div>
+
+  <%= form_with model: [:admin, @ai_setting], url: admin_ai_setting_path, method: :patch, local: true, class: "ai-settings-card" do |form| %>
+    <% if @ai_setting.errors.any? %>
+      <div class="alert alert-danger"><%= @ai_setting.errors.full_messages.to_sentence %></div>
+    <% end %>
+
+    <section class="ai-settings-section">
+      <div class="ai-settings-section__icon"><i class="bi bi-cpu"></i></div>
+      <div class="ai-settings-section__content">
+        <h2>Modelo prioritário</h2>
+        <p>Será o primeiro modelo usado pelo chat e pela geração de atas. Se atingir o limite, o sistema tentará os modelos reserva automaticamente.</p>
+        <%= form.label :primary_model, "Modelo para iniciar as consultas", class: "form-label" %>
+        <%= form.select :primary_model,
+          AiSetting::MODELS.map { |label, value| [label, value] },
+          {}, class: "form-select" %>
+      </div>
+    </section>
+
+    <section class="ai-settings-section">
+      <div class="ai-settings-section__icon"><i class="bi bi-mic"></i></div>
+      <div class="ai-settings-section__content">
+        <h2>Gravações de atas</h2>
+        <p>Ao atingir esse limite, o gravador encerra automaticamente a captura e deixa o áudio pronto para gerar a ata.</p>
+        <%= form.label :meeting_audio_max_minutes, "Duração máxima da gravação (minutos)", class: "form-label" %>
+        <%= form.number_field :meeting_audio_max_minutes, class: "form-control", min: 1, max: 180, required: true %>
+        <small class="text-muted">O limite técnico de tamanho do arquivo continua sendo aplicado separadamente.</small>
+      </div>
+    </section>
+
+    <div class="ai-settings-actions">
+      <%= form.submit "Salvar configurações", class: "btn btn-primary" %>
+    </div>
+  <% end %>
+</div>

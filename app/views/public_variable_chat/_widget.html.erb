@@ -1,0 +1,24 @@
+<div class="public-variable-chat-widget" data-controller="public-variable-chat-widget" data-public-variable-chat-widget-open-value="<%= open == true %>">
+  <button type="button" class="public-variable-chat-fab" aria-label="Abrir consulta de variável" aria-expanded="false" data-action="click->public-variable-chat-widget#open" data-public-variable-chat-widget-target="openButton">
+    <i class="bi bi-stars"></i>
+    <span>Perguntar à IA</span>
+  </button>
+
+  <div class="public-variable-chat-backdrop" data-public-variable-chat-widget-target="backdrop" data-action="click->public-variable-chat-widget#close"></div>
+
+  <aside class="public-variable-chat-panel" aria-hidden="true" aria-label="Consulta de variável" data-public-variable-chat-widget-target="panel">
+    <header class="public-variable-chat-panel__header">
+      <div>
+        <span class="public-variable-chat-panel__eyebrow"><i class="bi bi-stars me-1"></i> Assistente</span>
+        <strong>Converse com sua variável</strong>
+      </div>
+      <button type="button" class="public-variable-chat-panel__close" aria-label="Fechar chat" data-action="click->public-variable-chat-widget#close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+
+    <div class="public-variable-chat-panel__body <%= "public-variable-chat-panel__body--conversation" if identity %>">
+      <%= render "public_variable_chat/content", identity: identity, history: history, compact: true %>
+    </div>
+  </aside>
+</div>
