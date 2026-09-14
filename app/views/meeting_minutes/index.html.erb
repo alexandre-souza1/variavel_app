@@ -1,0 +1,43 @@
+<div class="meeting-minute-page meeting-minute-index-page">
+  <% status_labels = { "queued" => "Na fila", "processing" => "Processando", "completed" => "Concluída", "failed" => "Falhou" } %>
+  <div class="meeting-minute-page__header">
+    <div>
+      <span class="meeting-minute-page__eyebrow">Histórico de reuniões</span>
+      <h1><i class="bi bi-file-earmark-text me-2"></i>Atas de reunião</h1>
+      <p><%= @action_plan.name %> · <%= @meetings.size %> reunião(ões)</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <%= link_to new_action_plan_meeting_minute_path(@action_plan), class: "btn btn-primary" do %>
+        <i class="bi bi-mic me-1"></i> Nova ata
+      <% end %>
+      <%= link_to action_plan_path(@action_plan), class: "btn-outline" do %>
+        <i class="bi bi-arrow-left me-1"></i> Action plan
+      <% end %>
+    </div>
+  </div>
+
+  <% if @meetings.empty? %>
+    <section class="meeting-minute-card meeting-minute-index-empty">
+      <i class="bi bi-journal-x"></i>
+      <strong>Nenhuma ata foi criada ainda.</strong>
+      <span>Grave a primeira reunião deste action plan para começar o histórico.</span>
+    </section>
+  <% else %>
+    <section class="meeting-minute-card meeting-minute-index-list">
+      <% @meetings.each do |meeting| %>
+        <%= link_to action_plan_meeting_minute_path(@action_plan, meeting), class: "meeting-minute-index-row" do %>
+          <span class="meeting-minute-index-row__icon"><i class="bi bi-file-earmark-text"></i></span>
+          <span class="meeting-minute-index-row__main">
+            <strong><%= meeting.title %></strong>
+            <small><%= l(meeting.meeting_date, format: :long) %> · criada em <%= l(meeting.created_at.to_date) %></small>
+          </span>
+          <span class="meeting-minute-status meeting-minute-status--<%= meeting.status %>">
+            <i class="bi <%= meeting.completed? ? 'bi-check-circle' : meeting.failed? ? 'bi-exclamation-circle' : 'bi-hourglass-split' %>"></i>
+            <%= status_labels.fetch(meeting.status, meeting.status.humanize) %>
+          </span>
+          <i class="bi bi-chevron-right meeting-minute-index-row__arrow"></i>
+        <% end %>
+      <% end %>
+    </section>
+  <% end %>
+</div>

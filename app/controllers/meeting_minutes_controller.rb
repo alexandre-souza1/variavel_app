@@ -4,6 +4,10 @@ class MeetingMinutesController < ApplicationController
   before_action :set_meeting, only: [:show, :create_tasks]
   before_action :ensure_meeting_access!, only: [:show, :create_tasks]
 
+  def index
+    @meetings = @action_plan.meeting_minutes.order(meeting_date: :desc, created_at: :desc)
+  end
+
   def new
     @meeting = @action_plan.meeting_minutes.new(
       meeting_date: Date.current,

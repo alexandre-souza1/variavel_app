@@ -85,12 +85,31 @@
 .meeting-minute-task-row__main p { color: var(--bs-secondary-color); font-size: .74rem; margin: .2rem 0; }
 .meeting-minute-task-row__main small { color: var(--bs-primary); font-size: .68rem; }
 .meeting-minute-empty { color: var(--bs-secondary-color); font-size: .82rem; padding: 1rem 0; }
+.meeting-minute-index-list { display: grid; gap: .5rem; }
+.meeting-minute-index-row { align-items: center; border: 1px solid transparent; border-radius: 12px; color: var(--bs-body-color); display: flex; gap: .8rem; padding: .8rem; text-decoration: none; transition: background .18s ease, border-color .18s ease, transform .18s ease; }
+.meeting-minute-index-row:hover { background: rgba(var(--bs-primary-rgb), .06); border-color: rgba(var(--bs-primary-rgb), .2); color: var(--bs-body-color); transform: translateX(2px); }
+.meeting-minute-index-row__icon { align-items: center; background: rgba(var(--bs-primary-rgb), .12); border-radius: 10px; color: var(--bs-primary); display: flex; flex: 0 0 2.4rem; height: 2.4rem; justify-content: center; }
+.meeting-minute-index-row__main { display: grid; gap: .2rem; min-width: 0; }
+.meeting-minute-index-row__main strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meeting-minute-index-row__main small { color: var(--bs-secondary-color); font-size: .72rem; }
+.meeting-minute-status { align-items: center; border-radius: 999px; display: inline-flex; font-size: .7rem; gap: .3rem; margin-left: auto; padding: .3rem .55rem; white-space: nowrap; }
+.meeting-minute-status--completed { background: rgba(25, 135, 84, .12); color: var(--bs-success); }
+.meeting-minute-status--queued, .meeting-minute-status--processing { background: rgba(var(--bs-primary-rgb), .1); color: var(--bs-primary); }
+.meeting-minute-status--failed { background: rgba(220, 53, 69, .12); color: var(--bs-danger); }
+.meeting-minute-index-row__arrow { color: var(--bs-secondary-color); }
+.meeting-minute-index-empty { align-items: center; display: flex; flex-direction: column; gap: .45rem; justify-content: center; min-height: 240px; text-align: center; }
+.meeting-minute-index-empty > i { color: var(--bs-primary); font-size: 2rem; }
+.meeting-minute-index-empty span { color: var(--bs-secondary-color); font-size: .85rem; }
 
 @media (max-width: 768px) {
   .meeting-minute-page__header { flex-direction: column; }
   .meeting-minute-form-grid, .meeting-minute-columns { grid-template-columns: 1fr; }
   .meeting-minute-task-row { grid-template-columns: auto 1fr; }
   .meeting-minute-task-row .form-select { grid-column: 2; width: 100%; }
+  .meeting-minute-index-row { align-items: flex-start; flex-wrap: wrap; }
+  .meeting-minute-index-row__main { flex: 1 1 calc(100% - 3.2rem); }
+  .meeting-minute-status { margin-left: 3.2rem; }
+  .meeting-minute-index-row__arrow { margin-left: auto; }
 }
 
 // Lembrete: switch e rotulo usados para alternar o lembrete de uma tarefa.

@@ -39,6 +39,11 @@
           <span>Nova ata</span>
         <% end %>
 
+        <%= link_to action_plan_meeting_minutes_path(@action_plan), class: "btn-outline action-plan-view-link" do %>
+          <i class="bi bi-file-earmark-text"></i>
+          <span>Atas</span>
+        <% end %>
+
         <!-- KANBAN -->
         <%= link_to action_plan_path(@action_plan, view: "kanban"),
             class: "btn-outline action-plan-view-link action-plan-view-link--kanban #{params[:view] != 'list' ? 'active' : ''}" do %>
