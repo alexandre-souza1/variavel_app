@@ -27,7 +27,9 @@ class RoutineGeneratorsController < ApplicationController
     return unless ensure_editable_routine
 
     selected_indicator_ids = params[:indicator_ids]&.reject(&:blank?)
-    
+
+    @routine.update!(routine_settings_params)
+
     Routines::IndicatorUpdater.call(
       routine: @routine,
       indicator_ids: selected_indicator_ids
@@ -52,5 +54,12 @@ class RoutineGeneratorsController < ApplicationController
 
     redirect_to @routine, alert: "Esta rotina não permite mais editar os indicadores."
     false
+  end
+
+  def routine_settings_params
+    {
+      weekly_reference_weekday: params[:weekly_reference_weekday].presence&.to_i,
+      monthly_reference_day: params[:monthly_reference_day].presence&.to_i
+    }
   end
 end

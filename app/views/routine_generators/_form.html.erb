@@ -4,7 +4,7 @@
       <div>
         <h1>
           <i class="bi <%= show_period ? 'bi-plus-circle' : 'bi-pencil-square' %> me-2"></i>
-          <%= show_period ? 'Gerar Nova Rotina' : 'Editar Indicadores' %>
+          <%= show_period ? 'Gerar Nova Rotina' : 'Configurações' %>
         </h1>
         <% if routine.present? %>
           <p class="subtitle"><%= routine.title %></p>
@@ -136,6 +136,43 @@
           </div>
 
           <hr>
+        <% end %>
+
+        <% if routine.present? %>
+          <div class="mb-4">
+            <h5 class="card-subtitle mb-3">
+              <i class="bi bi-calendar3 me-2"></i>Preenchimento das metas
+            </h5>
+            <p class="text-muted small mb-3">
+              Escolha o dia em que os KPIs semanais e mensais ficarão disponíveis para preenchimento nesta rotina.
+            </p>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <%= label_tag :weekly_reference_weekday, "Dia semanal", class: "form-label" %>
+                <%= select_tag :weekly_reference_weekday,
+                    options_for_select(
+                      Routine::WEEKDAY_LABELS.map { |value, label| [label, value] },
+                      routine.weekly_reference_weekday
+                    ),
+                    include_blank: "Segunda-feira (padrão)",
+                    class: "form-select" %>
+                <div class="form-text">Usado pelos KPIs com frequência semanal.</div>
+              </div>
+
+              <div class="col-md-6">
+                <%= label_tag :monthly_reference_day, "Dia mensal", class: "form-label" %>
+                <%= select_tag :monthly_reference_day,
+                    options_for_select(
+                      (1..31).map { |day| [day, day] },
+                      routine.monthly_reference_day
+                    ),
+                    include_blank: "Último dia do mês (padrão)",
+                    class: "form-select" %>
+                <div class="form-text">Em meses menores, o dia 31 usa o último dia disponível.</div>
+              </div>
+            </div>
+          </div>
         <% end %>
 
         <div class="mb-4">

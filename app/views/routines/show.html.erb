@@ -27,7 +27,7 @@
         <% unless @routine.closed? || @routine.archived? %>
           <%= link_to edit_routine_generator_path(@routine), class: "btn btn-primary" do %>
             <i class="bi bi-pencil-square me-1"></i>
-            Editar KPIs
+            Configurações
           <% end %>
         <% end %>
         <% if @routine.open? %>

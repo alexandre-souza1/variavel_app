@@ -196,10 +196,7 @@ module Routines
 
     def expected_reference_dates
       @expected_reference_dates ||=
-        indicator.reference_dates_between(
-          routine.period_start,
-          routine.period_end
-        )
+        routine.reference_dates_for(indicator)
     end
 
     def progress_label

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_15_130000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_15_161000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -722,6 +722,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_15_130000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "selected_indicator_ids", default: [], null: false
+    t.integer "weekly_reference_weekday"
+    t.integer "monthly_reference_day"
     t.index ["created_by_id"], name: "index_routines_on_created_by_id"
     t.index ["routine_template_id", "period_start", "period_end"], name: "idx_unique_routine_period", unique: true
     t.index ["routine_template_id"], name: "index_routines_on_routine_template_id"

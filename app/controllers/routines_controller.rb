@@ -51,10 +51,7 @@ class RoutinesController < ApplicationController
 
     @expected_dates_by_indicator =
       @indicators.index_with do |indicator|
-        indicator.reference_dates_between(
-          @routine.period_start,
-          @routine.period_end
-        )
+        @routine.reference_dates_for(indicator)
       end
 
     @expected_dates_index =

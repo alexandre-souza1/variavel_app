@@ -149,15 +149,15 @@
   }
 }
 
-// O Bootstrap usa --bs-primary-bg-subtle no botão aberto por padrão.
-// Nesta página o acordeão acompanha as superfícies do tema, sem ficar azul.
+// O item aberto usa o tom forte do tema para funcionar como um marcador claro
+// de qual período está selecionado.
 .routine-show-page #routineFrequencyAccordion {
   --bs-accordion-bg: var(--bs-tertiary-bg);
   --bs-accordion-color: var(--bs-body-color);
   --bs-accordion-btn-bg: var(--bs-tertiary-bg);
   --bs-accordion-btn-color: var(--bs-body-color);
-  --bs-accordion-active-bg: var(--bs-secondary-bg);
-  --bs-accordion-active-color: var(--bs-body-color);
+  --bs-accordion-active-bg: var(--app-primary);
+  --bs-accordion-active-color: #ffffff;
   --bs-accordion-border-color: var(--bs-border-color);
   --bs-accordion-btn-focus-box-shadow: 0 0 0 .25rem rgba(var(--bs-primary-rgb), .18);
 
@@ -170,6 +170,11 @@
   .accordion-button:not(.collapsed) {
     background-color: var(--bs-accordion-active-bg);
     color: var(--bs-accordion-active-color);
+    box-shadow: inset 0 -2px 0 rgba(255, 255, 255, .22);
+  }
+
+  .accordion-button:not(.collapsed)::after {
+    filter: brightness(0) invert(1);
   }
 
   .accordion-collapse,
@@ -183,8 +188,8 @@
   --bs-accordion-bg: var(--app-dark-surface);
   --bs-accordion-btn-bg: var(--app-dark-elevated);
   --bs-accordion-btn-color: var(--app-dark-text);
-  --bs-accordion-active-bg: rgba(var(--bs-primary-rgb), .18);
-  --bs-accordion-active-color: var(--app-dark-text);
+  --bs-accordion-active-bg: var(--app-primary);
+  --bs-accordion-active-color: #ffffff;
   --bs-accordion-color: var(--app-dark-text);
   --bs-accordion-border-color: var(--app-dark-border);
 
@@ -198,10 +203,74 @@
   .accordion-button::after {
     filter: grayscale(1) brightness(1.8);
   }
+
+  .accordion-button:not(.collapsed)::after {
+    filter: brightness(0) invert(1);
+  }
 }
 
 [data-bs-theme="dark"] .routine-show-page .table-routine {
   --routine-grid-bg: var(--app-dark-surface);
   --routine-header-bg: var(--app-dark-elevated);
   --routine-cell-text: var(--app-dark-text);
+}
+
+// Células bloqueadas mantêm a indicação de domingo mesmo quando possuem
+// um status de resultado que também define uma cor de fundo.
+.routine-show-page .table-routine > tbody > tr > .routine-cell.routine-cell--sunday-locked {
+  background-color: rgba(var(--bs-danger-rgb), .10);
+  color: var(--bs-secondary-color);
+  opacity: .65;
+  filter: grayscale(.2);
+}
+
+.routine-show-page .table-routine > tbody > tr > .empty-cell.routine-day--sunday {
+  background-color: rgba(var(--bs-danger-rgb), .10);
+  color: var(--bs-secondary-color);
+}
+
+// No tema claro a grade precisa ser uma superfície própria, separada do fundo
+// da página, para manter contraste entre o quadro e o layout externo.
+html[data-bs-theme="light"] .routine-show-page .table-routine {
+  --routine-grid-bg: var(--app-surface);
+  --routine-header-bg: var(--app-secondary-bg);
+}
+
+// Bloqueios ficam visíveis mesmo quando a célula possui outro status. A trama
+// diagonal é intencionalmente discreta e não depende de uma cor fixa.
+.routine-show-page .table-routine > tbody > tr > .routine-cell.routine-cell--sunday-locked,
+.routine-show-page .table-routine > tbody > tr > .empty-cell.routine-day--sunday {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0,
+    transparent 7px,
+    rgba(var(--bs-danger-rgb), .07) 7px,
+    rgba(var(--bs-danger-rgb), .07) 9px
+  );
+  box-shadow: inset 0 0 0 1px rgba(var(--bs-danger-rgb), .18);
+}
+
+.routine-show-page .table-routine > tbody > tr > .routine-cell.routine-cell--sunday-locked {
+  opacity: .8;
+}
+
+// A pintura da grade define a cor no elemento pai com mais especificidade que
+// o utilitário do Bootstrap. Reaplicamos o muted nos textos que dependem dele.
+.routine-show-page .table-routine .text-muted {
+  color: var(--bs-secondary-color) !important;
+}
+
+// Dias fora da janela preenchível da rotina.
+.routine-show-page .table-routine > tbody > tr > .empty-cell {
+  background-color: color-mix(in srgb, var(--routine-grid-bg) 88%, var(--bs-primary) 12%);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0,
+    transparent 7px,
+    rgba(var(--bs-primary-rgb), .08) 7px,
+    rgba(var(--bs-primary-rgb), .08) 9px
+  );
+  color: var(--bs-secondary-color) !important;
+  cursor: not-allowed;
+  opacity: .78;
 }

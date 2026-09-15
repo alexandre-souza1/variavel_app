@@ -44,17 +44,24 @@ class RoutineIndicator < ApplicationRecord
 
   scope :active, -> { where(active: true) }
 
-  def reference_dates_between(period_start, period_end)
+  def reference_dates_between(
+    period_start,
+    period_end,
+    weekly_reference_weekday: nil,
+    monthly_reference_day: nil
+  )
     return [] if period_start.blank? || period_end.blank?
 
     return monthly_reference_dates_between(
       period_start,
-      period_end
+      period_end,
+      monthly_reference_day
     ) if monthly?
 
     return weekly_reference_dates_between(
       period_start,
-      period_end
+      period_end,
+      weekly_reference_weekday
     ) if weekly?
 
     dates = []
@@ -161,12 +168,13 @@ class RoutineIndicator < ApplicationRecord
 
   private
 
-  def weekly_reference_dates_between(period_start, period_end)
+  def weekly_reference_dates_between(period_start, period_end, configured_weekday = nil)
     dates = []
     current_date = period_start.to_date
     last_date = period_end.to_date
+    weekday = configured_weekday.nil? ? 1 : configured_weekday.to_i
 
-    current_date += 1.day until current_date.monday?
+    current_date += (weekday - current_date.wday) % 7
 
     while current_date <= last_date
       dates << current_date
@@ -176,7 +184,7 @@ class RoutineIndicator < ApplicationRecord
     dates
   end
 
-  def monthly_reference_dates_between(period_start, period_end)
+  def monthly_reference_dates_between(period_start, period_end, configured_day = nil)
     dates = []
     first_date = period_start.to_date
     last_date = period_end.to_date
@@ -184,7 +192,9 @@ class RoutineIndicator < ApplicationRecord
 
     while current_date <= last_date
       month_end = current_date.end_of_month
-      dates << month_end if month_end.between?(first_date, last_date)
+      reference_day = configured_day.present? ? configured_day.to_i : month_end.day
+      reference_date = current_date.change(day: [reference_day, month_end.day].min)
+      dates << reference_date if reference_date.between?(first_date, last_date)
 
       current_date = current_date.next_month
     end

@@ -1,6 +1,16 @@
 require "set"
 
 class Routine < ApplicationRecord
+  WEEKDAY_LABELS = {
+    0 => "Domingo",
+    1 => "Segunda-feira",
+    2 => "Terça-feira",
+    3 => "Quarta-feira",
+    4 => "Quinta-feira",
+    5 => "Sexta-feira",
+    6 => "Sábado"
+  }.freeze
+
   belongs_to :routine_template
 
   delegate :sector, to: :routine_template, allow_nil: true
@@ -64,6 +74,14 @@ class Routine < ApplicationRecord
   validates :period_end,
             presence: true
 
+  validates :weekly_reference_weekday,
+            inclusion: { in: 0..6 },
+            allow_nil: true
+
+  validates :monthly_reference_day,
+            inclusion: { in: 1..31 },
+            allow_nil: true
+
   validate :period_end_after_start
 
   def ensure_expected_values!(indicators: nil)
@@ -81,7 +99,7 @@ class Routine < ApplicationRecord
     rows = []
 
     indicators.each do |indicator|
-      indicator.reference_dates_between(period_start, period_end).each do |date|
+      reference_dates_for(indicator).each do |date|
         key = [indicator.id, date]
         next if existing_keys.include?(key)
 
@@ -99,6 +117,15 @@ class Routine < ApplicationRecord
       rows,
       unique_by: :idx_unique_routine_value
     ) if rows.any?
+  end
+
+  def reference_dates_for(indicator)
+    indicator.reference_dates_between(
+      period_start,
+      period_end,
+      weekly_reference_weekday: weekly_reference_weekday,
+      monthly_reference_day: monthly_reference_day
+    )
   end
 
   private

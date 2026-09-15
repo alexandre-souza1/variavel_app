@@ -25,7 +25,7 @@
 
   <div id="kanban-<%= action_plan.id %>"
        class="row flex-nowrap action-plan-kanban-board"
-       data-controller="drag-scroll bucket-sortable"
+       data-controller="kanban-drag-scroll bucket-sortable"
        data-bucket-sortable-action-plan-id-value="<%= action_plan.id %>">
 
   <% buckets.each do |bucket| %>

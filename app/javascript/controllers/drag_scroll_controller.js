@@ -6,6 +6,8 @@ export default class extends Controller {
   }
 
   connect() {
+    console.log("[routines-drag-scroll] connect", this.element)
+
     this.isDown = false
     this.isDragging = false
     this.startX = 0
@@ -18,61 +20,66 @@ export default class extends Controller {
     this.moveRaf = null
     this.pendingPageX = null
     this.hasMovedEnough = false
-    this.suppressClickUntil = 0
 
-    this.pointerDown = this.pointerDown.bind(this)
-    this.pointerMove = this.pointerMove.bind(this)
-    this.pointerUp = this.pointerUp.bind(this)
-    this.suppressClick = this.suppressClick.bind(this)
+    this.mouseDown = this.mouseDown.bind(this)
+    this.mouseMove = this.mouseMove.bind(this)
+    this.mouseUp = this.mouseUp.bind(this)
 
-    this.element.addEventListener("pointerdown", this.pointerDown)
-    this.element.addEventListener("pointermove", this.pointerMove, { passive: false })
-    this.element.addEventListener("pointerup", this.pointerUp)
-    this.element.addEventListener("pointercancel", this.pointerUp)
-    this.element.addEventListener("lostpointercapture", this.pointerUp)
-    this.element.addEventListener("click", this.suppressClick, true)
+    this.element.addEventListener("mousedown", this.mouseDown)
+    this.element.addEventListener("mousemove", this.mouseMove, { passive: false })
+    this.element.addEventListener("mouseup", this.mouseUp)
+    this.element.addEventListener("mouseleave", this.mouseUp)
+    this.element.addEventListener("touchstart", this.mouseDown, { passive: true })
+    this.element.addEventListener("touchmove", this.mouseMove, { passive: false })
+    this.element.addEventListener("touchend", this.mouseUp)
+    this.element.addEventListener("touchcancel", this.mouseUp)
+    window.addEventListener("mouseup", this.mouseUp)
+    window.addEventListener("touchend", this.mouseUp)
+    window.addEventListener("touchcancel", this.mouseUp)
   }
 
   disconnect() {
-    this.element.removeEventListener("pointerdown", this.pointerDown)
-    this.element.removeEventListener("pointermove", this.pointerMove)
-    this.element.removeEventListener("pointerup", this.pointerUp)
-    this.element.removeEventListener("pointercancel", this.pointerUp)
-    this.element.removeEventListener("lostpointercapture", this.pointerUp)
-    this.element.removeEventListener("click", this.suppressClick, true)
+    console.log("[routines-drag-scroll] disconnect", this.element)
+
+    this.element.removeEventListener("mousedown", this.mouseDown)
+    this.element.removeEventListener("mousemove", this.mouseMove)
+    this.element.removeEventListener("mouseup", this.mouseUp)
+    this.element.removeEventListener("mouseleave", this.mouseUp)
+    this.element.removeEventListener("touchstart", this.mouseDown)
+    this.element.removeEventListener("touchmove", this.mouseMove)
+    this.element.removeEventListener("touchend", this.mouseUp)
+    this.element.removeEventListener("touchcancel", this.mouseUp)
+    window.removeEventListener("mouseup", this.mouseUp)
+    window.removeEventListener("touchend", this.mouseUp)
+    window.removeEventListener("touchcancel", this.mouseUp)
     cancelAnimationFrame(this.raf)
     cancelAnimationFrame(this.moveRaf)
   }
 
-  pointerDown(e) {
-    // Sortable owns task-card drags; the board scroller must stay idle.
-    if (e.target.closest(".task-card, .drag-handle, [data-controller~='sortable']")) {
-      console.log("[drag-scroll] ignorou pointerdown; alvo pertence ao sortable", e.target)
+  mouseDown(event) {
+    console.log("[routines-drag-scroll] mouseDown", {
+      target: event.target,
+      pageX: event.touches ? event.touches[0].pageX : event.pageX,
+      handle: this.handleValue
+    })
+
+    if (event.target.closest("input, textarea, select, button, a, .routine-cell__input, .btn, .dropdown, .accordion-button")) {
+      console.log("[routines-drag-scroll] mouseDown ignorado: alvo interativo")
       return
     }
-
-    const handleSelector = this.handleValue
-    if (handleSelector) {
-      const handleElement = e.target.closest(handleSelector)
-      if (!handleElement) return
-    }
-
-    if (e.target.closest("input, textarea, select, button, a, .routine-cell__input, .btn, .dropdown, .accordion-button, .action-plan-kanban-done-toggle, .action-plan-kanban-card__title, [data-bucket-edit-target='input']")) {
-      console.log("[drag-scroll] ignorou pointerdown; alvo interativo", e.target)
+    if (this.handleValue && !event.target.closest(this.handleValue)) {
+      console.log("[routines-drag-scroll] mouseDown ignorado: fora do handle")
       return
     }
 
     this.isDown = true
-    this.pointerId = e.pointerId
     this.isDragging = false
     this.hasMovedEnough = false
 
-    const pageX = e.pageX
-
+    const pageX = event.touches ? event.touches[0].pageX : event.pageX
     this.elementLeft = this.element.getBoundingClientRect().left
     this.startX = pageX - this.elementLeft
     this.scrollLeft = this.element.scrollLeft
-
     this.lastX = pageX
     this.lastTime = performance.now()
     this.velocity = 0
@@ -80,107 +87,89 @@ export default class extends Controller {
     cancelAnimationFrame(this.raf)
     this.element.classList.add("dragging")
 
-    this.element.setPointerCapture?.(e.pointerId)
-    console.log("[drag-scroll] pointerdown", {
-      pointerId: e.pointerId,
-      target: e.target,
-      startX: e.pageX,
+    console.log("[routines-drag-scroll] gesto iniciado", {
+      startX: pageX,
       scrollLeft: this.scrollLeft
     })
   }
 
-  pointerMove(e) {
-    if (!this.isDown || e.pointerId !== this.pointerId) return
+  mouseMove(event) {
+    if (!this.isDown) return
 
-    const pageX = e.pageX
-    const currentX = pageX - this.elementLeft
-    const walk = (currentX - this.startX) * 1.1
-
-    if (Math.abs(walk) > 3) {
-      if (!this.hasMovedEnough) {
-        console.log("[drag-scroll] iniciou arrasto", { walk, target: e.target })
-      }
-      this.hasMovedEnough = true
-      window.getSelection()?.removeAllRanges()
-      if (e.cancelable) e.preventDefault()
-    }
-
+    const pageX = event.touches ? event.touches[0].pageX : event.pageX
     this.pendingPageX = pageX
 
     if (this.moveRaf) return
 
     this.moveRaf = requestAnimationFrame(() => {
       this.moveRaf = null
-      if (!this.isDown || this.pendingPageX === null) return
+      if (!this.isDown || this.pendingPageX === null) {
+        return
+      }
 
-      const currentPageX = this.pendingPageX
+      const walk = (this.pendingPageX - this.elementLeft - this.startX) * 1.1
+      if (Math.abs(walk) > 3) {
+        this.hasMovedEnough = true
+        window.getSelection()?.removeAllRanges()
+      }
       if (!this.hasMovedEnough) return
 
-      const x = currentPageX - this.elementLeft
-      const currentWalk = (x - this.startX) * 1.1
-      this.element.scrollLeft = this.scrollLeft - currentWalk
+      this.element.scrollLeft = this.scrollLeft - walk
       this.isDragging = true
 
       const now = performance.now()
-      const dx = currentPageX - this.lastX
-      const dt = now - this.lastTime
-      this.velocity = dx / (dt || 1)
-
-      this.lastX = currentPageX
+      this.velocity = (this.pendingPageX - this.lastX) / (now - this.lastTime || 1)
+      this.lastX = this.pendingPageX
       this.lastTime = now
     })
 
-    if (this.hasMovedEnough && e.cancelable) e.preventDefault()
+    if (this.hasMovedEnough && event.cancelable) event.preventDefault()
   }
 
-  pointerUp(e) {
-    if (!this.isDown || (e.pointerId !== undefined && e.pointerId !== this.pointerId)) return
-
-    console.log("[drag-scroll] pointerup", {
-      pointerId: e.pointerId,
+  mouseUp() {
+    console.log("[routines-drag-scroll] mouseUp", {
+      isDown: this.isDown,
       isDragging: this.isDragging,
-      hasMovedEnough: this.hasMovedEnough,
-      scrollLeft: this.element.scrollLeft
+      hasMovedEnough: this.hasMovedEnough
     })
 
+    if (!this.isDown) {
+      console.log("[routines-drag-scroll] mouseUp ignorado: sem gesto ativo")
+      return
+    }
+
     this.isDown = false
-    this.pointerId = null
     this.pendingPageX = null
     cancelAnimationFrame(this.moveRaf)
     this.moveRaf = null
     this.element.classList.remove("dragging")
 
-    if (e.pointerId !== undefined && this.element.hasPointerCapture?.(e.pointerId)) {
-      this.element.releasePointerCapture(e.pointerId)
-    }
-
     if (this.isDragging && !this.handleValue) {
-      this.suppressClickUntil = performance.now() + 350
+      console.log("[routines-drag-scroll] iniciando momentum")
       this.startMomentum()
+    } else {
+      console.log("[routines-drag-scroll] momentum não iniciado", {
+        isDragging: this.isDragging,
+        handle: this.handleValue
+      })
     }
-  }
-
-  suppressClick(event) {
-    if (performance.now() >= this.suppressClickUntil) return
-
-    console.log("[drag-scroll] suprimiu click após arrasto", event.target)
-    event.preventDefault()
-    event.stopPropagation()
-    this.suppressClickUntil = 0
   }
 
   startMomentum() {
     let velocity = this.velocity * 18
+    console.log("[routines-drag-scroll] startMomentum", { velocity })
 
     const step = () => {
       this.element.scrollLeft -= velocity
       velocity *= 0.94
-
       if (Math.abs(velocity) > 0.2) {
         this.raf = requestAnimationFrame(step)
+      } else {
+        console.log("[routines-drag-scroll] momentum finalizado", {
+          scrollLeft: this.element.scrollLeft
+        })
       }
     }
-
     this.raf = requestAnimationFrame(step)
   }
 }

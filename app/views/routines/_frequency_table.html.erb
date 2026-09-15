@@ -1,7 +1,7 @@
 <div class="routine-table-wrapper">
   <div class="table-responsive"
      data-controller="drag-scroll"
-     data-drag-scroll-handle=".category-row">
+     data-drag-scroll-handle-value=".category-row">
     <table class="table table-routine align-middle mb-0">
       <thead>
         <tr>
@@ -113,6 +113,7 @@
                     </button>
                     <input
                       type="text"
+                      id="routine-input-<%= value.id %>"
                       class="routine-cell__input d-none"
                       data-routine-cell-target="input"
                       autocomplete="off">
