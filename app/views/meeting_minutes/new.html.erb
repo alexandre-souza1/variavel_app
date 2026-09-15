@@ -5,9 +5,14 @@
       <h1><i class="bi bi-mic me-2"></i>Gravar reunião</h1>
       <p>Action plan: <strong><%= @action_plan.name %></strong></p>
     </div>
-    <%= link_to action_plan_path(@action_plan), class: "btn-outline" do %>
-      <i class="bi bi-arrow-left me-1"></i> Voltar
-    <% end %>
+    <div class="d-flex flex-wrap gap-2">
+      <%= link_to action_plan_path(@action_plan), class: "btn-outline" do %>
+        <i class="bi bi-arrow-left me-1"></i> Voltar
+      <% end %>
+      <%= link_to action_plan_meeting_minutes_path(@action_plan), class: "btn btn-primary" do %>
+        <i class="bi bi-list me-1"></i> Consulta de Atas
+      <% end %>
+    </div>
   </div>
 
   <%= form_with model: [@action_plan, @meeting], multipart: true, data: { controller: "meeting-recorder", meeting_recorder_max_duration_value: AiSetting.current.meeting_audio_max_minutes }, class: "meeting-minute-card" do |form| %>
@@ -24,6 +29,16 @@
         <%= form.label :meeting_date, "Data", class: "form-label" %>
         <%= form.date_field :meeting_date, class: "form-control", required: true %>
       </div>
+    </div>
+
+    <div class="mb-3">
+      <%= form.label :participants, "Participantes (opcional)", class: "form-label" %>
+      <%= form.text_area :participants,
+        value: @meeting.participants.join("\n"),
+        class: "form-control",
+        rows: 3,
+        placeholder: "Informe um participante por linha" %>
+      <div class="form-text">Esses nomes serão usados na tabela de assinaturas do PDF.</div>
     </div>
 
     <div class="meeting-minute-recorder">

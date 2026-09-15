@@ -76,6 +76,12 @@
 .meeting-minute-summary { color: var(--bs-body-color); line-height: 1.65; }
 .meeting-minute-columns { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .meeting-minute-card ul { color: var(--bs-body-color); line-height: 1.55; margin: 0; padding-left: 1.15rem; }
+.meeting-minute-participants-list { display: grid; gap: .6rem; }
+.meeting-minute-participant-row { display: flex; gap: .5rem; }
+.meeting-minute-participant-row .form-control { flex: 1; }
+.meeting-minute-participant-actions { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: space-between; margin-top: .75rem; }
+.meeting-minute-import-form { align-items: end; display: grid; gap: .75rem; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; }
+.meeting-minute-import-form .form-label { font-size: .78rem; }
 .meeting-minute-section-heading { align-items: center; display: flex; justify-content: space-between; }
 .meeting-minute-section-heading p { color: var(--bs-secondary-color); font-size: .75rem; margin: -.45rem 0 .9rem; }
 .meeting-minute-task-list { display: grid; gap: .55rem; }
@@ -399,6 +405,43 @@
 
 .action-plan-header__title {
   min-width: 0;
+}
+
+.action-plan-header__tools {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+}
+
+.action-plan-view-switch {
+  align-items: center;
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 10px;
+  display: inline-flex;
+  gap: .2rem;
+  padding: .2rem;
+}
+
+.action-plan-view-switch__link {
+  align-items: center;
+  border-radius: 7px;
+  color: var(--bs-secondary-color);
+  display: inline-flex;
+  font-size: .8rem;
+  font-weight: 700;
+  gap: .35rem;
+  padding: .45rem .7rem;
+  text-decoration: none;
+  transition: background-color .2s ease, color .2s ease, box-shadow .2s ease;
+}
+
+.action-plan-view-switch__link:hover { color: var(--bs-primary); }
+.action-plan-view-switch__link.active {
+  background: var(--bs-body-bg);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .12);
+  color: var(--bs-primary);
 }
 
 .action-plan-header__title h1 {
@@ -1158,6 +1201,21 @@
     width: 100%;
   }
 
+  .action-plan-show .action-plan-header__tools {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .action-plan-show .action-plan-view-switch {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .action-plan-show .action-plan-view-switch__link {
+    flex: 1;
+    justify-content: center;
+  }
+
   .action-plan-show .header-actions .btn-outline {
     border-color: transparent;
     justify-content: center;
@@ -1193,12 +1251,12 @@
     display: none;
   }
 
-  .action-plan-show--auto-view .action-plan-view-link--kanban.active {
+  .action-plan-show--auto-view .action-plan-view-switch__link--kanban.active {
     background-color: transparent;
     color: var(--bs-primary);
   }
 
-  .action-plan-show--auto-view .action-plan-view-link--list {
+  .action-plan-show--auto-view .action-plan-view-switch__link--list {
     background-color: var(--bs-primary);
     border-color: var(--bs-primary);
     color: #fff;

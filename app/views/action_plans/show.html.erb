@@ -19,7 +19,22 @@
         </p>
       </div>
 
-      <div class="header-actions">
+      <div class="action-plan-header__tools">
+        <div class="action-plan-view-switch" role="group" aria-label="Visualização das tarefas">
+          <%= link_to action_plan_path(@action_plan, view: "kanban"),
+              class: "action-plan-view-switch__link action-plan-view-switch__link--kanban #{params[:view] != 'list' && params[:view] != 'labels' ? 'active' : ''}" do %>
+            <i class="bi bi-kanban"></i>
+            <span>Kanban</span>
+          <% end %>
+
+          <%= link_to action_plan_path(@action_plan, view: "list"),
+              class: "action-plan-view-switch__link action-plan-view-switch__link--list #{params[:view] == 'list' ? 'active' : ''}" do %>
+            <i class="bi bi-list-check"></i>
+            <span>Lista</span>
+          <% end %>
+        </div>
+
+        <div class="header-actions">
 
         <!-- DEFINIR RESPONSÁVEIS -->
         <% if current_user.admin? %>
@@ -44,20 +59,6 @@
           <span>Atas</span>
         <% end %>
 
-        <!-- KANBAN -->
-        <%= link_to action_plan_path(@action_plan, view: "kanban"),
-            class: "btn-outline action-plan-view-link action-plan-view-link--kanban #{params[:view] != 'list' ? 'active' : ''}" do %>
-          <i class="bi bi-kanban"></i>
-          <span>Kanban</span>
-        <% end %>
-
-        <!-- LISTA -->
-        <%= link_to action_plan_path(@action_plan, view: "list"),
-            class: "btn-outline action-plan-view-link action-plan-view-link--list #{params[:view] == 'list' ? 'active' : ''}" do %>
-          <i class="bi bi-list-check"></i>
-          <span>Lista</span>
-        <% end %>
-
         <!-- LABELS -->
         <%= link_to action_plan_path(@action_plan, view: "labels"),
             class: "btn-outline action-plan-view-link #{params[:view] == 'labels' ? 'active' : ''}" do %>
@@ -73,6 +74,7 @@
           Voltar
         <% end %>
 
+        </div>
       </div>
     </div>
   </div>

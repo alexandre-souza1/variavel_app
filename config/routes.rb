@@ -173,6 +173,8 @@ Rails.application.routes.draw do
     resources :labels, only: :destroy
     resources :meeting_minutes, only: [:index, :new, :create, :show] do
       post :create_tasks, on: :member
+      patch :update_participants, on: :member
+      post :import_participants, on: :member
     end
 
     resources :buckets do

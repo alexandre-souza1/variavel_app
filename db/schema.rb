@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_14_170000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_15_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -540,6 +540,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_14_170000) do
     t.text "error_message"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "participants", default: [], null: false
+    t.boolean "tasks_created", default: false, null: false
     t.index ["action_plan_id"], name: "index_meeting_minutes_on_action_plan_id"
     t.index ["creator_id"], name: "index_meeting_minutes_on_creator_id"
   end

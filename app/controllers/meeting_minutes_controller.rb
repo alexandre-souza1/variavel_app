@@ -1,8 +1,8 @@
 class MeetingMinutesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_action_plan
-  before_action :set_meeting, only: [:show, :create_tasks]
-  before_action :ensure_meeting_access!, only: [:show, :create_tasks]
+  before_action :set_meeting, only: [:show, :create_tasks, :update_participants, :import_participants]
+  before_action :ensure_meeting_access!, only: [:show, :create_tasks, :update_participants, :import_participants]
 
   def index
     @meetings = @action_plan.meeting_minutes.order(meeting_date: :desc, created_at: :desc)
@@ -32,11 +32,32 @@ class MeetingMinutesController < ApplicationController
   def show
     @buckets = @action_plan.buckets.order(:position)
     @users = User.order(:name)
+
+    respond_to do |format|
+      format.html
+      format.pdf do
+        pdf = MeetingMinutePdf.new(@meeting)
+
+        send_data pdf.render,
+          filename: "ata_#{@meeting.id}_#{@meeting.title.parameterize}.pdf",
+          type: "application/pdf",
+          disposition: params[:download].present? ? "attachment" : "inline"
+      end
+    end
   end
 
   def create_tasks
+    if @meeting.tasks_created?
+      redirect_to action_plan_meeting_minute_path(@action_plan, @meeting),
+        alert: "As tarefas sugeridas desta ata já foram criadas."
+      return
+    end
+
     suggestion_ids = Array(params[:suggestion_ids]).map(&:to_i)
     suggestions = Array(@meeting.tasks_suggestions)
+    meeting_label = @action_plan.labels.find_or_create_by!(name: "Ata de Reunião") do |label|
+      label.color = "#6f42c1"
+    end
 
     created_count = 0
 
@@ -54,8 +75,11 @@ class MeetingMinutesController < ApplicationController
           creator: current_user,
           user_ids: valid_user_ids(params.dig(:assignee_ids, index.to_s))
         )
+        task.labels << meeting_label unless task.labels.exists?(meeting_label.id)
         created_count += 1 if task.persisted?
       end
+
+      @meeting.update!(tasks_created: true) if created_count.positive?
     end
 
     redirect_to action_plan_meeting_minute_path(@action_plan, @meeting),
@@ -63,6 +87,26 @@ class MeetingMinutesController < ApplicationController
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => e
     redirect_to action_plan_meeting_minute_path(@action_plan, @meeting),
       alert: "Não foi possível criar as tarefas: #{e.message}"
+  end
+
+  def update_participants
+    if @meeting.update(participants_params)
+      redirect_to action_plan_meeting_minute_path(@action_plan, @meeting),
+        notice: "Participantes atualizados com sucesso."
+    else
+      redirect_to action_plan_meeting_minute_path(@action_plan, @meeting),
+        alert: @meeting.errors.full_messages.to_sentence
+    end
+  end
+
+  def import_participants
+    imported_names = participant_source_names(params[:source], params[:sector])
+    @meeting.update!(participants: @meeting.participants + imported_names)
+
+    redirect_to action_plan_meeting_minute_path(@action_plan, @meeting),
+      notice: imported_names.any? ? "#{imported_names.size} participante(s) importado(s)." : "Nenhum participante encontrado."
+  rescue ArgumentError, ActiveRecord::RecordInvalid => e
+    redirect_to action_plan_meeting_minute_path(@action_plan, @meeting), alert: e.message
   end
 
   private
@@ -96,6 +140,30 @@ class MeetingMinutesController < ApplicationController
   end
 
   def meeting_params
-    params.require(:meeting_minute).permit(:title, :meeting_date, :audio)
+    params.require(:meeting_minute).permit(:title, :meeting_date, :audio, :participants)
+  end
+
+  def participants_params
+    params.require(:meeting_minute).permit(:participants)
+  end
+
+  def participant_source_names(source, sector)
+    case source
+    when "users_by_sector"
+      sector_value = User.sectors[sector.to_s]
+      raise ArgumentError, "Selecione um setor válido." if sector_value.nil?
+
+      User.active.where(sector: sector_value).where.not(name: [nil, ""]).order(:name).pluck(:name)
+    when "drivers"
+      Driver.active.where.not(nome: [nil, ""]).order(:nome).pluck(:nome)
+    when "operators"
+      Operator.active.where.not(nome: [nil, ""]).order(:nome).pluck(:nome)
+    when "ajudantes"
+      Ajudante.active.where.not(nome: [nil, ""]).order(:nome).pluck(:nome)
+    when "az_ajudantes"
+      AzAjudante.active.where.not(nome: [nil, ""]).order(:nome).pluck(:nome)
+    else
+      raise ArgumentError, "Selecione uma origem válida."
+    end
   end
 end

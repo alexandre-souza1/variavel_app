@@ -14,6 +14,11 @@ class MeetingMinute < ApplicationRecord
     failed: "failed"
   }
 
+  def participants=(value)
+    names = value.is_a?(String) ? value.split(/\r?\n/) : Array(value)
+    super(names.map { |name| name.to_s.strip }.reject(&:blank?).uniq)
+  end
+
   def self.max_audio_size_mb
     ENV.fetch("MEETING_AUDIO_MAX_MB", "100").to_i
   end

@@ -11,7 +11,7 @@
         <i class="bi bi-mic me-1"></i> Nova ata
       <% end %>
       <%= link_to action_plan_path(@action_plan), class: "btn-outline" do %>
-        <i class="bi bi-arrow-left me-1"></i> Action plan
+        <i class="bi bi-arrow-left me-1"></i> Plano de ação
       <% end %>
     </div>
   </div>
@@ -20,7 +20,7 @@
     <section class="meeting-minute-card meeting-minute-index-empty">
       <i class="bi bi-journal-x"></i>
       <strong>Nenhuma ata foi criada ainda.</strong>
-      <span>Grave a primeira reunião deste action plan para começar o histórico.</span>
+      <span>Grave a primeira reunião deste plano de ação para começar o histórico.</span>
     </section>
   <% else %>
     <section class="meeting-minute-card meeting-minute-index-list">
@@ -31,7 +31,7 @@
             <strong><%= meeting.title %></strong>
             <small><%= l(meeting.meeting_date, format: :long) %> · criada em <%= l(meeting.created_at.to_date) %></small>
           </span>
-          <span class="meeting-minute-status meeting-minute-status--<%= meeting.status %>">
+          <span class="<%= meeting_status_classes(meeting) %>">
             <i class="bi <%= meeting.completed? ? 'bi-check-circle' : meeting.failed? ? 'bi-exclamation-circle' : 'bi-hourglass-split' %>"></i>
             <%= status_labels.fetch(meeting.status, meeting.status.humanize) %>
           </span>

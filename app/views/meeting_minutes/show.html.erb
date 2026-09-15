@@ -5,9 +5,19 @@
       <h1><i class="bi bi-file-earmark-text me-2"></i><%= @meeting.title %></h1>
       <p><%= l(@meeting.meeting_date, format: :long) %> · <%= @action_plan.name %></p>
     </div>
-    <%= link_to action_plan_path(@action_plan), class: "btn-outline" do %>
-      <i class="bi bi-arrow-left me-1"></i> Action plan
-    <% end %>
+    <div class="d-flex flex-wrap gap-2">
+      <% if @meeting.completed? %>
+        <%= link_to action_plan_meeting_minute_path(@action_plan, @meeting, format: :pdf, download: true), class: "btn btn-primary", target: "_blank", rel: "noopener" do %>
+          <i class="bi bi-file-earmark-pdf me-1"></i> Gerar PDF
+        <% end %>
+      <% end %>
+      <%= link_to action_plan_meeting_minutes_path(@action_plan), class: "btn btn-primary" do %>
+        <i class="bi bi-list me-1"></i> Consulta de Atas
+      <% end %>
+      <%= link_to action_plan_path(@action_plan), class: "btn-outline" do %>
+        <i class="bi bi-arrow-left me-1"></i> Plano de ação
+      <% end %>
+    </div>
   </div>
 
   <% if @meeting.failed? %>
@@ -43,7 +53,12 @@
           </div>
         </div>
 
-        <% if @meeting.tasks_suggestions.empty? %>
+        <% if @meeting.tasks_created? %>
+          <div class="meeting-minute-empty">
+            <i class="bi bi-check-circle me-1"></i>
+            As tarefas sugeridas desta ata já foram criadas.
+          </div>
+        <% elsif @meeting.tasks_suggestions.empty? %>
           <div class="meeting-minute-empty">Nenhuma tarefa foi identificada nesta reunião.</div>
         <% else %>
           <%= form_with url: create_tasks_action_plan_meeting_minute_path(@action_plan, @meeting), method: :post, local: true do |form| %>
@@ -67,4 +82,54 @@
       </section>
     </div>
   <% end %>
+
+  <section class="meeting-minute-card mt-3" data-controller="participants">
+    <div class="meeting-minute-section-heading">
+      <div>
+        <h2><i class="bi bi-people"></i> Participantes e assinaturas</h2>
+        <p>Adicione, remova ou importe participantes depois que a ata for criada.</p>
+      </div>
+    </div>
+
+    <%= form_with url: update_participants_action_plan_meeting_minute_path(@action_plan, @meeting), method: :patch, local: true do |form| %>
+      <div class="meeting-minute-participants-list" data-participants-target="list">
+        <% (Array(@meeting.participants).presence || [""]).each do |participant| %>
+          <div class="meeting-minute-participant-row" data-participants-target="row">
+            <%= text_field_tag "meeting_minute[participants][]", participant, class: "form-control", placeholder: "Nome do participante", aria: { label: "Nome do participante" } %>
+            <button type="button" class="btn btn-outline-danger" data-action="participants#remove" aria-label="Remover participante">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        <% end %>
+      </div>
+      <div class="meeting-minute-participant-actions">
+        <button type="button" class="btn btn-outline-primary" data-action="participants#add">
+          <i class="bi bi-person-plus me-1"></i> Adicionar participante
+        </button>
+        <%= form.submit "Salvar participantes", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+
+    <hr>
+
+    <%= form_with url: import_participants_action_plan_meeting_minute_path(@action_plan, @meeting), method: :post, local: true, class: "meeting-minute-import-form" do %>
+      <div>
+        <%= label_tag :source, "Importar participantes de", class: "form-label" %>
+        <%= select_tag :source, options_for_select([
+          ["Usuários por setor", "users_by_sector"],
+          ["Drivers", "drivers"],
+          ["Operators", "operators"],
+          ["Ajudantes", "ajudantes"],
+          ["AZ Ajudantes", "az_ajudantes"]
+        ]), class: "form-select", data: { participants_target: "source", action: "change->participants#toggleSector" } %>
+      </div>
+      <div data-participants-target="sectorField" hidden>
+        <%= label_tag :sector, "Setor", class: "form-label" %>
+        <%= select_tag :sector, options_for_select(User::USER_SECTORS.map { |label, value| [label, value] }), class: "form-select", data: { participants_target: "sector" } %>
+      </div>
+      <div class="align-self-end">
+        <%= submit_tag "Importar", class: "btn btn-outline-secondary" %>
+      </div>
+    <% end %>
+  </section>
 </div>
