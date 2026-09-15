@@ -30,6 +30,16 @@ export default class extends Controller {
 
         draggable: ".sortable-item",
 
+        forceFallback: true,
+
+        fallbackOnBody: true,
+
+        fallbackTolerance: 3,
+
+        filter: "[data-observation-edit]",
+
+        preventOnFilter: false,
+
         ghostClass: "fleet-plate-item--ghost",
 
         chosenClass: "fleet-plate-item--chosen",
