@@ -46,6 +46,38 @@
     --app-dark-muted: #cbbcaf;
   }
 
+  &[data-color-theme="black_mint"] {
+    --app-primary: #2a835f;
+    --app-primary-rgb: 42, 131, 95;
+    --app-strong: #12544f;
+    --app-soft: #8bbb92;
+    --app-dark-page: #092328;
+    --app-dark-surface: #0f3032;
+    --app-dark-elevated: #123b3a;
+    --app-dark-border: #245b51;
+    --app-dark-input: #06191d;
+    --app-dark-hover: #164943;
+    --app-dark-deep: #061719;
+    --app-dark-text: #e4f2e6;
+    --app-dark-muted: #a5c9ae;
+  }
+
+  &[data-color-theme="white_tea_sage"] {
+    --app-primary: #8b9a6e;
+    --app-primary-rgb: 139, 154, 110;
+    --app-strong: #5d684a;
+    --app-soft: #eae2d6;
+    --app-dark-page: #292a25;
+    --app-dark-surface: #35362f;
+    --app-dark-elevated: #414238;
+    --app-dark-border: #62664f;
+    --app-dark-input: #1c1d1a;
+    --app-dark-hover: #4c4e40;
+    --app-dark-deep: #151613;
+    --app-dark-text: #f7f2eb;
+    --app-dark-muted: #d6d0c4;
+  }
+
   // Acentos compartilhados com o tema claro, adaptados para o contraste escuro.
   --bs-primary: var(--app-primary);
   --bs-primary-rgb: var(--app-primary-rgb);

@@ -2,7 +2,9 @@ class User < ApplicationRecord
   COLOR_THEMES = {
     "Blue-Teal" => "blue_teal",
     "Sage-Teal" => "sage_teal",
-    "Retro-orange" => "retro_orange"
+    "Retro-orange" => "retro_orange",
+    "BLACK-MINT" => "black_mint",
+    "WHITE-TEA&SAGE" => "white_tea_sage"
   }.freeze
 
   validates :color_theme, inclusion: { in: COLOR_THEMES.values }

@@ -38,7 +38,9 @@ export default class extends Controller {
     const palettes = {
       blue_teal: ["#3368A0", "#66A3BF", "#C8DFDB", "#F2EFE7"],
       sage_teal: ["#2D9596", "#9AD0C2", "#265073", "#ECF4D6"],
-      retro_orange: ["#527853", "#F7B787", "#EE7214", "#F9E8D9"]
+      retro_orange: ["#527853", "#F7B787", "#EE7214", "#F9E8D9"],
+      black_mint: ["#092328", "#12544F", "#2A835F", "#8BBB92"],
+      white_tea_sage: ["#8B9A6E", "#F7F2EB", "#EAE2D6", "#EEEEEE"]
     }
     const colors = palettes[colorTheme] || palettes.blue_teal
 
@@ -71,7 +73,9 @@ export default class extends Controller {
     const colors = {
       blue_teal: "#3368A0",
       sage_teal: "#265073",
-      retro_orange: "#527853"
+      retro_orange: "#527853",
+      black_mint: "#2A835F",
+      white_tea_sage: "#8B9A6E"
     }
     const colorTheme = document.documentElement.dataset.colorTheme || "blue_teal"
 

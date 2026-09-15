@@ -52,12 +52,16 @@
           <% theme_descriptions = {
             "blue_teal" => "Azul equilibrado com detalhes em azul-petróleo.",
             "sage_teal" => "Verde-azulado suave e corporativo.",
-            "retro_orange" => "Creme, verde e laranja com personalidade."
+            "retro_orange" => "Creme, verde e laranja com personalidade.",
+            "black_mint" => "Base escura com verdes menta marcantes.",
+            "white_tea_sage" => "Tons claros e naturais de chá branco e sálvia."
           } %>
           <% theme_swatches = {
             "blue_teal" => %w[#3368A0 #66A3BF #C8DFDB #F2EFE7],
             "sage_teal" => %w[#2D9596 #265073 #9AD0C2 #ECF4D6],
-            "retro_orange" => %w[#527853 #F9E8D9 #F7B787 #EE7214]
+            "retro_orange" => %w[#527853 #F9E8D9 #F7B787 #EE7214],
+            "black_mint" => %w[#092328 #12544F #2A835F #8BBB92],
+            "white_tea_sage" => %w[#8B9A6E #F7F2EB #EAE2D6 #EEEEEE]
           } %>
           <% User::COLOR_THEMES.each do |label, value| %>
             <%= f.radio_button :color_theme, value, class: "theme-picker__input", id: "user_color_theme_#{value}", data: { theme_target: "colorSelect", action: "change->theme#setColor" } %>

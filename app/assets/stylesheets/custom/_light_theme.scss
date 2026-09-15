@@ -39,6 +39,30 @@ html[data-bs-theme="light"] {
     --app-muted: #7b6b5e;
   }
 
+  &[data-color-theme="black_mint"] {
+    --app-primary: #2a835f;
+    --app-primary-rgb: 42, 131, 95;
+    --app-strong: #12544f;
+    --app-soft: #8bbb92;
+    --app-page-bg: #e8f2eb;
+    --app-surface: #f7fcf8;
+    --app-secondary-bg: #d2e7d7;
+    --app-tertiary-bg: #eff8f1;
+    --app-muted: #527568;
+  }
+
+  &[data-color-theme="white_tea_sage"] {
+    --app-primary: #8b9a6e;
+    --app-primary-rgb: 139, 154, 110;
+    --app-strong: #5d684a;
+    --app-soft: #eae2d6;
+    --app-page-bg: #f7f2eb;
+    --app-surface: #eeeeee;
+    --app-secondary-bg: #eae2d6;
+    --app-tertiary-bg: #f7f2eb;
+    --app-muted: #74786b;
+  }
+
   --bs-primary: var(--app-primary);
   --bs-primary-rgb: var(--app-primary-rgb);
   --bs-primary-text-emphasis: var(--app-strong);
