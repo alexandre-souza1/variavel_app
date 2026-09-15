@@ -11,33 +11,37 @@ export default class extends Controller {
     if (!this.hasListTarget) return
 
     const list = this.listTarget
+    const opening = list.classList.contains("d-none")
     const bucketId = this.element.dataset.bucketId
     const kanban = document.querySelector("[id^='kanban-']")
-    const actionPlanId = kanban.id.replace("kanban-", "")
+    if (!kanban) return
 
-    // Carrega só na primeira abertura
-    if (!this.loaded) {
-      this.load(bucketId, actionPlanId)
-      this.loaded = true
-    }
+    const actionPlanId = kanban.id.replace("kanban-", "")
 
     list.classList.toggle("d-none")
 
     if (this.hasIconTarget) {
       this.iconTarget.textContent = this.iconTarget.textContent === "▼" ? "▲" : "▼"
     }
+
+    if (opening && !this.loaded) {
+      this.load(bucketId, actionPlanId)
+    }
   }
 
-  load(bucketId, actionPlanId) {
+  async load(bucketId, actionPlanId) {
     const list = this.listTarget
-    list.innerHTML = "Carregando..."
+    list.innerHTML = '<div class="action-plan-kanban-done-loading">Carregando...</div>'
 
-    fetch(`/action_plans/${actionPlanId}/buckets/${bucketId}/done_tasks`)
-      .then(r => r.text())
-      .then(html => list.innerHTML = html)
-      .catch(error => {
-        console.error("Erro ao carregar tarefas concluídas:", error)
-        list.innerHTML = "Erro ao carregar tarefas"
-      })
+    try {
+      const response = await fetch(`/action_plans/${actionPlanId}/buckets/${bucketId}/done_tasks`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+      list.innerHTML = await response.text()
+      this.loaded = true
+    } catch (error) {
+      console.error("Erro ao carregar tarefas concluídas:", error)
+      list.innerHTML = '<div class="action-plan-kanban-done-loading">Erro ao carregar tarefas</div>'
+    }
   }
 }

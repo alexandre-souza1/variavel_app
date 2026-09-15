@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_15_110000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_15_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -201,6 +201,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_15_110000) do
     t.bigint "action_plan_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "inbox", default: false, null: false
     t.index ["action_plan_id"], name: "index_buckets_on_action_plan_id"
   end
 
@@ -854,6 +855,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_15_110000) do
     t.boolean "active", default: true, null: false
     t.date "retired_at"
     t.string "color_theme", default: "blue_teal", null: false
+    t.boolean "action_plan_inbox_collapsed", default: false, null: false
     t.index ["active"], name: "index_users_on_active"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true

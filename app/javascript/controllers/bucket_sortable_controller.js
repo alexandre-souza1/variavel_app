@@ -13,6 +13,16 @@ export default class extends Controller {
       animation: 150,
       draggable: ".kanban-column",
       handle: ".drag-handle",
+      forceFallback: true,
+      fallbackOnBody: true,
+      fallbackTolerance: 3,
+      fallbackClass: "action-plan-sortable-fallback",
+
+      onClone: ({ clone }) => {
+        clone.querySelectorAll('[data-controller~="tom-select-users"]').forEach((element) => {
+          element.removeAttribute("data-controller")
+        })
+      },
 
       onStart: () => console.log("START"),
       onEnd: () => {

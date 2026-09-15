@@ -1,0 +1,88 @@
+<div class="action-plan-inbox-page">
+  <section class="action-plan-inbox-intro">
+    <div>
+      <span class="action-plan-inbox-eyebrow"><i class="bi bi-inbox me-1"></i> Entrada</span>
+      <h2>Capture agora, organize depois</h2>
+    </div>
+    <span class="action-plan-inbox-count"><%= inbox_tasks.size %> <%= inbox_tasks.size == 1 ? "tarefa" : "tarefas" %></span>
+  </section>
+
+  <% unless current_user.mechanical? %>
+    <section class="action-plan-inbox-capture" data-controller="new-task">
+      <button class="action-plan-kanban-add-task"
+              data-action="click->new-task#toggle"
+              data-new-task-target="button">
+        <i class="bi bi-plus-lg"></i>
+        Adicionar tarefa
+      </button>
+
+      <div class="collapse mt-2" data-new-task-target="wrapper">
+        <div class="action-plan-kanban-new-task">
+          <%= form_with model: [action_plan, inbox_bucket, Task.new],
+              data: {
+                action: "turbo:submit-end->new-task#afterSubmit",
+                new_task_target: "form"
+              } do |form| %>
+            <%= hidden_field_tag :view, local_assigns.fetch(:view, "inbox") %>
+            <%= form.text_field :title,
+                placeholder: "Nome da tarefa...",
+                class: "form-control mb-2",
+                data: { new_task_target: "title" },
+                required: true %>
+
+            <div data-controller="toggle-field" class="mb-2">
+              <button type="button"
+                      class="btn btn-light text-dark btn-sm w-100 align-items-start d-flex gap-1 action-plan-kanban-form-toggle"
+                      data-toggle-field-target="button"
+                      data-action="click->toggle-field#toggle">
+                📅 Definir data
+              </button>
+              <div class="mt-2 d-none" data-toggle-field-target="field">
+                <%= form.date_field :due_at, class: "form-control", data: { action: "change->toggle-field#updateDate" } %>
+              </div>
+            </div>
+
+            <div data-controller="toggle-field" class="mb-2">
+              <button type="button"
+                      class="btn btn-light text-dark btn-sm w-100 align-items-start d-flex gap-1 action-plan-kanban-form-toggle"
+                      data-toggle-field-target="button"
+                      data-action="click->toggle-field#toggle">
+                👤 Atribuir responsável
+              </button>
+              <div class="mt-2 d-none" data-toggle-field-target="field">
+                <%= form.collection_select :user_ids, User.all, :id, :name, {}, { class: "form-select", multiple: true, data: { controller: "tom-select-users", action: "change->toggle-field#updateUsers" } } %>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between gap-1">
+              <button class="btn btn-primary col-10">Salvar</button>
+              <button type="button"
+                      class="btn btn-outline-secondary col-1 align-items-center d-flex justify-content-center"
+                      data-action="click->new-task#cancel">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </section>
+  <% end %>
+
+  <section id="open-tasks-<%= inbox_bucket.id %>"
+           class="action-plan-inbox-list <%= 'action-plan-inbox-list--empty' if inbox_tasks.empty? %>"
+           data-bucket-id="<%= inbox_bucket.id %>"
+           data-controller="sortable"
+           data-sortable-source="inbox">
+    <% if inbox_tasks.empty? %>
+      <div class="action-plan-inbox-empty">
+        <i class="bi bi-inbox"></i>
+        <strong>Nada na Entrada</strong>
+        <span>Capture uma tarefa acima e organize-a quando estiver pronto.</span>
+      </div>
+    <% else %>
+      <% inbox_tasks.each do |task| %>
+        <%= render "tasks/task", task: task %>
+      <% end %>
+    <% end %>
+  </section>
+</div>

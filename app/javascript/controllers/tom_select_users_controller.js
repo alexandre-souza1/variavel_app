@@ -2,6 +2,11 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   connect() {
+    if (this.element.tomselect) {
+      this.select = this.element.tomselect
+      return
+    }
+
     this.select = new TomSelect(this.element, {
       plugins: ['remove_button'],
       maxItems: null,

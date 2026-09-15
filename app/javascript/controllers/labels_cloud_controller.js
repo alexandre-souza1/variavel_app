@@ -17,7 +17,7 @@ export default class extends Controller {
 
     this.items.forEach((item, index) => {
       const count = Number(item.dataset.usageCount) || 0
-      const scale = 0.92 + (Math.sqrt(count) / Math.sqrt(maxCount)) * 0.42
+      const scale = 0.9 + (Math.sqrt(count) / Math.sqrt(maxCount)) * 0.58
       const badge = item.querySelector(".action-plan-label-cloud__badge")
 
       item.style.setProperty("--label-scale", scale.toFixed(2))

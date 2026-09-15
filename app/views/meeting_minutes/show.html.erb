@@ -71,8 +71,8 @@
                     <p><%= suggestion["description"] %></p>
                     <small><%= suggestion["due_date"].presence || "Sem prazo definido" %></small>
                   </div>
-                  <%= select_tag "bucket_ids[#{index}]", options_from_collection_for_select(@buckets, :id, :name, @buckets.first&.id), class: "form-select form-select-sm", aria: { label: "Bucket da tarefa" } %>
-                  <%= select_tag "assignee_ids[#{index}]", options_from_collection_for_select(@users, :id, :name), include_blank: "Sem responsável", class: "form-select form-select-sm", aria: { label: "Responsável da tarefa" } %>
+                  <%= select_tag "bucket_ids[#{index}]", options_from_collection_for_select(@buckets, :id, :name, @action_plan.inbox_bucket&.id || @buckets.first&.id), class: "form-select form-select-sm", aria: { label: "Bucket da tarefa" } %>
+                  <%= select_tag "assignee_ids[#{index}][]", options_from_collection_for_select(@users, :id, :name), { include_blank: "Sem responsável", multiple: true, class: "form-select form-select-sm", data: { controller: "tom-select-users" }, aria: { label: "Responsáveis da tarefa" } } %>
                 </div>
               <% end %>
             </div>

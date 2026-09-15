@@ -24,7 +24,7 @@
   </div>
 
   <div id="kanban-<%= action_plan.id %>"
-       class="row flex-nowrap overflow-auto action-plan-kanban-board"
+       class="row flex-nowrap action-plan-kanban-board"
        data-controller="drag-scroll bucket-sortable"
        data-bucket-sortable-action-plan-id-value="<%= action_plan.id %>">
 
@@ -51,37 +51,33 @@
             <i class="bi bi-grip-vertical drag-handle"></i>
             <div class="action-plan-kanban-card__title-group">
               <span data-bucket-edit-target="title"
-                    data-action="click->bucket-edit#edit"
+                    data-action="click->bucket-edit#edit blur->bucket-edit#save keydown->bucket-edit#enter"
+                    contenteditable="false"
                     class="action-plan-kanban-card__title">
                 <%= bucket.name %>
               </span>
-
-              <span class="action-plan-kanban-card__count">
-                <%= open_tasks.size %> abertas
-              </span>
             </div>
-
-            <input type="text"
-                   value="<%= bucket.name %>"
-                   data-bucket-edit-target="input"
-                   data-action="blur->bucket-edit#save keydown->bucket-edit#enter"
-                   class="form-control form-control-sm d-none"
-                   autocomplete="off">
 
           </div>
 
-          <% if current_user.admin? or action_plan.user == current_user %>
-            <%= link_to action_plan_bucket_path(action_plan, bucket),
-                data: {
-                  turbo_method: :delete,
-                  turbo_confirm: "Tem certeza?"
-                },
-                class: "btn btn-sm action-plan-kanban-card__remove" do %>
+          <div class="action-plan-kanban-card__actions">
+            <span class="action-plan-kanban-card__count" aria-label="Tarefas abertas">
+              <%= open_tasks.size %>
+            </span>
 
-              <i class="bi bi-x-lg text-danger"></i>
+            <% if current_user.admin? or action_plan.user == current_user %>
+              <%= link_to action_plan_bucket_path(action_plan, bucket),
+                  data: {
+                    turbo_method: :delete,
+                    turbo_confirm: "Tem certeza?"
+                  },
+                  class: "btn btn-sm action-plan-kanban-card__remove" do %>
 
+                <i class="bi bi-x-lg text-danger"></i>
+
+              <% end %>
             <% end %>
-          <% end %>
+          </div>
         </div>
 
         <% unless current_user.mechanical? %>
@@ -201,8 +197,7 @@
 
         <div class="card-body action-plan-kanban-card__body"
              data-sortable-bucket-id-value="<%= bucket.id %>"
-             data-bucket-id="<%= bucket.id %>"
-             style="min-height:300px;">
+             data-bucket-id="<%= bucket.id %>">
 
 
           <div id="open-tasks-<%= bucket.id %>"

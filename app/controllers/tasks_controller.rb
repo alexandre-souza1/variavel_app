@@ -23,13 +23,13 @@ class TasksController < ApplicationController
       )
       respond_to do |format|
         format.turbo_stream
-        format.html { redirect_to action_plan_path(@bucket.action_plan) }
+        format.html { redirect_to action_plan_path(@bucket.action_plan, view: params[:view].presence) }
       end
     else
       respond_to do |format|
         format.turbo_stream
         format.html do
-          redirect_to action_plan_path(@bucket.action_plan),
+          redirect_to action_plan_path(@bucket.action_plan, view: params[:view].presence),
                       alert: @task.errors.full_messages.to_sentence
         end
       end

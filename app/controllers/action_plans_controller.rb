@@ -19,6 +19,12 @@ class ActionPlansController < ApplicationController
     redirect_back fallback_location: action_plans_path, notice: notice
   end
 
+  def inbox_preference
+    collapsed = ActiveModel::Type::Boolean.new.cast(params[:collapsed])
+    current_user.update!(action_plan_inbox_collapsed: collapsed)
+    head :no_content
+  end
+
   def index
     # Planos que o usuário pode acessar
     @action_plans = accessible_action_plans
@@ -78,6 +84,25 @@ class ActionPlansController < ApplicationController
       .buckets
       .includes(tasks: :users)
       .order(:position)
+
+    @inbox_bucket = @buckets.find(&:inbox?)
+    unless @inbox_bucket
+      @inbox_bucket = @action_plan.buckets.create!(
+        name: "Entrada",
+        position: -1,
+        inbox: true
+      )
+      @buckets = @action_plan
+        .buckets
+        .includes(tasks: :users)
+        .order(:position)
+    end
+
+    @work_buckets = @buckets.reject(&:inbox?)
+    @inbox_tasks = @inbox_bucket&.tasks
+      &.visible_for(current_user)
+      &.includes(:users, :labels)
+      &.order(created_at: :desc) || Task.none
 
     visible_tasks = Task
       .joins(:bucket)

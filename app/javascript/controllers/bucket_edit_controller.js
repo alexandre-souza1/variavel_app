@@ -1,20 +1,39 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["title", "input"]
+  static targets = ["title"]
 
-  edit() {
-    this.titleTarget.classList.add("d-none")
-    this.inputTarget.classList.remove("d-none")
-    this.inputTarget.focus()
+  edit(event) {
+    event.stopPropagation()
+    if (this.editing) return
+
+    this.editing = true
+    this.originalValue = this.titleTarget.textContent.trim()
+    this.titleTarget.contentEditable = "true"
+    this.titleTarget.classList.add("is-editing")
+    this.titleTarget.focus()
+
+    const selection = window.getSelection()
+    const range = document.createRange()
+    range.selectNodeContents(this.titleTarget)
+    selection.removeAllRanges()
+    selection.addRange(range)
   }
 
   async save() {
-    const value = this.inputTarget.value
+    if (!this.editing) return
+
+    const value = this.titleTarget.textContent.trim()
+    if (!value) {
+      this.titleTarget.textContent = this.originalValue
+      this.finish()
+      return
+    }
+
     const bucketId = this.element.dataset.bucketId
     const actionPlanId = this.element.dataset.actionPlanId
 
-    await fetch(`/action_plans/${actionPlanId}/buckets/${bucketId}`, {
+    const response = await fetch(`/action_plans/${actionPlanId}/buckets/${bucketId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -25,15 +44,24 @@ export default class extends Controller {
       })
     })
 
-    this.titleTarget.innerText = value
-
-    this.inputTarget.classList.add("d-none")
-    this.titleTarget.classList.remove("d-none")
+    if (!response.ok) this.titleTarget.textContent = this.originalValue
+    this.finish()
   }
 
   enter(event) {
     if (event.key === "Enter") {
-      this.save()
+      event.preventDefault()
+      this.titleTarget.blur()
+    } else if (event.key === "Escape") {
+      event.preventDefault()
+      this.titleTarget.textContent = this.originalValue
+      this.finish()
     }
+  }
+
+  finish() {
+    this.editing = false
+    this.titleTarget.contentEditable = "false"
+    this.titleTarget.classList.remove("is-editing")
   }
 }

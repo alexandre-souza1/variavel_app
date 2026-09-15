@@ -168,6 +168,7 @@ Rails.application.routes.draw do
 
   resources :action_plans do
     post :toggle_hidden, on: :member
+    patch :inbox_preference, on: :member
     patch :sort_buckets, on: :member
     patch :assign_open_tasks, on: :member
     resources :labels, only: :destroy

@@ -20,20 +20,6 @@
       </div>
 
       <div class="action-plan-header__tools">
-        <div class="action-plan-view-switch" role="group" aria-label="Visualização das tarefas">
-          <%= link_to action_plan_path(@action_plan, view: "kanban"),
-              class: "action-plan-view-switch__link action-plan-view-switch__link--kanban #{params[:view] != 'list' && params[:view] != 'labels' ? 'active' : ''}" do %>
-            <i class="bi bi-kanban"></i>
-            <span>Kanban</span>
-          <% end %>
-
-          <%= link_to action_plan_path(@action_plan, view: "list"),
-              class: "action-plan-view-switch__link action-plan-view-switch__link--list #{params[:view] == 'list' ? 'active' : ''}" do %>
-            <i class="bi bi-list-check"></i>
-            <span>Lista</span>
-          <% end %>
-        </div>
-
         <div class="header-actions">
 
         <!-- DEFINIR RESPONSÁVEIS -->
@@ -51,19 +37,19 @@
 
         <%= link_to new_action_plan_meeting_minute_path(@action_plan), class: "btn-outline action-plan-view-link" do %>
           <i class="bi bi-mic"></i>
-          <span>Nova ata</span>
+          <span>Nova Reunião</span>
         <% end %>
 
         <%= link_to action_plan_meeting_minutes_path(@action_plan), class: "btn-outline action-plan-view-link" do %>
           <i class="bi bi-file-earmark-text"></i>
-          <span>Atas</span>
+          <span>Atas de Reuniões</span>
         <% end %>
 
         <!-- LABELS -->
         <%= link_to action_plan_path(@action_plan, view: "labels"),
             class: "btn-outline action-plan-view-link #{params[:view] == 'labels' ? 'active' : ''}" do %>
           <i class="bi bi-tags"></i>
-          <span>Labels</span>
+          <span>Etiquetas</span>
         <% end %>
 
         <!-- VOLTAR -->
@@ -73,6 +59,22 @@
           <i class="fas fa-arrow-left me-1"></i>
           Voltar
         <% end %>
+
+        <div class="action-plan-view-tools">
+          <div class="action-plan-view-switch" role="group" aria-label="Visualização das tarefas">
+            <%= link_to action_plan_path(@action_plan, view: "kanban"),
+                class: "action-plan-view-switch__link action-plan-view-switch__link--kanban #{params[:view] != 'list' && params[:view] != 'labels' ? 'active' : ''}" do %>
+              <i class="bi bi-kanban"></i>
+              <span>Kanban</span>
+            <% end %>
+
+            <%= link_to action_plan_path(@action_plan, view: "list"),
+                class: "action-plan-view-switch__link action-plan-view-switch__link--list #{params[:view] == 'list' ? 'active' : ''}" do %>
+              <i class="bi bi-list-check"></i>
+              <span>Lista</span>
+            <% end %>
+          </div>
+        </div>
 
         </div>
       </div>
@@ -117,27 +119,48 @@
 
 
   <!-- CONTEÚDO DO PLANO -->
-  <% if params[:view] == "labels" %>
+  <% if params[:view] == "inbox" %>
+
+    <%= render "inbox_view", action_plan: @action_plan, inbox_bucket: @inbox_bucket, inbox_tasks: @inbox_tasks %>
+
+  <% elsif params[:view] == "labels" %>
 
     <%= render "labels_view", labels: @labels, action_plan: @action_plan, can_manage_labels: @can_manage_labels %>
 
   <% elsif params[:view] == "list" %>
 
-    <%= render "list_view",
-        buckets: @buckets,
-        action_plan: @action_plan %>
+    <div class="action-plan-with-inbox <%= 'is-inbox-collapsed' if current_user.action_plan_inbox_collapsed %>">
+      <div class="action-plan-inbox-panel <%= 'is-inbox-collapsed' if current_user.action_plan_inbox_collapsed %>" data-controller="inbox-panel" data-inbox-panel-collapsed-value="<%= current_user.action_plan_inbox_collapsed %>" data-inbox-panel-preference-url="<%= inbox_preference_action_plan_path(@action_plan) %>">
+        <div class="action-plan-inbox-collapsed-icon" aria-hidden="true">
+          <i class="bi bi-inbox"></i>
+        </div>
+        <button type="button" class="action-plan-inbox-toggle" data-inbox-panel-toggle aria-expanded="<%= !current_user.action_plan_inbox_collapsed %>" aria-label="Minimizar Entrada" data-action="click->inbox-panel#toggle">
+          <i class="bi bi-chevron-double-left"></i>
+        </button>
+        <div data-inbox-panel-target="content">
+          <%= render "inbox_view", action_plan: @action_plan, inbox_bucket: @inbox_bucket, inbox_tasks: @inbox_tasks, sortable: false, view: "list" %>
+        </div>
+      </div>
+      <div class="action-plan-tasks-panel action-plan-list-workspace">
+        <%= render "list_view", buckets: @work_buckets, action_plan: @action_plan %>
+      </div>
+    </div>
 
   <% elsif params[:view] == "kanban" %>
 
-    <div data-controller="kanban-scroll">
-
-      <!-- SCROLL TOP -->
-      <div
-        data-kanban-scroll-target="top"
-        class="kanban-scroll-top"
-      >
-        <div data-kanban-scroll-target="spacer"></div>
+    <div class="action-plan-with-inbox <%= 'is-inbox-collapsed' if current_user.action_plan_inbox_collapsed %>">
+      <div class="action-plan-inbox-panel <%= 'is-inbox-collapsed' if current_user.action_plan_inbox_collapsed %>" data-controller="inbox-panel" data-inbox-panel-collapsed-value="<%= current_user.action_plan_inbox_collapsed %>" data-inbox-panel-preference-url="<%= inbox_preference_action_plan_path(@action_plan) %>">
+        <div class="action-plan-inbox-collapsed-icon" aria-hidden="true">
+          <i class="bi bi-inbox"></i>
+        </div>
+        <button type="button" class="action-plan-inbox-toggle" data-inbox-panel-toggle aria-expanded="<%= !current_user.action_plan_inbox_collapsed %>" aria-label="Minimizar Entrada" data-action="click->inbox-panel#toggle">
+          <i class="bi bi-chevron-double-left"></i>
+        </button>
+        <div data-inbox-panel-target="content">
+          <%= render "inbox_view", action_plan: @action_plan, inbox_bucket: @inbox_bucket, inbox_tasks: @inbox_tasks, sortable: true, view: "kanban" %>
+        </div>
       </div>
+      <div class="action-plan-tasks-panel action-plan-kanban-workspace">
 
       <!-- KANBAN -->
       <div
@@ -147,52 +170,56 @@
         <div class="action-plan-kanban-panel">
 
           <%= render "kanban_view",
-              buckets: @buckets,
+              buckets: @work_buckets,
               action_plan: @action_plan %>
 
         </div>
       </div>
 
+      </div>
     </div>
 
   <% else %>
 
     <!-- VISÃO AUTOMÁTICA -->
-    <div class="action-plan-auto-list">
-
-      <%= render "list_view",
-          buckets: @buckets,
-          action_plan: @action_plan %>
-
-    </div>
-
-    <div
-      class="action-plan-auto-kanban"
-      data-controller="kanban-scroll"
-    >
-
-      <!-- SCROLL TOP -->
-      <div
-        data-kanban-scroll-target="top"
-        class="kanban-scroll-top"
-      >
-        <div data-kanban-scroll-target="spacer"></div>
+    <div class="action-plan-with-inbox <%= 'is-inbox-collapsed' if current_user.action_plan_inbox_collapsed %>">
+      <div class="action-plan-inbox-panel <%= 'is-inbox-collapsed' if current_user.action_plan_inbox_collapsed %>" data-controller="inbox-panel" data-inbox-panel-collapsed-value="<%= current_user.action_plan_inbox_collapsed %>" data-inbox-panel-preference-url="<%= inbox_preference_action_plan_path(@action_plan) %>">
+        <div class="action-plan-inbox-collapsed-icon" aria-hidden="true">
+          <i class="bi bi-inbox"></i>
+        </div>
+        <button type="button" class="action-plan-inbox-toggle" data-inbox-panel-toggle aria-expanded="<%= !current_user.action_plan_inbox_collapsed %>" aria-label="Minimizar Entrada" data-action="click->inbox-panel#toggle">
+          <i class="bi bi-chevron-double-left"></i>
+        </button>
+        <div data-inbox-panel-target="content">
+          <%= render "inbox_view", action_plan: @action_plan, inbox_bucket: @inbox_bucket, inbox_tasks: @inbox_tasks, sortable: true, view: "kanban" %>
+        </div>
       </div>
+      <div class="action-plan-tasks-panel action-plan-kanban-workspace">
+        <div class="action-plan-auto-list">
 
-      <!-- KANBAN -->
-      <div
-        data-kanban-scroll-target="bottom"
-        class="kanban-scroll-bottom"
-      >
-        <div class="action-plan-kanban-panel">
-
-          <%= render "kanban_view",
-              buckets: @buckets,
+          <%= render "list_view",
+              buckets: @work_buckets,
               action_plan: @action_plan %>
 
         </div>
-      </div>
 
+        <div class="action-plan-auto-kanban">
+
+          <!-- KANBAN -->
+          <div
+            data-kanban-scroll-target="bottom"
+            class="kanban-scroll-bottom"
+          >
+            <div class="action-plan-kanban-panel">
+
+              <%= render "kanban_view",
+                  buckets: @work_buckets,
+                  action_plan: @action_plan %>
+
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
   <% end %>
