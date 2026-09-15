@@ -18,7 +18,8 @@ class FleetDimensioningStandardPlate < ApplicationRecord
             allow_blank: true
   validates :plate_id,
             uniqueness: {
-              scope: :fleet_dimensioning_id
+              scope: :fleet_dimensioning_id,
+              message: "já está atribuída a outra posição ou rota especial"
             }
 
   validate :position_or_special_route

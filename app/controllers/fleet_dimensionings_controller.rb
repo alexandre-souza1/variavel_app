@@ -52,8 +52,7 @@ class FleetDimensioningsController < ApplicationController
   def update
     permitted_params = fleet_dimensioning_params
 
-    if @fleet_dimensioning.update(permitted_params)
-      persist_special_route_standard_plates!(permitted_params)
+    if @fleet_dimensioning.update_configuration(permitted_params)
       redirect_to fleet_dimensionings_path,
                   notice: "Dimensionamento atualizado com sucesso."
     else

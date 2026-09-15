@@ -27,6 +27,38 @@ class FleetDimensioning < ApplicationRecord
             }
   validate :start_before_end
   validate :period_does_not_overlap
+  validate :standard_plates_are_unique
+
+  # Nested rows represent slots, so moving a plate changes two rows. Release
+  # changed assignments first, inside the same transaction as the final save.
+  def update_configuration(attributes)
+    attributes = attributes.deep_dup.with_indifferent_access
+    saved = false
+
+    with_lock do
+      nested = attributes[:fleet_dimensioning_standard_plates_attributes] || {}
+      nested.each_value do |row|
+        next if row[:id].blank?
+
+        existing = fleet_dimensioning_standard_plates.find(row[:id])
+        removing = ActiveModel::Type::Boolean.new.cast(row[:_destroy])
+        changing = row.key?(:plate_id) && existing.plate_id.to_s != row[:plate_id].to_s
+        next unless removing || changing
+
+        existing.destroy!
+        row.delete(:id)
+      end
+
+      fleet_dimensioning_standard_plates.reset
+      saved = update(attributes)
+      raise ActiveRecord::Rollback unless saved
+    end
+
+    # On failure render the saved layout, including its original nested IDs.
+    fleet_dimensioning_standard_plates.reset unless saved
+
+    saved
+  end
 
   scope :recent, -> { order(start_date: :desc) }
 
@@ -80,6 +112,14 @@ class FleetDimensioning < ApplicationRecord
   end
 
   private
+
+  def standard_plates_are_unique
+    plate_ids = fleet_dimensioning_standard_plates.reject(&:marked_for_destruction?)
+      .map(&:plate_id).compact
+    return if plate_ids.uniq.length == plate_ids.length
+
+    errors.add(:base, "Uma placa não pode ocupar mais de uma posição ou rota especial.")
+  end
 
   def new_standard_plate_blank?(attributes)
     attributes["id"].blank? && attributes["plate_id"].blank?
