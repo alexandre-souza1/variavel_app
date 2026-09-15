@@ -1278,6 +1278,13 @@
   opacity: 0.55;
 }
 
+.fleet-dimensioning-plate--fallback {
+  pointer-events: none !important;
+  transition: none !important;
+  opacity: .9 !important;
+  z-index: 1060 !important;
+}
+
 .fleet-dimensioning-placeholder {
   color: var(--bs-secondary-color);
   font-size: 0.78rem;
