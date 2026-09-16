@@ -1,4 +1,4 @@
-<div class="app-page">
+<div class="app-page fleet-dimensionings-index">
   <div class="app-page-header">
     <div>
       <p class="app-page-eyebrow"><i class="bi bi-truck me-1"></i>Configurações · Frota</p>
@@ -15,7 +15,7 @@
     <div class="app-table-section__body">
       <% if @fleet_dimensionings.any? %>
         <div class="table-responsive">
-          <div class="app-table-shell"><table class="table app-table app-table--data mb-0">
+          <div class="app-table-shell"><table class="table app-table app-table--data fleet-dimensioning-table mb-0">
             <thead class="table-light">
               <tr>
                 <th>Nome</th>
@@ -31,19 +31,20 @@
             <tbody>
               <% @fleet_dimensionings.each do |dimensioning| %>
                 <tr>
-                  <td><%= dimensioning.label %></td>
-                  <td>
+                  <td data-label="Nome" class="fleet-dimensioning-table__name"><%= dimensioning.label %></td>
+                  <td data-label="Período" class="fleet-dimensioning-table__period">
                     <%= l(dimensioning.start_date) %> a
                     <%= l(dimensioning.end_date) %>
                   </td>
-                  <td class="text-center"><%= dimensioning.route_quantity %></td>
-                  <td class="text-center"><%= dimensioning.van_quantity %></td>
-                  <td class="text-center"><%= dimensioning.vespertina_quantity %></td>
-                  <td class="text-center"><%= dimensioning.as_quantity %></td>
-                  <td class="text-end">
+                  <td data-label="Carros" class="text-center fleet-dimensioning-table__metric"><%= dimensioning.route_quantity %></td>
+                  <td data-label="Vans" class="text-center fleet-dimensioning-table__metric"><%= dimensioning.van_quantity %></td>
+                  <td data-label="Vespertinas" class="text-center fleet-dimensioning-table__metric"><%= dimensioning.vespertina_quantity %></td>
+                  <td data-label="AS" class="text-center fleet-dimensioning-table__metric"><%= dimensioning.as_quantity %></td>
+                  <td data-label="Ações" class="text-end fleet-dimensioning-table__actions">
                     <%= link_to edit_fleet_dimensioning_path(dimensioning),
                                 class: "icon-btn", title: "Editar dimensionamento", aria: { label: "Editar dimensionamento" } do %>
                       <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                      <span>Editar</span>
                     <% end %>
                   </td>
                 </tr>
