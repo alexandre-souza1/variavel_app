@@ -172,6 +172,7 @@ Rails.application.routes.draw do
   resources :fleet_dimensionings, except: :show
 
   resources :action_plans do
+    get :export_excel, on: :member
     post :toggle_hidden, on: :member
     patch :inbox_preference, on: :member
     patch :sort_buckets, on: :member

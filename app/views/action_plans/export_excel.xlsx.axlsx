@@ -1,0 +1,75 @@
+wb = xlsx_package.workbook
+styles = wb.styles
+
+title = styles.add_style(b: true, sz: 18, fg_color: "FFFFFF", bg_color: "1F4E78",
+                         alignment: { horizontal: :left, vertical: :center })
+section = styles.add_style(b: true, fg_color: "FFFFFF", bg_color: "2E75B6")
+header = styles.add_style(b: true, fg_color: "FFFFFF", bg_color: "5B9BD5",
+                          alignment: { horizontal: :center, vertical: :center, wrap_text: true },
+                          border: { style: :thin, color: "D9E2F3" })
+cell = styles.add_style(alignment: { vertical: :top, wrap_text: true },
+                        border: { style: :thin, color: "D9E2F3" })
+completed = styles.add_style(bg_color: "E2F0D9", alignment: { vertical: :top, wrap_text: true },
+                             border: { style: :thin, color: "D9E2F3" })
+
+buckets = @action_plan.buckets.includes(tasks: %i[users labels tasklist]).order(:position)
+tasks = buckets.flat_map { |bucket| bucket.tasks.includes(:creator, :users, :labels, tasklist: :tasklist_items) }
+
+wb.add_worksheet(name: "Resumo") do |sheet|
+  sheet.column_widths 26, 55
+  sheet.add_row ["PLANO DE AÇÃO", nil], style: [title, title]
+  sheet.merge_cells("A1:B1")
+  sheet.rows.last.height = 30
+  sheet.add_row ["Nome", @action_plan.name], style: [header, cell]
+  sheet.add_row ["Descrição", @action_plan.description.presence || "-"], style: [header, cell]
+  sheet.add_row ["Responsável pelo plano", @action_plan.user&.name.presence || @action_plan.user&.email || "-"], style: [header, cell]
+  sheet.add_row ["Setor", @action_plan.sector.present? ? @action_plan.sector.humanize : "-"], style: [header, cell]
+  sheet.add_row ["Exportado em", I18n.l(Time.current, format: :long)], style: [header, cell]
+  sheet.add_row []
+  sheet.add_row ["Indicador", "Valor"], style: [section, section]
+  sheet.add_row ["Total de tarefas", tasks.size], style: [header, cell]
+  sheet.add_row ["Tarefas abertas", tasks.count { |task| !task.completed? }], style: [header, cell]
+  sheet.add_row ["Tarefas concluídas", tasks.count(&:completed?)], style: [header, cell]
+  sheet.add_row ["Colunas", buckets.reject(&:inbox?).size], style: [header, cell]
+end
+
+wb.add_worksheet(name: "Tarefas") do |sheet|
+  recurrence_labels = {
+    "daily" => "Diária",
+    "weekly" => "Semanal",
+    "monthly" => "Mensal"
+  }
+  headers = ["ID", "Coluna", "Status", "Tarefa", "Descrição", "Responsáveis", "Etiquetas", "Criada por", "Criada em", "Início", "Prazo", "Recorrência", "Checklist"]
+  sheet.add_row headers, style: headers.map { header }
+  sheet.sheet_view.pane do |pane|
+    pane.state = :frozen
+    pane.y_split = 1
+    pane.top_left_cell = "A2"
+  end
+  sheet.auto_filter.range = "A1:M1"
+  sheet.column_widths 10, 20, 14, 38, 58, 30, 25, 25, 20, 14, 14, 14, 45
+
+  buckets.each do |bucket|
+    bucket.tasks.each do |task|
+      checklist = task.tasklist&.tasklist_items&.map do |item|
+        item.content
+      end&.join("; ").presence || "-"
+      row_style = task.completed? ? completed : cell
+      sheet.add_row [
+        task.id,
+        bucket.name,
+        task.completed? ? "Concluída" : "Aberta",
+        task.title,
+        task.description.presence || "-",
+        task.users.map { |user| user.name.presence || user.email }.join(", ").presence || "-",
+        task.labels.map(&:name).join(", ").presence || "-",
+        task.creator&.name.presence || task.creator&.email || "-",
+        task.created_at&.strftime("%d/%m/%Y %H:%M:%S") || "-",
+        task.start_at&.strftime("%d/%m/%Y") || "-",
+        task.due_at&.strftime("%d/%m/%Y") || "-",
+        recurrence_labels.fetch(task.recurrence.to_s, task.recurrence.to_s.humanize).presence || "-",
+        checklist
+      ], style: Array.new(headers.length, row_style)
+    end
+  end
+end
