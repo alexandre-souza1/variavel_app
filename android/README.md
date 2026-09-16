@@ -1,8 +1,10 @@
 # Workstation para Android
 
-Aplicativo Kotlin/Hotwire Native 1.3.1 para Android 9 (API 28) ou superior. Usa o Rails em `https://workstation-app-foz-f23ff3447c33.herokuapp.com/` e precisa de internet. Não implementa operação offline nem notificações push.
+Aplicativo Kotlin/Hotwire Native 1.3.1 para Android 9 (API 28) ou superior. Usa o Rails em `https://workstation-app-foz-f23ff3447c33.herokuapp.com/` e precisa de internet. Inclui notificações push com Firebase Cloud Messaging; não implementa operação offline.
 
 O nome exibido é **Workstation**. O ícone utiliza `app/assets/images/icon-512x512.png`, autorizado como alternativa ao `public/favicon.ico` vazio, e tem versão adaptativa para o launcher. O identificador `br.com.log20.variavel` foi mantido para preservar a identidade de instalação nas atualizações.
+
+As telas web usam apenas a navbar do Rails: a barra de título adicional do Hotwire foi removida. O botão Voltar do Android continua disponível. O contêiner respeita barra de status, recortes de tela, navegação do sistema e teclado. Não há barra inferior de atalhos nesta versão; os menus existentes continuam seguindo as permissões do usuário.
 
 ## Compilar no WSL
 
@@ -29,6 +31,20 @@ Para atualizar o teste instalado, use um APK assinado com a mesma chave de debug
 - O limite é de 50 MB por arquivo. Downloads `blob:`/`data:` gerados apenas por JavaScript não são suportados; os relatórios do projeto usam endpoints HTTP.
 - Arquivos de download e cópias compartilhadas ficam no cache privado. Cópias com mais de 24 horas são removidas na próxima inicialização do processo. PDFs de leitura e impressão são removidos ao encerrar seu fluxo normalmente. O Android também pode limpar o cache.
 - Uma falha de carregamento de página oferece Tentar novamente; a conexão deve ser restabelecida antes. As telas de download e PDF também permitem repetir a tentativa.
+
+## Notificações push (0.3.0)
+
+O app está vinculado ao Firebase `workstation-7a115`, pacote `br.com.log20.variavel`. `app/google-services.json` é a configuração pública do cliente; nunca coloque a conta de serviço privada nessa pasta. Apenas o SDK Messaging foi adicionado; o SDK Analytics não foi incluído.
+
+Após o login, Android 13+ solicita permissão. O celular registra o token FCM pelo WebView autenticado, usando o cookie e o CSRF do Rails. O usuário é definido pelo servidor, não por um parâmetro enviado pelo cliente. Novas visitas e retorno ao app sincronizam o token atual, inclusive após renovação. Se negar a permissão, é possível ativar depois nas configurações de notificações do Workstation no Android e reabrir o app.
+
+O Rails envia push para os eventos já existentes no sino (tarefas, vencimentos, disponibilidade e atas). As mensagens mostram somente um aviso genérico; ao tocar, o servidor verifica a conta, marca a notificação como lida e abre seu destino. O Android descarta mensagens destinadas a outra conta. Logout desvincula os dispositivos registrados na mesma sessão sem afetar outros celulares. Tokens que o FCM informa como inválidos são removidos. Erros temporários são repetidos pelo job, sem registrar credenciais ou tokens nos logs.
+
+No Heroku, configure `FIREBASE_SERVICE_ACCOUNT_JSON` com o JSON privado da conta de serviço e mantenha o worker Sidekiq ativo. O `release` do Procfile executa as migrações antes de ativar o deploy. A chave local fica em `~/.config/workstation/firebase-service-account.json`; não entra no APK nem no Git.
+
+Validação: instale o APK novo, faça login, aceite notificações e atribua uma tarefa ao usuário a partir de outra conta. Teste com o app em segundo plano, toque no aviso e confira o destino. Depois faça logout e confirme que novos eventos não notificam esse aparelho. Não use somente o teste de mensagem do console para validar este fluxo: o Rails envia mensagens de dados com identificação do destinatário, enquanto o compositor do console utiliza mensagens de notificação.
+
+O aparelho precisa de Google Play Services e conexão. A entrega depende do Android/FCM; forçar a parada do app nas configurações impede recebimento até abri-lo novamente. Não é necessário manter a tela do aplicativo aberta. Sem permissão, o sino dentro do site continua funcionando.
 
 ## Assinatura definitiva
 

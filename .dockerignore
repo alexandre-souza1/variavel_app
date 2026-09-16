@@ -38,3 +38,5 @@
 
 # Android builds and local signing configuration are not part of the Rails image.
 /android/
+**/*firebase-adminsdk*.json
+**/firebase-service-account.json

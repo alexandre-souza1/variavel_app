@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "28986930411",
+    "project_id": "workstation-7a115",
+    "storage_bucket": "workstation-7a115.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:28986930411:android:cf43140ee649acbb43faae",
+        "android_client_info": {
+          "package_name": "br.com.log20.variavel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcBRp6Z2ZjdystxsdtRm26j_8XXtopJE0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

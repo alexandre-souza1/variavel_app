@@ -67,6 +67,11 @@ Rails.application.routes.draw do
     delete :destroy_all, on: :collection
   end
 
+  namespace :mobile do
+    resource :push_device, only: %i[create destroy], controller: :push_devices
+    get "notifications/:id", to: "push_devices#open", as: :notification
+  end
+
   resources :checklists do
     patch :autosave, on: :collection
 

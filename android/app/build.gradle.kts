@@ -3,6 +3,7 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
+    id("com.google.gms.google-services")
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
@@ -35,8 +36,8 @@ android {
         applicationId = "br.com.log20.variavel"
         minSdk = 28
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.2.0"
+        versionCode = 5
+        versionName = "0.3.0"
         buildConfigField("String", "APP_URL", "\"${endpoint.toASCIIString()}\"")
     }
 
@@ -69,6 +70,8 @@ kotlin {
 }
 
 dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
+    implementation("com.google.firebase:firebase-messaging")
     testImplementation("junit:junit:4.13.2")
     implementation("dev.hotwire:core:1.3.1")
     implementation("dev.hotwire:navigation-fragments:1.3.1")

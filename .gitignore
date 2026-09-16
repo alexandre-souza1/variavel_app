@@ -34,3 +34,7 @@
 # Ignore master key for decrypting credentials and more.
 /config/master.key
 .env
+
+# Firebase server credentials must never be committed (Android client config is public).
+**/*firebase-adminsdk*.json
+**/firebase-service-account.json

@@ -103,3 +103,5 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+
+gem "googleauth", "~> 1.15"

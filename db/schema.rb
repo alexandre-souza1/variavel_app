@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_15_161000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_16_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -601,6 +601,18 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_15_161000) do
     t.index ["active"], name: "index_plates_on_active"
   end
 
+  create_table "push_devices", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "token", limit: 2048, null: false
+    t.string "session_binding", null: false
+    t.datetime "last_seen_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token"], name: "index_push_devices_on_token", unique: true
+    t.index ["user_id", "session_binding"], name: "index_push_devices_on_user_id_and_session_binding"
+    t.index ["user_id"], name: "index_push_devices_on_user_id"
+  end
+
   create_table "remuneration_category_values", force: :cascade do |t|
     t.bigint "vehicle_remuneration_id", null: false
     t.bigint "budget_category_id", null: false
@@ -934,6 +946,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_15_161000) do
   add_foreign_key "meeting_minutes", "users", column: "creator_id"
   add_foreign_key "notifications", "users"
   add_foreign_key "notifications", "users", column: "actor_id"
+  add_foreign_key "push_devices", "users"
   add_foreign_key "remuneration_category_values", "budget_categories"
   add_foreign_key "remuneration_category_values", "vehicle_remunerations"
   add_foreign_key "routine_activities", "routine_values"

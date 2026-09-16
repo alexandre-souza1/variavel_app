@@ -17,6 +17,7 @@ class Notification < ApplicationRecord
   scope :unread, -> { where(read_at: nil) }
 
   after_create_commit :broadcast_to_user
+  after_create_commit :enqueue_mobile_push
   after_update_commit :broadcast_to_user, if: :saved_change_to_read_at?
   after_destroy_commit :broadcast_to_user, unless: :skip_destroy_broadcast?
 
@@ -29,6 +30,17 @@ class Notification < ApplicationRecord
   end
 
   private
+
+  def enqueue_mobile_push
+    return unless FirebasePush.enabled? && user.active?
+
+    user.push_devices.find_each do |device|
+      PushNotificationJob.perform_later(id, device.id)
+    end
+  rescue StandardError => error
+    # A push outage must not prevent an existing in-app notification from being saved.
+    Rails.logger.error("Mobile push enqueue failed: #{error.class}")
+  end
 
   def skip_destroy_broadcast?
     skip_destroy_broadcast == true

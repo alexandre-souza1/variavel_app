@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Workstation</string>
+    <string name="push_channel">Avisos do Workstation</string>
+    <string name="push_message">Você tem uma nova notificação no sistema.</string>
     <string name="back">Voltar</string>
     <string name="retry">Tentar novamente</string>
     <string name="save_file">Salvar arquivo</string>

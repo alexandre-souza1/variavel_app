@@ -37,6 +37,24 @@ class DownloadRouteDecisionHandler : Router.RouteDecisionHandler {
 
 @HotwireDestinationDeepLink(uri = "hotwire://fragment/web")
 class VariavelWebFragment : HotwireWebFragment() {
+    private val pushRegistration = PushRegistration(this)
+
+    override fun onVisitCompleted(location: String, completedOffline: Boolean) {
+        super.onVisitCompleted(location, completedOffline)
+        if (!completedOffline) pushRegistration.sync(navigator.session.webView)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        pushRegistration.sync(navigator.session.webView)
+    }
+    // The Rails navbar already supplies the title and menus for each user's role.
+    override fun onCreateView(
+        inflater: android.view.LayoutInflater,
+        container: android.view.ViewGroup?,
+        savedInstanceState: android.os.Bundle?
+    ): android.view.View = inflater.inflate(dev.hotwire.navigation.R.layout.hotwire_view, container, false)
+
     override fun createErrorView(error: dev.hotwire.core.turbo.errors.VisitError): android.view.View {
         return android.widget.LinearLayout(requireContext()).apply {
             orientation = android.widget.LinearLayout.VERTICAL
