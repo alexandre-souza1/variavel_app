@@ -1,0 +1,2 @@
+# The Android client is built separately from the Rails server.
+/android/

@@ -35,3 +35,6 @@
 /app/assets/builds/*
 !/app/assets/builds/.keep
 /public/assets
+
+# Android builds and local signing configuration are not part of the Rails image.
+/android/
