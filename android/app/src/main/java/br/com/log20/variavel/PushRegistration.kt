@@ -33,6 +33,7 @@ class PushRegistration(private val fragment: Fragment) {
                 return@evaluateJavascript
             }
             preferences.edit().putString("user", user).apply()
+            (fragment.activity as? MainActivity)?.openPendingNotification(user)
             if (Build.VERSION.SDK_INT >= 33 && !preferences.getBoolean("permission_asked", false)) {
                 preferences.edit().putBoolean("permission_asked", true).apply()
                 permission.launch(Manifest.permission.POST_NOTIFICATIONS)

@@ -19,7 +19,21 @@ class MainActivity : HotwireActivity() {
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        notificationLocation(intent)?.let { delegate.currentNavigator?.route(it) }
+        val webView = delegate.currentNavigator?.session?.webView ?: return
+        if (!PdfDownload.sameOrigin(BuildConfig.APP_URL, webView.url.orEmpty())) return
+        webView.evaluateJavascript("document.body?.dataset.userId || 'guest'") { encoded ->
+            val user = runCatching { org.json.JSONTokener(encoded).nextValue() as? String }.getOrNull()
+            if (user != null) openPendingNotification(user)
+        }
+    }
+
+    fun openPendingNotification(user: String) {
+        if (intent.getStringExtra("notification_user") != user) return
+        val location = notificationLocation(intent) ?: return
+        val navigator = delegate.currentNavigator ?: return
+        intent.removeExtra("notification_id")
+        intent.removeExtra("notification_user")
+        navigator.route(location)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -41,7 +55,8 @@ class MainActivity : HotwireActivity() {
     override fun navigatorConfigurations() = listOf(
         NavigatorConfiguration(
             name = "main",
-            startLocation = notificationLocation(intent) ?: BuildConfig.APP_URL,
+            // Load the authenticated web shell before routing, including PDF notifications.
+            startLocation = BuildConfig.APP_URL,
             navigatorHostId = R.id.main_nav_host
         )
     )
