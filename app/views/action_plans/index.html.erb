@@ -1,4 +1,5 @@
-<div class="dashboard-tasks">
+<% calendar_days = {} %>
+<div class="dashboard-tasks action-plans-index">
 
   <!-- ========== CABEÇALHO ========== -->
   <header class="dashboard-header">
@@ -11,7 +12,7 @@
         <p class="subtitle">Acompanhamento das suas tarefas e planos</p>
       </div>
       <div class="header-actions">
-        <button class="btn-outline action-plans-mobile-menu d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#plansOffcanvas">
+        <button type="button" class="btn-outline action-plans-mobile-menu d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#plansOffcanvas" aria-controls="plansOffcanvas">
           <i class="bi bi-folder2-open"></i>
           <span>Meus Planos</span>
         </button>
@@ -121,9 +122,20 @@
               <% if @calendar_tasks.any? %>
                 <%= month_calendar(events: @calendar_tasks, attribute: :due_at, start_date: @calendar_start_date) do |date, tasks| %>
                   <div class="calendar-day">
-                    <div class="calendar-day-number"><%= date.day %></div>
+                    <% calendar_days[date] = tasks if tasks.any? %>
                     <% if tasks.any? %>
-                      <div class="calendar-tasks">
+                      <button type="button" class="calendar-day-trigger d-md-none"
+                              data-bs-toggle="modal" data-bs-target="#modal-day-<%= date %>"
+                              aria-label="<%= l(date, format: :long) %>: <%= pluralize(tasks.size, 'tarefa', 'tarefas') %>">
+                        <span class="calendar-day-number"><%= date.day %></span>
+                        <span class="calendar-day-count"><%= tasks.size %></span>
+                      </button>
+                    <% else %>
+                      <span class="calendar-day-number d-md-none"><%= date.day %></span>
+                    <% end %>
+                    <div class="calendar-day-number d-none d-md-inline-flex"><%= date.day %></div>
+                    <% if tasks.any? %>
+                      <div class="calendar-tasks d-none d-md-grid">
                         <% tasks.first(2).each do |task| %>
                           <div class="calendar-task" data-bs-toggle="modal" data-bs-target="#modal-day-<%= date %>">
                             <%= task.title %>
@@ -131,14 +143,14 @@
                         <% end %>
                       </div>
                       <% if tasks.size > 2 %>
-                        <span class="calendar-more" data-bs-toggle="modal" data-bs-target="#modal-day-<%= date %>">
+                        <span class="calendar-more d-none d-md-inline-flex" data-bs-toggle="modal" data-bs-target="#modal-day-<%= date %>">
                           +<%= tasks.size - 2 %>
                         </span>
                       <% end %>
                     <% end %>
                   </div>
-                  <%= render "calendar_modal", date: date, tasks: tasks %>
                 <% end %>
+                <p class="calendar-mobile-hint d-md-none">Toque em um dia com tarefas para ver os detalhes.</p>
               <% else %>
                 <div class="empty-state-compact">
                   <i class="bi bi-calendar2"></i>
@@ -159,18 +171,18 @@
               <% if @my_tasks.any? %>
                 <div class="tasks-list">
                   <% @my_tasks.limit(10).each do |task| %>
-                    <div class="task-item">
+                    <%= link_to action_plan_path(task.bucket.action_plan, task_id: task.id), class: "task-item task-item-link" do %>
                       <div class="task-item-header">
                         <i class="bi bi-check2-circle text-primary me-1"></i>
                         <span class="task-title"><%= task.title %></span>
                       </div>
                       <div class="task-item-meta">
-                        <span><i class="bi bi-kanban me-1"></i> <%= task.bucket.action_plan.name %></span>
+                        <span class="task-item-plan"><i class="bi bi-kanban me-1" aria-hidden="true"></i><span><%= task.bucket.action_plan.name %></span></span>
                         <% if task.due_at %>
-                          <span><i class="bi bi-calendar-event me-1"></i> <%= l(task.due_at, format: :short) %></span>
+                          <span class="task-item-deadline <%= 'text-danger' if task.due_at < Time.current %>"><i class="bi bi-calendar-event me-1" aria-hidden="true"></i> <%= l(task.due_at, format: :short) %></span>
                         <% end %>
                       </div>
-                    </div>
+                    <% end %>
                   <% end %>
                 </div>
               <% else %>
@@ -188,10 +200,10 @@
   </div>
 
   <!-- ========== OFFCANVAS – PLANOS (mobile) ========== -->
-  <div class="offcanvas offcanvas-end d-lg-none" tabindex="-1" id="plansOffcanvas">
+  <div class="offcanvas offcanvas-end d-lg-none" tabindex="-1" id="plansOffcanvas" aria-labelledby="plansOffcanvasTitle">
     <div class="offcanvas-header">
-      <h5 class="offcanvas-title"><i class="bi bi-kanban-fill me-2"></i> Meus Planos</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+      <h5 class="offcanvas-title" id="plansOffcanvasTitle"><i class="bi bi-kanban-fill me-2"></i> Meus Planos</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
     </div>
     <div class="offcanvas-body">
       <%= render "plans_list", action_plans: @action_plans, hidden_action_plan_ids: @hidden_action_plan_ids %>
@@ -204,6 +216,9 @@
   </div>
 
   <!-- ========== MODAIS ========== -->
+  <% calendar_days.each do |date, tasks| %>
+    <%= render "calendar_modal", date: date, tasks: tasks %>
+  <% end %>
   <% @action_plans.each do |plan| %>
     <%= render "delete_modal", plan: plan %>
   <% end %>
