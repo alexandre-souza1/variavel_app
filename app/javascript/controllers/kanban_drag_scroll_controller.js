@@ -43,6 +43,9 @@ export default class extends Controller {
 
   pointerDown(event) {
     if (event.target.closest(".task-card, .drag-handle, [data-controller~='sortable']")) return
+    // Tom Select renders options as divs; capturing their pointer redirects
+    // the selection click to the board instead of the option.
+    if (event.target.closest("form, label, .ts-wrapper, .ts-dropdown")) return
     if (event.target.closest("input, textarea, select, button, a, .btn, .dropdown, .accordion-button, .action-plan-kanban-done-toggle, .action-plan-kanban-card__title, [data-bucket-edit-target='input']")) return
 
     this.isDown = true

@@ -176,11 +176,11 @@
                     <%= l(availability.date) %>
                   </td>
 
-                  <td data-label="Iniciada por" class="text-muted">
-                    <%= availability.user.name.presence || availability.user.email %>
+                  <td data-label="Iniciada por" class="text-muted fleet-availability-table__author">
+                    <span><%= availability.user.name.presence || availability.user.email %></span>
                   </td>
 
-                  <td data-label="Status" class="text-center">
+                  <td data-label="Status" class="text-center fleet-availability-table__status">
                     <% if availability.locked? %>
                       <span class="badge text-bg-secondary">Enviada</span>
                     <% else %>
@@ -188,44 +188,41 @@
                     <% end %>
                   </td>
 
-                  <td data-label="Dimensionamento" class="text-center">
+                  <td data-label="Dimensionamento" class="text-center fleet-availability-table__metric">
                     <%= availability.agreed_quantity %>
                   </td>
 
-                  <td data-label="Disponibilizados" class="text-center">
+                  <td data-label="Disponibilizados" class="text-center fleet-availability-table__metric">
                     <span class="badge bg-success">
                       <%= availability.available_count %>
                     </span>
                   </td>
 
-                  <td data-label="Troca" class="text-center">
+                  <td data-label="Disponíveis p/ troca" class="text-center fleet-availability-table__metric">
                     <span class="badge bg-warning text-dark">
                       <%= availability.exchange_count %>
                     </span>
                   </td>
 
-                  <td data-label="Indisponíveis" class="text-center">
+                  <td data-label="Indisponíveis" class="text-center fleet-availability-table__metric">
                     <span class="badge bg-danger">
                       <%= availability.unavailable_count %>
                     </span>
                   </td>
 
-                  <td data-label="Cobertura" class="text-center">
+                  <td data-label="Cobertura" class="text-center fleet-availability-table__coverage">
 
                     <% percentage = availability.coverage_percentage %>
 
-                    <div class="progress"
-                         style="height: 20px;">
-
-                      <div class="progress-bar
-                        <%= percentage >= 100 ? "bg-success" : percentage >= 80 ? "bg-warning" : "bg-danger" %>"
-                           role="progressbar"
-                           style="width: <%= [percentage, 100].min %>%">
-
-                        <%= percentage %>%
-
+                    <div class="fleet-availability-coverage">
+                      <span class="fleet-availability-coverage__value"><%= percentage %>%</span>
+                      <div class="progress" role="progressbar"
+                           aria-label="Cobertura da frota"
+                           aria-valuenow="<%= percentage %>" aria-valuemin="0"
+                           aria-valuemax="<%= [percentage, 100].max %>">
+                        <div class="progress-bar <%= percentage >= 100 ? "bg-success" : percentage >= 80 ? "bg-warning" : "bg-danger" %>"
+                             style="width: <%= percentage.clamp(0, 100) %>%"></div>
                       </div>
-
                     </div>
 
                   </td>
@@ -238,6 +235,7 @@
                                   title: "Abrir disponibilidade",
                                   aria: { label: "Abrir disponibilidade" } do %>
                         <i class="bi bi-eye" aria-hidden="true"></i>
+                        <span class="d-md-none">Abrir</span>
                       <% end %>
 
                       <% if current_user.admin? %>
@@ -253,6 +251,7 @@
                                         }
                                       } do %>
                           <i class="bi bi-trash" aria-hidden="true"></i>
+                          <span class="d-md-none">Apagar</span>
                         <% end %>
                       <% end %>
                     </div>
