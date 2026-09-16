@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Variavel" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#185B47</item>
+        <item name="colorPrimaryVariant">#104031</item>
+        <item name="colorSecondary">#185B47</item>
+    </style>
+</resources>

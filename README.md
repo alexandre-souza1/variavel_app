@@ -168,6 +168,10 @@ ACTION_CABLE_URL
 
 Não versionar `.env`, chaves, tokens ou credenciais. Em produção, configure os valores no provedor de hospedagem.
 
+## Aplicativo Android
+
+A base Android em Kotlin/Hotwire Native está em [`android/`](android/README.md). Ela utiliza o servidor Rails hospedado, com endereço HTTPS configurado no build. Consulte o guia para gerar o APK de teste localmente ou pelo workflow manual do GitHub Actions, além das pendências de validação no celular.
+
 ## Testes
 
 Execute toda a suíte com:

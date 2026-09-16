@@ -1,0 +1,65 @@
+name: Gerar APK Workstation
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_url:
+        description: 'Endereço HTTPS da aplicação (sem credenciais)'
+        required: true
+        type: string
+        default: https://workstation-app-foz-f23ff3447c33.herokuapp.com/
+      build_type:
+        description: Tipo do APK
+        required: true
+        default: debug
+        type: choice
+        options:
+          - debug
+          - release
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compilar e verificar debug
+        if: inputs.build_type == 'debug'
+        working-directory: android
+        env:
+          ANDROID_APP_URL: ${{ inputs.app_url }}
+        run: ./gradlew --no-daemon :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
+      - name: Compilar e verificar release assinado
+        if: inputs.build_type == 'release'
+        working-directory: android
+        env:
+          ANDROID_APP_URL: ${{ inputs.app_url }}
+          WORKSTATION_KEYSTORE_BASE64: ${{ secrets.WORKSTATION_KEYSTORE_BASE64 }}
+          WORKSTATION_STORE_PASSWORD: ${{ secrets.WORKSTATION_STORE_PASSWORD }}
+          WORKSTATION_KEY_ALIAS: ${{ secrets.WORKSTATION_KEY_ALIAS }}
+          WORKSTATION_KEY_PASSWORD: ${{ secrets.WORKSTATION_KEY_PASSWORD }}
+        run: |
+          test -n "$WORKSTATION_KEYSTORE_BASE64"
+          test -n "$WORKSTATION_STORE_PASSWORD"
+          test -n "$WORKSTATION_KEY_ALIAS"
+          test -n "$WORKSTATION_KEY_PASSWORD"
+          export WORKSTATION_KEYSTORE_PATH="$RUNNER_TEMP/workstation.p12"
+          umask 077
+          printf '%s' "$WORKSTATION_KEYSTORE_BASE64" | base64 --decode > "$WORKSTATION_KEYSTORE_PATH"
+          trap 'rm -f "$WORKSTATION_KEYSTORE_PATH"' EXIT
+          ./gradlew --no-daemon :app:assembleRelease :app:testDebugUnitTest :app:lintRelease
+      - uses: actions/upload-artifact@v4
+        with:
+          name: workstation-android-${{ inputs.build_type }}
+          path: android/app/build/outputs/apk/${{ inputs.build_type }}/*.apk
+          if-no-files-found: error
+          retention-days: 14
