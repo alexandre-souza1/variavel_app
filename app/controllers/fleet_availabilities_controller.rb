@@ -9,26 +9,9 @@ class FleetAvailabilitiesController < ApplicationController
   ]
 
   def index
-    @fleet_availability_setting = FleetAvailabilitySetting.current
-    @dimensioning_periods = FleetDimensioning.recent
-    @selected_dimensioning = selected_dimensioning_period
-    @fleet_availabilities =
-      fleet_availabilities_for(@selected_dimensioning)
-      .recent
-      .includes(:user)
-    @fleet_summary = fleet_summary(@fleet_availabilities)
-
-    new_date = default_start_date
-    @new_fleet_availability = FleetAvailability.new(
-      date: new_date,
-      agreed_quantity: FleetAvailability.default_dimensioning_quantity_for(new_date),
-      special_routes: FleetAvailability.default_special_routes_for(new_date)
-    )
-    @new_dimensioning_period = FleetAvailability.dimensioning_period_for(new_date)
-    @new_dimensioning_quantities = dimensioning_quantities(@new_dimensioning_period)
+    prepare_index
   end
 
-  # ========== ALTERADO AQUI ==========
   def new
     # Se houver parâmetro ?date=, usa ele; senão, calcula o próximo dia útil
     date = if params[:date].present?
@@ -60,8 +43,7 @@ class FleetAvailabilitiesController < ApplicationController
       flash.now[:alert] =
         "Não há dimensionamento cadastrado para o período informado."
 
-      render :new, status: :unprocessable_entity
-      return
+      return render_create_error
     end
 
     @fleet_availability = FleetAvailabilities::Creator.call(
@@ -85,8 +67,30 @@ class FleetAvailabilitiesController < ApplicationController
 
     flash.now[:alert] = e.record.errors.full_messages.to_sentence
 
-    render :new, status: :unprocessable_entity
+    render_create_error
   end
+
+  def prepare_index
+    @fleet_availability_setting = FleetAvailabilitySetting.current
+    @dimensioning_periods = FleetDimensioning.recent
+    @selected_dimensioning = selected_dimensioning_period
+    @fleet_availabilities =
+      fleet_availabilities_for(@selected_dimensioning)
+      .recent
+      .includes(:user)
+    @fleet_summary = fleet_summary(@fleet_availabilities)
+
+    new_date = default_start_date
+    @new_fleet_availability = FleetAvailability.new(
+      date: new_date,
+      agreed_quantity: FleetAvailability.default_dimensioning_quantity_for(new_date),
+      special_routes: FleetAvailability.default_special_routes_for(new_date)
+    )
+    @new_dimensioning_period = FleetAvailability.dimensioning_period_for(new_date)
+    @new_dimensioning_quantities = dimensioning_quantities(@new_dimensioning_period)
+  end
+
+  # ========== ALTERADO AQUI ==========
 
   def show
     @fleet_availability.sync_dimensioning! unless @fleet_availability.locked?
@@ -105,7 +109,9 @@ class FleetAvailabilitiesController < ApplicationController
       @dimensioning&.standard_plate_by_special_route || {}
 
     respond_to do |format|
-      format.html
+      format.html do
+        @tread_depth_by_plate = Prolog::TiresClient.new.tread_depth_by_plate
+      end
       format.pdf do
         pdf = FleetAvailabilityPdf.new(@fleet_availability)
 
@@ -208,6 +214,21 @@ class FleetAvailabilitiesController < ApplicationController
           )
   end
 
+  def render_create_error
+    if params[:modal].present?
+      prepare_index
+      @new_fleet_availability = @fleet_availability
+      @new_dimensioning_period = FleetAvailability.dimensioning_period_for(
+        fleet_availability_params[:date]
+      )
+      @new_dimensioning_quantities = dimensioning_quantities(@new_dimensioning_period)
+      @open_new_availability_modal = true
+      render :index, status: :unprocessable_entity
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
   def dimensioning_quantities(period)
     return {
       "ROTA" => 0,
@@ -246,7 +267,8 @@ class FleetAvailabilitiesController < ApplicationController
     else
       # Soma os percentuais de indisponibilidade de cada dia e divide pelo total de dias
       daily_unavailability_sum = scope.sum do |fa|
-        fa.unavailable_count.to_f / fa.agreed_quantity * 100
+        agreed_quantity = fa.agreed_quantity.to_f
+        agreed_quantity.zero? ? 0 : (fa.unavailable_count.to_f / agreed_quantity * 100)
       end
       (daily_unavailability_sum / total_days).round
     end

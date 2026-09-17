@@ -8,6 +8,7 @@
                    end %>
 <% reason_class = variant == :unavailable && item.reason.present? ? " fleet-plate-item--reason-#{item.reason}" : "" %>
 <% editable = local_assigns.fetch(:editable, false) %>
+<% tread_depth = @tread_depth_by_plate&.fetch(PlateUtils.normalizar(plate.placa), nil) %>
 
 <article id="<%= dom_id(item) %>"
          class="fleet-plate-item fleet-plate-item--<%= variant %><%= reason_class %><%= ' fleet-plate-item--changed' if plate_changed %> sortable-item"
@@ -18,6 +19,7 @@
          data-reason="<%= item.reason %>"
          data-observation="<%= item.observation %>"
          data-van-plate="<%= item.van_plate? %>"
+         data-tread-depth="<%= tread_depth %>"
          data-mobile-plate-label="<%= plate.placa %>"
          <% if editable %>
          data-action="click->fleet-availability#selectPlateForMobile keydown.enter->fleet-availability#selectPlateForMobile"
@@ -30,28 +32,34 @@
     <%= item.position.to_i + 1 %> -
   </span>
 
-  <div class="fleet-plate-card">
+  <div class="fleet-plate-card fleet-vehicle-card">
 
-    <div class="fleet-plate-card__main">
+    <div class="fleet-vehicle-card__header">
 
-      <div>
-        <strong class="fleet-plate-card__plate">
+      <div class="fleet-vehicle-card__identity">
+        <strong class="fleet-vehicle-card__plate">
           <%= plate.placa %>
         </strong>
 
-        <div class="fleet-plate-card__meta">
-          <% if variant == :deposit || variant == :special_route %>
-            <span><%= plate.perfil.presence || plate.tipo.presence || "Ativa" %></span>
-          <% else %>
-            <span><%= plate.tipo.presence || "Tipo não informado" %></span>
-            <% if plate.perfil.present? %>
-              <span><%= plate.perfil %></span>
-            <% end %>
-          <% end %>
+        <div class="fleet-vehicle-card__profile">
+          <%= [plate.tipo.presence, plate.perfil.presence].compact.uniq.join(" · ").presence || "Tipo não informado" %>
         </div>
       </div>
+      <% if tread_depth != nil %>
+        <div class="fleet-vehicle-card__measurement">
+            <span class="fleet-tread-depth-badge <%= tread_depth_badge_class(tread_depth) %>"
+                  title="Menor sulco dos pneus em uso, sem estepes. Verde: ≥ 5 mm; amarelo: 3 a &lt; 5 mm; vermelho: &lt; 3 mm."
+                  aria-label="Menor sulco dos pneus em uso, sem estepes: <%= number_with_precision(tread_depth, precision: 2, strip_insignificant_zeros: true) %> milímetros">
+              <span class="fleet-tread-depth-badge__label">Sulco</span>
+              <strong class="fleet-tread-depth-badge__value"><%= number_with_precision(tread_depth, precision: 2, strip_insignificant_zeros: true) %><small> mm</small></strong>
+            </span>
+        </div>
+      <% end %>
+    </div>
 
-      <div class="<%= variant == :unavailable ? "fleet-plate-card__defect-wrapper" : "fleet-plate-card__side" %>" data-live-details>
+      <div class="<%= variant == :unavailable ? "fleet-plate-card__defect-wrapper" : "fleet-plate-card__side" %>"
+           <%= "hidden" unless [:availability, :special_route, :unavailable].include?(variant) %>
+           data-live-details>
         <% if [:availability, :special_route].include?(variant) %>
           <span>
             Placa padrão:
@@ -71,21 +79,21 @@
         <% end %>
       </div>
 
-    </div>
-
-    <div class="fleet-plate-card__observation <%= "fleet-plate-card__observation--inline" if item.observation.blank? %> <%= "fleet-plate-card__observation--inline" if variant == :availability %>"
+    <div class="fleet-plate-card__observation"
+         <%= "hidden" if item.observation.blank? && !editable %>
          data-observation-display>
       <% if item.observation.present? %>
         <span>
           <%= item.observation %>
         </span>
       <% else %>
-        <span>Sem observação</span>
+        <span>Adicionar observação</span>
       <% end %>
 
       <% if editable %>
         <button type="button"
                 class="btn btn-sm btn-link fleet-plate-card__observation-button"
+                aria-label="Editar observação da placa <%= plate.placa %>"
                 data-observation-edit>
           <i class="bi bi-pencil-square"></i>
         </button>

@@ -25,7 +25,7 @@
         </button>
       <% end %>
 
-      <%= link_to new_fleet_availability_path,
+      <%= link_to "#newFleetAvailabilityModal",
                   class: "btn btn-primary",
                   data: { bs_toggle: "modal", bs_target: "#newFleetAvailabilityModal" } do %>
         <i class="bi bi-plus-circle"></i>
@@ -300,7 +300,13 @@
 
 </div>
 
-<div class="modal fade app-modal fleet-availability-modal" id="newFleetAvailabilityModal" tabindex="-1" aria-labelledby="newFleetAvailabilityModalLabel" aria-hidden="true">
+<div class="modal fade app-modal fleet-availability-modal"
+     id="newFleetAvailabilityModal"
+     tabindex="-1"
+     aria-labelledby="newFleetAvailabilityModalLabel"
+     aria-hidden="true"
+     data-controller="fleet-modal"
+     data-fleet-modal-open-value="<%= @open_new_availability_modal == true %>">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">

@@ -28,6 +28,7 @@ class FleetDimensioning < ApplicationRecord
   validate :start_before_end
   validate :period_does_not_overlap
   validate :standard_plates_are_unique
+  validate :at_least_one_vehicle
 
   # Nested rows represent slots, so moving a plate changes two rows. Release
   # changed assignments first, inside the same transaction as the final save.
@@ -119,6 +120,13 @@ class FleetDimensioning < ApplicationRecord
     return if plate_ids.uniq.length == plate_ids.length
 
     errors.add(:base, "Uma placa não pode ocupar mais de uma posição ou rota especial.")
+  end
+
+  def at_least_one_vehicle
+    quantities = [route_quantity, van_quantity, vespertina_quantity, as_quantity]
+    return if quantities.any? { |quantity| quantity.to_i.positive? }
+
+    errors.add(:base, "Informe pelo menos um veículo no dimensionamento.")
   end
 
   def new_standard_plate_blank?(attributes)

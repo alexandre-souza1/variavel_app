@@ -781,6 +781,7 @@ export default class extends Controller {
       "fleet-plate-item--unavailable",
       "fleet-plate-item--special_route",
       "fleet-plate-item--default",
+      "fleet-plate-item--changed",
       "fleet-plate-item--reason-maintenance",
       "fleet-plate-item--reason-breakdown",
       "fleet-plate-item--reason-accident",
@@ -810,7 +811,30 @@ export default class extends Controller {
       this.setSpecialRouteDetails(itemElement)
     }
 
+    this.refreshTreadDepthBadge(itemElement)
     this.setObservationDetails(itemElement, item.observation)
+  }
+
+
+  refreshTreadDepthBadge(itemElement) {
+    const badge = itemElement.querySelector(".fleet-tread-depth-badge")
+    const depth = Number(itemElement.dataset.treadDepth)
+
+    if (!badge || !Number.isFinite(depth)) return
+
+    badge.classList.remove(
+      "fleet-tread-depth-badge--good",
+      "fleet-tread-depth-badge--attention",
+      "fleet-tread-depth-badge--critical"
+    )
+
+    if (depth >= 5) {
+      badge.classList.add("fleet-tread-depth-badge--good")
+    } else if (depth >= 3) {
+      badge.classList.add("fleet-tread-depth-badge--attention")
+    } else {
+      badge.classList.add("fleet-tread-depth-badge--critical")
+    }
   }
 
 
@@ -842,6 +866,7 @@ export default class extends Controller {
     const container = this.detailsContainer(itemElement, "fleet-plate-card__side")
 
     container.innerHTML = ""
+    container.hidden = true
   }
 
 
@@ -901,6 +926,7 @@ export default class extends Controller {
     }
 
     container.className = className
+    container.hidden = false
 
     return container
   }
@@ -950,15 +976,10 @@ export default class extends Controller {
     const observationText = String(observation || "").trim()
     const label = observationText
       ? `<span>${this.escapeHtml(observationText)}</span>`
-      : "<span>Sem observação</span>"
+      : "<span>Adicionar observação</span>"
 
-    // Keep the observation area visible when the item is editable. The
-    // empty-state class hides the whole container in the availability box,
-    // which also hides the button used to add the first observation.
-    container.classList.toggle(
-      "fleet-plate-card__observation--empty",
-      !observationText && !button
-    )
+    // Preserve the action for adding the first observation on editable cards.
+    container.hidden = !observationText && !button
     container.innerHTML = label
 
     if (button) {

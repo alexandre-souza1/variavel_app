@@ -2,6 +2,8 @@
 <%= form_with model: fleet_availability,
               class: "card shadow-sm border-0 #{'fleet-availability-modal-form' if modal}" do |f| %>
 
+  <%= hidden_field_tag :modal, "1" if modal %>
+
   <div class="card-header bg-primary text-white">
     <h5 class="mb-0">
       Disponibilidade da Frota

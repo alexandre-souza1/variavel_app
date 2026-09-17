@@ -11,6 +11,22 @@ class FleetDimensioningLayoutTest < ActiveSupport::TestCase
     @second = @dimensioning.fleet_dimensioning_standard_plates.create!(plate: plates(:two), position: 1)
   end
 
+  test "requires at least one vehicle" do
+    dimensioning = FleetDimensioning.new(
+      label: "Dimensionamento sem veículos",
+      start_date: Date.new(2091, 1, 1),
+      end_date: Date.new(2091, 1, 15),
+      route_quantity: 0,
+      van_quantity: 0,
+      vespertina_quantity: 0,
+      as_quantity: 0
+    )
+
+    assert_not dimensioning.valid?
+    assert_includes dimensioning.errors[:base],
+                    "Informe pelo menos um veículo no dimensionamento."
+  end
+
   test "moves a plate directly to an occupied slot" do
     assert @dimensioning.update_configuration(fleet_dimensioning_standard_plates_attributes: {
       "0" => { id: @first.id, plate_id: "", _destroy: "1" },

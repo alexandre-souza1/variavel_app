@@ -24,6 +24,8 @@ pt:
         number: "Número da NF"
         amount: "Valor da NF"
         cost_center_id: "Centro de custo"
+      fleet_availability:
+        date: "Data"
     errors:
       models:
         invoice:
@@ -35,3 +37,7 @@ pt:
             amount:
               not_a_number: "deve ser um valor válido, como 100,00"
               greater_than_or_equal_to: "deve ser maior ou igual a %{count}"
+        fleet_availability:
+          attributes:
+            date:
+              taken: "já possui uma disponibilidade cadastrada"
