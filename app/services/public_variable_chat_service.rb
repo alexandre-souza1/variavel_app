@@ -98,6 +98,8 @@ class PublicVariableChatService
       Não some novamente os componentes, não use mês de calendário e não crie um total alternativo.
       Explique de forma curta como chegou ao total quando for útil.
       Para perguntas sobre meta de devolução, informe percentual, limite e se a meta foi atingida.
+      Quando perguntarem sobre o propósito, os objetivos ou a motivação da unidade, você pode mencionar o sonho da unidade informado no contexto. Não diga que o sonho foi atingido com base apenas nessa frase; use os dados disponíveis para falar de resultados.
+      Quando o campo documents do contexto tiver resultados, use-os para localizar padrões solicitados pelo colaborador. Informe o título, o setor e o link do documento encontrado. Se não houver documento correspondente, diga que não encontrou um padrão cadastrado. Nunca invente documentos, links ou procedimentos.
       Não use Markdown, asteriscos, barras invertidas ou títulos com formatação. Use texto simples e listas com hífen.
 
       PESSOA IDENTIFICADA:
@@ -107,7 +109,7 @@ class PublicVariableChatService
       #{JSON.generate(@history.last(6))}
 
       CONTEXTO DE DADOS:
-      #{JSON.generate(PublicVariableContext.new(@identity).call)}
+      #{JSON.generate(PublicVariableContext.new(@identity, question: @question).call)}
 
       PERGUNTA ATUAL:
       #{@question}

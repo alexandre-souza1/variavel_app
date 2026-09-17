@@ -1,9 +1,15 @@
 require "bigdecimal"
 
 class PublicVariableContext
-  def initialize(identity)
+  DOCUMENT_SEARCH_STOPWORDS = %w[
+    a ao aos as com da das de do dos e em entre essa esse estas estes eu existe
+    há isso me meu minha na nas no nos onde para por que qual quero vejo ver
+  ].freeze
+
+  def initialize(identity, question: nil)
     @identity = identity
     @record = identity.record
+    @question = question.to_s
   end
 
   def call
@@ -19,6 +25,10 @@ class PublicVariableContext
       profile: @identity.label,
       name: @identity.name,
       registration: @identity.registration,
+      unit: {
+        dream: "Ser o melhor DPO da SAZ, com o time motivado, seguro, produtivo e cliente satisfeito."
+      },
+      documents: document_context,
       period_note: "Os valores são calculados apenas com os dados disponíveis no sistema.",
       data: data
     }
@@ -115,6 +125,47 @@ class PublicVariableContext
 
   def ajudante_mapas
     Mapa.where(matric_ajudante: @record.promax).or(Mapa.where(matric_ajudante_2: @record.promax))
+  end
+
+  def document_context
+    keywords = normalized_keywords
+    return [] if keywords.empty?
+
+    Download
+      .where(category: "PADRÃO")
+      .to_a
+      .filter_map do |download|
+        searchable_text = normalize_text([download.title, download.description, download.sector].compact.join(" "))
+        matches = keywords.count { |keyword| searchable_text.include?(keyword) }
+        next if matches.zero?
+
+        {
+          title: download.title,
+          description: download.description,
+          category: download.category,
+          sector: download.sector,
+          link: Rails.application.routes.url_helpers.open_download_url(download)
+        }.tap { |document| document[:relevance] = matches }
+      end
+      .sort_by { |document| -document[:relevance] }
+      .first(8)
+      .map { |document| document.except(:relevance) }
+  end
+
+  def normalized_keywords
+    normalize_text(@question)
+      .split
+      .reject { |word| word.length < 3 || DOCUMENT_SEARCH_STOPWORDS.include?(word) }
+      .uniq
+  end
+
+  def normalize_text(value)
+    value.to_s
+      .unicode_normalize(:nfkd)
+      .encode("ASCII", invalid: :replace, undef: :replace, replace: "")
+      .downcase
+      .gsub(/[^a-z0-9]+/, " ")
+      .strip
   end
 
   def closing_month_for(date)
