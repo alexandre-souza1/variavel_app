@@ -28,7 +28,8 @@ class FirebasePush
       message: {
         token: device.token,
         data: { user_id: notification.user_id.to_s, notification_id: notification.id.to_s,
-                title: "Workstation", body: "Você tem uma nova notificação no sistema." },
+                title: push_text(notification.title, "Workstation", 160),
+                body: push_text(notification.body, "Você tem uma nova notificação no sistema.", 500) },
         android: { priority: "HIGH", ttl: "86400s" }
       }
     }.to_json
@@ -48,6 +49,11 @@ class FirebasePush
   end
 
   private
+
+  def push_text(value, fallback, limit)
+    text = ActionController::Base.helpers.strip_tags(value.to_s).squish
+    text.presence&.truncate(limit) || fallback
+  end
 
   def cache_key
     "firebase/access-token/#{Digest::SHA256.hexdigest(@json)}"

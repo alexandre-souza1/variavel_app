@@ -28,10 +28,13 @@ class WorkstationMessagingService : FirebaseMessagingService() {
         }
         val pending = PendingIntent.getActivity(this, id.hashCode(), intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val title = message.data["title"]?.takeIf { it.isNotBlank() } ?: getString(R.string.app_name)
+        val body = message.data["body"]?.takeIf { it.isNotBlank() } ?: getString(R.string.push_message)
         val notification = NotificationCompat.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.push_message))
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setContentIntent(pending).setAutoCancel(true).setOnlyAlertOnce(true).build()
         manager.notify("workstation-$id", id.hashCode(), notification)

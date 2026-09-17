@@ -5,7 +5,7 @@ class FirebasePushTest < ActiveSupport::TestCase
   setup do
     @previous_key = ENV["FIREBASE_SERVICE_ACCOUNT_JSON"]
     ENV["FIREBASE_SERVICE_ACCOUNT_JSON"] = {project_id: "workstation-test"}.to_json
-    @notification = users(:one).notifications.build(id: 123, kind: "test", title: "Private title")
+    @notification = users(:one).notifications.build(id: 123, kind: "test", title: "Nova tarefa para você", body: "Revisar o relatório")
     @device = users(:one).push_devices.create!(token: "test-token", session_binding: "test", last_seen_at: Time.current)
   end
 
@@ -13,7 +13,7 @@ class FirebasePushTest < ActiveSupport::TestCase
     ENV["FIREBASE_SERVICE_ACCOUNT_JSON"] = @previous_key
   end
 
-  test "uses account scoped data payload without private notification contents" do
+  test "uses account scoped data payload with notification title and body" do
     response = Net::HTTPOK.new("1.1", "200", "OK")
     sent = nil
     http = Object.new
@@ -28,7 +28,15 @@ class FirebasePushTest < ActiveSupport::TestCase
     assert_equal users(:one).id.to_s, payload.dig("data", "user_id")
     assert_equal "123", payload.dig("data", "notification_id")
     assert_nil payload["notification"]
-    assert_not_includes sent.body, "Private title"
+    assert_equal "Nova tarefa para você", payload.dig("data", "title")
+    assert_equal "Revisar o relatório", payload.dig("data", "body")
+  end
+
+  test "notification preview strips markup, limits length and falls back for blank text" do
+    sender = FirebasePush.new
+    assert_equal "Revisar relatório", sender.send(:push_text, "<b>Revisar</b>  relatório", "Aviso", 500)
+    assert_equal "Aviso", sender.send(:push_text, nil, "Aviso", 500)
+    assert_equal 500, sender.send(:push_text, "á" * 600, "Aviso", 500).length
   end
 
   test "removes unregistered devices" do
