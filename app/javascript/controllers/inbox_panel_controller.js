@@ -32,6 +32,8 @@ export default class extends Controller {
     this.collapsedValue = collapsed
     this.element.classList.toggle("is-inbox-collapsed", collapsed)
     this.element.closest(".action-plan-with-inbox")?.classList.toggle("is-inbox-collapsed", collapsed)
-    this.element.querySelector("[data-inbox-panel-toggle]")?.setAttribute("aria-expanded", String(!collapsed))
+    const toggle = this.element.querySelector("[data-inbox-panel-toggle]")
+    toggle?.setAttribute("aria-expanded", String(!collapsed))
+    toggle?.setAttribute("aria-label", collapsed ? "Expandir Entrada" : "Recolher Entrada")
   }
 }

@@ -16,6 +16,9 @@ export default class extends Controller {
         put: true
       },
       animation: 150,
+      delay: 250,
+      delayOnTouchOnly: true,
+      touchStartThreshold: 5,
       draggable: ".task-card",
       forceFallback: true,
       fallbackOnBody: true,
@@ -29,6 +32,10 @@ export default class extends Controller {
       },
       onEnd: this.onEnd.bind(this)
     })
+  }
+
+  disconnect() {
+    this.sortable?.destroy()
   }
 
   async onEnd(event) {

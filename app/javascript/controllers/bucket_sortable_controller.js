@@ -11,6 +11,9 @@ export default class extends Controller {
 
     this.sortable = Sortable.create(this.element, {
       animation: 150,
+      delay: 250,
+      delayOnTouchOnly: true,
+      touchStartThreshold: 5,
       draggable: ".kanban-column",
       handle: ".drag-handle",
       forceFallback: true,
@@ -32,6 +35,10 @@ export default class extends Controller {
     })
 
     console.log(this.sortable)
+  }
+
+  disconnect() {
+    this.sortable?.destroy()
   }
 
   save() {

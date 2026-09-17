@@ -1434,8 +1434,14 @@ main.app-main:has(.action-plan-show) {
   text-align: center;
 }
 
+@media (min-width: 768px) {
+  .action-plan-secondary-actions.collapse { display: contents; }
+  .action-plan-inbox-panel.offcanvas-md { background-color: var(--bs-tertiary-bg) !important; }
+}
+
 // Lista mobile e ajustes de layout para telas estreitas.
 @media (max-width: 767.98px) {
+  .app-content:has(> .action-plan-show) { margin: 0 !important; }
   .action-plan-show.dashboard-page {
     padding: 1rem 0.75rem 1.5rem;
   }
@@ -1450,7 +1456,7 @@ main.app-main:has(.action-plan-show) {
     gap: 0.9rem;
   }
 
-  .action-plan-show .dashboard-header h1 {
+  .action-plan-show.dashboard-page .dashboard-header h1 {
     align-items: flex-start;
     font-size: 1.28rem;
     line-height: 1.25;
@@ -1460,13 +1466,13 @@ main.app-main:has(.action-plan-show) {
     font-size: 0.82rem;
   }
 
-  .action-plan-show .dashboard-header .header-actions {
+  .action-plan-show.dashboard-page .dashboard-header .header-content .header-actions {
     background: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
     border-radius: 10px;
     display: grid;
     gap: 0.35rem;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 42px;
+    grid-template-columns: minmax(0, 1fr) auto;
     padding: 0.25rem;
     width: 100%;
   }
@@ -1491,8 +1497,133 @@ main.app-main:has(.action-plan-show) {
 
   .action-plan-inbox-intro { align-items: flex-start; flex-direction: column; }
   .action-plan-inbox-capture__fields { grid-template-columns: 1fr; }
-  .action-plan-with-inbox { grid-template-columns: 1fr; }
-  .action-plan-inbox-panel { position: static; }
+  // The page owns vertical scrolling; desktop panel heights clip mobile lists.
+  .action-plan-with-inbox,
+  .action-plan-with-inbox.is-inbox-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+    max-height: none;
+    min-height: 0;
+  }
+
+  .action-plan-show .action-plan-secondary-actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .action-plan-secondary-actions.show,
+  .action-plan-secondary-actions.collapsing {
+    display: grid;
+    gap: .4rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: .5rem;
+    border-top: 1px solid var(--bs-border-color);
+  }
+
+  .action-plan-show .header-actions .action-plan-secondary-actions .btn-outline {
+    background: var(--bs-tertiary-bg);
+    justify-content: flex-start;
+    font-size: .8rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: left;
+  }
+
+  .action-plan-show .header-actions .action-plan-back-link {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .action-plan-show .action-plan-view-tools { padding: .25rem; }
+  .action-plan-show .action-plan-view-switch__link { min-height: 44px; }
+
+  .action-plan-inbox-panel,
+  .action-plan-tasks-panel { height: auto; overflow: visible; }
+
+  .action-plan-show.dashboard-page { padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); }
+
+  .action-plan-inbox-launcher {
+    position: fixed;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1030;
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    min-height: 48px;
+    padding: .65rem 1rem;
+    border: 1px solid rgba(var(--bs-primary-rgb), .3);
+    border-radius: 999px;
+    background: var(--bs-primary);
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .22);
+    font-weight: 700;
+  }
+
+  .action-plan-inbox-launcher__count {
+    background: rgba(255, 255, 255, .2);
+    border-radius: 999px;
+    min-width: 1.6rem;
+    padding: .1rem .35rem;
+    text-align: center;
+  }
+
+  .action-plan-inbox-panel.offcanvas-md,
+  .action-plan-inbox-panel.offcanvas-md.is-inbox-collapsed {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    height: 80vh;
+    height: 80dvh;
+    max-height: calc(100% - 1rem);
+    padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+    border-radius: 20px 20px 0 0;
+    overflow: hidden;
+    background: var(--bs-body-bg);
+  }
+
+  .action-plan-inbox-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-shrink: 0;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid var(--bs-border-color);
+  }
+
+  .action-plan-inbox-drawer-header h2 { font-size: 1.1rem; margin: 0 0 .25rem; }
+  .action-plan-inbox-drawer-header p { color: var(--bs-secondary-color); font-size: .8rem; margin: 0; }
+  .action-plan-inbox-drawer-header .btn-close { padding: .85rem; }
+  .action-plan-inbox-panel.is-inbox-collapsed .action-plan-inbox-collapsed-icon { display: none; }
+
+  .action-plan-inbox-panel > [data-inbox-panel-target="content"],
+  .action-plan-inbox-panel.is-inbox-collapsed > [data-inbox-panel-target="content"] {
+    height: auto;
+    min-height: 0;
+    overflow-y: auto;
+    margin-top: .75rem;
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    visibility: inherit;
+  }
+
+  .action-plan-inbox-panel .action-plan-inbox-page { height: auto; grid-template-rows: none; }
+  .action-plan-inbox-panel .action-plan-inbox-intro { display: none; }
+  .action-plan-inbox-panel .action-plan-inbox-list { overflow: visible; }
+
+  .action-plan-kanban-workspace .action-plan-kanban-panel,
+  .action-plan-kanban-workspace .kanban-scroll-bottom,
+  .action-plan-kanban-workspace .action-plan-kanban-panel > [data-controller="action-plan-filter"] { height: auto; }
+
+  .action-plan-kanban-hint { color: var(--bs-secondary-color); font-size: .75rem; margin: .25rem 0 .75rem; }
+
+  .action-plan-show .form-control,
+  .action-plan-show .form-select { font-size: 1rem; min-height: 44px; }
+  .action-plan-kanban-add-task { min-height: 44px; }
+  .action-plan-mobile-task { overflow-wrap: anywhere; }
   .action-plan-inbox-panel,
   .action-plan-tasks-panel { padding: .75rem; }
 
@@ -1634,21 +1765,39 @@ main.app-main:has(.action-plan-show) {
   }
 
   .kanban-scroll-bottom {
-    margin-left: -0.75rem;
-    margin-right: -0.75rem;
-    padding-left: 0.75rem;
-    scroll-padding-left: 0.75rem;
+    margin: 0;
+    padding: 0;
   }
 
-  .action-plan-kanban-board {
-    gap: 0.75rem;
-    padding-bottom: 0.75rem;
+  .action-plan-kanban-board.row {
+    height: auto;
+    flex: none;
+    gap: .75rem;
+    padding-bottom: .75rem;
+    scroll-snap-type: x proximity;
+    scrollbar-width: auto;
   }
+
+  .action-plan-kanban-board.row::-webkit-scrollbar { height: 8px; }
 
   .action-plan-kanban-column {
-    flex-basis: 86vw;
-    max-width: 320px;
+    flex: 0 0 90%;
+    max-width: 340px;
+    height: auto;
+    scroll-snap-align: start;
   }
+
+  .action-plan-kanban-card {
+    max-height: 70vh;
+    max-height: 70dvh;
+    margin-bottom: 0 !important;
+  }
+
+  .action-plan-kanban-card__header,
+  .action-plan-kanban-card__composer { flex-shrink: 0; }
+  .action-plan-kanban-card__composer { max-height: 40vh; overflow-y: auto; }
+  .action-plan-kanban-card__body { min-height: 0; scrollbar-width: auto; }
+  .action-plan-kanban-card__remove { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 
   .task-modal-dialog {
     margin: 0.75rem;

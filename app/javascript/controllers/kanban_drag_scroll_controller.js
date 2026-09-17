@@ -42,6 +42,7 @@ export default class extends Controller {
   }
 
   pointerDown(event) {
+    if (event.pointerType === "touch") return
     if (event.target.closest(".task-card, .drag-handle, [data-controller~='sortable']")) return
     // Tom Select renders options as divs; capturing their pointer redirects
     // the selection click to the board instead of the option.

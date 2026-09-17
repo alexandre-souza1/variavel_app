@@ -1,0 +1,18 @@
+<div class="action-plan-inbox-drawer-header d-md-none">
+  <div>
+    <h2 id="actionPlanInboxLabel"><i class="bi bi-inbox"></i> Entrada</h2>
+    <p>Capture agora, organize depois</p>
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
+          data-bs-target="#actionPlanInbox" aria-label="Fechar Entrada"></button>
+</div>
+<div class="action-plan-inbox-collapsed-icon" aria-hidden="true">
+  <i class="bi bi-inbox"></i>
+</div>
+<button type="button" class="action-plan-inbox-toggle d-none d-md-inline-flex"
+        data-inbox-panel-toggle
+        aria-expanded="<%= !current_user.action_plan_inbox_collapsed %>"
+        aria-label="<%= current_user.action_plan_inbox_collapsed ? 'Expandir Entrada' : 'Recolher Entrada' %>"
+        data-action="click->inbox-panel#toggle">
+  <i class="bi bi-chevron-double-left"></i>
+</button>
