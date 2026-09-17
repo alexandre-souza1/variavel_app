@@ -1,4 +1,4 @@
-<div class="routines-page">
+<div class="routines-page routine-module-page">
 
   <!-- ========== CABEÇALHO ========== -->
   <header class="routines-header">
@@ -32,7 +32,7 @@
   <!-- ========== LISTAGEM ========== -->
   <% if @routines.any? %>
 
-    <table class="routines-table">
+    <table class="routines-table routine-mobile-records">
       <thead>
         <tr>
           <th>Título</th>
@@ -44,15 +44,15 @@
       <tbody>
         <% @routines.each do |routine| %>
           <tr>
-            <td><%= routine.title %></td>
-            <td><%= l(routine.period_start) %> até <%= l(routine.period_end) %></td>
-            <td>
+            <td data-label="Rotina"><%= routine.title %></td>
+            <td data-label="Período"><%= l(routine.period_start) %> até <%= l(routine.period_end) %></td>
+            <td data-label="Status">
               <% badge_class = routine.open? ? 'active' : 'inactive' %>
               <span class="status-badge <%= badge_class %>">
                 <%= routine_status_label(routine) %>
               </span>
             </td>
-            <td>
+            <td class="routine-record-actions">
               <div class="table-actions">
                 <%= link_to "Abrir", routine, class: "btn-primary-solid btn-sm" %>
                 <% if @show_archived && current_user.admin? %>

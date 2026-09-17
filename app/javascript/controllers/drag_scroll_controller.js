@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static values = {
+    nativeMobileTouch: { type: Boolean, default: false },
     handle: { type: String, default: "" }
   }
 
@@ -57,6 +58,9 @@ export default class extends Controller {
   }
 
   mouseDown(event) {
+    // Let the browser handle both scroll axes on the mobile routine grid.
+    if (event.touches && this.nativeMobileTouchValue && window.matchMedia("(max-width: 767.98px)").matches) return
+
     console.log("[routines-drag-scroll] mouseDown", {
       target: event.target,
       pageX: event.touches ? event.touches[0].pageX : event.pageX,

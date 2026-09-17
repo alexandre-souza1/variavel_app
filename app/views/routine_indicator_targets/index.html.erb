@@ -1,4 +1,4 @@
-<div class="container py-4">
+<div class="container py-4 routine-module-page routine-targets-page">
 
   <div class="d-flex justify-content-between align-items-center mb-4">
 
@@ -34,7 +34,7 @@
 
     <div class="table-responsive">
 
-      <table class="table table-bordered align-middle">
+      <table class="table table-bordered align-middle routine-mobile-records">
 
         <thead>
 
@@ -53,19 +53,19 @@
 
             <tr>
 
-              <td>
+              <td data-label="Meta">
                 <%= target.goal %>
               </td>
 
-              <td>
+              <td data-label="Início">
                 <%= l(target.starts_at) %>
               </td>
 
-              <td>
+              <td data-label="Fim">
                 <%= target.ends_at.present? ? l(target.ends_at) : "Sem término" %>
               </td>
 
-              <td class="text-end">
+              <td class="text-end routine-record-actions">
 
                 <%= link_to edit_routine_template_routine_category_routine_indicator_routine_indicator_target_path(
                       @template,

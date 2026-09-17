@@ -1,6 +1,19 @@
-<div class="routine-table-wrapper">
+<div class="routine-table-wrapper" data-controller="routine-grid">
+  <div class="routine-grid-navigation d-md-none">
+    <label for="routine-grid-date-<%= frequency %>">Navegar pela grade</label>
+    <select id="routine-grid-date-<%= frequency %>" class="form-select"
+            data-action="change->routine-grid#navigate">
+      <option value="">Meta e resultado</option>
+      <% days.each_with_index do |day, index| %>
+        <option value="<%= index %>"><%= l(day, format: "%d/%m") %> · <%= routine_weekday_abbr(day) %><%= " (hoje)" if day == Date.current %></option>
+      <% end %>
+    </select>
+    <p><i class="bi bi-arrows-move" aria-hidden="true"></i> Deslize a grade para ver os dias e indicadores. Toque no valor para editar ou no balão para comentar.</p>
+  </div>
   <div class="table-responsive"
      data-controller="drag-scroll"
+     data-routine-grid-target="viewport"
+     data-drag-scroll-native-mobile-touch-value="true"
      data-drag-scroll-handle-value=".category-row">
     <table class="table table-routine align-middle mb-0">
       <thead>
