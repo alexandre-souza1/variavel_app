@@ -51,7 +51,19 @@ android {
                 keyPassword = signingValue("keyPassword", "WORKSTATION_KEY_PASSWORD")
             }
         }
-        buildTypes.getByName("release").signingConfig = signingConfigs.getByName("production")
+    }
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            if (releaseStore != null) {
+                signingConfig = signingConfigs.getByName("production")
+            }
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

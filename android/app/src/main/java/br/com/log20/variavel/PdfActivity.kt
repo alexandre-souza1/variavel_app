@@ -49,7 +49,9 @@ class PdfActivity : AppCompatActivity() {
         val actions = DocumentActions(this)
         zoom = savedInstanceState?.getFloat("zoom") ?: 1f
         pageIndex = savedInstanceState?.getInt("page") ?: 0
-        document = File.createTempFile("report-", ".pdf", cacheDir)
+        val cachedPath = savedInstanceState?.getString("document_path")
+        val restoredFile = cachedPath?.let { File(it) }?.takeIf { it.exists() && it.length() > 0 }
+        document = restoredFile ?: File.createTempFile("report-", ".pdf", cacheDir)
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -103,7 +105,11 @@ class PdfActivity : AppCompatActivity() {
         navigation.addView(next, LinearLayout.LayoutParams(0, -2, 1f))
         root.addView(navigation)
         setContentView(root)
-        download()
+        if (restoredFile != null) {
+            render(pageIndex)
+        } else {
+            download()
+        }
     }
 
     private fun download() {
@@ -174,13 +180,18 @@ class PdfActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putInt("page", pageIndex)
         outState.putFloat("zoom", zoom)
+        if (::document.isInitialized && document.exists()) {
+            outState.putString("document_path", document.absolutePath)
+        }
         super.onSaveInstanceState(outState)
     }
 
     override fun onDestroy() {
         closed = true
-        // Cleanup runs after pending work so the file is never removed during rendering.
-        worker.execute { document.delete() }
+        if (!isChangingConfigurations && ::document.isInitialized) {
+            val fileToDelete = document
+            worker.execute { fileToDelete.delete() }
+        }
         worker.shutdown()
         preview.setImageDrawable(null)
         bitmap?.recycle()

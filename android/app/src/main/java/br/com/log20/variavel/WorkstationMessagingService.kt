@@ -11,6 +11,10 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 class WorkstationMessagingService : FirebaseMessagingService() {
+    override fun onNewToken(token: String) {
+        getSharedPreferences("push", 0).edit().putString("fcm_token", token).apply()
+    }
+
     override fun onMessageReceived(message: RemoteMessage) {
         val user = getSharedPreferences("push", 0).getString("user", null) ?: return
         if (user != message.data["user_id"]) return
