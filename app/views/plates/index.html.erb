@@ -1,324 +1,142 @@
-<div class="container py-4">
-
-  <!-- Cabeçalho -->
-  <div class="border-0 mb-4">
-    <div class="mapas-dashboard-header">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <h3 class="mb-0 fw-bold">
-            <i class="bi bi-truck-front-fill text-primary me-2"></i>
-            <%= params[:status] == "inactive" ? "Placas Inativas" : "Placas Ativas" %>
-          </h3>
-          <p>Lista de placas da operação.</p>
-        </div>
-        <div class="justify-content-end d-flex align-items-end gap-3">
-          <%= link_to new_plate_path, class: "btn btn-light" do %>
-            <i class="bi bi-plus-circle-fill me-1"></i>
-            Nova Placa
-          <% end %>
-
-          <%= link_to plates_path(status: params[:status] == "inactive" ? nil : "inactive"), class: "btn btn-outline-primary ms-2" do %>
-            <%= params[:status] == "inactive" ? "Placas ativas" : "Placas inativas" %>
-          <% end %>
-        </div>
-
+<% inactive = params[:status] == "inactive" %>
+<div class="dashboard-page plates-index-page">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div>
+        <p class="dashboard-eyebrow">Frota · Cadastro</p>
+        <h1><i class="bi bi-truck-front"></i> Placas</h1>
+        <p class="subtitle">Veículos e equipamentos da operação, em um só lugar.</p>
       </div>
-    </div>
-  </div>
-
-  <!-- Cards Resumo -->
-  <div class="row mb-4">
-
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body d-flex align-items-center">
-
-          <div class="display-5 text-primary me-3">
-            <i class="bi bi-truck"></i>
-          </div>
-
-          <div>
-            <small class="text-muted">Total de Placas</small>
-            <h3 class="fw-bold mb-0"><%= @plates.count %></h3>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body d-flex align-items-center">
-
-          <div class="display-5 text-success me-3">
-            <i class="bi bi-building"></i>
-          </div>
-
-          <div>
-            <small class="text-muted">Armazém</small>
-            <h3 class="fw-bold mb-0">
-              <%= @plates.count { |p| p.setor == "ARMAZEM" } %>
-            </h3>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body d-flex align-items-center">
-
-          <div class="display-5 text-info me-3">
-            <i class="bi bi-sign-turn-right-fill"></i>
-          </div>
-
-          <div>
-            <small class="text-muted">Rota</small>
-            <h3 class="fw-bold mb-0">
-              <%= @plates.count { |p| p.setor == "ROTA" } %>
-            </h3>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Card Principal -->
-  <div class="card border-0 shadow-lg">
-
-    <div class="card-body">
-
-      <!-- Filtros -->
-      <%= form_with url: plates_path, method: :get, local: true do %>
-
-        <div class="row g-3 align-items-end mb-4">
-
-          <div class="col-lg-3">
-
-            <%= label_tag :placa, "Buscar Placa", class: "form-label fw-semibold" %>
-
-            <div class="input-group">
-              <span class="input-group-text">
-                <i class="bi bi-search"></i>
-              </span>
-
-              <%= text_field_tag :placa,
-                    params[:placa],
-                    class: "form-control",
-                    placeholder: "ABC1D23" %>
-            </div>
-
-          </div>
-
-          <div class="col-lg-2">
-
-            <%= label_tag :setor, "Setor", class: "form-label fw-semibold" %>
-
-            <%= select_tag :setor,
-                  options_for_select([
-                    ["Todos",""],
-                    ["Armazém","ARMAZEM"],
-                    ["Rota","ROTA"]
-                  ], params[:setor]),
-                  class: "form-select" %>
-
-          </div>
-
-          <div class="col-lg-2">
-
-            <%= label_tag :tipo, "Tipo", class: "form-label fw-semibold" %>
-
-            <%= select_tag :tipo,
-                  options_for_select([
-                    ["Todos",""],
-                    "Empilhadeira",
-                    "Paleteira",
-                    "Máquina de Limpeza",
-                    "Caminhão",
-                    "Van"
-                  ], params[:tipo]),
-                  class: "form-select" %>
-
-          </div>
-
-          <div class="col-lg-2">
-
-            <%= label_tag :perfil, "Perfil", class: "form-label fw-semibold" %>
-
-            <%= select_tag :perfil,
-                  options_for_select([
-                    ["Todos",""],
-                    "GLP",
-                    "Sem Balança",
-                    "VUC",
-                    "TOCO",
-                    "TRUCK",
-                    "BITRUCK",
-                    "VAN"
-                  ], params[:perfil]),
-                  class: "form-select" %>
-
-          </div>
-
-          <div class="col-lg-3 d-flex gap-2">
-
-            <%= submit_tag "Filtrar",
-                  class: "btn btn-primary flex-fill" %>
-
-            <%= link_to plates_path,
-                  class: "btn btn-outline-secondary" do %>
-              <i class="bi bi-arrow-clockwise"></i>
-            <% end %>
-
-          </div>
-
-        </div>
-
-      <% end %>
-
-      <hr>
-
-      <!-- Importação -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <%= form_with url: import_plates_path,
-              local: true,
-              html: {
-                multipart: true,
-                class: "d-flex gap-2"
-              } do |form| %>
-
-          <%= form.file_field :file,
-                class: "form-control" %>
-
-          <%= form.submit "Importar CSV",
-                class: "btn btn-outline-primary" %>
-
+      <div class="header-actions">
+        <%= link_to root_path, class: "btn-outline" do %>
+          <i class="bi bi-arrow-left"></i> Voltar
         <% end %>
-
+        <%= link_to new_plate_path, class: "btn-primary-solid" do %>
+          <i class="bi bi-plus-lg"></i> Nova placa
+        <% end %>
       </div>
+    </div>
+  </header>
 
-      <!-- Tabela -->
-      <div class="table-responsive">
-
-        <div class="app-table-shell"><table class="table app-table app-table--data">
-
-          <thead class="table-light">
-
-            <tr>
-
-              <th>Placa</th>
-              <th>Setor</th>
-              <th>Perfil</th>
-              <th>Tipo</th>
-              <th class="text-center">Ações</th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            <% @plates.each do |plate| %>
-
-              <tr>
-
-                <td class="fw-semibold">
-                  <%= link_to plate.placa, plate_path(plate), class: "text-decoration-none" %>
-                </td>
-
-                <td>
-
-                  <% if plate.setor == "ARMAZEM" %>
-
-                    <span class="badge bg-success">
-                      Armazém
-                    </span>
-
-                  <% else %>
-
-                    <span class="badge bg-info">
-                      Rota
-                    </span>
-
-                  <% end %>
-
-                </td>
-
-                <td>
-                  <%= plate.perfil.presence || "-" %>
-                </td>
-
-                <td>
-
-                  <span class="badge bg-secondary">
-                    <%= plate.tipo %>
-                  </span>
-
-                </td>
-
-                <td class="text-center">
-
-                  <div class="btn-group">
-
-                    <%= link_to edit_plate_path(plate),
-                          class: "btn btn-sm btn-outline-primary" do %>
-
-                      <i class="bi bi-pencil-square"></i>
-
-                    <% end %>
-
-                    <% if plate.active? %>
-                      <%= button_to retire_plate_path(plate),
-                            method: :patch,
-                            form: { data: { turbo_confirm: "Inativar esta placa? O histórico será preservado." } },
-                            class: "btn btn-sm btn-outline-warning" do %>
-                        <i class="bi bi-archive"></i>
-                      <% end %>
-                    <% else %>
-                      <%= button_to reactivate_plate_path(plate),
-                            method: :patch,
-                            class: "btn btn-sm btn-outline-success" do %>
-                        <i class="bi bi-arrow-counterclockwise"></i>
-                      <% end %>
-                    <% end %>
-
-                  </div>
-
-                </td>
-
-              </tr>
-
-            <% end %>
-
-          </tbody>
-
-        </table></div>
-
+  <div class="kpi-grid">
+    <% [
+      [inactive ? "Placas inativas" : "Placas ativas", @plates.size, "truck", "primary"],
+      ["Armazém", @plates.count { |plate| plate.setor == "ARMAZEM" }, "building", "success"],
+      ["Rota", @plates.count { |plate| plate.setor == "ROTA" }, "sign-turn-right", "warning"]
+    ].each do |label, count, icon, color| %>
+      <div class="kpi-card">
+        <div class="kpi-icon bg-<%= color %>-soft"><i class="bi bi-<%= icon %> text-<%= color %>"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-label"><%= label %></span>
+          <span class="kpi-value"><%= count %></span>
+          <small class="text-muted">Na seleção atual</small>
+        </div>
       </div>
-
-    </div>
-
-    <div class="card-footer bg-light d-flex justify-content-between align-items-center">
-
-      <small class="text-muted">
-        Exibindo <strong><%= @plates.count %></strong> placas.
-      </small>
-
-      <%= link_to root_path,
-            class: "btn btn-outline-secondary" do %>
-
-        <i class="bi bi-arrow-left me-1"></i>
-
-        Voltar
-
-      <% end %>
-
-    </div>
-
+    <% end %>
   </div>
 
+  <section class="app-panel plates-register" aria-labelledby="plates-heading">
+    <div class="app-panel__header plates-register-header">
+      <div class="dashboard-panel-heading">
+        <span class="dashboard-panel-kicker">Registro · Operação</span>
+        <h2 id="plates-heading">Placas <%= inactive ? "inativas" : "ativas" %></h2>
+        <small><%= inactive ? "Histórico preservado, com opção de reativação." : "Consulte os detalhes e mantenha o cadastro da frota em dia." %></small>
+      </div>
+      <nav class="plates-status-tabs" aria-label="Status das placas">
+        <% [["Ativas", nil], ["Inativas", "inactive"]].each do |label, status| %>
+          <% selected = inactive == (status == "inactive") %>
+          <%= link_to label, plates_path(request.query_parameters.slice("placa", "setor", "tipo", "perfil").merge("status" => status)),
+                class: "plates-status-tab #{'is-active' if selected}", aria: { current: selected ? "page" : nil } %>
+        <% end %>
+      </nav>
+    </div>
+    <div class="app-panel__body">
+      <%= form_with url: plates_path, method: :get, local: true, class: "plates-filters" do %>
+        <%= hidden_field_tag :status, "inactive" if inactive %>
+        <div>
+          <%= label_tag :placa, "Buscar placa", class: "form-label" %>
+          <%= text_field_tag :placa, params[:placa], class: "form-control", placeholder: "Ex.: ABC1D23" %>
+        </div>
+        <div>
+          <%= label_tag :setor, "Setor", class: "form-label" %>
+          <%= select_tag :setor, options_for_select([["Todos", ""], ["Armazém", "ARMAZEM"], ["Rota", "ROTA"]], params[:setor]), class: "form-select" %>
+        </div>
+        <div>
+          <%= label_tag :tipo, "Tipo", class: "form-label" %>
+          <%= select_tag :tipo, options_for_select([["Todos", ""]] + Plate::TIPOS, params[:tipo]), class: "form-select" %>
+        </div>
+        <div>
+          <%= label_tag :perfil, "Perfil", class: "form-label" %>
+          <%= select_tag :perfil, options_for_select([["Todos", ""]] + Plate::PERFIS, params[:perfil]), class: "form-select" %>
+        </div>
+        <div class="plates-filter-actions">
+          <%= submit_tag "Filtrar", class: "btn-primary-solid" %>
+          <%= link_to "Limpar", plates_path(status: inactive ? "inactive" : nil), class: "btn-outline" %>
+        </div>
+      <% end %>
+
+      <% if @plates.any? %>
+        <div class="dashboard-table-wrapper">
+          <table class="table align-middle dashboard-data-table plates-table mb-0">
+            <thead>
+              <tr>
+                <th scope="col">Placa</th>
+                <th scope="col">Setor</th>
+                <th scope="col">Perfil</th>
+                <th scope="col">Tipo</th>
+                <th scope="col" class="text-end">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @plates.each do |plate| %>
+                <tr>
+                  <td><%= link_to plate.placa, plate_path(plate), class: "plates-identity" %></td>
+                  <td><span class="plates-sector"><i class="bi bi-<%= plate.setor == 'ARMAZEM' ? 'building' : 'sign-turn-right' %>" aria-hidden="true"></i> <%= plate.setor == "ARMAZEM" ? "Armazém" : "Rota" %></span></td>
+                  <td><%= plate.perfil.presence || "—" %></td>
+                  <td><%= plate.tipo %></td>
+                  <td>
+                    <div class="plates-row-actions">
+                      <%= link_to edit_plate_path(plate), class: "plates-icon-action", title: "Editar placa", aria: { label: "Editar placa #{plate.placa}" } do %>
+                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                      <% end %>
+                      <% if plate.active? %>
+                        <%= button_to retire_plate_path(plate), method: :patch,
+                              form: { data: { turbo_confirm: "Inativar esta placa? O histórico será preservado." } },
+                              class: "plates-icon-action", title: "Inativar placa", aria: { label: "Inativar placa #{plate.placa}" } do %>
+                          <i class="bi bi-archive" aria-hidden="true"></i>
+                        <% end %>
+                      <% else %>
+                        <%= button_to reactivate_plate_path(plate), method: :patch,
+                              class: "plates-icon-action", title: "Reativar placa", aria: { label: "Reativar placa #{plate.placa}" } do %>
+                          <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+        <p class="plates-result-count">Exibindo <strong><%= @plates.size %></strong> placas <%= inactive ? "inativas" : "ativas" %>.</p>
+      <% else %>
+        <div class="plates-empty">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <h3>Nenhuma placa encontrada</h3>
+          <p>Revise os filtros ou alterne entre placas ativas e inativas.</p>
+        </div>
+      <% end %>
+
+      <details class="plates-import">
+        <summary><i class="bi bi-upload" aria-hidden="true"></i> Importar placas por CSV</summary>
+        <%= form_with url: import_plates_path, local: true, html: { multipart: true, class: "plates-import-form" } do |form| %>
+          <div>
+            <%= form.label :file, "Arquivo CSV", class: "form-label" %>
+            <%= form.file_field :file, class: "form-control", accept: ".csv,text/csv", required: true %>
+          </div>
+          <%= form.submit "Importar CSV", class: "btn-outline" %>
+        <% end %>
+      </details>
+    </div>
+  </section>
 </div>

@@ -221,10 +221,10 @@
     }
   }
 
-  // Informações (cards duplos)
+  // Informações (três cards lado a lado)
   .info-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
     margin-bottom: 2rem;
   }
@@ -450,6 +450,54 @@
   max-width: none;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
+}
+
+.dashboard-page {
+  .dashboard-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .dashboard-data-table {
+    --bs-table-bg: transparent;
+    font-size: 0.78rem;
+    table-layout: fixed;
+    width: 100%;
+
+    th, td {
+      padding: 0.65rem 0.5rem;
+      border-color: var(--bs-border-color);
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      background: transparent;
+      border-bottom: 0;
+      color: var(--bs-secondary-color);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: normal;
+    }
+
+    th:first-child, td:first-child { padding-left: 0; }
+    th:last-child, td:last-child { padding-right: 0; }
+
+    td {
+      color: var(--bs-secondary-color);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    td:first-child {
+      color: var(--bs-body-color);
+      strong { display: block; font-weight: 600; }
+    }
+  }
+
+  .retread-depth { color: var(--bs-danger-text-emphasis, var(--bs-danger)); font-weight: 700; }
 }
 
 .mapas-dashboard-page {

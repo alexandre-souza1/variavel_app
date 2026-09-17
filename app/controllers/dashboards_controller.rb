@@ -118,6 +118,11 @@ class DashboardsController < ApplicationController
     @drivers_count     = Driver.count
     @checklists_today  = Checklist.where(created_at: Date.current.all_day).count
     @stress_tests_count = StressTestImport.count
+
+    # ------------------------------------------------------------
+    # 6. Pneus que precisam recapar (Prolog)
+    # ------------------------------------------------------------
+    @retread_tires = Prolog::TiresClient.new.tires_needing_retread
   end
 
 

@@ -150,6 +150,56 @@
 
   <!-- ========== CARDS DE INFORMAÇÕES ========== -->
   <div class="info-grid">
+    <!-- Pneus que precisam recapar -->
+    <div class="app-panel info-card retread-tires-card">
+      <div class="app-panel__header info-card-header">
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="bi bi-circle-half me-1"></i> Prolog · Pneus</span>
+          <h2>Pneus que precisam recapar</h2>
+          <small>Até 3,5 mm, sem considerar estepes</small>
+        </div>
+        <div class="info-badges">
+          <span class="badge bg-danger"><%= @retread_tires.size %></span>
+        </div>
+      </div>
+      <div class="app-panel__body info-card-body">
+        <% if @retread_tires.present? %>
+          <div class="table-responsive dashboard-table-wrapper">
+            <table class="table align-middle dashboard-data-table mb-0" aria-label="Pneus que precisam recapar">
+              <thead>
+                <tr>
+                  <th scope="col">Placa</th>
+                  <th scope="col">Nº de fogo</th>
+                  <th scope="col">Menor mm</th>
+                  <th scope="col">Data do dado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @retread_tires.first(10).each do |tire| %>
+                  <tr>
+                    <td>
+                      <strong><%= tire[:plate].presence || "Sem placa" %></strong>
+                    </td>
+                    <td><%= tire[:fire_number].presence || "—" %></td>
+                    <td><span class="retread-depth"><%= number_with_precision(tire[:smallest_tread_depth], precision: 2, strip_insignificant_zeros: true) %> mm</span></td>
+                    <td><%= tire[:created_at].present? ? l(Time.zone.parse(tire[:created_at].to_s), format: :short) : "—" %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+          <% if @retread_tires.size > 10 %>
+            <p class="text-muted small mt-2 mb-0">Exibindo 10 de <%= @retread_tires.size %> pneus, ordenados pela menor milimetragem.</p>
+          <% end %>
+        <% else %>
+          <div class="empty-state-compact">
+            <i class="bi bi-check-circle-fill text-success"></i>
+            <span>Nenhum pneu com até 3,5 mm foi encontrado.</span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
     <!-- Veículos sem movimentação -->
     <div class="app-panel info-card">
       <div class="app-panel__header info-card-header">
@@ -185,17 +235,28 @@
       <div class="app-panel__body info-card-body">
         <% vehicles = @vehicles_not_used_this_month.take(10) %>
         <% if vehicles.present? %>
-          <ul class="vehicle-list">
-            <% vehicles.each do |vehicle| %>
-              <li>
-                <span class="vehicle-placa"><%= vehicle.placa %></span>
-                <span class="vehicle-tipo"><%= vehicle.tipo || "Sem tipo" %></span>
-                <span class="vehicle-perfil"><%= vehicle.perfil || "Sem perfil" %></span>
-              </li>
-            <% end %>
-          </ul>
+          <div class="table-responsive dashboard-table-wrapper">
+            <table class="table align-middle dashboard-data-table mb-0" aria-label="Veículos sem movimentação">
+              <thead>
+                <tr>
+                  <th scope="col">Placa</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col">Perfil</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% vehicles.each do |vehicle| %>
+                  <tr>
+                    <td><strong><%= vehicle.placa %></strong></td>
+                    <td><%= vehicle.tipo.presence || "Sem tipo" %></td>
+                    <td><%= vehicle.perfil.presence || "Sem perfil" %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
           <% if @vehicles_not_used_this_month.count > 10 %>
-            <p class="text-muted small mt-2">Exibindo 10 de <%= @vehicles_not_used_this_month.count %></p>
+            <p class="text-muted small mt-2 mb-0">Exibindo 10 de <%= @vehicles_not_used_this_month.count %> veículos.</p>
           <% end %>
           <div class="text-center mt-3">
             <%= link_to "Ver todos os veículos", placas_por_setor_path, class: "btn-outline btn-sm" %>

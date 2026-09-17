@@ -1,0 +1,24 @@
+<div class="app-panel info-card plate-section">
+      <div class="app-panel__header info-card-header">
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="bi bi-kanban me-1"></i> Acompanhamento</span>
+          <h2>Tarefas relacionadas</h2>
+          <small>Onde <strong><%= @plate.placa %></strong> foi mencionada</small>
+        </div>
+      </div>
+      <div class="app-panel__body info-card-body">
+        <% if @mentioned_tasks.any? %>
+          <ul class="task-list-compact">
+            <% @mentioned_tasks.each do |task| %>
+              <li>
+                <i class="bi bi-<%= task.completed? ? 'check-circle text-success' : 'exclamation-circle text-warning' %>"></i>
+                <%= link_to truncate(task.title.presence || "Task sem título", length: 38), action_plan_bucket_task_path(task.bucket.action_plan, task.bucket, task), class: "task-link" %>
+                <span class="task-date"><%= l(task.updated_at, format: :short) %></span>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <div class="empty-state-compact"><i class="bi bi-kanban"></i><span>Nenhuma tarefa mencionou esta placa.</span></div>
+        <% end %>
+      </div>
+    </div>

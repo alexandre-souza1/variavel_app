@@ -1,0 +1,49 @@
+<section class="app-panel info-card plate-section" aria-labelledby="plate-tires-title">
+  <div class="app-panel__header info-card-header">
+    <div class="dashboard-panel-heading">
+      <span class="dashboard-panel-kicker">Prolog · Pneus</span>
+      <h2 id="plate-tires-title">Pneus em uso</h2>
+      <small>Instalados nesta placa, sem estepes. Ordenados pelo menor sulco.</small>
+    </div>
+  </div>
+  <div class="app-panel__body">
+    <% if @tires_error %>
+      <p class="plate-panel-message" role="status"><i class="bi bi-cloud-slash"></i>
+        <%= @tires_error == :not_configured ? "A integração com o Prolog ainda não está configurada." : "Não foi possível consultar os pneus agora. Tente novamente em alguns instantes." %>
+      </p>
+    <% elsif @tires.empty? %>
+      <p class="plate-panel-message"><i class="bi bi-circle"></i> Nenhum pneu em uso encontrado no Prolog para esta placa.</p>
+    <% else %>
+      <div class="plate-tire-summary">
+        <div><span>Menor sulco</span><strong><% depth = @tires.filter_map { |tire| tire[:smallest_tread_depth] }.min %><%= depth ? "#{number_with_precision(depth, precision: 2, strip_insignificant_zeros: true)} mm" : "Sem medição" %></strong></div>
+      </div>
+      <div class="dashboard-table-wrapper">
+        <table class="table align-middle dashboard-data-table mb-0" aria-label="Pneus da placa">
+          <thead><tr><th scope="col">Nº de fogo</th><th scope="col">Posição</th><th scope="col">Menor sulco</th><th scope="col">Situação</th></tr></thead>
+          <tbody>
+            <% @tires.each do |tire| %>
+              <% depth = tire[:smallest_tread_depth] %>
+              <% status, tone = if depth.nil?
+                                  ["Sem medição", "muted"]
+                                elsif depth <= 3.5
+                                  ["Recape", "danger"]
+                                elsif depth < 5
+                                  ["Atenção", "warning"]
+                                else
+                                  ["Em faixa", "success"]
+                                end %>
+              <tr>
+                <td><strong><%= tire[:fire_number].presence || "—" %></strong></td>
+                <td><%= tire[:position].presence || "Não informada" %></td>
+                <td><%= depth ? "#{number_with_precision(depth, precision: 2, strip_insignificant_zeros: true)} mm" : "—" %></td>
+                <td><span class="plate-tire-status plate-tire-status--<%= tone %>"><%= status %></span></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <p class="plate-tire-note">Recape: até 3,5 mm · Atenção: acima de 3,5 e abaixo de 5 mm · Em faixa: a partir de 5 mm.</p>
+      <p class="plate-tire-note">A data da última aferição não é informada nesta consulta do Prolog.</p>
+    <% end %>
+  </div>
+</section>

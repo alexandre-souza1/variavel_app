@@ -25,6 +25,10 @@ class PlatesController < ApplicationController
     @mentioned_tasks = tasks_mentioning_plate(@plate)
     @mapa_exits = mapa_exits_for(@plate)
     @most_common_driver = most_common_driver_from(@mapa_exits)
+    tires_client = Prolog::TiresClient.new
+    @tires = tires_client.tires_for_plate(@plate.placa)
+    @tires_error = tires_client.error
+    @retread_count = @tires.count { |tire| tire[:smallest_tread_depth] && tire[:smallest_tread_depth] <= 3.5 }
     @latest_availability = @plate.fleet_availability_items
                                   .includes(:fleet_availability)
                                   .max_by { |item| item.fleet_availability.date }

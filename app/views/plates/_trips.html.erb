@@ -1,0 +1,43 @@
+<div class="app-panel info-card plate-section">
+    <div class="app-panel__header info-card-header">
+      <div class="dashboard-panel-heading">
+        <span class="dashboard-panel-kicker"><i class="bi bi-sign-turn-right me-1"></i> Operação</span>
+        <h2>Saídas registradas nos mapas</h2>
+        <small>Histórico de mapas associados à placa e motorista mais frequente</small>
+      </div>
+    </div>
+    <div class="app-panel__body info-card-body">
+      <p class="plate-driver">
+          <span>Motorista mais frequente:</span>
+          <% if @most_common_driver %>
+            <strong><%= @most_common_driver[:name].presence || "Matrícula #{@most_common_driver[:matricula]}" %></strong>
+            <small class="text-muted"><%= @most_common_driver[:matricula] %> · <%= pluralize(@most_common_driver[:count], "saída", "saídas") %></small>
+          <% else %>
+            <small class="text-muted">Nenhum motorista identificado</small>
+          <% end %>
+      </p>
+
+      <% if @mapa_exits.any? %>
+        <div class="dashboard-table-wrapper">
+          <table class="table align-middle dashboard-data-table mb-0">
+            <thead><tr><th>Data</th><th>Mapa</th><th>Motorista</th><th>Matrícula</th></tr></thead>
+            <tbody>
+              <% @mapa_exits.first(10).each do |mapa| %>
+                <tr>
+                  <td><%= l(mapa.data_formatada || mapa.created_at.to_date, format: :default) %></td>
+                  <td class="fw-semibold"><%= mapa.mapa.presence || "-" %></td>
+                  <td><%= mapa.driver&.nome.presence || "Não identificado" %></td>
+                  <td><%= mapa.matric_motorista.presence || "-" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+        <% if @mapa_exits.size > 10 %>
+          <small class="text-muted d-block mt-2">Exibindo as 10 saídas mais recentes de <%= @mapa_exits.size %>.</small>
+        <% end %>
+      <% else %>
+        <div class="empty-state-compact"><i class="bi bi-sign-turn-right"></i><span>Nenhuma saída encontrada nos mapas para esta placa.</span></div>
+      <% end %>
+    </div>
+  </div>

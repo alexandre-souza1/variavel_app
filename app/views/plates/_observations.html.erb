@@ -1,0 +1,27 @@
+<div class="app-panel info-card plate-section">
+      <div class="app-panel__header info-card-header">
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="bi bi-chat-left-text me-1"></i> Histórico</span>
+          <h2>Últimas observações</h2>
+          <small>Registros associados diretamente à placa</small>
+        </div>
+      </div>
+      <div class="app-panel__body info-card-body">
+        <% if @observations.any? %>
+          <ul class="activity-list">
+            <% @observations.each do |observation| %>
+              <li>
+                <div class="d-flex justify-content-between gap-3">
+                  <strong><%= observation[:source] %></strong>
+                  <small><%= l(observation[:date], format: :short) %></small>
+                </div>
+                <div class="mt-1"><%= observation[:text] %></div>
+                <small><%= observation[:author].presence || "Sistema" %> · <%= link_to "Ver registro", observation[:path], class: "text-primary" %></small>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <div class="empty-state-compact"><i class="bi bi-chat-square-dots"></i><span>Nenhuma observação registrada.</span></div>
+        <% end %>
+      </div>
+    </div>
