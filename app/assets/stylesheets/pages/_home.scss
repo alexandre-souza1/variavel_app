@@ -25,6 +25,22 @@
       linear-gradient(135deg, rgba(var(--bs-primary-rgb), .1), var(--bs-body-bg) 62%);
     box-shadow: 0 12px 32px rgba(15, 23, 42, .06);
 
+    .workstation-hero__logo {
+      position: absolute;
+      z-index: 0;
+      right: -9rem;
+      bottom: -9rem;
+      width: 24rem;
+      height: auto;
+      opacity: .13;
+      pointer-events: none;
+      user-select: none;
+      filter: saturate(.75) contrast(.9);
+      mix-blend-mode: multiply;
+      transform: rotate(7deg) scaleX(-1);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
     &::after {
       position: absolute;
       right: -4rem;
@@ -235,6 +251,12 @@
     .workstation-hero {
       margin-bottom: 1.75rem;
       border-radius: 16px;
+
+      .workstation-hero__logo {
+        right: -8rem;
+        bottom: -9rem;
+        width: 24rem;
+      }
     }
 
     .workstation-section-heading {
@@ -270,5 +292,9 @@ html[data-bs-theme="dark"] .workstation-home {
     background:
       radial-gradient(circle at 88% 18%, rgba(var(--app-primary-rgb), .24), transparent 20rem),
       linear-gradient(135deg, rgba(var(--app-primary-rgb), .14), var(--bs-body-bg) 62%);
+
+    .workstation-hero__logo {
+      mix-blend-mode: screen;
+    }
   }
 }
