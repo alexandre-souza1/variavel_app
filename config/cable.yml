@@ -1,10 +1,17 @@
 development:
-  adapter: async
+  # Use Redis locally whenever it is configured, so broadcasts also work
+  # between the web and worker processes. Without Redis, async still keeps
+  # the single-process development setup working.
+  adapter: <%= ENV["REDIS_URL"].to_s.strip.empty? && ENV["REDISCLOUD_URL"].to_s.strip.empty? ? "async" : "redis" %>
+  url: <%= ENV["REDIS_URL"].to_s.strip.empty? ? ENV["REDISCLOUD_URL"] : ENV["REDIS_URL"] %>
 
 test:
   adapter: test
 
 production:
   adapter: redis
-  url: <%= ENV["REDISCLOUD_URL"] %>
+  # Redis Cloud uses REDISCLOUD_URL, while Heroku Redis and most managed
+  # Redis add-ons expose the connection as REDIS_URL. Keep Action Cable on
+  # the same Redis instance used by Sidekiq.
+  url: <%= ENV["REDIS_URL"].to_s.strip.empty? ? ENV["REDISCLOUD_URL"] : ENV["REDIS_URL"] %>
   channel_prefix: variavel_app_production

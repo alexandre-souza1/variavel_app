@@ -162,7 +162,7 @@ AZURE_USER_ID
 ### Action Cable
 
 ```text
-REDISCLOUD_URL
+REDIS_URL             # ou REDISCLOUD_URL
 ACTION_CABLE_URL
 ```
 
