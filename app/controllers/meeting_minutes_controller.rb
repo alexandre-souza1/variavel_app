@@ -1,8 +1,8 @@
 class MeetingMinutesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_action_plan
-  before_action :set_meeting, only: [:show, :create_tasks, :update_participants, :import_participants]
-  before_action :ensure_meeting_access!, only: [:show, :create_tasks, :update_participants, :import_participants]
+  before_action :set_meeting, only: [:show, :create_tasks, :retry_generation, :audio, :update_participants, :import_participants]
+  before_action :ensure_meeting_access!, only: [:show, :create_tasks, :retry_generation, :audio, :update_participants, :import_participants]
 
   def index
     @meetings = @action_plan.meeting_minutes.order(meeting_date: :desc, created_at: :desc)
@@ -44,6 +44,28 @@ class MeetingMinutesController < ApplicationController
           disposition: params[:download].present? ? "attachment" : "inline"
       end
     end
+  end
+
+  def retry_generation
+    unless @meeting.failed?
+      redirect_to action_plan_meeting_minute_path(@action_plan, @meeting),
+        alert: "Esta ata não está disponível para reprocessamento."
+      return
+    end
+
+    @meeting.update!(status: :queued, error_message: nil)
+    MeetingMinuteGenerationJob.perform_later(@meeting.id)
+    redirect_to action_plan_meeting_minute_path(@action_plan, @meeting),
+      notice: "A gravação foi mantida. A ata será tentada novamente em segundo plano."
+  end
+
+  def audio
+    unless @meeting.audio.attached?
+      redirect_to action_plan_meeting_minute_path(@action_plan, @meeting), alert: "A gravação de áudio não está disponível."
+      return
+    end
+
+    redirect_to rails_blob_path(@meeting.audio, disposition: "attachment")
   end
 
   def create_tasks

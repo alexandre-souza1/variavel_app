@@ -2,7 +2,13 @@ class MeetingMinuteGenerationJob < ApplicationJob
   queue_as :default
 
   retry_on Faraday::TimeoutError, Faraday::ConnectionFailed,
-    wait: :exponentially_longer, attempts: 3
+    wait: :exponentially_longer, attempts: 3 do |job, error|
+      job.mark_failed(job.arguments.first, error)
+    end
+  retry_on GeminiMeetingService::TemporaryError,
+    wait: :exponentially_longer, attempts: 5 do |job, error|
+      job.mark_failed(job.arguments.first, error)
+    end
   discard_on ActiveRecord::RecordNotFound
   after_discard do |job, error|
     job.mark_failed(job.arguments.first, error)
@@ -32,7 +38,17 @@ class MeetingMinuteGenerationJob < ApplicationJob
 
     notify_user(meeting, "Ata gerada", "A ata da reunião está pronta para revisão.")
   rescue StandardError => e
-    raise if e.is_a?(Faraday::TimeoutError) || e.is_a?(Faraday::ConnectionFailed)
+    if e.is_a?(Faraday::TimeoutError) || e.is_a?(Faraday::ConnectionFailed) ||
+        e.is_a?(GeminiMeetingService::TemporaryError)
+      # O retry precisa conseguir assumir novamente o meeting. O áudio continua
+      # anexado ao registro e não é descartado quando o provedor está indisponível.
+      MeetingMinute.where(id: meeting_id, status: MeetingMinute.statuses[:processing]).update_all(
+        status: MeetingMinute.statuses[:queued],
+        error_message: e.message,
+        updated_at: Time.current
+      )
+      raise
+    end
 
     mark_failed(meeting_id, e)
   end

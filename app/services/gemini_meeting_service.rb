@@ -2,6 +2,8 @@ require "base64"
 require "json"
 
 class GeminiMeetingService
+  class TemporaryError < StandardError; end
+
   ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/interactions"
   DEFAULT_MODEL = "gemini-3.6-flash"
   DEFAULT_FALLBACK_MODELS = %w[gemini-3.1-flash-lite gemini-3.5-flash-lite gemini-2.5-flash-lite].freeze
@@ -35,7 +37,10 @@ class GeminiMeetingService
       Rails.logger.warn("Modelo Gemini #{model} indisponível ou limitado (#{response.status}); tentando o próximo modelo para a ata.")
     end
 
-    raise "Gemini retornou #{last_response.status}: #{last_response.body.to_s.truncate(500)}"
+    message = "Gemini retornou #{last_response.status}: #{last_response.body.to_s.truncate(500)}"
+    raise TemporaryError, message if temporary_response?(last_response)
+
+    raise message
   end
 
   private
@@ -70,7 +75,12 @@ class GeminiMeetingService
   end
 
   def fallback_eligible?(response)
-    response.status == 404 || response.status == 429 || response.body.to_s.match?(/RESOURCE_EXHAUSTED|rate.?limit|quota/i)
+    temporary_response?(response) || response.status == 404 ||
+      response.body.to_s.match?(/RESOURCE_EXHAUSTED|rate.?limit|quota|high demand|service.?unavailable/i)
+  end
+
+  def temporary_response?(response)
+    response.status == 408 || response.status == 429 || response.status.between?(500, 599)
   end
 
   def prompt
