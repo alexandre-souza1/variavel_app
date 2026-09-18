@@ -38,7 +38,9 @@
 
       <div class="fleet-vehicle-card__identity">
         <strong class="fleet-vehicle-card__plate">
-          <%= plate.placa %>
+          <%= link_to plate_path(plate), data: { plate_profile_link: true }, title: "Consulte informações da placa", aria: { label: "Abrir perfil da placa #{plate.placa}" } do %>
+            <%= plate.placa %> <i class="bi bi-box-arrow-up-right fleet-vehicle-card__plate-link-icon" aria-hidden="true"></i>
+          <% end %>
         </strong>
 
         <div class="fleet-vehicle-card__profile">

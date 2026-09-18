@@ -120,7 +120,24 @@ class Prolog::TiresClientTest < ActiveSupport::TestCase
     }, result.first)
   end
 
-  test "filters a plate across pages and equivalents without mixing other vehicles or spares" do
+  test "summarizes operational tires and spare status by plate" do
+    response = Response.new(200, {
+      "content" => [
+        { "smallestTreadDepth" => 6.2, "installed" => { "licensePlate" => "FML6122" } },
+        { "smallestTreadDepth" => 4.1, "installed" => { "licensePlate" => "FML6122" } },
+        { "smallestTreadDepth" => 2.0, "serialNumber" => "ESTEPE-1", "installed" => { "licensePlate" => "FML6122", "installedAxle" => 9 } }
+      ],
+      "lastPage" => true
+    })
+    http = Object.new
+    http.define_singleton_method(:get) { |*args| response }
+
+    summary = Prolog::TiresClient.new(token: "token", http_client: http).tire_summary_by_plate.fetch("FML6122")
+
+    assert_equal({ total: 3, operational_count: 2, spare_count: 1, minimum_tread_depth: 4.1 }, summary)
+  end
+
+  test "filters a plate across pages and equivalents while retaining its spare" do
     responses = [
       Response.new(200, { "content" => [
         { "serialNumber" => "001", "smallestTreadDepth" => 6, "installed" => { "licensePlate" => "FML6122", "installedPositionName" => "DE" } },
@@ -136,9 +153,10 @@ class Prolog::TiresClientTest < ActiveSupport::TestCase
     http.define_singleton_method(:get) { |*args| responses.shift }
     client = Prolog::TiresClient.new(token: "token", http_client: http)
     tires = client.tires_for_plate("fml-6b22")
-    assert_equal %w[003 001 004], tires.map { |tire| tire[:fire_number] }
+    assert_equal %w[003 001 004 005], tires.map { |tire| tire[:fire_number] }
     assert_equal "TEE", tires.first[:position]
-    assert_nil tires.last[:smallest_tread_depth]
+    assert_nil tires[2][:smallest_tread_depth]
+    assert tires.last[:spare]
     assert_nil client.error
   end
 

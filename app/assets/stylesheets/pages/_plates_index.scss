@@ -38,6 +38,21 @@
     td { padding-top: .85rem; padding-bottom: .85rem; }
     th:last-child { width: 90px; }
   }
+  .plates-tire-muted { color: var(--bs-secondary-color); font-size: .72rem; }
+  .plates-tread-badge, .plates-spare-badge {
+    display: inline-flex; align-items: center; gap: .25rem; border-radius: 999px;
+    padding: .3rem .5rem; font-size: .7rem; font-weight: 700; white-space: nowrap;
+  }
+  .plates-tread-badge { color: var(--bs-success-text-emphasis, var(--bs-success)); background: rgba(var(--bs-success-rgb), .1); }
+  .plates-tread-badge.is-warning { color: var(--bs-warning-text-emphasis, #997000); background: rgba(var(--bs-warning-rgb), .14); }
+  .plates-tread-badge.is-danger { color: var(--bs-danger-text-emphasis, var(--bs-danger)); background: rgba(var(--bs-danger-rgb), .1); }
+  .plates-spare-badge.is-present { color: var(--bs-success-text-emphasis, var(--bs-success)); background: rgba(var(--bs-success-rgb), .1); }
+  .plates-spare-badge.is-missing { color: var(--bs-danger-text-emphasis, var(--bs-danger)); background: rgba(var(--bs-danger-rgb), .1); }
+  .plates-spare-badge.is-muted { color: var(--bs-secondary-color); background: var(--bs-tertiary-bg); }
+  .plates-tire-count { min-width: 68px; }
+  .plates-tire-count strong { display: block; font-size: .75rem; line-height: 1; }
+  .plates-tire-progress { display: block; width: 68px; height: 4px; margin-top: .35rem; overflow: hidden; border-radius: 99px; background: var(--bs-border-color); }
+  .plates-tire-progress i { display: block; height: 100%; border-radius: inherit; background: var(--bs-primary); }
   .plates-identity {
     color: var(--bs-body-color);
     font-weight: 650;

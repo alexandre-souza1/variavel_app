@@ -18,7 +18,7 @@
 
   <div class="kpi-grid">
     <% [
-      ["Pneus em uso", @tires_error ? "—" : @tires.size, "circle", "primary", @tires_error ? "Consulta indisponível" : "Instalados · sem estepes"],
+      ["Pneus em uso", @tires_error ? "—" : @operational_tires.size, "circle", "primary", @tires_error ? "Consulta indisponível" : "Estepe verificado no mapa"],
       ["No limite de recape", @tires_error ? "—" : @retread_count, "exclamation-triangle", "danger", "Menor sulco até 3,5 mm"],
       ["Saídas registradas", @mapa_exits.size, "sign-turn-right", "success", "Histórico dos mapas"],
       ["Tarefas relacionadas", @mentioned_tasks.size, "list-check", "warning", "Acompanhamento da placa"]

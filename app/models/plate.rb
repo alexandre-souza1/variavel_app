@@ -12,6 +12,14 @@ class Plate < ApplicationRecord
   TIPOS = ['Empilhadeira', 'Paleteira', 'Máquina de Limpeza', 'Caminhão', 'Van']
   PERFIS = ['GLP', 'Sem Balança', 'VUC', 'TOCO', 'TRUCK', 'BITRUCK', 'VAN']
 
+  TIRE_LAYOUTS = {
+    "VUC" => [{ key: "front", label: "Dianteiro", tires: 2 }, { key: "traction", label: "Tração", tires: 2 }, { key: "truck", label: "Truck", tires: 2 }],
+    "TOCO" => [{ key: "front", label: "Dianteiro", tires: 2 }, { key: "traction", label: "Tração", tires: 2 }],
+    "TRUCK" => [{ key: "front", label: "Dianteiro", tires: 2 }, { key: "traction", label: "Tração", tires: 2 }, { key: "truck", label: "Truck", tires: 2 }],
+    "BITRUCK" => [{ key: "front", label: "Dianteiro", tires: 2 }, { key: "front_second", label: "Dianteiro · 2º eixo", tires: 2 }, { key: "traction", label: "Tração", tires: 2 }, { key: "truck", label: "Truck", tires: 2 }],
+    "VAN" => [{ key: "front", label: "Dianteiro", tires: 2 }, { key: "truck", label: "Traseiro", tires: 2 }]
+  }.freeze
+
   validates :setor, inclusion: { in: SETORES }
   validates :tipo, inclusion: { in: TIPOS }
   validates :perfil, inclusion: { in: PERFIS }, allow_nil: true
@@ -30,6 +38,10 @@ class Plate < ApplicationRecord
 
   def active_on?(date)
     active? || (retired_at.present? && retired_at > date.to_date)
+  end
+
+  def tire_layout
+    TIRE_LAYOUTS[perfil.to_s.upcase]
   end
 
   def self.import(file)

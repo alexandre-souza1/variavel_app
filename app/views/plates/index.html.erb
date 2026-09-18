@@ -84,16 +84,61 @@
                 <th scope="col">Setor</th>
                 <th scope="col">Perfil</th>
                 <th scope="col">Tipo</th>
+                <th scope="col">Menor sulco</th>
+                <th scope="col">Pneus</th>
+                <th scope="col">Estepe</th>
                 <th scope="col" class="text-end">Ações</th>
               </tr>
             </thead>
             <tbody>
               <% @plates.each do |plate| %>
+                <% tire_summary = @tire_summaries[PlateUtils.normalizar(plate.placa)] %>
+                <% expected_tires = plate.tire_layout&.sum { |axle| axle[:tires] } %>
+                <% actual_tires = tire_summary&.dig(:operational_count) %>
+                <% tire_percent = expected_tires.to_i.positive? ? [(actual_tires.to_i * 100.0 / expected_tires).round, 100].min : 0 %>
+                <% tracks_tires = plate.setor != "ARMAZEM" %>
                 <tr>
                   <td><%= link_to plate.placa, plate_path(plate), class: "plates-identity" %></td>
                   <td><span class="plates-sector"><i class="bi bi-<%= plate.setor == 'ARMAZEM' ? 'building' : 'sign-turn-right' %>" aria-hidden="true"></i> <%= plate.setor == "ARMAZEM" ? "Armazém" : "Rota" %></span></td>
                   <td><%= plate.perfil.presence || "—" %></td>
                   <td><%= plate.tipo %></td>
+                  <td>
+                    <% if !tracks_tires %>
+                      <span class="plates-tire-muted">—</span>
+                    <% elsif @tires_error %>
+                      <span class="plates-tire-muted">Indisponível</span>
+                    <% elsif tire_summary&.dig(:minimum_tread_depth) %>
+                      <% depth = tire_summary[:minimum_tread_depth] %>
+                      <span class="plates-tread-badge <%= depth <= 3.5 ? 'is-danger' : depth < 5 ? 'is-warning' : 'is-good' %>"><%= number_with_precision(depth, precision: 2, strip_insignificant_zeros: true) %> mm</span>
+                    <% else %>
+                      <span class="plates-tire-muted">Sem medição</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <% if !tracks_tires %>
+                      <span class="plates-tire-muted">—</span>
+                    <% elsif expected_tires && @tires_error.nil? %>
+                      <div class="plates-tire-count" aria-label="<%= actual_tires %> de <%= expected_tires %> pneus cadastrados">
+                        <strong><%= actual_tires %>/<%= expected_tires %></strong>
+                        <span class="plates-tire-progress" role="progressbar" aria-valuenow="<%= actual_tires %>" aria-valuemin="0" aria-valuemax="<%= expected_tires %>"><i style="width: <%= tire_percent %>%"></i></span>
+                      </div>
+                    <% elsif expected_tires %>
+                      <span class="plates-tire-muted">—/<%= expected_tires %></span>
+                    <% else %>
+                      <span class="plates-tire-muted">—</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <% if !tracks_tires %>
+                      <span class="plates-tire-muted">—</span>
+                    <% elsif @tires_error %>
+                      <span class="plates-spare-badge is-muted">Indisponível</span>
+                    <% elsif tire_summary&.dig(:spare_count).to_i.positive? %>
+                      <span class="plates-spare-badge is-present"><i class="bi bi-check2"></i> Cadastrado</span>
+                    <% else %>
+                      <span class="plates-spare-badge is-missing"><i class="bi bi-x"></i> Ausente</span>
+                    <% end %>
+                  </td>
                   <td>
                     <div class="plates-row-actions">
                       <%= link_to edit_plate_path(plate), class: "plates-icon-action", title: "Editar placa", aria: { label: "Editar placa #{plate.placa}" } do %>

@@ -72,6 +72,7 @@ export default class extends Controller {
   selectPlateForMobile(event) {
     if (!this.editable) return
     if (!this.mobileMode()) return
+    if (event.target.closest("[data-plate-profile-link]")) return
     if (event.target.closest("[data-observation-edit]")) return
 
     const item = event.currentTarget

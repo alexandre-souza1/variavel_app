@@ -17,7 +17,7 @@ module Prolog
       return [] if equivalents.empty?
 
       installed_tires.select { |tire| equivalents.include?(PlateUtils.normalizar(tire[:plate])) }
-        .sort_by { |tire| [tire[:smallest_tread_depth] || Float::INFINITY, tire[:position].to_s] }
+        .sort_by { |tire| [tire[:spare] ? 1 : 0, tire[:smallest_tread_depth] || Float::INFINITY, tire[:position].to_s] }
     end
 
     def initialize(
@@ -35,7 +35,7 @@ module Prolog
     def tread_depth_by_plate
       grouped_depths = Hash.new { |hash, key| hash[key] = [] }
 
-      installed_tires.each do |tire|
+      operational_tires.each do |tire|
         plate = tire[:plate]
         next if plate.blank? || tire[:smallest_tread_depth].blank?
 
@@ -50,10 +50,37 @@ module Prolog
       {}
     end
 
+    def tire_summary_by_plate
+      summaries = Hash.new { |hash, key| hash[key] = { total: 0, operational_count: 0, spare_count: 0, minimum_tread_depth: nil } }
+
+      installed_tires.each do |tire|
+        plate = tire[:plate]
+        next if plate.blank?
+
+        PlateUtils.equivalentes(plate).each do |equivalent_plate|
+          summary = summaries[equivalent_plate]
+          summary[:total] += 1
+
+          if tire[:spare]
+            summary[:spare_count] += 1
+          else
+            summary[:operational_count] += 1
+            depth = tire[:smallest_tread_depth]
+            summary[:minimum_tread_depth] = [summary[:minimum_tread_depth], depth].compact.min
+          end
+        end
+      end
+
+      summaries
+    rescue StandardError => e
+      Rails.logger.warn("Não foi possível resumir os pneus por placa: #{e.message}")
+      {}
+    end
+
     # Retorna um item por pneu instalado no limite de recape ou abaixo dele.
     # `created_at` é a data do registro disponibilizada pela API para o dado.
     def tires_needing_retread(threshold: 3.5)
-      installed_tires
+      operational_tires
         .select { |tire| tire[:smallest_tread_depth].present? && tire[:smallest_tread_depth] <= threshold }
         .sort_by { |tire| [tire[:smallest_tread_depth], tire[:plate].to_s, tire[:fire_number].to_s] }
     rescue StandardError => e
@@ -91,9 +118,8 @@ module Prolog
         payload = response.parsed_response
         Array(payload["content"]).each do |tire|
           installed = tire["installed"] || {}
-          next if spare_tire?(installed)
-
-          tires << {
+          spare = spare_tire?(installed)
+          tire_data = {
             plate: installed["licensePlate"],
             vehicle_type: installed["vehicleTypeName"],
             fire_number: tire["serialNumber"],
@@ -101,6 +127,8 @@ module Prolog
             smallest_tread_depth: valid_depth(tire["smallestTreadDepth"]),
             created_at: tire["createdAt"]
           }
+          tire_data[:spare] = true if spare
+          tires << tire_data
         end
 
         break if payload["lastPage"] != false
@@ -114,6 +142,10 @@ module Prolog
       @error = :unavailable
       Rails.logger.warn("Não foi possível consultar as medidas de pneus no Prolog: #{e.message}")
       []
+    end
+
+    def operational_tires
+      installed_tires.reject { |tire| tire[:spare] }
     end
 
     def valid_depth(value)

@@ -1,21 +1,63 @@
-<section class="app-panel info-card plate-section" aria-labelledby="plate-tires-title">
+<section class="app-panel info-card plate-section plate-tires-section" aria-labelledby="plate-tires-title">
   <div class="app-panel__header info-card-header">
     <div class="dashboard-panel-heading">
       <span class="dashboard-panel-kicker">Prolog · Pneus</span>
-      <h2 id="plate-tires-title">Pneus em uso</h2>
-      <small>Instalados nesta placa, sem estepes. Ordenados pelo menor sulco.</small>
+      <h2 id="plate-tires-title">Pneus cadastrados</h2>
+      <small>Distribuição por eixo, estepe e medições dos pneus nesta placa.</small>
     </div>
   </div>
   <div class="app-panel__body">
+    <% if @tire_layout.present? %>
+      <div class="plate-tire-map" aria-labelledby="plate-tire-map-title">
+        <div class="plate-tire-map__heading">
+          <div><span class="dashboard-panel-kicker"><%= @plate.perfil %> · Vista superior</span><h3 id="plate-tire-map-title">Mapa de pneus</h3></div>
+          <span class="plate-tire-map__total"><%= @tire_layout.sum { |axle| axle[:tires] } + 1 %> posições <small>incluindo estepe</small></span>
+        </div>
+        <div class="plate-tire-map__scroll" tabindex="0" role="region" aria-label="Mapa horizontal de pneus">
+        <div class="plate-tire-map__diagram">
+          <span class="plate-tire-map__front-label">Frente</span>
+          <div class="plate-tire-map__cab" aria-hidden="true"><span></span></div>
+          <div class="plate-tire-map__axles">
+            <% @tire_map.each do |mapped_axle| %>
+              <% axle = mapped_axle[:axle] %>
+              <div class="plate-tire-axle <%= 'plate-tire-axle--rear-start' if axle[:key] == 'traction' %>">
+                <span class="plate-tire-axle__label"><%= axle[:label] %></span>
+                <div class="plate-tire-axle__line">
+                  <% 2.times do |wheel_index| %>
+                    <% tire = mapped_axle[:tires][wheel_index] %>
+                    <span class="plate-tire-wheel <%= 'plate-tire-wheel--empty' unless tire %>" title="<%= [tire&.dig(:position), tire&.dig(:fire_number)].compact.join(' · ') %>"><span><%= tire&.dig(:fire_number).presence || "—" %></span></span>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <span class="plate-tire-map__rear-label">Traseira</span>
+          <div class="plate-tire-spare">
+            <span class="plate-tire-spare__wheel"><%= @spare_tires.first&.dig(:fire_number).presence || "—" %></span>
+            <span>Estepe
+              <% if @tires_error %>
+                <small>Consulta indisponível</small>
+              <% elsif @spare_tires.present? %>
+                <small>Cadastrado · <%= @spare_tires.map { |tire| tire[:fire_number].presence || "sem nº de fogo" }.join(", ") %></small>
+              <% else %>
+                <small>Não cadastrado</small>
+              <% end %>
+            </span>
+          </div>
+        </div>
+        </div>
+        <div class="plate-tire-map__legend"><span>Número de fogo dentro de cada pneu</span><span>— Sem informação</span></div>
+      </div>
+    <% end %>
     <% if @tires_error %>
       <p class="plate-panel-message" role="status"><i class="bi bi-cloud-slash"></i>
         <%= @tires_error == :not_configured ? "A integração com o Prolog ainda não está configurada." : "Não foi possível consultar os pneus agora. Tente novamente em alguns instantes." %>
       </p>
     <% elsif @tires.empty? %>
-      <p class="plate-panel-message"><i class="bi bi-circle"></i> Nenhum pneu em uso encontrado no Prolog para esta placa.</p>
+      <p class="plate-panel-message"><i class="bi bi-circle"></i> Nenhum pneu cadastrado no Prolog para esta placa.</p>
     <% else %>
       <div class="plate-tire-summary">
-        <div><span>Menor sulco</span><strong><% depth = @tires.filter_map { |tire| tire[:smallest_tread_depth] }.min %><%= depth ? "#{number_with_precision(depth, precision: 2, strip_insignificant_zeros: true)} mm" : "Sem medição" %></strong></div>
+        <div><span>Menor sulco</span><strong><% depth = @operational_tires.filter_map { |tire| tire[:smallest_tread_depth] }.min %><%= depth ? "#{number_with_precision(depth, precision: 2, strip_insignificant_zeros: true)} mm" : "Sem medição" %></strong></div>
       </div>
       <div class="dashboard-table-wrapper">
         <table class="table align-middle dashboard-data-table mb-0" aria-label="Pneus da placa">
@@ -23,7 +65,9 @@
           <tbody>
             <% @tires.each do |tire| %>
               <% depth = tire[:smallest_tread_depth] %>
-              <% status, tone = if depth.nil?
+              <% status, tone = if tire[:spare]
+                                  ["Estepe", "warning"]
+                                elsif depth.nil?
                                   ["Sem medição", "muted"]
                                 elsif depth <= 3.5
                                   ["Recape", "danger"]

@@ -20,4 +20,16 @@ class PlateTest < ActiveSupport::TestCase
     assert_predicate plate.reload, :active?
     assert_nil plate.retired_at
   end
+
+  test "returns the expected tire map for each truck profile" do
+    expected_counts = { "VUC" => 6, "TOCO" => 4, "TRUCK" => 6, "BITRUCK" => 8, "VAN" => 4 }
+
+    expected_counts.each do |profile, installed_tires|
+      plate = Plate.new(perfil: profile)
+
+      assert_equal installed_tires, plate.tire_layout.sum { |axle| axle[:tires] }
+      assert_equal installed_tires / 2, plate.tire_layout.size
+      assert_equal 2, plate.tire_layout.first[:tires]
+    end
+  end
 end

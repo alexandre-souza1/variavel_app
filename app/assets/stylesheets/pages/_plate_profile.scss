@@ -48,6 +48,92 @@
     &--muted { color: var(--bs-secondary-color); }
   }
   .plate-tire-note { color: var(--bs-secondary-color); font-size: .73rem; margin: .75rem 0 0; }
+  .plate-tires-section > .app-panel__body { max-height: none; overflow: visible; }
+  .plate-tires-section .dashboard-table-wrapper { max-height: 300px; overflow: auto; }
+  .plate-tire-map {
+    border: 1px solid var(--bs-border-color); border-radius: 16px;
+    margin-bottom: 1.25rem; overflow: hidden; background: var(--bs-body-bg);
+  }
+  .plate-tire-map__heading {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--bs-border-color);
+  }
+  .plate-tire-map h3 { font-size: 1rem; font-weight: 700; margin: .25rem 0 0; }
+  .plate-tire-map__total {
+    font-size: .8rem; font-weight: 700; text-align: right; white-space: nowrap;
+    padding: .4rem .7rem; border-radius: 8px; background: var(--bs-tertiary-bg);
+  }
+  .plate-tire-map__total small { display: block; color: var(--bs-secondary-color); font-size: .65rem; font-weight: 400; }
+  .plate-tire-map__scroll {
+    overflow-x: auto; padding: 1.5rem 1.25rem .75rem;
+    background-image: radial-gradient(var(--bs-border-color) .7px, transparent .7px);
+    background-size: 16px 16px;
+    &:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: -2px; }
+  }
+  .plate-tire-map__diagram {
+    position: relative; display: grid; grid-template-columns: 48px max-content;
+    width: max-content; margin-inline: auto; padding: 26px 12px 0 0;
+  }
+  .plate-tire-map__front-label, .plate-tire-map__rear-label {
+    position: absolute; top: 0; color: var(--bs-secondary-color);
+    font-size: .6rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  }
+  .plate-tire-map__front-label { left: 0; }
+  .plate-tire-map__rear-label { right: 12px; }
+  .plate-tire-map__cab {
+    position: relative; align-self: start; height: 102px; margin-top: 22px;
+    border: 2px solid #8c9aa5; border-right: 0; border-radius: 18px 0 0 18px;
+    background: var(--bs-secondary-bg);
+    &::before, &::after { content: ""; position: absolute; left: 8px; width: 8px; height: 5px; background: #deb663; border-radius: 2px; }
+    &::before { top: 7px; }
+    &::after { bottom: 7px; }
+    span { position: absolute; inset: 20px 10px 20px 9px; border: 1px solid #8c9aa5; border-radius: 9px 3px 3px 9px; background: #a7bac733; }
+  }
+  .plate-tire-map__axles {
+    display: flex; position: relative; gap: 14px; padding: 0 10px;
+    &::before { content: ""; position: absolute; top: 44px; left: 0; right: 0; height: 58px;
+      border: 3px solid #9ba5ad; border-radius: 4px;
+      background: repeating-linear-gradient(90deg, transparent, transparent 44px, #9ba5ad33 44px, #9ba5ad33 47px);
+    }
+  }
+  .plate-tire-axle {
+    position: relative; flex: 0 0 84px; width: 84px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .plate-tire-axle--rear-start { margin-left: 58px; }
+  .plate-tire-axle__label {
+    order: 2; margin-top: 12px; min-height: 30px;
+    color: var(--bs-secondary-color); font-size: .67rem; text-align: center; line-height: 1.4;
+  }
+  .plate-tire-axle__line {
+    position: relative; display: flex; flex-direction: column; gap: 70px;
+    &::before { content: ""; position: absolute; top: 20px; bottom: 20px; left: calc(50% - 3px); width: 6px; background: #8c9aa5; }
+  }
+  .plate-tire-wheel {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    width: 84px; min-height: 38px; padding: 5px 8px; border: 2px solid #283441;
+    border-radius: 10px; color: #f4f7fa; box-shadow: 0 3px 5px #15202b20;
+    background: repeating-linear-gradient(90deg, #34414f 0, #34414f 4px, #25323f 4px, #25323f 7px);
+    font: 700 .75rem ui-monospace, SFMono-Regular, Consolas, monospace;
+    span { padding: 3px 4px; border-radius: 4px; background: #25323f; overflow-wrap: anywhere; text-align: center; }
+    &--empty { opacity: .55; border-style: dashed; }
+  }
+  .plate-tire-spare {
+    grid-column: 1 / -1; display: flex; align-items: center; justify-content: center;
+    gap: .6rem; margin: .8rem 0 .4rem; color: var(--bs-secondary-color); font-size: .72rem;
+    small { display: block; font-size: .6rem; margin-top: 2px; }
+  }
+  .plate-tire-spare__wheel {
+    display: grid; place-items: center; width: 44px; height: 44px; padding: 4px;
+    border: 5px solid #586572; border-radius: 50%; color: #34414f; background: #e9edf0;
+    font: 700 .55rem ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; text-align: center;
+  }
+  .plate-tire-map__legend {
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem;
+    padding: .7rem 1.25rem; border-top: 1px solid var(--bs-border-color);
+    color: var(--bs-secondary-color); font-size: .65rem;
+  }
   .plate-panel-message, .empty-state-compact {
     color: var(--bs-secondary-color); font-size: .85rem; font-weight: 400;
     justify-content: flex-start; padding: 1rem 0; margin: 0;
