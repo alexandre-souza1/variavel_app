@@ -63,6 +63,18 @@ html[data-bs-theme="light"] {
     --app-muted: #74786b;
   }
 
+  &[data-color-theme="earthy_forest_hues"] {
+    --app-primary: #588157;
+    --app-primary-rgb: 88, 129, 87;
+    --app-strong: #3a5a40;
+    --app-soft: #a3b18a;
+    --app-page-bg: #dad7cd;
+    --app-surface: #f3f1eb;
+    --app-secondary-bg: #a3b18a;
+    --app-tertiary-bg: #e8e6df;
+    --app-muted: #64705c;
+  }
+
   --bs-primary: var(--app-primary);
   --bs-primary-rgb: var(--app-primary-rgb);
   --bs-primary-text-emphasis: var(--app-strong);

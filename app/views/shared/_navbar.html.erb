@@ -192,6 +192,7 @@
                 <label class="form-label small mt-3 mb-1" for="navbarColorTheme">Tema</label>
                 <select id="navbarColorTheme"
                         class="form-select form-select-sm theme-color-select"
+                        data-theme-target="colorSelect"
                         data-action="change->theme#setColor">
                   <%= options_for_select(
                         User::COLOR_THEMES.map { |label, value| [label.upcase, value] },

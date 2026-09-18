@@ -18,7 +18,7 @@ class Notification < ApplicationRecord
 
   after_create_commit :broadcast_to_user
   after_create_commit :enqueue_mobile_push
-  after_update_commit :broadcast_to_user, if: :saved_change_to_read_at?
+  after_update_commit :broadcast_to_user
   after_destroy_commit :broadcast_to_user, unless: :skip_destroy_broadcast?
 
   def read?

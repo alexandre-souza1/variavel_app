@@ -8,7 +8,9 @@ export default class extends Controller {
     this.element.querySelectorAll("select[data-icon-map]").forEach((select) => {
       this.setSelectionIcon({ target: select })
     })
-    this.syncColorPreview(document.documentElement.dataset.colorTheme || "blue_teal")
+    const colorTheme = document.documentElement.dataset.colorTheme || "blue_teal"
+    this.syncColorSelectors(colorTheme)
+    this.syncColorPreview(colorTheme)
   }
 
   set(event) {
@@ -27,25 +29,37 @@ export default class extends Controller {
 
     localStorage.setItem(`colorTheme:${userId}`, colorTheme)
     document.documentElement.dataset.colorTheme = colorTheme
+    this.syncColorSelectors(colorTheme)
     this.updateBrowserColor(document.documentElement.dataset.bsTheme || "light")
     this.syncColorPreview(colorTheme)
     document.dispatchEvent(new CustomEvent("app:theme-changed"))
   }
 
-  syncColorPreview(colorTheme) {
-    if (!this.hasPreviewTarget) return
+  syncColorSelectors(colorTheme) {
+    document.querySelectorAll('[data-theme-target="colorSelect"]').forEach((select) => {
+      if (select.type === "radio") {
+        select.checked = select.value === colorTheme
+      } else {
+        select.value = colorTheme
+      }
+    })
+  }
 
+  syncColorPreview(colorTheme) {
     const palettes = {
       blue_teal: ["#3368A0", "#66A3BF", "#C8DFDB", "#F2EFE7"],
       sage_teal: ["#2D9596", "#9AD0C2", "#265073", "#ECF4D6"],
       retro_orange: ["#527853", "#F7B787", "#EE7214", "#F9E8D9"],
       black_mint: ["#092328", "#12544F", "#2A835F", "#8BBB92"],
-      white_tea_sage: ["#8B9A6E", "#F7F2EB", "#EAE2D6", "#EEEEEE"]
+      white_tea_sage: ["#8B9A6E", "#F7F2EB", "#EAE2D6", "#EEEEEE"],
+      earthy_forest_hues: ["#DAD7CD", "#A3B18A", "#588157", "#3A5A40", "#344E41"]
     }
     const colors = palettes[colorTheme] || palettes.blue_teal
 
-    this.previewTarget.querySelectorAll("[data-theme-preview-color]").forEach((swatch, index) => {
-      swatch.style.backgroundColor = colors[index]
+    document.querySelectorAll('[data-theme-target="preview"]').forEach((preview) => {
+      preview.querySelectorAll("[data-theme-preview-color]").forEach((swatch, index) => {
+        swatch.style.backgroundColor = colors[index]
+      })
     })
   }
 
@@ -75,7 +89,8 @@ export default class extends Controller {
       sage_teal: "#265073",
       retro_orange: "#527853",
       black_mint: "#2A835F",
-      white_tea_sage: "#8B9A6E"
+      white_tea_sage: "#8B9A6E",
+      earthy_forest_hues: "#588157"
     }
     const colorTheme = document.documentElement.dataset.colorTheme || "blue_teal"
 

@@ -4,7 +4,8 @@ class User < ApplicationRecord
     "Sage-Teal" => "sage_teal",
     "Retro-orange" => "retro_orange",
     "BLACK-MINT" => "black_mint",
-    "WHITE-TEA&SAGE" => "white_tea_sage"
+    "WHITE-TEA&SAGE" => "white_tea_sage",
+    "EARTHY-FOREST-HUES" => "earthy_forest_hues"
   }.freeze
 
   validates :color_theme, inclusion: { in: COLOR_THEMES.values }

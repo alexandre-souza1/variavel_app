@@ -257,6 +257,8 @@ Rails.application.routes.draw do
 
   resources :invoices do
     post :scan_upload, on: :collection
+    post :import_abastecimento, on: :collection
+    get :import_abastecimento_status, on: :collection
     collection do
       get :dashboard
     end
@@ -265,6 +267,10 @@ Rails.application.routes.draw do
       get :download_document
     end
   end
+
+  resource :invoice_email_import_setting,
+           only: %i[edit update],
+           path: "configuracoes-importacao-invoices"
 
   namespace :admin do
     resources :users, only: [:index, :edit, :update, :destroy, :new, :create]

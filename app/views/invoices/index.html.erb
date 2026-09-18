@@ -9,9 +9,26 @@
     <div class="invoice-index-actions">
       <%= link_to root_path, class: "invoice-index-back-link" do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar<% end %>
       <%= link_to dashboard_invoices_path, class: "az-report-btn" do %><i class="bi bi-bar-chart"></i> Dashboard<% end %>
+      <% if current_user.admin? || current_user.sector_finance? %>
+        <%= link_to edit_invoice_email_import_setting_path, class: "az-report-btn", title: "Configurar importação por e-mail" do %>
+          <i class="bi bi-sliders"></i> Configurar importação
+        <% end %>
+        <%= button_to import_abastecimento_invoices_path,
+                      method: :post,
+                      class: "az-report-btn",
+                      form: { data: { turbo_confirm: "Consultar as notas de abastecimento recebidas ontem?" } } do %>
+          <i class="bi bi-envelope-arrow-down"></i> Consultar abastecimento
+        <% end %>
+      <% end %>
       <%= link_to new_invoice_path, class: "az-report-btn az-report-btn--primary" do %><i class="bi bi-plus-lg"></i> Novo lançamento<% end %>
     </div>
   </header>
+
+  <% if params[:import_notification_id].present? %>
+    <div data-controller="invoice-import-progress"
+         data-invoice-import-progress-status-url-value="<%= import_abastecimento_status_invoices_path(id: params[:import_notification_id]) %>"
+         data-invoice-import-progress-notification-id-value="<%= params[:import_notification_id] %>"></div>
+  <% end %>
 
   <section class="invoice-index-summary" aria-label="Resumo dos resultados">
     <div class="invoice-summary-total"><span><i class="bi bi-files"></i> Resultados</span><strong><%= @filtered_count %></strong><small>lançamento(s) filtrado(s)</small></div>

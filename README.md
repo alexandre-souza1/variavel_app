@@ -150,6 +150,22 @@ SMTP_ENABLE_STARTTLS_AUTO  # padrão: true
 MAILER_FROM                # padrão: workstation@example.com
 ```
 
+Para importar notas de abastecimento recebidas por IMAP:
+
+```text
+INBOX_ADDRESS              # webmail.goxdrive.com.br; usa SMTP_ADDRESS se omitido
+INBOX_PORT                 # 993
+INBOX_SSL                  # true
+INBOX_USERNAME             # usa SMTP_USERNAME se omitido
+INBOX_PASSWORD             # usa SMTP_PASSWORD se omitido; nunca versionar
+INBOX_FOLDER               # INBOX ou outra pasta, padrão: INBOX
+INBOX_SENDER               # postoparadao1@gmail.com
+```
+
+Os padrões da importação (remetente, pasta, responsável, categoria, centro de
+custo fallback e horário) podem ser alterados em **Invoices → Configurar
+importação**. O servidor IMAP e as credenciais continuam nas variáveis de ambiente.
+
 ### Microsoft Graph / OneDrive
 
 ```text
@@ -232,6 +248,17 @@ O Scheduler do Heroku deve executar:
 ```bash
 bundle exec rails fleet_availabilities:daily
 ```
+
+Configure uma segunda tarefa no Scheduler para executar às 7h no horário da
+aplicação:
+
+```bash
+bundle exec rails invoices:import_abastecimento
+```
+
+Esse processo busca as mensagens do dia anterior, consolida os anexos, salva o
+documento no Active Storage/S3, processa-o com o Textract e evita reimportações
+por meio do `Message-ID` do e-mail.
 
 Recomenda-se uma frequência de 10 minutos ou menor. O horário exibido pelo Scheduler pode estar em UTC, mas a aplicação interpreta o fechamento no fuso `Brasilia`.
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_16_130000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_18_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -441,6 +441,35 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_16_130000) do
     t.index ["action_plan_id"], name: "index_hidden_action_plans_on_action_plan_id"
     t.index ["user_id", "action_plan_id"], name: "index_hidden_action_plans_on_user_id_and_action_plan_id", unique: true
     t.index ["user_id"], name: "index_hidden_action_plans_on_user_id"
+  end
+
+  create_table "invoice_email_import_settings", force: :cascade do |t|
+    t.string "sender_email", default: "postoparadao1@gmail.com", null: false
+    t.string "imap_folder", default: "INBOX", null: false
+    t.string "schedule_time", default: "07:00", null: false
+    t.bigint "purchaser_id"
+    t.bigint "budget_category_id"
+    t.bigint "fallback_cost_center_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["budget_category_id"], name: "index_invoice_email_import_settings_on_budget_category_id"
+    t.index ["fallback_cost_center_id"], name: "index_invoice_email_import_settings_on_fallback_cost_center_id"
+    t.index ["purchaser_id"], name: "index_invoice_email_import_settings_on_purchaser_id"
+  end
+
+  create_table "invoice_email_imports", force: :cascade do |t|
+    t.string "message_id", null: false
+    t.string "sender", null: false
+    t.string "subject"
+    t.datetime "received_at"
+    t.string "status", default: "processed", null: false
+    t.text "error_message"
+    t.bigint "invoice_id"
+    t.datetime "processed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["message_id"], name: "index_invoice_email_imports_on_message_id", unique: true
+    t.index ["status"], name: "index_invoice_email_imports_on_status"
   end
 
   create_table "invoice_goal_categories", force: :cascade do |t|
@@ -934,6 +963,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_16_130000) do
   add_foreign_key "fleet_dimensioning_standard_plates", "plates"
   add_foreign_key "hidden_action_plans", "action_plans"
   add_foreign_key "hidden_action_plans", "users"
+  add_foreign_key "invoice_email_import_settings", "budget_categories"
+  add_foreign_key "invoice_email_import_settings", "cost_centers", column: "fallback_cost_center_id"
+  add_foreign_key "invoice_email_import_settings", "users", column: "purchaser_id"
+  add_foreign_key "invoice_email_imports", "invoices"
   add_foreign_key "invoice_goal_categories", "budget_categories"
   add_foreign_key "invoice_goal_categories", "invoice_goals"
   add_foreign_key "invoice_numbers", "cost_centers"

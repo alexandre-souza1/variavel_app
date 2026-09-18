@@ -2,6 +2,7 @@ class InvoicesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_invoice, only: %i[ show edit update destroy download_document ]
   before_action :set_purchasers, only: [:new, :edit, :create, :update]
+  before_action :require_admin_or_finance!, only: :import_abastecimento
 
   # GET /invoices or /invoices.json
   def index
@@ -103,6 +104,31 @@ class InvoicesController < ApplicationController
     render json: { error: e.message }, status: :unprocessable_entity
   rescue Seahorse::Client::NetworkingError
     render json: { error: "Não foi possível conectar ao Amazon Textract. Verifique a conexão de rede/DNS do servidor." }, status: :service_unavailable
+  end
+
+  def import_abastecimento
+    progress = Notification.create!(
+      user: current_user,
+      kind: "abastecimento_email_import_progress",
+      title: "Importação de abastecimento iniciada",
+      body: "Preparando a consulta dos e-mails..."
+    )
+    AbastecimentoEmailImportJob.perform_later(progress.id)
+    redirect_to invoices_path(import_notification_id: progress.id), notice: "Consulta de notas de abastecimento iniciada."
+  rescue StandardError => error
+    Rails.logger.error("Falha ao iniciar importação manual de abastecimento: #{error.message}")
+    redirect_to invoices_path, alert: "Não foi possível iniciar a consulta das notas de abastecimento."
+  end
+
+  def import_abastecimento_status
+    notification = Notification.find(params[:id])
+    return head :forbidden unless notification.user_id == current_user.id || current_user.admin?
+
+    render json: {
+      title: notification.title,
+      body: notification.body,
+      finished: notification.kind != "abastecimento_email_import_progress"
+    }
   end
 
   # GET /invoices/new

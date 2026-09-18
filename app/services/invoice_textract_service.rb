@@ -90,9 +90,11 @@ class InvoiceTextractService
     # Dados adicionais de NF-e podem aparecer em blocos que não são summary_fields.
     extra_text = "#{extra_text} #{all_text(document)}"
     nfse_service = nfse_service_document?(extra_text)
-    supplier = supplier_from_text(extra_text, nfse_service: nfse_service)
+    vendor_name = value_for(fields, "VENDOR_NAME")
+    supplier = supplier_from_name(vendor_name) || supplier_from_text(extra_text, nfse_service: nfse_service)
     invoice_number = invoice_number_for(fields, extra_text, nfse_service: nfse_service)
-    { supplier_name: supplier&.name || value_for(fields, "VENDOR_NAME"), supplier_cnpj: supplier&.cnpj,
+    detected_cnpj = normalize_cnpj(value_for(fields, "VENDOR_TAX_ID")) || supplier&.cnpj || supplier_cnpj_from_text(extra_text, nfse_service: nfse_service)
+    { supplier_name: vendor_name || supplier&.name, supplier_cnpj: detected_cnpj,
       supplier_id: supplier&.id,
       cost_center_id: cost_center_from(extra_text),
       invoice_number: invoice_number,
@@ -132,6 +134,24 @@ class InvoiceTextractService
       return supplier if cnpjs.include?(supplier.cnpj.to_s.gsub(/\D/, ""))
     end
     nil
+  end
+
+  def supplier_from_name(name)
+    return if name.blank?
+
+    Supplier.where("LOWER(name) = ?", name.to_s.downcase.strip).first
+  end
+
+  def normalize_cnpj(value)
+    digits = value.to_s.gsub(/\D/, "")
+    digits.presence if digits.length == 14
+  end
+
+  def supplier_cnpj_from_text(text, nfse_service: false)
+    search_text = nfse_service ? nfse_provider_section(text) : text
+    search_text.scan(/\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/)
+               .map { |cnpj| cnpj.gsub(/\D/, "") }
+               .find { |cnpj| cnpj.length == 14 }
   end
 
   def nfse_provider_section(text)

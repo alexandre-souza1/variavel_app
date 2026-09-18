@@ -30,6 +30,7 @@ gem "activestorage-cloudinary-service"
 gem 'cpf_cnpj'
 gem 'prawn'
 gem 'prawn-table'
+gem "combine_pdf"
 gem 'acts_as_list'
 gem "bootstrap"
 gem "ruby-vips"
