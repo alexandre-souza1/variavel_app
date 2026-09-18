@@ -60,6 +60,13 @@
 .meeting-minute-page__eyebrow { color: var(--bs-primary); font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .meeting-minute-page__header h1 { color: var(--bs-body-color); font-size: 1.55rem; margin: .25rem 0; }
 .meeting-minute-page__header p { color: var(--bs-secondary-color); margin: 0; }
+.meeting-minute-page__header > div:first-child { min-width: 0; }
+.meeting-minute-page__header > .d-flex { flex: 0 0 auto; }
+.meeting-minute-header-meta { align-items: center; color: var(--bs-secondary-color); display: flex; flex-wrap: wrap; font-size: .74rem; gap: .7rem 1rem; margin-top: .45rem; }
+.meeting-minute-header-meta strong { color: var(--bs-body-color); }
+.meeting-minute-collaborator-form { align-items: center; display: flex; gap: .4rem; max-width: 260px; min-width: 220px; }
+.meeting-minute-collaborator-label { color: var(--bs-secondary-color); font-size: .72rem; font-weight: 600; white-space: nowrap; }
+.meeting-minute-collaborator-select { background-color: transparent; border-color: var(--bs-border-color); border-radius: 999px; color: var(--bs-body-color); font-size: .74rem; max-width: 210px; min-height: 30px; padding-bottom: .25rem; padding-top: .25rem; }
 .meeting-minute-card { background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius: 16px; box-shadow: 0 .5rem 1.5rem rgba(15,23,42,.06); padding: 1.25rem; }
 .meeting-minute-form-grid { display: grid; gap: 1rem; grid-template-columns: 2fr 1fr; margin-bottom: 1.25rem; }
 .meeting-minute-recorder { align-items: center; background: rgba(var(--bs-primary-rgb), .08); border: 1px solid rgba(var(--bs-primary-rgb), .18); border-radius: 14px; display: flex; gap: .85rem; padding: 1rem; }
@@ -83,6 +90,19 @@
 .meeting-minute-import-form { align-items: end; display: grid; gap: .75rem; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; }
 .meeting-minute-import-form .form-label { font-size: .78rem; }
 .meeting-minute-section-heading { align-items: center; display: flex; justify-content: space-between; }
+.meeting-minute-section-heading h2 { margin-bottom: .8rem; }
+.meeting-minute-toggle-panel { max-height: 1000px; opacity: 1; overflow: hidden; transition: max-height .25s ease, opacity .2s ease, margin .25s ease, padding .25s ease; }
+.meeting-minute-toggle-panel.is-hidden { max-height: 0; opacity: 0; pointer-events: none; }
+.meeting-minute-original-note { background: rgba(var(--bs-warning-rgb), .1); border-left: 3px solid var(--bs-warning); color: var(--bs-secondary-color); margin-top: 1rem; padding: .7rem .85rem; }
+.meeting-minute-original-note strong { color: var(--bs-warning-text-emphasis); display: block; font-size: .75rem; margin-bottom: .35rem; }
+.meeting-minute-original-note ul { font-size: .82rem; }
+.meeting-minute-inline-editor { border-top: 1px solid var(--bs-border-color); max-height: 0; opacity: 0; overflow: hidden; padding-top: 0; pointer-events: none; transition: max-height .3s ease, opacity .2s ease, margin .3s ease, padding .3s ease; }
+.meeting-minute-inline-editor.is-open { margin-top: 1rem; max-height: 500px; opacity: 1; padding-top: 1rem; pointer-events: auto; }
+.meeting-minute-edit-history__item { border-bottom: 1px solid var(--bs-border-color); display: grid; gap: .2rem; padding: .85rem 0; }
+.meeting-minute-edit-history__item:first-child { padding-top: 0; }
+.meeting-minute-edit-history__item:last-child { border-bottom: 0; }
+.meeting-minute-edit-history__item small { color: var(--bs-secondary-color); font-size: .72rem; }
+.meeting-minute-edit-history__changes { color: var(--bs-secondary-color); display: flex; flex-wrap: wrap; font-size: .75rem; gap: .75rem; }
 .meeting-minute-section-heading p { color: var(--bs-secondary-color); font-size: .75rem; margin: -.45rem 0 .9rem; }
 .meeting-minute-task-list { display: grid; gap: .55rem; }
 .meeting-minute-task-row { align-items: center; background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color); border-radius: 11px; display: grid; gap: .7rem; grid-template-columns: auto 1fr 150px 180px; padding: .65rem .75rem; }

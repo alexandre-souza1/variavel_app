@@ -31,9 +31,12 @@ class MeetingMinuteGenerationJob < ApplicationJob
       status: :completed,
       transcript: result["transcript"],
       summary: result["summary"],
+      original_summary: result["summary"],
       decisions: Array(result["decisions"]),
       pending_items: Array(result["pending_items"]),
-      tasks_suggestions: Array(result["tasks"])
+      tasks_suggestions: Array(result["tasks"]),
+      original_decisions: Array(result["decisions"]),
+      original_pending_items: Array(result["pending_items"])
     )
 
     # A ata já foi persistida com sucesso. O áudio original não é mais

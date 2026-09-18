@@ -1,15 +1,35 @@
 <div class="meeting-minute-page">
+  <% can_edit_content = current_user.admin? || @meeting.creator_id == current_user.id || @meeting.collaborator_id == current_user.id %>
+  <% original_decisions = @meeting.original_decisions_for_display %>
+  <% original_pending_items = @meeting.original_pending_items_for_display %>
+  <% original_summary = @meeting.original_summary_for_display %>
   <div class="meeting-minute-page__header">
     <div>
       <span class="meeting-minute-page__eyebrow">Ata de reunião</span>
       <h1><i class="bi bi-file-earmark-text me-2"></i><%= @meeting.title %></h1>
       <p><%= l(@meeting.meeting_date, format: :long) %> · <%= @action_plan.name %></p>
+      <div class="meeting-minute-header-meta">
+        <span><i class="bi bi-person me-1"></i> Criada por <strong><%= @meeting.creator.name.presence || @meeting.creator.email %></strong></span>
+        <% if current_user.admin? || @meeting.creator_id == current_user.id %>
+          <%= form_with url: update_collaborator_action_plan_meeting_minute_path(@action_plan, @meeting), method: :patch, local: true, class: "meeting-minute-collaborator-form" do %>
+            <%= label_tag "meeting_minute_collaborator_id", "Co-anfitrião", class: "meeting-minute-collaborator-label" %>
+            <%= select_tag "meeting_minute[collaborator_id]", options_from_collection_for_select(@users.reject { |user| user.id == @meeting.creator_id }, :id, :name, @meeting.collaborator_id), include_blank: "Sem colaborador", class: "meeting-minute-collaborator-select form-select form-select-sm", data: { controller: "meeting-collaborator", action: "change->meeting-collaborator#submit" } %>
+          <% end %>
+        <% else %>
+          <span><i class="bi bi-people me-1"></i> Co-anfitrião: <strong><%= @meeting.collaborator&.name.presence || "Não definido" %></strong></span>
+        <% end %>
+      </div>
     </div>
     <div class="d-flex flex-wrap gap-2">
       <% if @meeting.completed? %>
         <%= link_to action_plan_meeting_minute_path(@action_plan, @meeting, format: :pdf, download: true), class: "btn btn-primary", target: "_blank", rel: "noopener" do %>
           <i class="bi bi-file-earmark-pdf me-1"></i> Gerar PDF
         <% end %>
+      <% end %>
+      <% if @meeting.edits.any? %>
+        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="offcanvas" data-bs-target="#meeting-minute-history" aria-controls="meeting-minute-history">
+          <i class="bi bi-clock-history me-1"></i> Histórico
+        </button>
       <% end %>
       <%= link_to action_plan_meeting_minutes_path(@action_plan), class: "btn btn-primary" do %>
         <i class="bi bi-list me-1"></i> Consulta de Atas
@@ -39,19 +59,141 @@
     </div>
   <% else %>
     <div class="meeting-minute-content">
-      <section class="meeting-minute-card">
-        <h2><i class="bi bi-card-text"></i> Resumo</h2>
-        <div class="meeting-minute-summary"><%= simple_format(@meeting.summary) %></div>
+      <section class="meeting-minute-card" data-controller="meeting-minute-toggle">
+        <div class="meeting-minute-section-heading">
+          <h2><i class="bi bi-card-text"></i> Resumo</h2>
+          <div class="d-flex gap-2">
+            <% if can_edit_content %>
+              <button type="button" class="btn btn-sm btn-link p-0" data-action="meeting-minute-toggle#edit" title="Editar resumo">
+                <i class="bi bi-pencil-square"></i><span class="visually-hidden">Editar resumo</span>
+              </button>
+            <% end %>
+            <% if original_summary != @meeting.summary.to_s %>
+              <button type="button" class="btn btn-sm btn-link text-warning p-0" data-action="meeting-minute-toggle#toggle" title="Alternar para o texto original do Gemini" aria-pressed="false">
+                <i class="bi bi-exclamation-circle-fill"></i><span class="visually-hidden">Alternar texto original do Gemini</span>
+              </button>
+            <% end %>
+          </div>
+        </div>
+        <div data-meeting-minute-toggle-target="current" class="meeting-minute-toggle-panel meeting-minute-summary"><%= simple_format(@meeting.summary) %></div>
+        <% if original_summary != @meeting.summary.to_s %>
+          <div data-meeting-minute-toggle-target="original" class="meeting-minute-toggle-panel is-hidden meeting-minute-original-note">
+            <strong><i class="bi bi-robot me-1"></i>Texto original por Gemini</strong>
+            <% if original_summary.present? %>
+              <div class="meeting-minute-summary"><%= simple_format(original_summary) %></div>
+            <% else %>
+              <div>Nenhum resumo foi registrado pela IA.</div>
+            <% end %>
+          </div>
+        <% end %>
+        <% if can_edit_content %>
+          <div data-meeting-minute-toggle-target="editor" class="meeting-minute-inline-editor">
+            <%= form_with url: update_content_action_plan_meeting_minute_path(@action_plan, @meeting), method: :patch, local: true do %>
+              <%= label_tag "meeting_minute_summary", "Resumo", class: "form-label" %>
+              <%= text_area_tag "meeting_minute[summary]", @meeting.summary, id: "meeting_minute_summary", class: "form-control", rows: 6 %>
+              <div class="d-flex gap-2 mt-3">
+                <%= submit_tag "Salvar resumo", class: "btn btn-primary" %>
+                <button type="button" class="btn btn-outline-secondary" data-action="meeting-minute-toggle#cancel">Cancelar edição</button>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
       </section>
 
       <div class="meeting-minute-columns">
-        <section class="meeting-minute-card">
-          <h2><i class="bi bi-check2-circle"></i> Decisões</h2>
-          <ul><% @meeting.decisions.each do |item| %><li><%= item %></li><% end %></ul>
+        <section class="meeting-minute-card" data-controller="meeting-minute-toggle">
+          <div class="meeting-minute-section-heading">
+            <h2><i class="bi bi-check2-circle"></i> Decisões</h2>
+            <div class="d-flex gap-2">
+              <% if can_edit_content %>
+                <button type="button" class="btn btn-sm btn-link p-0" data-action="meeting-minute-toggle#edit" title="Editar decisões">
+                  <i class="bi bi-pencil-square"></i><span class="visually-hidden">Editar decisões</span>
+                </button>
+              <% end %>
+              <% if original_decisions != @meeting.decisions %>
+                <button type="button" class="btn btn-sm btn-link text-warning p-0" data-action="meeting-minute-toggle#toggle" title="Alternar para o texto original do Gemini" aria-pressed="false">
+                  <i class="bi bi-exclamation-circle-fill"></i><span class="visually-hidden">Alternar texto original do Gemini</span>
+                </button>
+              <% end %>
+            </div>
+          </div>
+          <div data-meeting-minute-toggle-target="current" class="meeting-minute-toggle-panel">
+            <% if @meeting.decisions.any? %>
+              <ul><% @meeting.decisions.each do |item| %><li><%= item %></li><% end %></ul>
+            <% else %>
+              <div class="meeting-minute-empty">Nenhuma decisão registrada.</div>
+            <% end %>
+          </div>
+          <% if original_decisions != @meeting.decisions %>
+            <div data-meeting-minute-toggle-target="original" class="meeting-minute-toggle-panel is-hidden meeting-minute-original-note">
+              <strong><i class="bi bi-robot me-1"></i>Texto original por Gemini</strong>
+              <% if original_decisions.any? %>
+                <ul><% original_decisions.each do |item| %><li><%= item %></li><% end %></ul>
+              <% else %>
+                <div>Nenhuma decisão foi registrada pela IA.</div>
+              <% end %>
+            </div>
+          <% end %>
+          <% if can_edit_content %>
+            <div data-meeting-minute-toggle-target="editor" class="meeting-minute-inline-editor">
+              <%= form_with url: update_content_action_plan_meeting_minute_path(@action_plan, @meeting), method: :patch, local: true do %>
+                <%= label_tag "meeting_minute_decisions", "Decisões, uma por linha", class: "form-label" %>
+                <%= text_area_tag "meeting_minute[decisions][]", @meeting.decisions.join("\n"), id: "meeting_minute_decisions", class: "form-control", rows: 6 %>
+                <% @meeting.pending_items.each do |item| %><%= hidden_field_tag "meeting_minute[pending_items][]", item %><% end %>
+                <div class="d-flex gap-2 mt-3">
+                  <%= submit_tag "Salvar decisões", class: "btn btn-primary" %>
+                  <button type="button" class="btn btn-outline-secondary" data-action="meeting-minute-toggle#cancel">Cancelar edição</button>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
         </section>
-        <section class="meeting-minute-card">
-          <h2><i class="bi bi-hourglass-split"></i> Pendências</h2>
-          <ul><% @meeting.pending_items.each do |item| %><li><%= item %></li><% end %></ul>
+        <section class="meeting-minute-card" data-controller="meeting-minute-toggle">
+          <div class="meeting-minute-section-heading">
+            <h2><i class="bi bi-hourglass-split"></i> Pendências</h2>
+            <div class="d-flex gap-2">
+              <% if can_edit_content %>
+                <button type="button" class="btn btn-sm btn-link p-0" data-action="meeting-minute-toggle#edit" title="Editar pendências">
+                  <i class="bi bi-pencil-square"></i><span class="visually-hidden">Editar pendências</span>
+                </button>
+              <% end %>
+              <% if original_pending_items != @meeting.pending_items %>
+                <button type="button" class="btn btn-sm btn-link text-warning p-0" data-action="meeting-minute-toggle#toggle" title="Alternar para o texto original do Gemini" aria-pressed="false">
+                  <i class="bi bi-exclamation-circle-fill"></i><span class="visually-hidden">Alternar texto original do Gemini</span>
+                </button>
+              <% end %>
+            </div>
+          </div>
+          <div data-meeting-minute-toggle-target="current" class="meeting-minute-toggle-panel">
+            <% if @meeting.pending_items.any? %>
+              <ul><% @meeting.pending_items.each do |item| %><li><%= item %></li><% end %></ul>
+            <% else %>
+              <div class="meeting-minute-empty">Nenhuma pendência registrada.</div>
+            <% end %>
+          </div>
+          <% if original_pending_items != @meeting.pending_items %>
+            <div data-meeting-minute-toggle-target="original" class="meeting-minute-toggle-panel is-hidden meeting-minute-original-note">
+              <strong><i class="bi bi-robot me-1"></i>Texto original por Gemini</strong>
+              <% if original_pending_items.any? %>
+                <ul><% original_pending_items.each do |item| %><li><%= item %></li><% end %></ul>
+              <% else %>
+                <div>Nenhuma pendência foi registrada pela IA.</div>
+              <% end %>
+            </div>
+          <% end %>
+          <% if can_edit_content %>
+            <div data-meeting-minute-toggle-target="editor" class="meeting-minute-inline-editor">
+              <%= form_with url: update_content_action_plan_meeting_minute_path(@action_plan, @meeting), method: :patch, local: true do %>
+                <%= label_tag "meeting_minute_pending_items", "Pendências, uma por linha", class: "form-label" %>
+                <%= text_area_tag "meeting_minute[pending_items][]", @meeting.pending_items.join("\n"), id: "meeting_minute_pending_items", class: "form-control", rows: 6 %>
+                <% @meeting.decisions.each do |item| %><%= hidden_field_tag "meeting_minute[decisions][]", item %><% end %>
+                <div class="d-flex gap-2 mt-3">
+                  <%= submit_tag "Salvar pendências", class: "btn btn-primary" %>
+                  <button type="button" class="btn btn-outline-secondary" data-action="meeting-minute-toggle#cancel">Cancelar edição</button>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
         </section>
       </div>
 
@@ -143,3 +285,24 @@
     <% end %>
   </section>
 </div>
+
+<% if @meeting.edits.any? %>
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="meeting-minute-history" aria-labelledby="meeting-minute-history-label">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="meeting-minute-history-label"><i class="bi bi-clock-history me-1"></i> Histórico de edições</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
+    </div>
+    <div class="offcanvas-body">
+      <% @meeting.edits.order(created_at: :desc).each do |edit| %>
+        <div class="meeting-minute-edit-history__item">
+          <strong><%= edit.user.name %></strong>
+          <small><%= l(edit.created_at, format: :long) %></small>
+          <div class="meeting-minute-edit-history__changes">
+            <span>Decisões: <%= edit.changes_snapshot.dig("after", "decisions").size %> item(ns)</span>
+            <span>Pendências: <%= edit.changes_snapshot.dig("after", "pending_items").size %> item(ns)</span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

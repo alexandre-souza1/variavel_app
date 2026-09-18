@@ -82,17 +82,35 @@
   .plate-tire-map__front-label { left: 0; }
   .plate-tire-map__rear-label { right: 12px; }
   .plate-tire-map__cab {
-    position: relative; align-self: start; height: 102px; margin-top: 22px;
-    border: 2px solid #8c9aa5; border-right: 0; border-radius: 18px 0 0 18px;
+    position: relative; z-index: 1; align-self: start;
+    width: 144px; height: 146px; margin-top: 42px;
+    border: 2px solid #8c9aa5; border-radius: 22px 10px 10px 22px;
     background: var(--bs-secondary-bg);
-    &::before, &::after { content: ""; position: absolute; left: 8px; width: 8px; height: 5px; background: #deb663; border-radius: 2px; }
-    &::before { top: 7px; }
-    &::after { bottom: 7px; }
-    span { position: absolute; inset: 20px 10px 20px 9px; border: 1px solid #8c9aa5; border-radius: 9px 3px 3px 9px; background: #a7bac733; }
+    box-shadow: inset -8px 0 0 #8c9aa51a, 0 2px 4px #15202b12;
+    pointer-events: none;
+    &::before {
+      content: ""; position: absolute; left: -5px; top: 17px; bottom: 17px;
+      width: 5px; border-radius: 4px; background: #667582;
+    }
+    &::after {
+      content: ""; position: absolute; left: 9px; top: 10px;
+      width: 7px; height: 12px; border-radius: 3px;
+      background: #e6c875; box-shadow: 0 108px 0 #e6c875;
+    }
+    span {
+      position: absolute; inset: 18px 13px 18px 42px;
+      border: 1px solid #8c9aa566; border-radius: 7px;
+      background: linear-gradient(90deg, #8c9aa512, transparent);
+      &::before {
+        content: ""; position: absolute; left: -29px; top: 4px; bottom: 4px; width: 21px;
+        border: 1px solid #728c9e; border-radius: 9px 3px 3px 9px;
+        background: linear-gradient(155deg, #a9c5d5, #d3e2ea 48%, #94b1c3 50%, #a9c5d5);
+      }
+    }
   }
   .plate-tire-map__axles {
     display: flex; position: relative; gap: 14px; padding: 0 10px;
-    &::before { content: ""; position: absolute; top: 44px; left: 0; right: 0; height: 58px;
+    &::before { content: ""; position: absolute; top: 86px; left: 0; right: 0; height: 58px;
       border: 3px solid #9ba5ad; border-radius: 4px;
       background: repeating-linear-gradient(90deg, transparent, transparent 44px, #9ba5ad33 44px, #9ba5ad33 47px);
     }
@@ -107,8 +125,13 @@
     color: var(--bs-secondary-color); font-size: .67rem; text-align: center; line-height: 1.4;
   }
   .plate-tire-axle__line {
-    position: relative; display: flex; flex-direction: column; gap: 70px;
+    position: relative; display: flex; flex-direction: column; gap: 154px; padding: 0;
     &::before { content: ""; position: absolute; top: 20px; bottom: 20px; left: calc(50% - 3px); width: 6px; background: #8c9aa5; }
+  }
+  .plate-tire-axle__line--dual {
+    gap: 4px; padding: 0;
+    &::before { top: 20px; bottom: 20px; }
+    .plate-tire-wheel:nth-child(3) { margin-top: 66px; }
   }
   .plate-tire-wheel {
     position: relative; display: flex; align-items: center; justify-content: center;
@@ -128,6 +151,10 @@
     display: grid; place-items: center; width: 44px; height: 44px; padding: 4px;
     border: 5px solid #586572; border-radius: 50%; color: #34414f; background: #e9edf0;
     font: 700 .55rem ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; text-align: center;
+  }
+  .plate-tire-wheel.plate-tire--low-tread,
+  .plate-tire-spare__wheel.plate-tire--low-tread {
+    border-color: #dc3545;
   }
   .plate-tire-map__legend {
     display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem;

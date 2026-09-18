@@ -26,6 +26,8 @@ class User < ApplicationRecord
   has_many :stress_test_imports, dependent: :destroy
   has_many :fleet_availabilities, dependent: :destroy
   has_many :notifications, dependent: :destroy
+  has_many :meeting_minute_collaborations, class_name: "MeetingMinute", foreign_key: :collaborator_id, dependent: :nullify
+  has_many :meeting_minute_edits, dependent: :restrict_with_exception
   has_many :push_devices, dependent: :destroy
   has_many :sent_notifications,
            class_name: "Notification",

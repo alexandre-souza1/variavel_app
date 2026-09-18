@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_18_110000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_18_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -556,6 +556,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_18_110000) do
     t.index ["matric_motorista"], name: "index_mapas_on_matric_motorista"
   end
 
+  create_table "meeting_minute_edits", force: :cascade do |t|
+    t.bigint "meeting_minute_id", null: false
+    t.bigint "user_id", null: false
+    t.jsonb "changes_snapshot", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["meeting_minute_id"], name: "index_meeting_minute_edits_on_meeting_minute_id"
+    t.index ["user_id"], name: "index_meeting_minute_edits_on_user_id"
+  end
+
   create_table "meeting_minutes", force: :cascade do |t|
     t.bigint "action_plan_id", null: false
     t.bigint "creator_id", null: false
@@ -572,7 +582,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_18_110000) do
     t.datetime "updated_at", null: false
     t.jsonb "participants", default: [], null: false
     t.boolean "tasks_created", default: false, null: false
+    t.bigint "collaborator_id"
+    t.jsonb "original_decisions", default: [], null: false
+    t.jsonb "original_pending_items", default: [], null: false
+    t.text "original_summary"
     t.index ["action_plan_id"], name: "index_meeting_minutes_on_action_plan_id"
+    t.index ["collaborator_id"], name: "index_meeting_minutes_on_collaborator_id"
     t.index ["creator_id"], name: "index_meeting_minutes_on_creator_id"
   end
 
@@ -975,7 +990,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_18_110000) do
   add_foreign_key "invoices", "suppliers"
   add_foreign_key "invoices", "users", column: "purchaser_id"
   add_foreign_key "labels", "action_plans"
+  add_foreign_key "meeting_minute_edits", "meeting_minutes"
+  add_foreign_key "meeting_minute_edits", "users"
   add_foreign_key "meeting_minutes", "action_plans"
+  add_foreign_key "meeting_minutes", "users", column: "collaborator_id"
   add_foreign_key "meeting_minutes", "users", column: "creator_id"
   add_foreign_key "notifications", "users"
   add_foreign_key "notifications", "users", column: "actor_id"

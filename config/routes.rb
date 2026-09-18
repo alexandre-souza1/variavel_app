@@ -182,6 +182,8 @@ Rails.application.routes.draw do
       post :create_tasks, on: :member
       post :retry_generation, on: :member
       get :audio, on: :member
+      patch :update_content, on: :member
+      patch :update_collaborator, on: :member
       patch :update_participants, on: :member
       post :import_participants, on: :member
     end

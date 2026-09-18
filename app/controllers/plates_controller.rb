@@ -37,7 +37,9 @@ class PlatesController < ApplicationController
     @operational_tires = @tires.reject { |tire| tire[:spare] }
     @retread_count = @operational_tires.count { |tire| tire[:smallest_tread_depth] && tire[:smallest_tread_depth] <= 3.5 }
     @tire_layout = @plate.tire_layout
-    @tire_map = build_tire_map(@tire_layout, @operational_tires)
+    tire_map = Prolog::TireMap.new(@tire_layout, @operational_tires)
+    @tire_map = tire_map.axles
+    @unmapped_tires = tire_map.unmapped_tires
     @latest_availability = @plate.fleet_availability_items
                                   .includes(:fleet_availability)
                                   .max_by { |item| item.fleet_availability.date }
@@ -93,36 +95,6 @@ class PlatesController < ApplicationController
   end
 
   private
-
-  def build_tire_map(layout, tires)
-    return [] if layout.blank?
-
-    remaining = tires.dup
-    layout.map do |axle|
-      matching = remaining.select { |tire| tire_matches_axle?(tire, axle[:key]) }
-      selected = (matching + remaining).uniq.first(axle[:tires])
-      selected.each { |tire| remaining.delete_at(remaining.index(tire)) }
-      { axle: axle, tires: selected }
-    end
-  end
-
-  def tire_matches_axle?(tire, axle_key)
-    position = tire[:position].to_s.downcase
-    position = position.unicode_normalize(:nfkd).gsub(/[^a-z0-9 ]/, "")
-
-    case axle_key
-    when "front"
-      position.match?(/dianteiro|front/) && !position.match?(/2|segundo|segundo eixo/)
-    when "front_second"
-      position.match?(/dianteiro.*(2|segundo)|eixo 2|2.*dianteiro/)
-    when "traction"
-      position.match?(/tracao|traction/)
-    when "truck"
-      position.match?(/truck|traseiro|rear/)
-    else
-      false
-    end
-  end
 
   def plate_observations(plate)
     checklist_observations = plate.checklists

@@ -22,10 +22,11 @@
               <% axle = mapped_axle[:axle] %>
               <div class="plate-tire-axle <%= 'plate-tire-axle--rear-start' if axle[:key] == 'traction' %>">
                 <span class="plate-tire-axle__label"><%= axle[:label] %></span>
-                <div class="plate-tire-axle__line">
-                  <% 2.times do |wheel_index| %>
+                <div class="plate-tire-axle__line <%= 'plate-tire-axle__line--dual' if axle[:tires] == 4 %>">
+                  <% axle[:tires].times do |wheel_index| %>
                     <% tire = mapped_axle[:tires][wheel_index] %>
-                    <span class="plate-tire-wheel <%= 'plate-tire-wheel--empty' unless tire %>" title="<%= [tire&.dig(:position), tire&.dig(:fire_number)].compact.join(' · ') %>"><span><%= tire&.dig(:fire_number).presence || "—" %></span></span>
+                    <% position_label = axle[:tires] == 4 ? ["Direito externo", "Direito interno", "Esquerdo interno", "Esquerdo externo"][wheel_index] : ["Direito", "Esquerdo"][wheel_index] %>
+                    <span class="plate-tire-wheel <%= 'plate-tire-wheel--empty' unless tire %> <%= 'plate-tire--low-tread' if tire_low_tread?(tire) %>" title="<%= [axle[:label], position_label, tire&.dig(:position), tire&.dig(:fire_number), tire_tread_tooltip(tire)].compact.join(' · ') %>"><span><%= tire&.dig(:fire_number).presence || "—" %></span></span>
                   <% end %>
                 </div>
               </div>
@@ -33,7 +34,7 @@
           </div>
           <span class="plate-tire-map__rear-label">Traseira</span>
           <div class="plate-tire-spare">
-            <span class="plate-tire-spare__wheel"><%= @spare_tires.first&.dig(:fire_number).presence || "—" %></span>
+            <span class="plate-tire-spare__wheel <%= 'plate-tire--low-tread' if tire_low_tread?(@spare_tires.first) %>" title="<%= ['Estepe', @spare_tires.first&.dig(:fire_number), tire_tread_tooltip(@spare_tires.first)].compact.join(' · ') %>"><%= @spare_tires.first&.dig(:fire_number).presence || "—" %></span>
             <span>Estepe
               <% if @tires_error %>
                 <small>Consulta indisponível</small>
@@ -46,7 +47,13 @@
           </div>
         </div>
         </div>
-        <div class="plate-tire-map__legend"><span>Número de fogo dentro de cada pneu</span><span>— Sem informação</span></div>
+        <div class="plate-tire-map__legend"><span>Acima: lado direito · Abaixo: lado esquerdo</span><span>— Sem informação</span></div>
+        <% if @unmapped_tires.present? %>
+          <p class="plate-tire-map__legend">Posição não identificada no mapa:
+            <%= @unmapped_tires.map { |tire| "#{tire[:fire_number].presence || 'Sem nº de fogo'} (#{tire[:position].presence || 'sem posição'})" }.join(", ") %>.
+            Consulte os registros na tabela abaixo.
+          </p>
+        <% end %>
       </div>
     <% end %>
     <% if @tires_error %>

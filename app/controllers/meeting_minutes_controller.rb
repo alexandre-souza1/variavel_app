@@ -1,8 +1,10 @@
 class MeetingMinutesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_action_plan
-  before_action :set_meeting, only: [:show, :create_tasks, :retry_generation, :audio, :update_participants, :import_participants]
-  before_action :ensure_meeting_access!, only: [:show, :create_tasks, :retry_generation, :audio, :update_participants, :import_participants]
+  before_action :set_meeting, only: [:show, :create_tasks, :retry_generation, :audio, :update_content, :update_collaborator, :update_participants, :import_participants]
+  before_action :ensure_meeting_access!, only: [:show, :create_tasks, :retry_generation, :audio, :update_content, :update_collaborator, :update_participants, :import_participants]
+  before_action :ensure_content_edit_access!, only: [:update_content]
+  before_action :ensure_collaborator_management_access!, only: [:update_collaborator]
 
   def index
     @meetings = @action_plan.meeting_minutes.order(meeting_date: :desc, created_at: :desc)
@@ -31,7 +33,7 @@ class MeetingMinutesController < ApplicationController
 
   def show
     @buckets = @action_plan.buckets.order(:position)
-    @users = User.order(:name)
+    @users = User.active.order(:name)
 
     respond_to do |format|
       format.html
@@ -44,6 +46,53 @@ class MeetingMinutesController < ApplicationController
           disposition: params[:download].present? ? "attachment" : "inline"
       end
     end
+  end
+
+  def update_content
+    unless @meeting.completed?
+      redirect_to action_plan_meeting_minute_path(@action_plan, @meeting),
+        alert: "Só é possível editar uma ata concluída."
+      return
+    end
+
+    summary = meeting_content_params.key?(:summary) ? meeting_content_params[:summary].to_s.strip : @meeting.summary.to_s
+    decisions = meeting_content_params.key?(:decisions) ? normalize_content_items(meeting_content_params[:decisions]) : Array(@meeting.decisions)
+    pending_items = meeting_content_params.key?(:pending_items) ? normalize_content_items(meeting_content_params[:pending_items]) : Array(@meeting.pending_items)
+    previous = {
+      "summary" => @meeting.summary.to_s,
+      "decisions" => Array(@meeting.decisions),
+      "pending_items" => Array(@meeting.pending_items)
+    }
+    current = { "summary" => summary, "decisions" => decisions, "pending_items" => pending_items }
+
+    if previous == current
+      redirect_to action_plan_meeting_minute_path(@action_plan, @meeting), notice: "Nenhuma alteração foi feita."
+      return
+    end
+
+    MeetingMinute.transaction do
+      @meeting.update!(summary: summary, decisions: decisions, pending_items: pending_items)
+      @meeting.edits.create!(user: current_user, changes_snapshot: { "before" => previous, "after" => current })
+    end
+
+    redirect_to action_plan_meeting_minute_path(@action_plan, @meeting), notice: "Decisões e pendências atualizadas."
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to action_plan_meeting_minute_path(@action_plan, @meeting), alert: e.message
+  end
+
+  def update_collaborator
+    collaborator_id = params.dig(:meeting_minute, :collaborator_id).presence
+    collaborator = User.active.find_by(id: collaborator_id) if collaborator_id
+
+    if collaborator_id && collaborator.nil?
+      redirect_to action_plan_meeting_minute_path(@action_plan, @meeting), alert: "Colaborador inválido."
+      return
+    end
+
+    @meeting.update!(collaborator: collaborator)
+    redirect_to action_plan_meeting_minute_path(@action_plan, @meeting), notice: "Colaborador da ata atualizado."
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to action_plan_meeting_minute_path(@action_plan, @meeting), alert: e.message
   end
 
   def retry_generation
@@ -152,7 +201,8 @@ class MeetingMinutesController < ApplicationController
   end
 
   def ensure_meeting_access!
-    return if current_user.admin? || @meeting.creator_id == current_user.id || @action_plan.user_id == current_user.id
+    return if current_user.admin? || @meeting.creator_id == current_user.id ||
+      @meeting.collaborator_id == current_user.id || @action_plan.user_id == current_user.id
 
     redirect_to action_plans_path, alert: "Você não possui acesso a esta ata."
   end
@@ -167,6 +217,26 @@ class MeetingMinutesController < ApplicationController
 
   def participants_params
     params.require(:meeting_minute).permit(:participants)
+  end
+
+  def meeting_content_params
+    params.require(:meeting_minute).permit(:summary, decisions: [], pending_items: [])
+  end
+
+  def normalize_content_items(value)
+    Array(value).flat_map { |item| item.to_s.split(/\r?\n/) }.map(&:strip).reject(&:blank?)
+  end
+
+  def ensure_content_edit_access!
+    return if current_user.admin? || @meeting.creator_id == current_user.id || @meeting.collaborator_id == current_user.id
+
+    redirect_to action_plan_meeting_minute_path(@action_plan, @meeting), alert: "Você não possui permissão para editar esta ata."
+  end
+
+  def ensure_collaborator_management_access!
+    return if current_user.admin? || @meeting.creator_id == current_user.id
+
+    redirect_to action_plan_meeting_minute_path(@action_plan, @meeting), alert: "Somente o criador ou um administrador pode indicar o colaborador."
   end
 
   def participant_source_names(source, sector)
