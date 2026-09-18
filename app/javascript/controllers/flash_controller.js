@@ -10,6 +10,8 @@ export default class extends Controller {
   }
 
   hideAlert() {
+    if (!this.hasAlertTarget) return
+
     this.alertTarget.classList.remove("show")
 
     setTimeout(() => {

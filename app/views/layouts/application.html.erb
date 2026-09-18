@@ -48,7 +48,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="app-shell" data-user-id="<%= current_user&.id || 'guest' %>" data-controller="chart-theme">
+  <body class="app-shell" data-user-id="<%= current_user&.id || 'guest' %>" data-controller="chart-theme meeting-recorder-launch">
   <%= render "shared/navbar" %>
   <%= render "layouts/#{secondary_nav}" if secondary_nav.present? %>
   <div id="flash-container">
@@ -59,6 +59,9 @@
     <%= yield %>
     </div>
   </main>
+  <% if defined?(@action_plan) && @action_plan.present? && current_user.present? %>
+    <%= render "meeting_minutes/recorder_floating", action_plan: @action_plan %>
+  <% end %>
   <div id="import-progress"
       data-controller="reconnect"
       data-reconnect-user-id-value="<%= current_user&.id %>">

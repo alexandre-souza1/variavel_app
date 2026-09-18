@@ -27,7 +27,7 @@ export default class extends Controller {
   }
 
   toggleSector() {
-    return unless this.hasSourceTarget && this.hasSectorTarget && this.hasSectorFieldTarget
+    if (!this.hasSourceTarget || !this.hasSectorTarget || !this.hasSectorFieldTarget) return
 
     const isSector = this.sourceTarget.value === "users_by_sector"
     this.sectorTarget.disabled = !isSector

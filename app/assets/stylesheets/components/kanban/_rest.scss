@@ -77,6 +77,20 @@
 .meeting-minute-recorder__copy span.is-error { color: var(--bs-danger); }
 .meeting-minute-recorder__timer { color: var(--bs-primary); font-variant-numeric: tabular-nums; font-weight: 700; margin-left: auto; }
 .meeting-minute-actions { display: flex; flex-wrap: wrap; gap: .65rem; justify-content: flex-end; margin-top: 1rem; }
+.meeting-recorder-widget { bottom: 1.25rem; position: fixed; right: 1.25rem; z-index: 1060; }
+.meeting-recorder-widget__launcher { align-items: center; background: var(--bs-primary); border: 0; border-radius: 999px; box-shadow: 0 .75rem 2rem rgba(15,23,42,.2); color: #fff; display: inline-flex; font-size: .8rem; font-weight: 700; gap: .45rem; padding: .7rem 1rem; }
+.meeting-recorder-widget__panel { background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius: 18px; box-shadow: 0 1rem 3rem rgba(15,23,42,.2); max-height: calc(100vh - 2.5rem); max-width: calc(100vw - 2rem); overflow-y: auto; padding: 1rem; width: 420px; }
+.meeting-recorder-widget.is-collapsed .meeting-recorder-widget__panel { display: none; }
+.meeting-recorder-widget:not(.is-collapsed) .meeting-recorder-widget__launcher { display: none; }
+.meeting-recorder-widget__header { align-items: flex-start; display: flex; justify-content: space-between; margin-bottom: .8rem; }
+.meeting-recorder-widget__header strong { color: var(--bs-body-color); display: block; font-size: 1rem; margin-top: .15rem; }
+.meeting-recorder-widget__fields { display: grid; gap: .5rem; grid-template-columns: 1fr 150px; margin-bottom: .75rem; }
+.meeting-recorder-widget__participants .form-label { color: var(--bs-secondary-color); font-size: .75rem; margin-bottom: .35rem; }
+.meeting-recorder-widget__participants .form-label span { font-weight: 400; }
+.meeting-recorder-widget__status { align-items: center; background: rgba(var(--bs-primary-rgb), .08); border: 1px solid rgba(var(--bs-primary-rgb), .15); border-radius: 12px; display: flex; gap: .65rem; margin-top: .65rem; padding: .65rem; }
+.meeting-recorder-widget__status .meeting-minute-recorder__icon { flex: 0 0 2rem; height: 2rem; width: 2rem; }
+.meeting-recorder-widget__status .meeting-minute-recorder__copy span { font-size: .7rem; }
+.meeting-recorder-widget__actions { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: flex-end; margin-top: .8rem; }
 .meeting-minute-content { display: grid; gap: 1rem; }
 .meeting-minute-card h2 { align-items: center; color: var(--bs-body-color); display: flex; font-size: 1rem; gap: .45rem; margin: 0 0 .8rem; }
 .meeting-minute-card h2 i { color: var(--bs-primary); }

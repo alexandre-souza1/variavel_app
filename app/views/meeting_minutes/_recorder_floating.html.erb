@@ -1,0 +1,74 @@
+<% recorder_meeting = action_plan.meeting_minutes.new(
+  meeting_date: Date.current,
+  title: "Reunião - #{action_plan.name}"
+) %>
+
+<div id="meeting-recorder-widget"
+     class="meeting-recorder-widget is-collapsed"
+     data-turbo-permanent
+     data-controller="meeting-recorder"
+     data-meeting-recorder-action-plan-id-value="<%= action_plan.id %>"
+     data-meeting-recorder-max-duration-value="<%= AiSetting.current.meeting_audio_max_minutes %>">
+  <button type="button"
+          class="meeting-recorder-widget__launcher"
+          data-meeting-recorder-target="launcher"
+          data-action="click->meeting-recorder#open"
+          aria-label="Abrir gravação de reunião">
+    <i class="bi bi-mic-fill"></i>
+    <span>Nova reunião</span>
+  </button>
+
+  <section class="meeting-recorder-widget__panel" data-meeting-recorder-target="panel" aria-hidden="true">
+    <div class="meeting-recorder-widget__header">
+      <div>
+        <span class="meeting-minute-page__eyebrow">Assistente de reuniões</span>
+        <strong>Nova gravação</strong>
+      </div>
+      <button type="button" class="btn btn-sm btn-link" data-action="click->meeting-recorder#close" aria-label="Minimizar gravação">
+        <i class="bi bi-dash-lg"></i>
+      </button>
+    </div>
+
+    <%= form_with model: [action_plan, recorder_meeting], multipart: true, data: { turbo: true } do |form| %>
+      <div class="meeting-recorder-widget__fields">
+        <%= form.text_field :title, class: "form-control form-control-sm", placeholder: "Título da reunião", required: true %>
+        <%= form.date_field :meeting_date, class: "form-control form-control-sm", required: true %>
+      </div>
+
+      <div class="meeting-recorder-widget__participants" data-controller="participants">
+        <label class="form-label">Participantes <span>(opcional)</span></label>
+        <div class="meeting-minute-participants-list" data-participants-target="list">
+          <div class="meeting-minute-participant-row" data-participants-target="row">
+            <%= text_field_tag "meeting_minute[participants][]", nil, class: "form-control form-control-sm", placeholder: "Nome do participante" %>
+            <button type="button" class="btn btn-sm btn-outline-danger" data-action="participants#remove" aria-label="Remover participante">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-link px-0" data-action="participants#add">
+          <i class="bi bi-person-plus me-1"></i> Adicionar participante
+        </button>
+      </div>
+
+      <div class="meeting-recorder-widget__status">
+        <div class="meeting-minute-recorder__icon"><i class="bi bi-mic-fill"></i></div>
+        <div class="meeting-minute-recorder__copy">
+          <strong>Gravação da reunião</strong>
+          <span data-meeting-recorder-target="status">Inicie quando todos estiverem prontos.</span>
+        </div>
+        <span class="meeting-minute-recorder__timer" data-meeting-recorder-target="timer">00:00</span>
+      </div>
+
+      <%= form.file_field :audio, accept: "audio/*", class: "d-none", required: true, data: { meeting_recorder_target: "file" } %>
+      <div class="meeting-recorder-widget__actions">
+        <button type="button" class="btn btn-primary btn-sm" data-meeting-recorder-target="start" data-action="click->meeting-recorder#start">
+          <i class="bi bi-record-circle me-1"></i> Iniciar
+        </button>
+        <button type="button" class="btn btn-outline-danger btn-sm d-none" data-meeting-recorder-target="stop" data-action="click->meeting-recorder#stop">
+          <i class="bi bi-stop-circle me-1"></i> Parar
+        </button>
+        <%= form.submit "Gerar ata com IA", class: "btn btn-success btn-sm", disabled: true, data: { meeting_recorder_target: "submit" } %>
+      </div>
+    <% end %>
+  </section>
+</div>

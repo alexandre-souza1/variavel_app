@@ -11,10 +11,7 @@ class MeetingMinutesController < ApplicationController
   end
 
   def new
-    @meeting = @action_plan.meeting_minutes.new(
-      meeting_date: Date.current,
-      title: "Reunião - #{@action_plan.name}"
-    )
+    redirect_to action_plan_path(@action_plan, meeting_recorder: "open")
   end
 
   def create

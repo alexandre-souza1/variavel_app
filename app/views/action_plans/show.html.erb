@@ -49,10 +49,10 @@
           </button>
         <% end %>
 
-        <%= link_to new_action_plan_meeting_minute_path(@action_plan), class: "btn-outline action-plan-view-link" do %>
+        <button type="button" class="btn-outline action-plan-view-link" data-action="click->meeting-recorder-launch#open">
           <i class="bi bi-mic"></i>
           <span>Nova Reunião</span>
-        <% end %>
+        </button>
 
         <%= link_to action_plan_meeting_minutes_path(@action_plan), class: "btn-outline action-plan-view-link" do %>
           <i class="bi bi-file-earmark-text"></i>
