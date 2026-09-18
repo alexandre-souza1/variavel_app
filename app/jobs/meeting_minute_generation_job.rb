@@ -36,6 +36,10 @@ class MeetingMinuteGenerationJob < ApplicationJob
       tasks_suggestions: Array(result["tasks"])
     )
 
+    # A ata já foi persistida com sucesso. O áudio original não é mais
+    # necessário para o processamento e pode ser removido do storage remoto.
+    meeting.audio.purge_later if meeting.audio.attached?
+
     notify_user(meeting, "Ata gerada", "A ata da reunião está pronta para revisão.")
   rescue StandardError => e
     if e.is_a?(Faraday::TimeoutError) || e.is_a?(Faraday::ConnectionFailed) ||

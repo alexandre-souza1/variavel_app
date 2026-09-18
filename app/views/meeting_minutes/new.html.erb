@@ -31,14 +31,25 @@
       </div>
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3" data-controller="participants">
       <%= form.label :participants, "Participantes (opcional)", class: "form-label" %>
-      <%= form.text_area :participants,
-        value: @meeting.participants.join("\n"),
-        class: "form-control",
-        rows: 3,
-        placeholder: "Informe um participante por linha" %>
-      <div class="form-text">Esses nomes serão usados na tabela de assinaturas do PDF.</div>
+      <div class="meeting-minute-participants-list" data-participants-target="list">
+        <div class="meeting-minute-participant-row" data-participants-target="row">
+          <%= text_field_tag "meeting_minute[participants][]", nil,
+            class: "form-control",
+            placeholder: "Nome do participante",
+            aria: { label: "Nome do participante" } %>
+          <button type="button" class="btn btn-outline-danger" data-action="participants#remove" aria-label="Remover participante">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+      <div class="meeting-minute-participant-actions">
+        <button type="button" class="btn btn-outline-primary" data-action="participants#add">
+          <i class="bi bi-person-plus me-1"></i> Adicionar participante
+        </button>
+      </div>
+      <div class="form-text">Informe um participante por linha. Esses nomes serão usados na tabela de assinaturas do PDF.</div>
     </div>
 
     <div class="meeting-minute-recorder">
