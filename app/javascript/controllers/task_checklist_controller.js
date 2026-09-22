@@ -4,15 +4,21 @@ export default class extends Controller {
   static targets = ["itemsContainer", "itemTemplate"]
   static values = { actionPlanId: Number, bucketId: Number, taskId: Number }
 
-  addItem() {
+  addItem(content = null) {
     const url = `/action_plans/${this.actionPlanIdValue}/buckets/${this.bucketIdValue}/tasks/${this.taskIdValue}/tasklist_items`
 
-    fetch(url, {
+    const body = content === null
+      ? null
+      : new URLSearchParams({ "tasklist_item[content]": content })
+
+    return fetch(url, {
       method: "POST",
       headers: {
         "Accept": "text/vnd.turbo-stream.html",
+        ...(body ? { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" } : {}),
         "X-CSRF-Token": document.querySelector("[name='csrf-token']").content
-      }
+      },
+      body
     })
     .then(response => {
       if (!response.ok) throw new Error("Falha ao criar item")
@@ -56,9 +62,17 @@ export default class extends Controller {
     event.preventDefault()
     input.value = values.shift()
 
-    values.forEach(value => this.addLocalItem(value))
+    // Cria os itens no servidor para que cada linha receba seu ID real.
+    // Se eles ficassem apenas no DOM, o próximo autosave os enviaria
+    // novamente sem ID e o Rails os trataria como novos registros.
+    Promise.all(values.map(value => this.addItem(value)))
+      .catch(error => {
+        console.error("Erro ao adicionar itens colados:", error)
+        values.forEach(value => this.addLocalItem(value))
+      })
 
-    // Dispara o autosave depois que todas as linhas já fazem parte do formulário.
+    // Salva também o conteúdo da primeira linha; os demais itens são persistidos
+    // pelas requisições acima e retornam ao DOM já com seus IDs reais.
     input.dispatchEvent(new Event('change', { bubbles: true }))
   }
 
