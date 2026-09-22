@@ -219,6 +219,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :rotogramas, only: :index
+
   resources :plates do
     collection { post :import }
     member do

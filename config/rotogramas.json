@@ -1,0 +1,262 @@
+[
+  {
+    "id": "cafelandia",
+    "name": "Cafelândia",
+    "context": "Paraná",
+    "lat": -24.6189,
+    "lng": -53.3207,
+    "pages": 4,
+    "aliases": "CAFELANDIA",
+    "bytes": 997734
+  },
+  {
+    "id": "cascavel",
+    "name": "Cascavel",
+    "context": "Paraná",
+    "lat": -24.9573,
+    "lng": -53.459,
+    "pages": 3,
+    "aliases": "CASCAVEL",
+    "bytes": 979953
+  },
+  {
+    "id": "ceu-azul",
+    "name": "Céu Azul",
+    "context": "Paraná",
+    "lat": -25.1489,
+    "lng": -53.8415,
+    "pages": 3,
+    "aliases": "CEU AZUL",
+    "bytes": 773518
+  },
+  {
+    "id": "diamante-d-oeste",
+    "name": "Diamante D'Oeste",
+    "context": "Paraná",
+    "lat": -24.9419,
+    "lng": -54.1052,
+    "pages": 3,
+    "aliases": "DIAMANTE DO OESTE",
+    "bytes": 895153
+  },
+  {
+    "id": "formosa-do-oeste",
+    "name": "Formosa do Oeste",
+    "context": "Paraná",
+    "lat": -24.2951,
+    "lng": -53.3114,
+    "pages": 4,
+    "aliases": "FORMOSA DO OESTE",
+    "bytes": 1532660
+  },
+  {
+    "id": "foz-do-iguacu",
+    "name": "Foz do Iguaçu",
+    "context": "Paraná",
+    "lat": -25.5427,
+    "lng": -54.5827,
+    "pages": 2,
+    "aliases": "FOZ DO IGUAÇU",
+    "bytes": 473026
+  },
+  {
+    "id": "goioere",
+    "name": "Goioerê",
+    "context": "Paraná",
+    "lat": -24.1835,
+    "lng": -53.0248,
+    "pages": 4,
+    "aliases": "GOIOERE",
+    "bytes": 1343696
+  },
+  {
+    "id": "guaira",
+    "name": "Guaíra",
+    "context": "Paraná",
+    "lat": -24.085,
+    "lng": -54.2573,
+    "pages": 3,
+    "aliases": "GUAIRA",
+    "bytes": 963763
+  },
+  {
+    "id": "itaipulandia",
+    "name": "Itaipulândia",
+    "context": "Paraná",
+    "lat": -25.1366,
+    "lng": -54.3001,
+    "pages": 2,
+    "aliases": "ITAIPULANDIA",
+    "bytes": 535141
+  },
+  {
+    "id": "jesuitas",
+    "name": "Jesuítas",
+    "context": "Paraná",
+    "lat": -24.3839,
+    "lng": -53.3849,
+    "pages": 4,
+    "aliases": "JESUITAS",
+    "bytes": 1434843
+  },
+  {
+    "id": "marechal-candido-rondon",
+    "name": "Marechal Cândido Rondon",
+    "context": "Paraná",
+    "lat": -24.557,
+    "lng": -54.0571,
+    "pages": 4,
+    "aliases": "MARECHAL CANDIDO RONDON",
+    "bytes": 1043362
+  },
+  {
+    "id": "matelandia",
+    "name": "Matelândia",
+    "context": "Paraná",
+    "lat": -25.2496,
+    "lng": -53.9935,
+    "pages": 2,
+    "aliases": "MATELANDIA",
+    "bytes": 588021
+  },
+  {
+    "id": "medianeira",
+    "name": "Medianeira",
+    "context": "Paraná",
+    "lat": -25.2977,
+    "lng": -54.0943,
+    "pages": 2,
+    "aliases": "MEDIANEIRA",
+    "bytes": 476853
+  },
+  {
+    "id": "missal",
+    "name": "Missal",
+    "context": "Paraná",
+    "lat": -25.0919,
+    "lng": -54.2477,
+    "pages": 2,
+    "aliases": "MISSAL",
+    "bytes": 607674
+  },
+  {
+    "id": "nova-aurora",
+    "name": "Nova Aurora",
+    "context": "Paraná",
+    "lat": -24.5289,
+    "lng": -53.2575,
+    "pages": 4,
+    "aliases": "NOVA AURORA",
+    "bytes": 1328919
+  },
+  {
+    "id": "nova-santa-rosa",
+    "name": "Nova Santa Rosa",
+    "context": "Paraná",
+    "lat": -24.4693,
+    "lng": -53.9552,
+    "pages": 4,
+    "aliases": "NOVA SANTA ROSA",
+    "bytes": 1109953
+  },
+  {
+    "id": "nova-sarandi",
+    "name": "Nova Sarandi",
+    "context": "Distrito de Toledo · PR",
+    "lat": -24.56464,
+    "lng": -53.90511,
+    "pages": 3,
+    "aliases": "NOVA SARANDI NOVO SARANDI",
+    "bytes": 967968
+  },
+  {
+    "id": "ramilandia",
+    "name": "Ramilândia",
+    "context": "Paraná",
+    "lat": -25.1195,
+    "lng": -54.023,
+    "pages": 3,
+    "aliases": "RAMILANDIA",
+    "bytes": 760051
+  },
+  {
+    "id": "sao-miguel-do-iguacu",
+    "name": "São Miguel do Iguaçu",
+    "context": "Paraná",
+    "lat": -25.3492,
+    "lng": -54.2405,
+    "pages": 2,
+    "aliases": "SAO MIGUEL",
+    "bytes": 452561
+  },
+  {
+    "id": "serranopolis-do-iguacu",
+    "name": "Serranópolis do Iguaçu",
+    "context": "Paraná",
+    "lat": -25.3799,
+    "lng": -54.0518,
+    "pages": 2,
+    "aliases": "SERRANOPOLIS DO IGUAÇU",
+    "bytes": 544151
+  },
+  {
+    "id": "santa-helena",
+    "name": "Santa Helena",
+    "context": "Paraná",
+    "lat": -24.8585,
+    "lng": -54.336,
+    "pages": 3,
+    "aliases": "STA HELENA",
+    "bytes": 672465
+  },
+  {
+    "id": "santa-terezinha-de-itaipu",
+    "name": "Santa Terezinha de Itaipu",
+    "context": "Paraná",
+    "lat": -25.4391,
+    "lng": -54.402,
+    "pages": 2,
+    "aliases": "STA TEREZINHA",
+    "bytes": 321760
+  },
+  {
+    "id": "sao-clemente",
+    "name": "São Clemente",
+    "context": "Distrito de Santa Helena · PR",
+    "lat": -24.7807,
+    "lng": -54.23579,
+    "pages": 3,
+    "aliases": "SÃO CLEMENTE",
+    "bytes": 834582
+  },
+  {
+    "id": "sao-jose-das-palmeiras",
+    "name": "São José das Palmeiras",
+    "context": "Paraná",
+    "lat": -24.8369,
+    "lng": -54.0572,
+    "pages": 3,
+    "aliases": "SÃO JOSE DAS PALMEIRAS",
+    "bytes": 985533
+  },
+  {
+    "id": "toledo",
+    "name": "Toledo",
+    "context": "Paraná",
+    "lat": -24.7246,
+    "lng": -53.7412,
+    "pages": 3,
+    "aliases": "TOLEDO",
+    "bytes": 1026685
+  },
+  {
+    "id": "vera-cruz-do-oeste",
+    "name": "Vera Cruz do Oeste",
+    "context": "Paraná",
+    "lat": -25.0577,
+    "lng": -53.8771,
+    "pages": 3,
+    "aliases": "VERA CRUZ DO OESTE",
+    "bytes": 863129
+  }
+]

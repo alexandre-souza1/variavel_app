@@ -56,6 +56,14 @@
   z-index: 2;
 }
 
+// Keep quick-access links and controls above the decorative overlay.
+.az-new-carousel-panel {
+  .carousel-item::after { pointer-events: none; }
+  .carousel-indicators,
+  .carousel-control-prev,
+  .carousel-control-next { z-index: 3; }
+}
+
 .cards {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;

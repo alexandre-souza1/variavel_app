@@ -20,6 +20,7 @@
 
 // External libraries
 @import "bootstrap"; // Importa o Bootstrap
+@import "leaflet";
 
 // Shared styles and design tokens must be defined before the page/component layers.
 @import "custom/index"; // Tokens, breakpoints e componentes visuais compartilhados
@@ -37,3 +38,4 @@
 @import "custom/light_theme"; // Paleta clara da Workstation
 @import "custom/routine_theme"; // Grade de rotinas, isolada das tabelas gerais
 @import "custom/routine_mobile"; // Ajustes isolados do módulo de rotinas em celulares
+@import "pages/rotogramas";

@@ -1,0 +1,56 @@
+const { chromium, devices } = require('playwright');
+const assert = require('node:assert/strict');
+// Run against a local Rails server: BASE_URL=http://127.0.0.1:3100 node test/browser/rotogramas_test.cjs
+const baseURL = process.env.BASE_URL || 'http://127.0.0.1:3100';
+(async()=>{
+ const browser=await chromium.launch({headless:true});
+ for (const mobile of [false,true]) {
+  const context=await browser.newContext(mobile?{...devices['iPhone 13']}:{viewport:{width:1440,height:1000}});
+  const page=await context.newPage(); const errors=[]; page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(`${baseURL}/rotogramas?origem=az`);
+  await page.waitForSelector('.leaflet-marker-icon');
+  assert.equal(await page.locator('.roto-back').getAttribute('href'),'/az_consultas/new');
+  assert.equal(await page.locator('.roto-city:visible').count(),26);
+  await page.getByRole('button',{name:'Favoritar Cascavel',exact:true}).click();
+  await page.getByRole('button',{name:'☆ Favoritas',exact:true}).click();
+  assert.equal(await page.locator('.roto-city:visible').count(),1);
+  await page.reload(); await page.waitForSelector('.leaflet-marker-icon');
+  assert.equal(await page.getByRole('button',{name:'Remover dos favoritos: Cascavel',exact:true}).getAttribute('aria-pressed'),'true');
+  await page.getByRole('searchbox',{name:'Buscar cidade'}).fill('ceu azul');
+  assert.equal(await page.locator('.roto-city:visible').count(),1);
+  await page.getByRole('button',{name:'Consultar Céu Azul',exact:true}).click();
+  await page.getByRole('button',{name:'Abrir rotograma',exact:false}).click();
+  await page.waitForFunction(()=>{ const img=document.querySelector('[data-rotogramas-target=pageImage]');return img.complete&&img.naturalWidth>0&&!img.hidden });
+  assert.equal(await page.locator('[data-rotogramas-target=pageLabel]').textContent(),'1 / 3');
+  await page.getByRole('button',{name:'Aumentar zoom',exact:true}).click();
+  assert.equal(await page.locator('[data-rotogramas-target=zoomLabel]').textContent(),'150%');
+  await page.getByRole('button',{name:'Próxima página',exact:true}).click();
+  await page.waitForFunction(()=>{const img=document.querySelector('[data-rotogramas-target=pageImage]');return img.complete&&img.naturalWidth>0&&!img.hidden});
+  assert.equal(await page.locator('[data-rotogramas-target=pageLabel]').textContent(),'2 / 3');
+  const href=await page.locator('[data-rotogramas-target=download]').getAttribute('href');
+  const pdf=await context.request.get(`${baseURL}${href}`);assert.equal(pdf.status(),200);assert.match(pdf.headers()['content-type'],/pdf/);
+  await page.screenshot({path:`tmp/rotogramas-reader-${mobile?'mobile':'desktop'}.png`,fullPage:false});
+  const readerBounds = await page.locator('dialog').boundingBox();
+  assert.ok(readerBounds.y >= 0 && readerBounds.y < 50);
+  await page.getByRole('button',{name:'Fechar rotograma',exact:true}).click();
+  assert.equal(await page.evaluate(()=>document.body.style.overflow),'');
+  await page.getByRole('searchbox',{name:'Buscar cidade'}).fill('');
+  await page.getByRole('button',{name:'Recentes',exact:true}).click();
+  assert.equal(await page.locator('.roto-city:visible').count(),1);
+  await page.getByRole('button',{name:'Todas',exact:true}).click();
+  await page.getByRole('button',{name:'Fechar seleção',exact:true}).click();
+  await page.getByRole('button',{name:'Mostrar toda a região',exact:true}).click();
+  await page.screenshot({path:`tmp/rotogramas-${mobile?'mobile':'desktop'}-tested.png`,fullPage:true});
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth),false);
+  await page.getByRole('button',{name:'Lista',exact:true}).click();
+  await page.getByRole('button',{name:'Consultar Toledo',exact:true}).click();
+  assert.equal(await page.locator('dialog[open]').count(),1);
+  await page.keyboard.press('Escape');
+  await page.getByRole('searchbox',{name:'Buscar cidade'}).fill('xyzxyz');
+  assert.equal(await page.locator('.roto-city:visible').count(),0);
+  assert.match(await page.locator('.roto-empty').textContent(),/Nenhuma localidade/);
+  console.log(JSON.stringify({mobile,errors,result:'passed'}));assert.deepEqual(errors,[]);
+  await context.close();
+ }
+ await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});

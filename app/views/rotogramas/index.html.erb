@@ -1,0 +1,107 @@
+<section class="rotogramas" data-controller="rotogramas"
+         data-rotogramas-cities-value="<%= @rotogramas.to_json %>"
+         data-action="turbo:before-cache@document->rotogramas#beforeCache">
+  <header class="roto-header">
+    <div>
+      <%= link_to @return_path, class: "roto-back" do %>
+        <i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar à consulta
+      <% end %>
+      <p class="roto-eyebrow">NA DIREÇÃO DA SEGURANÇA</p>
+      <h1>Seu destino. <span>Seu rotograma.</span></h1>
+      <p>Explore a região e consulte as orientações antes de sair.</p>
+    </div>
+    <div class="roto-total"><i class="bi bi-signpost-split" aria-hidden="true"></i><strong><%= @rotogramas.size %></strong><span>localidades<br>para consultar</span></div>
+  </header>
+
+  <div class="roto-toolbar">
+    <label class="roto-search">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <span class="visually-hidden">Buscar cidade</span>
+      <input type="search" placeholder="Qual cidade você vai atender?" autocomplete="off"
+             data-rotogramas-target="search" data-action="input->rotogramas#filter keydown.enter->rotogramas#selectFirst">
+    </label>
+    <div class="roto-modes" role="group" aria-label="Forma de visualização">
+      <button type="button" aria-pressed="true" data-rotogramas-target="mode" data-mode="map" data-action="rotogramas#changeMode"><i class="bi bi-map" aria-hidden="true"></i> Mapa</button>
+      <button type="button" aria-pressed="false" data-rotogramas-target="mode" data-mode="list" data-action="rotogramas#changeMode"><i class="bi bi-grid" aria-hidden="true"></i> Lista</button>
+    </div>
+  </div>
+
+  <div class="roto-workspace" data-rotogramas-target="workspace" data-mode="map">
+    <aside class="roto-sidebar" aria-label="Localidades disponíveis">
+      <div class="roto-filters" role="group" aria-label="Filtrar localidades">
+        <button type="button" aria-pressed="true" data-rotogramas-target="filterButton" data-filter="all" data-action="rotogramas#changeFilter">Todas</button>
+        <button type="button" aria-pressed="false" data-rotogramas-target="filterButton" data-filter="favorites" data-action="rotogramas#changeFilter">☆ Favoritas</button>
+        <button type="button" aria-pressed="false" data-rotogramas-target="filterButton" data-filter="recent" data-action="rotogramas#changeFilter">Recentes</button>
+      </div>
+      <p class="roto-result-count" data-rotogramas-target="count" role="status"><%= @rotogramas.size %> localidades disponíveis</p>
+      <div class="roto-city-list" data-rotogramas-target="list">
+        <% @rotogramas.each do |city| %>
+          <article class="roto-city" data-rotogramas-target="city" data-id="<%= city.fetch('id') %>">
+            <button type="button" class="roto-city-select" data-id="<%= city.fetch('id') %>" data-action="rotogramas#select" aria-label="Consultar <%= city.fetch('name') %>">
+              <img src="/rotogramas/<%= city.fetch('id') %>/previa.jpg" alt="" loading="lazy" width="68" height="54">
+              <span><strong><%= city.fetch('name') %></strong><small><%= city.fetch('context') %> · <%= city.fetch('pages') %> páginas</small></span>
+              <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="roto-star" data-id="<%= city.fetch('id') %>" data-action="rotogramas#toggleFavorite" aria-label="Favoritar <%= city.fetch('name') %>" aria-pressed="false">☆</button>
+            <noscript><a href="/rotogramas/<%= city.fetch('id') %>/documento.pdf">Abrir PDF de <%= city.fetch('name') %></a></noscript>
+          </article>
+        <% end %>
+      </div>
+      <p class="roto-empty" data-rotogramas-target="empty" hidden></p>
+    </aside>
+
+    <div class="roto-map-panel" data-rotogramas-target="mapPanel">
+      <div class="roto-map" data-rotogramas-target="map" aria-label="Mapa das localidades com rotograma"></div>
+      <div class="roto-map-caption"><span class="roto-dot"></span> Oeste do Paraná <span>· Toque em um destino</span></div>
+      <button type="button" class="roto-fit" data-action="rotogramas#fitMap" aria-label="Mostrar toda a região"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
+      <p class="roto-map-notice" role="status" data-rotogramas-target="mapNotice" hidden>O mapa está indisponível. Use a busca ou a lista para consultar os rotogramas.</p>
+      <section class="roto-selection" data-rotogramas-target="selection" aria-label="Localidade selecionada" hidden>
+        <button type="button" class="roto-selection-close" data-action="rotogramas#clearSelection" aria-label="Fechar seleção">×</button>
+        <img data-rotogramas-target="preview" alt="Prévia da primeira página do rotograma" width="120" height="90">
+        <div class="roto-selection-info">
+          <small>SEU DESTINO</small>
+          <h2 data-rotogramas-target="selectedName"></h2>
+          <p data-rotogramas-target="selectedDetails"></p>
+          <div class="roto-selection-actions">
+            <button type="button" class="roto-primary" data-rotogramas-target="openButton" data-action="rotogramas#openReader">Abrir rotograma <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+            <button type="button" class="roto-star" data-rotogramas-target="selectedStar" data-action="rotogramas#toggleFavorite" aria-label="Favoritar cidade" aria-pressed="false">☆</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer class="roto-footer">
+    <span><i class="bi bi-info-circle" aria-hidden="true"></i> Escolha a localidade e consulte o trajeto no documento.</span>
+    <a href="/rotogramas/rotograma-completo.pdf" target="_blank" rel="noopener">Rotograma completo <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i></a>
+  </footer>
+
+  <dialog class="roto-reader" data-rotogramas-target="reader" aria-labelledby="roto-reader-title" data-action="close->rotogramas#readerClosed">
+    <header class="roto-reader-header">
+      <div><small>ROTOGRAMA</small><h2 id="roto-reader-title" data-rotogramas-target="readerTitle"></h2></div>
+      <div class="roto-reader-actions">
+        <a data-rotogramas-target="download" download><i class="bi bi-download" aria-hidden="true"></i><span> Baixar PDF</span></a>
+        <button type="button" data-action="rotogramas#fullscreen" aria-label="Tela cheia"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
+        <button type="button" data-action="rotogramas#closeReader" aria-label="Fechar rotograma">×</button>
+      </div>
+    </header>
+    <div class="roto-reader-tools">
+      <div>
+        <button type="button" data-rotogramas-target="previous" data-step="-1" data-action="rotogramas#changePage" aria-label="Página anterior">‹</button>
+        <span data-rotogramas-target="pageLabel" role="status"></span>
+        <button type="button" data-rotogramas-target="next" data-step="1" data-action="rotogramas#changePage" aria-label="Próxima página">›</button>
+      </div>
+      <div>
+        <button type="button" data-step="-0.5" data-action="rotogramas#zoom" aria-label="Diminuir zoom">−</button>
+        <button type="button" data-action="rotogramas#resetZoom" data-rotogramas-target="zoomLabel" aria-label="Ajustar à largura">100%</button>
+        <button type="button" data-step="0.5" data-action="rotogramas#zoom" aria-label="Aumentar zoom">+</button>
+      </div>
+    </div>
+    <div class="roto-reader-content" data-rotogramas-target="readerContent" tabindex="0" aria-label="Documento. Use o zoom para ampliar e role para navegar.">
+      <p data-rotogramas-target="loading" class="roto-reader-status" role="status">Carregando página…</p>
+      <p data-rotogramas-target="imageError" class="roto-reader-status" role="alert" hidden>Não foi possível carregar esta página. Tente novamente ou use “Baixar PDF”.</p>
+      <img data-rotogramas-target="pageImage" data-action="load->rotogramas#imageLoaded error->rotogramas#imageFailed" alt="" draggable="false">
+    </div>
+    <p class="roto-reader-hint">Use + para ampliar. Deslize pelo documento para ver os detalhes.</p>
+  </dialog>
+</section>
