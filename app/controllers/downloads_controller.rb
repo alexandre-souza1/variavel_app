@@ -68,7 +68,7 @@ class DownloadsController < ApplicationController
       )
     elsif @download.safe_url?
       redirect_to @download.url,
-                  allow_other_host: false
+                  allow_other_host: true
     else
       redirect_to downloads_path,
                   alert: "URL inválida. Apenas links compartilhados do Google Drive ou Microsoft OneDrive são permitidos."

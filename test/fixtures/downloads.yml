@@ -15,3 +15,10 @@ two:
   file_type: MyString
   file_size: MyString
   url: MyString
+google_drive:
+  title: Manual Google Drive
+  description: Documento de teste
+  category: PADRÃO
+  file_type: PDF
+  sector: FROTA
+  url: https://drive.google.com/file/d/example/view?usp=drive_link
