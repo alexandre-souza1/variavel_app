@@ -1,0 +1,242 @@
+[
+  {
+    "number": 1,
+    "profile": "VAN",
+    "zone": "Pátio principal",
+    "plate": "RTI1I17"
+  },
+  {
+    "number": 2,
+    "profile": "TRUCK",
+    "zone": "Pátio principal",
+    "plate": "QJU2138"
+  },
+  {
+    "number": 3,
+    "profile": "TRUCK",
+    "zone": "Pátio principal",
+    "plate": "QJU2248"
+  },
+  {
+    "number": 4,
+    "profile": "TRUCK",
+    "zone": "Pátio principal",
+    "plate": "QJU2318"
+  },
+  {
+    "number": 5,
+    "profile": "TRUCK",
+    "zone": "Pátio principal",
+    "plate": "QJU2428"
+  },
+  {
+    "number": 6,
+    "profile": "TRUCK",
+    "zone": "Pátio principal",
+    "plate": "QJU2F48"
+  },
+  {
+    "number": 7,
+    "profile": "TRUCK",
+    "zone": "Pátio principal",
+    "plate": "QJT3668"
+  },
+  {
+    "number": 8,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "FCA8H37"
+  },
+  {
+    "number": 9,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "FCO7153"
+  },
+  {
+    "number": 10,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "FCR7H56"
+  },
+  {
+    "number": 11,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "FUE8714"
+  },
+  {
+    "number": 12,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "FUX6061"
+  },
+  {
+    "number": 13,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "FEU8905"
+  },
+  {
+    "number": 14,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "FJO1322"
+  },
+  {
+    "number": 15,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "FML6122"
+  },
+  {
+    "number": 16,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "FXZ0966"
+  },
+  {
+    "number": 17,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "GHK2F66"
+  },
+  {
+    "number": 18,
+    "profile": "Flexível",
+    "zone": "Pátio principal",
+    "plate": ""
+  },
+  {
+    "number": 19,
+    "profile": "Flexível",
+    "zone": "Pátio principal",
+    "plate": ""
+  },
+  {
+    "number": 20,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "GIU0950"
+  },
+  {
+    "number": 21,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "GDY9098"
+  },
+  {
+    "number": 22,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "GKB9192"
+  },
+  {
+    "number": 23,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "GKF6739"
+  },
+  {
+    "number": 24,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "RDZ9A66"
+  },
+  {
+    "number": 25,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": ""
+  },
+  {
+    "number": 26,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "RKW7G77"
+  },
+  {
+    "number": 27,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": "RDZ9E96"
+  },
+  {
+    "number": 28,
+    "profile": "TOCO",
+    "zone": "Pátio principal",
+    "plate": ""
+  },
+  {
+    "number": 29,
+    "profile": "VUC",
+    "zone": "Pátio principal",
+    "plate": "CUH3C06"
+  },
+  {
+    "number": 30,
+    "profile": "VUC",
+    "zone": "Pátio principal",
+    "plate": "GAU0G73"
+  },
+  {
+    "number": 31,
+    "profile": "VUC",
+    "zone": "Pátio principal",
+    "plate": "GEO8C55"
+  },
+  {
+    "number": 32,
+    "profile": "VUC",
+    "zone": "Pátio principal",
+    "plate": "GBJ5381"
+  },
+  {
+    "number": 33,
+    "profile": "VUC",
+    "zone": "Pátio principal",
+    "plate": "RLJ6G37"
+  },
+  {
+    "number": 34,
+    "profile": "VUC",
+    "zone": "Pátio principal",
+    "plate": "RLK0D87"
+  },
+  {
+    "number": 35,
+    "profile": "Flexível",
+    "zone": "Pátio principal",
+    "plate": ""
+  },
+  {
+    "number": 36,
+    "profile": "BITRUCK",
+    "zone": "Extensão do armazém",
+    "plate": "RAI4107"
+  },
+  {
+    "number": 37,
+    "profile": "BITRUCK",
+    "zone": "Extensão do armazém",
+    "plate": "RAI4127"
+  },
+  {
+    "number": 38,
+    "profile": "TRUCK",
+    "zone": "Extensão do armazém",
+    "plate": ""
+  },
+  {
+    "number": 39,
+    "profile": "TRUCK",
+    "zone": "Extensão do armazém",
+    "plate": ""
+  },
+  {
+    "number": 40,
+    "profile": "TRUCK",
+    "zone": "Extensão do armazém",
+    "plate": ""
+  }
+]

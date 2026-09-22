@@ -1,0 +1,12 @@
+<div class="parking-space" data-parking-map-target="space" data-slot="<%= number %>" data-plate="<%= plate %>">
+  <div class="parking-space-heading"><span>Vaga <strong><%= format('%02d', number) %></strong></span><small><%= slot.fetch('profile') %></small></div>
+  <div class="parking-drop" data-slot="<%= number %>">
+    <% if plate.present? %>
+      <div class="parking-vehicle" data-plate="<%= plate %>">
+        <% if current_user&.admin? %><span class="parking-drag" aria-hidden="true"><i class="bi bi-grip-vertical"></i></span><% end %>
+        <i class="bi bi-truck parking-vehicle-icon" aria-hidden="true"></i>
+        <strong><%= plate %></strong>
+      </div>
+    <% end %>
+  </div>
+</div>

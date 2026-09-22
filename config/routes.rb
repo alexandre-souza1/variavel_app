@@ -220,6 +220,7 @@ Rails.application.routes.draw do
   end
 
   resources :rotogramas, only: :index
+  resource :patio, controller: "parking_layouts", only: [:show, :update]
 
   resources :plates do
     collection { post :import }

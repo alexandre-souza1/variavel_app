@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_18_130000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_22_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -633,6 +633,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_18_130000) do
     t.string "categoria"
   end
 
+  create_table "parking_layouts", force: :cascade do |t|
+    t.jsonb "assignments", default: {}, null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "updated_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["updated_by_id"], name: "index_parking_layouts_on_updated_by_id"
+    t.check_constraint "id = 1", name: "parking_layouts_singleton"
+  end
+
   create_table "plates", force: :cascade do |t|
     t.string "placa"
     t.string "setor"
@@ -997,6 +1007,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_18_130000) do
   add_foreign_key "meeting_minutes", "users", column: "creator_id"
   add_foreign_key "notifications", "users"
   add_foreign_key "notifications", "users", column: "actor_id"
+  add_foreign_key "parking_layouts", "users", column: "updated_by_id"
   add_foreign_key "push_devices", "users"
   add_foreign_key "remuneration_category_values", "budget_categories"
   add_foreign_key "remuneration_category_values", "vehicle_remunerations"

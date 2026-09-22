@@ -1,0 +1,89 @@
+<section class="parking-page" data-controller="<%= current_user&.admin? ? 'parking-map parking-editor' : 'parking-map' %>"
+         data-parking-editor-url-value="<%= patio_path %>" data-parking-editor-version-value="<%= @layout.lock_version %>"
+         data-action="turbo:before-cache@document->parking-map#beforeCache">
+  <header class="parking-header">
+    <div>
+      <%= link_to @return_path, class: "parking-back" do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar à consulta<% end %>
+      <p class="parking-eyebrow">ORGANIZAÇÃO DA FROTA</p>
+      <h1>Cada placa, <span>no seu lugar.</span></h1>
+      <p>Encontre a posição do veículo no pátio.</p>
+    </div>
+    <div class="parking-summary"><strong>40</strong><span>vagas no layout</span><strong><%= @assignments.values.count(&:present?) %></strong><span>placas posicionadas</span></div>
+  </header>
+
+  <div class="parking-toolbar">
+    <label class="parking-search"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Buscar placa ou vaga</span>
+      <input type="search" placeholder="Buscar placa ou número da vaga" data-parking-map-target="search" data-action="input->parking-map#search" autocomplete="off">
+    </label>
+    <div class="parking-modes" role="group" aria-label="Visualização do pátio">
+      <button type="button" data-mode="map" data-parking-map-target="mode" data-action="parking-map#mode" aria-pressed="true"><i class="bi bi-map" aria-hidden="true"></i> Mapa</button>
+      <button type="button" data-mode="list" data-parking-map-target="mode" data-action="parking-map#mode" aria-pressed="false"><i class="bi bi-list-ul" aria-hidden="true"></i> Lista</button>
+    </div>
+    <% if current_user&.admin? %>
+      <button type="button" class="parking-primary" data-parking-editor-target="editButton" data-action="parking-editor#start"><i class="bi bi-pencil" aria-hidden="true"></i> Editar posições</button>
+    <% end %>
+  </div>
+  <p class="parking-result" data-parking-map-target="result" role="status">Busque uma placa para destacar sua vaga no mapa.</p>
+
+  <% if current_user&.admin? %>
+    <section class="parking-editor" data-parking-editor-target="panel" hidden aria-label="Edição das posições">
+      <div class="parking-editor-top"><div><h2>Organizar posições</h2><p>Escolha a placa e a vaga abaixo. <span class="parking-drag-instructions">Você também pode arrastar pela alça. </span>Ao ocupar uma vaga, as placas trocam de posição.</p></div>
+        <div class="parking-editor-actions"><button type="button" data-parking-editor-target="cancelButton" data-action="parking-editor#cancel">Cancelar</button><button type="button" class="parking-primary" data-parking-editor-target="saveButton" data-action="parking-editor#save" disabled>Salvar distribuição</button></div>
+      </div>
+      <div class="parking-assign">
+        <label>Placa<select data-parking-editor-target="plateSelect"><% @available_plates.each do |plate| %><option value="<%= plate %>"><%= plate %></option><% end %></select></label>
+        <label>Destino<select data-parking-editor-target="slotSelect"><option value="pool">Sem vaga definida</option><% ParkingLayout::SLOTS.each do |slot| %><option value="<%= slot.fetch('number') %>">Vaga <%= format('%02d', slot.fetch('number')) %> · <%= slot.fetch('profile') %></option><% end %></select></label>
+        <button type="button" data-action="parking-editor#assign">Mover placa</button>
+      </div>
+      <p class="parking-editor-status" data-parking-editor-target="status" role="status">As alterações só ficam públicas depois de salvar.</p>
+      <details open><summary>Placas sem vaga definida</summary>
+        <div class="parking-pool parking-drop" data-slot="pool">
+          <% (@available_plates - @assignments.values).each do |plate| %>
+            <div class="parking-vehicle" data-plate="<%= plate %>"><span class="parking-drag" aria-hidden="true"><i class="bi bi-grip-vertical"></i></span><i class="bi bi-truck parking-vehicle-icon" aria-hidden="true"></i><strong><%= plate %></strong></div>
+          <% end %>
+        </div>
+      </details>
+    </section>
+  <% end %>
+
+  <section class="parking-map-section" data-parking-map-target="mapPanel" aria-label="Mapa do estacionamento">
+    <div class="parking-map-top"><span><i class="bi bi-geo-alt" aria-hidden="true"></i> Pátio · Foz do Iguaçu</span>
+      <div class="parking-zoom"><button type="button" data-step="-0.15" data-action="parking-map#zoom" aria-label="Diminuir mapa">−</button><button type="button" data-action="parking-map#fit" aria-label="Ver todo o pátio">Visão geral</button><button type="button" data-step="0.15" data-action="parking-map#zoom" aria-label="Ampliar mapa">+</button></div>
+    </div>
+    <div class="parking-viewport" data-parking-map-target="viewport" tabindex="0" aria-label="Mapa. Role para os lados para explorar as vagas.">
+      <div class="parking-frame" data-parking-map-target="frame">
+        <div class="parking-canvas" data-parking-map-target="canvas">
+          <div class="parking-zone-heading"><h2>Pátio principal</h2><span>Vagas 01 a 35</span></div>
+          <div class="parking-row"><% 18.downto(1) do |number| %><%= render "space", number: number, slot: @slots.fetch(number), plate: @assignments.fetch(number.to_s, "") %><% end %></div>
+          <div class="parking-road" aria-label="Corredor de circulação em dois sentidos"><span>←</span><strong>CIRCULAÇÃO</strong><span>→</span></div>
+          <div class="parking-row parking-row-bottom">
+            <% (19..26).each do |number| %><%= render "space", number: number, slot: @slots.fetch(number), plate: @assignments.fetch(number.to_s, "") %><% end %>
+            <div class="parking-crossing" aria-label="Passagem entre as fileiras"></div>
+            <% (27..35).each do |number| %><%= render "space", number: number, slot: @slots.fetch(number), plate: @assignments.fetch(number.to_s, "") %><% end %>
+          </div>
+          <div class="parking-extension">
+            <div class="parking-map-note"><i class="bi bi-signpost-split" aria-hidden="true"></i><p>A disposição segue o layout de referência, considerando o espaço de manobra dos veículos.</p></div>
+            <div><div class="parking-zone-heading"><h2>Extensão do armazém</h2><span>Vagas 36 a 40</span></div>
+              <div class="parking-extension-row"><% (36..40).each do |number| %><%= render "space", number: number, slot: @slots.fetch(number), plate: @assignments.fetch(number.to_s, "") %><% end %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="parking-legend"><span><i class="bi bi-truck" aria-hidden="true"></i> Placa posicionada</span><span><i class="bi bi-square" aria-hidden="true"></i> Sem placa definida</span><span>Deslize para explorar · Use + para ampliar</span></div>
+  </section>
+
+  <section class="parking-list" data-parking-map-target="listPanel" aria-label="Lista de vagas" hidden>
+    <% ParkingLayout::SLOTS.each do |slot| %>
+      <% plate = @assignments.fetch(slot.fetch('number').to_s, "") %>
+      <article data-parking-map-target="listItem" data-slot="<%= slot.fetch('number') %>" data-plate="<%= plate %>">
+        <span class="parking-list-number"><%= format('%02d', slot.fetch('number')) %></span>
+        <div><h2><%= plate.presence || 'Sem placa definida' %></h2><p><%= slot.fetch('zone') %> · <%= slot.fetch('profile') %></p></div>
+      </article>
+    <% end %>
+  </section>
+  <p class="parking-updated"><i class="bi bi-info-circle" aria-hidden="true"></i>
+    <% if @layout.persisted? %>Distribuição atualizada em <%= l(@layout.updated_at, format: :short) %>.<% else %>Distribuição inicial baseada no layout fornecido.<% end %>
+    As posições indicam a organização das vagas, não a presença do veículo em tempo real.
+  </p>
+</section>

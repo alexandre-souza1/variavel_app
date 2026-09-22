@@ -7,9 +7,6 @@
     </div>
 
     <div class="az-new-header-actions">
-      <%= link_to az_consultas_import_path, class: "az-new-link" do %>
-        <i class="bi bi-upload"></i> Importação
-      <% end %>
       <%= render "shared/unit_dream" %>
     </div>
   </header>
@@ -101,53 +98,7 @@
   </section>
 
   <section class="az-new-resource-grid">
-    <article class="az-new-carousel-panel">
-      <div class="az-new-panel-header">
-        <h2><i class="bi bi-link-45deg"></i> Acessos rápidos</h2>
-        <p>Links úteis para a rotina do armazém.</p>
-      </div>
-
-      <div id="carouselExampleCaptions" class="carousel slide">
-        <div class="carousel-indicators">
-          <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-          <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
-          <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
-          <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="3" aria-label="Slide 4"></button>
-        </div>
-        <div class="carousel-inner">
-          <div class="carousel-item active">
-            <%= link_to "https://ambev.beedoo.io/login", class: "d-block w-100 h-100", target: "_blank" do %>
-              <%= image_tag("logon.png", alt: "Acesso ao LOG ON", class: "d-block w-100 carousel-img") %>
-              <div class="carousel-caption"><h5>LOG ON</h5><p>Links para os cursos do LOG ON.</p></div>
-            <% end %>
-          </div>
-          <div class="carousel-item">
-            <%= link_to rotogramas_path(origem: "az"), class: "d-block w-100 h-100" do %>
-              <%= image_tag("roterizador.png", alt: "Rotograma", class: "d-block w-100 carousel-img") %>
-              <div class="carousel-caption"><h5>Rotograma</h5><p>Explore o mapa e consulte por cidade.</p></div>
-            <% end %>
-          </div>
-          <div class="carousel-item">
-            <%= link_to "https://ginfo.inovess.com.br/relatos_2/index.php?codigo=2219990356|filial=7", class: "d-block w-100 h-100", target: "_blank" do %>
-              <%= image_tag("relato.png", alt: "Acesso aos relatos", class: "d-block w-100 carousel-img") %>
-              <div class="carousel-caption"><h5>Relatos</h5><p>Faça seus relatos aqui.</p></div>
-            <% end %>
-          </div>
-          <div class="carousel-item">
-            <%= link_to "https://7z4kss-my.sharepoint.com/:b:/g/personal/cadu_7z4kss_onmicrosoft_com/EXyOINwrwCFBlBhUA6bphs8B5N8bRnVn0y87bqfsWJEo-g?e=MqCtGt", class: "d-block w-100 h-100", target: "_blank" do %>
-              <%= image_tag("layout.png", alt: "Layout do estacionamento", class: "d-block w-100 carousel-img") %>
-              <div class="carousel-caption"><h5>Layout do estacionamento</h5><p>Padrão de localização dos carros.</p></div>
-            <% end %>
-          </div>
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Anterior</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Próximo</span>
-        </button>
-      </div>
-    </article>
+    <%= render "shared/consulta_quick_access", origin: "az" %>
 
     <article class="az-new-info-panel">
       <div class="az-new-panel-header">

@@ -38,7 +38,7 @@
         <% @rotogramas.each do |city| %>
           <article class="roto-city" data-rotogramas-target="city" data-id="<%= city.fetch('id') %>">
             <button type="button" class="roto-city-select" data-id="<%= city.fetch('id') %>" data-action="rotogramas#select" aria-label="Consultar <%= city.fetch('name') %>">
-              <img src="/rotogramas/<%= city.fetch('id') %>/previa.jpg" alt="" loading="lazy" width="68" height="54">
+              <%= image_tag "/rotogramas/#{city.fetch('id')}/previa.jpg", alt: "", loading: "lazy", width: 68, height: 54 %>
               <span><strong><%= city.fetch('name') %></strong><small><%= city.fetch('context') %> · <%= city.fetch('pages') %> páginas</small></span>
               <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
             </button>
@@ -60,7 +60,7 @@
         <img data-rotogramas-target="preview" alt="Prévia da primeira página do rotograma" width="120" height="90">
         <div class="roto-selection-info">
           <small>SEU DESTINO</small>
-          <h2 data-rotogramas-target="selectedName"></h2>
+          <h2 data-rotogramas-target="selectedName">Localidade selecionada</h2>
           <p data-rotogramas-target="selectedDetails"></p>
           <div class="roto-selection-actions">
             <button type="button" class="roto-primary" data-rotogramas-target="openButton" data-action="rotogramas#openReader">Abrir rotograma <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
@@ -78,9 +78,9 @@
 
   <dialog class="roto-reader" data-rotogramas-target="reader" aria-labelledby="roto-reader-title" data-action="close->rotogramas#readerClosed">
     <header class="roto-reader-header">
-      <div><small>ROTOGRAMA</small><h2 id="roto-reader-title" data-rotogramas-target="readerTitle"></h2></div>
+      <div><small>ROTOGRAMA</small><h2 id="roto-reader-title" data-rotogramas-target="readerTitle">Rotograma da localidade</h2></div>
       <div class="roto-reader-actions">
-        <a data-rotogramas-target="download" download><i class="bi bi-download" aria-hidden="true"></i><span> Baixar PDF</span></a>
+        <a href="/rotogramas/rotograma-completo.pdf" data-rotogramas-target="download" download><i class="bi bi-download" aria-hidden="true"></i><span> Baixar PDF</span></a>
         <button type="button" data-action="rotogramas#fullscreen" aria-label="Tela cheia"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
         <button type="button" data-action="rotogramas#closeReader" aria-label="Fechar rotograma">×</button>
       </div>
