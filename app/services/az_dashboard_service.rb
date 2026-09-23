@@ -37,14 +37,16 @@ class AzDashboardService
                    .where(started_at: @start_date.beginning_of_day..@end_date.end_of_day).group_by(&:operator_id)
     tma_rate, efficiency_rate, wms_rate = rate("valor_tma"), rate("valor_efc"), rate("tarefa_wms")
     employees.map do |person|
+      ondemand = AzOperatorOnDemandService.new(employee_name: person.nome, start_date: @start_date, end_date: @end_date)
       records = maps.select { |map| map.turno.include?(person.turno) && map.meta_remunerada? }
       efficiency = person.turno == 1 ? "eficiencia_descarga" : "eficiencia_carregamento"
       tma = records.count { |map| map.tipo == "tempo_atendimento" }
       ef = records.count { |map| map.tipo == efficiency }
       wms = Array(tasks[person.id]).count { |task| task.duration.to_f * 60 >= 10 }
       { person: person, tma: tma, efficiency: ef, wms: wms,
+        ondemand_quantity: ondemand.quantity, ondemand_value: ondemand.total,
         tma_value: tma * tma_rate, efficiency_value: ef * efficiency_rate, wms_value: wms * wms_rate,
-        total: tma * tma_rate + ef * efficiency_rate + wms * wms_rate }
+        total: tma * tma_rate + ef * efficiency_rate + wms * wms_rate + ondemand.total }
     end.sort_by { |row| [-row[:total], row[:person].nome.to_s] }
   end
 

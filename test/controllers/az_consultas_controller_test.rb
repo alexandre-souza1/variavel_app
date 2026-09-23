@@ -117,4 +117,40 @@ class AzConsultasControllerTest < ActionDispatch::IntegrationTest
     assert_select ".az-overview-card--total .az-overview-value", text: "R$ 17,40"
   end
 
+  test "operators receive ten cents per operational unit across consultation dashboard and context" do
+    AzMapa.delete_all
+    operator = operators(:one)
+    operator.update!(nome: "OPERADOR ON DEMAND TESTE COMPLETO", matricula: "OP-DEMAND", turno: 0, active: true)
+    source = AzRvImport.create!(source_type: "ondemand", original_filename: "operators.csv", file_digest: "operators-demand")
+    [["2026-07-19 00:00", "Descarga", "100"],
+     ["2026-08-18 23:59", "Rebaixamento de Palete", "25"],
+     ["2026-07-18 23:59", "Descarga", "900"],
+     ["2026-08-19 00:00", "Descarga", "900"],
+     ["2026-08-10 12:00", "Repack - Lata", "800"]].each_with_index do |(date, activity, quantity), index|
+      AzRvOnDemandActivity.create!(az_rv_import: source, source_key: "operator-demand-#{index}",
+        employee_name: "OPERADOR ON DEMAND TESTE", employee_key: "operador on demand teste",
+        activity: activity, observation: quantity, created_at_source: Time.zone.parse(date))
+    end
+
+    [0, 1, 2].each do |shift|
+      operator.update!(turno: shift)
+      get az_consulta_path, params: { matricula: operator.matricula, turno: shift, periodo_mes: 8, periodo_ano: 2026 }
+      assert_response :success
+      assert_select ".az-overview-detail", text: "125 unidades · R$ 0,10 por unidade"
+      assert_select ".az-overview-card--total .az-overview-value", text: "R$ 12,50"
+      assert_select "td[data-label='On Demand']", text: "R$ 2,50"
+    end
+
+    dashboard = AzDashboardService.new(start_date: Date.new(2026, 7, 19), end_date: Date.new(2026, 8, 18)).call
+    row = dashboard.operators.find { |item| item[:person].id == operator.id }
+    assert_equal 125, row[:ondemand_quantity]
+    assert_equal BigDecimal("12.50"), row[:total]
+    travel_to Time.zone.local(2026, 9, 23) do
+      identity = Struct.new(:record).new(operator)
+      context = PublicVariableContext.new(identity).send(:operator_context)
+      assert_equal 125, context[:monthly]["2026-08"][:ondemand_quantity]
+      assert_equal 12.5, context[:monthly]["2026-08"][:total]
+    end
+  end
+
 end

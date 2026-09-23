@@ -59,7 +59,7 @@
     <div class="az-overview-card az-overview-card--total">
       <div class="az-overview-label"><i class="bi bi-cash-coin"></i> Total da variável</div>
       <div class="az-overview-value"><%= number_to_currency(@total_operator_variable, unit: "R$ ", separator: ",", delimiter: ".") %></div>
-      <div class="az-overview-detail">Mapas coletivos + WMS individual</div>
+      <div class="az-overview-detail">Mapas coletivos + WMS individual + On Demand</div>
     </div>
 
     <div class="az-overview-card">
@@ -78,6 +78,11 @@
       <div class="az-overview-label"><i class="bi bi-list-task"></i> WMS</div>
       <div class="az-overview-value"><%= number_to_currency(@total_wms, unit: "R$ ", separator: ",", delimiter: ".") %></div>
       <div class="az-overview-detail"><%= @wms_tasks.respond_to?(:total_count) ? @wms_tasks.total_count : @wms_tasks.size %> tarefa(s) no período</div>
+    </div>
+    <div class="az-overview-card">
+      <div class="az-overview-label"><i class="bi bi-lightning-charge"></i> On Demand</div>
+      <div class="az-overview-value"><%= number_to_currency(@ondemand_value, unit: "R$ ", separator: ",", delimiter: ".") %></div>
+      <div class="az-overview-detail"><%= number_with_precision(@ondemand_quantity, precision: 2, strip_insignificant_zeros: true, separator: ",", delimiter: ".") %> unidades · R$ 0,10 por unidade</div>
     </div>
   </section>
 
@@ -102,6 +107,10 @@
           <div class="az-total-row">
             <span class="az-total-name"><span class="az-total-dot"></span>WMS individual</span>
             <span class="az-total-amount"><%= number_to_currency(@total_wms, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+          </div>
+          <div class="az-total-row">
+            <span class="az-total-name"><span class="az-total-dot"></span>On Demand</span>
+            <span class="az-total-amount"><%= number_to_currency(@ondemand_value, unit: "R$ ", separator: ",", delimiter: ".") %></span>
           </div>
           <div class="az-total-row az-total-row--grand">
             <span class="az-total-name"><i class="bi bi-check2-circle"></i>Total geral</span>
@@ -128,6 +137,29 @@
       </div>
     </article>
   </section>
+
+  <article class="az-report-panel">
+    <div class="az-panel-header">
+      <div><h2>On Demand por dia</h2><p>Ajuste de empilhamento lote, descarga e rebaixamento de palete: R$ 0,10 por unidade informada.</p></div>
+    </div>
+    <div class="az-report-table-wrap">
+      <table class="az-report-table">
+        <thead><tr><th>Data</th><th class="text-end">Quantidade</th><th class="text-end">On Demand</th></tr></thead>
+        <tbody>
+          <% @ondemand_daily.each do |daily| %>
+            <tr>
+              <td data-label="Data"><%= l(daily[:date]) %></td>
+              <td data-label="Quantidade" class="text-end"><%= number_with_precision(daily[:quantity], precision: 2, strip_insignificant_zeros: true, separator: ",", delimiter: ".") %></td>
+              <td data-label="On Demand" class="text-end"><%= number_to_currency(daily[:value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
+            </tr>
+          <% end %>
+          <% if @ondemand_daily.empty? %>
+            <tr><td colspan="3" class="az-report-empty text-center"><%= params[:periodo_mes].present? ? "Nenhuma atividade On Demand encontrada para este período." : "Selecione um mês para visualizar o On Demand." %></td></tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </article>
 
   <div class="az-report-note">
     <i class="bi bi-info-circle-fill"></i>

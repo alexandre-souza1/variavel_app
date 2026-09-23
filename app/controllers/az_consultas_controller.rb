@@ -96,6 +96,9 @@ class AzConsultasController < ApplicationController
         @total_valor_tma = 0
         @total_valor_efc = 0
         @total_operator_variable = 0
+        @ondemand_quantity = BigDecimal("0")
+        @ondemand_value = BigDecimal("0")
+        @ondemand_daily = []
 
         # Filtra por mês se existir
         if params[:periodo_mes].present?
@@ -105,6 +108,10 @@ class AzConsultasController < ApplicationController
           end_date = Date.new(ano, mes, 18)
 
           @azmapas = @azmapas.where(data: start_date..end_date)
+          ondemand = AzOperatorOnDemandService.new(employee_name: @operator.nome, start_date: start_date, end_date: end_date)
+          @ondemand_quantity = ondemand.quantity
+          @ondemand_value = ondemand.total
+          @ondemand_daily = ondemand.daily
           # Paginação manual
           all_tasks = WmsTask.where(operator_id: @operator.id)
                             .where(started_at: start_date..end_date)
@@ -134,7 +141,7 @@ class AzConsultasController < ApplicationController
           eficiencia_tipo = [0, 2].include?(@turno) ? "eficiencia_carregamento" : "eficiencia_descarga"
           mapa.tipo == eficiencia_tipo && mapa.meta_remunerada? ? @valor_efc_operator : 0
         end
-        @total_operator_variable = @total_valor_tma + @total_valor_efc + @total_wms
+        @total_operator_variable = @total_valor_tma + @total_valor_efc + @total_wms + @ondemand_value
 
       else
         flash.now[:alert] = "Matrícula não encontrada"

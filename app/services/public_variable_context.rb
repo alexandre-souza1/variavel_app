@@ -96,11 +96,12 @@ class PublicVariableContext
     start_date = 2.years.ago.to_date
     maps = AzMapa.where("? = ANY(turno)", @record.turno).where(data: start_date..Date.current).to_a
     tasks = WmsTask.where(operator_id: @record.id).where(started_at: start_date.beginning_of_day..Time.current).to_a
+    ondemand = AzOperatorOnDemandService.new(employee_name: @record.nome, start_date: start_date, end_date: Date.current)
     tma_value = decimal(ParametroCalculo.valor_para(categoria: "operador", nome: "valor_tma"))
     efficiency_value = decimal(ParametroCalculo.valor_para(categoria: "operador", nome: "valor_efc"))
     wms_value = decimal(ParametroCalculo.valor_para(categoria: "operador", nome: "tarefa_wms"))
 
-    months = (maps.filter_map(&:data) + tasks.filter_map { |task| task.started_at&.to_date }).map { |date| az_closing_month_for(date) }.uniq.sort
+    months = (maps.filter_map(&:data) + tasks.filter_map { |task| task.started_at&.to_date } + ondemand.daily.map { |day| day[:date] }).map { |date| az_closing_month_for(date) }.uniq.sort
     monthly = months.to_h do |month_date|
       month = month_date.strftime("%Y-%m")
       month_start = month_date.prev_month.change(day: 19)
@@ -111,7 +112,10 @@ class PublicVariableContext
       efficiency_type = [0, 2].include?(@record.turno.to_i) ? "eficiencia_carregamento" : "eficiencia_descarga"
       efficiency = month_maps.count { |mapa| mapa.tipo == efficiency_type && mapa.meta_remunerada? } * efficiency_value
       wms = month_tasks.sum { |task| task.duration.to_i >= 10 ? wms_value : 0 }
-      [month, { tma: number(tma), efficiency: number(efficiency), wms: number(wms), total: number(tma + efficiency + wms) }]
+      demand_days = ondemand.daily.select { |day| day[:date].between?(month_start, month_end) }
+      demand_quantity = demand_days.sum { |day| day[:quantity] }
+      demand_value = demand_days.sum { |day| day[:value] }
+      [month, { ondemand: number(demand_value), ondemand_quantity: number(demand_quantity), tma: number(tma), efficiency: number(efficiency), wms: number(wms), total: number(tma + efficiency + wms + demand_value) }]
     end
 
     {
