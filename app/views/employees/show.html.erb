@@ -73,6 +73,23 @@
               <div class="app-table-shell"><table class="table app-table"><thead><tr><th>Cargo</th><th>Mapas</th><th>Bônus</th><th>Total</th></tr></thead><tbody>
                 <% closing.result.fetch('groups', {}).each do |cargo, totals| %><tr><td><%= EmployeeRole::CARGOS.key(cargo) %></td><td><%= totals['quantidade_mapas'] %></td><td><%= number_to_currency(totals['bonus_devolucao'].to_d, unit: 'R$ ', separator: ',', delimiter: '.') %></td><td><%= number_to_currency(totals['valor_total'].to_d, unit: 'R$ ', separator: ',', delimiter: '.') %></td></tr><% end %>
               </tbody></table></div>
+              <% if closing.result.fetch('groups', {}).keys.any? { |cargo| EmployeeRole::CARGOS.value?(cargo) } %>
+                <details class="mt-3">
+                  <summary class="btn btn-sm btn-outline-primary">Revisar cargo desta variável</summary>
+                  <div class="border rounded p-3 mt-2">
+                    <p class="employees-muted">Crie uma nova revisão sem alterar este registro. Os mapas e totais serão recalculados com o cargo corrigido.</p>
+                    <%= form_with url: revise_closing_employee_path(@employee), class: 'employees-form' do |f| %>
+                      <%= hidden_field_tag :closing_id, closing.id %>
+                      <div class="employees-fields">
+                        <div class="employees-field"><%= f.label :from_cargo, 'Cargo atual no fechamento' %><%= f.select :from_cargo, closing.result.fetch('groups', {}).keys.filter_map { |cargo| [EmployeeRole::CARGOS.key(cargo), cargo] if EmployeeRole::CARGOS.value?(cargo) }, {}, class: 'form-select' %></div>
+                        <div class="employees-field"><%= f.label :to_cargo, 'Cargo correto' %><%= f.select :to_cargo, EmployeeRole::CARGOS, {}, class: 'form-select' %></div>
+                        <div class="employees-field employees-field--full"><%= f.label :reason, 'Motivo da revisão' %><%= f.text_area :reason, rows: 2, required: true, class: 'form-control', placeholder: 'Ex.: cadastro legado identificado como motorista de van' %></div>
+                      </div>
+                      <div class="employees-form-actions"><%= f.submit 'Criar revisão corrigida', class: 'btn btn-outline-primary', data: { turbo_confirm: 'Criar uma nova revisão desta variável com o cargo corrigido?' } %></div>
+                    <% end %>
+                  </div>
+                </details>
+              <% end %>
             </div>
           </details>
         <% end %>

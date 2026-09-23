@@ -7,6 +7,7 @@ Rails.application.routes.draw do
       post :close_period
       get :link_record
       post :link_record
+      post :revise_closing
     end
   end
   resources :people_cycle_feedbacks, only: %i[index create], path: "rh/ciclo-de-gente"

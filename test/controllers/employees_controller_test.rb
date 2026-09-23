@@ -219,4 +219,35 @@ class EmployeesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'motorista', @employee.reload.role_on(Date.new(2026, 10, 10)).cargo
   end
 
+  test 'legacy closing can be revised from motorista to van without changing the old revision' do
+    %w[motorista van].each do |cargo|
+      CalculationRateVersion.create!(categoria: cargo, nome: 'valor_caixa', valor: 1)
+      CalculationRateVersion.create!(categoria: cargo, nome: 'valor_entrega', valor: 2)
+      CalculationRateVersion.create!(categoria: cargo, nome: 'valor_recarga', valor: 80)
+    end
+    CalculationRateVersion.create!(categoria: 'geral', nome: 'bonus_devolucao', valor: 100)
+    mapa = Mapa.create!(mapa: 'LEGACY-CARGO', data: '01/09/2026', matric_motorista: 'RH-VAN', fator: 1,
+      cx_real: 10, pdv_real: 5, pdv_total: 5, recarga: 'NAO')
+    closing = VariableClosing.create!(employee: @employee, user: users(:one), year: 2026, month: 9, revision: 1,
+      legacy_baseline: true, reason: 'Referência legada', result: {
+        employee: @employee.attributes.slice('id', 'nome', 'matricula', 'cpf'),
+        totals: { 'valor_total' => '30' },
+        groups: { 'motorista' => { 'quantidade_mapas' => 1, 'bonus_devolucao' => '0', 'valor_total' => '30' } },
+        maps: [{ source: mapa.attributes, calculation: { 'categoria' => 'motorista', 'role_id' => nil, 'valor_mp' => '30' } }],
+        roles: [], issues: [], rule: 'Legado'
+      })
+
+    post revise_closing_employee_path(@employee), params: {
+      closing_id: closing.id, from_cargo: 'motorista', to_cargo: 'van', reason: 'Correção do cargo legado'
+    }
+
+    assert_redirected_to employee_path(@employee)
+    assert_equal 'motorista', closing.reload.result.dig('groups', 'motorista').present? && 'motorista'
+    revised = @employee.variable_closings.where(year: 2026, month: 9).order(:revision).last
+    assert_equal 2, revised.revision
+    assert revised.result.dig('groups', 'van').present?
+    assert_not revised.result.dig('groups', 'motorista').present?
+    assert_equal 'van', revised.result.dig('maps', 0, 'calculation', 'categoria')
+  end
+
 end

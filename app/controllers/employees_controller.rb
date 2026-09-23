@@ -1,7 +1,7 @@
 class EmployeesController < ApplicationController
   before_action :authenticate_user!
   before_action :require_hr!
-  before_action :set_employee, only: %i[show change_role close_period link_record revise_role delete_role]
+  before_action :set_employee, only: %i[show change_role close_period link_record revise_role delete_role revise_closing]
 
   def index
     @employees = Employee.order(:nome).includes(:employee_roles)
@@ -68,6 +68,15 @@ class EmployeesController < ApplicationController
       year: params[:year].to_i, month: params[:month].to_i, reason: params[:reason])
     redirect_to @employee, notice: "Fechamento registrado, revisão #{closing.revision}."
   rescue ActiveRecord::RecordInvalid, EmployeeRole::HistoryError, Date::Error => error
+    redirect_to @employee, alert: error.message
+  end
+
+  def revise_closing
+    closing = @employee.variable_closings.find(params[:closing_id])
+    closing.revise_cargo!(from_cargo: params[:from_cargo], to_cargo: params[:to_cargo], user: current_user, reason: params[:reason])
+    revision = VariableClosing.where(employee: @employee, year: closing.year, month: closing.month).maximum(:revision)
+    redirect_to @employee, notice: "Revisão #{revision} registrada. A revisão anterior foi preservada."
+  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound, EmployeeRole::HistoryError => error
     redirect_to @employee, alert: error.message
   end
 

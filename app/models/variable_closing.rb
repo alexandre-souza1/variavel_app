@@ -18,4 +18,51 @@ class VariableClosing < ApplicationRecord
         result: report.snapshot)
     end
   end
+
+  def revise_cargo!(from_cargo:, to_cargo:, user:, reason:)
+    from_cargo = from_cargo.to_s
+    to_cargo = to_cargo.to_s
+    valid_cargos = EmployeeRole::CARGOS.values
+    unless valid_cargos.include?(from_cargo) && valid_cargos.include?(to_cargo) && from_cargo != to_cargo
+      raise EmployeeRole::HistoryError, 'Selecione cargos válidos e diferentes para a revisão.'
+    end
+    raise EmployeeRole::HistoryError, 'Informe o motivo da revisão.' if reason.to_s.strip.blank?
+
+    source_maps = result.fetch('maps', []).select { |entry| entry.dig('calculation', 'categoria') == from_cargo }
+    raise EmployeeRole::HistoryError, "Não há mapas com o cargo #{EmployeeRole::CARGOS.key(from_cargo)} neste fechamento." if source_maps.empty?
+
+    revised_maps = result.fetch('maps', []).map do |entry|
+      source = entry.fetch('source')
+      calculation = entry.fetch('calculation')
+      cargo = calculation['categoria'] == from_cargo ? to_cargo : calculation['categoria']
+      mapa = Mapa.new(source)
+      values = MapaRemuneracaoService.new(cargo).values(mapa)
+      updated = values.merge(role_id: calculation['role_id'], cargo_historico: calculation['cargo_historico'], cargo_override: cargo == calculation['categoria'] ? calculation['cargo_override'] : cargo)
+      { source: source, calculation: updated }
+    end
+
+    groups = revised_maps.group_by { |entry| entry.dig(:calculation, :categoria) }.transform_values do |entries|
+      cargo = entries.first.dig(:calculation, :categoria)
+      MapaRemuneracaoService.new(cargo).totals(entries.map { |entry| Mapa.new(entry[:source]) })
+    end
+    totals = groups.empty? ? {} : MapaRemuneracaoService.new('motorista').totals([])
+    groups.each_value do |group|
+      group.each { |key, value| totals[key] += value unless key == :percentual_devolucao }
+    end
+    unless totals.empty?
+      totals[:percentual_devolucao] = totals[:pdv_real] + totals[:devolucoes] == 0 ? 0 : totals[:devolucoes] / (totals[:pdv_real] + totals[:devolucoes])
+    end
+
+    self.class.create!(employee: employee, user: user, year: year, month: month,
+      revision: self.class.where(employee: employee, year: year, month: month).maximum(:revision).to_i + 1,
+      reason: reason.to_s.strip,
+      result: result.merge(
+        'totals' => totals,
+        'groups' => groups,
+        'maps' => revised_maps,
+        'revision_of' => id,
+        'revision_reason' => reason.to_s.strip,
+        'rule' => "Revisão #{id}: cargo #{EmployeeRole::CARGOS.key(from_cargo)} alterado para #{EmployeeRole::CARGOS.key(to_cargo)} nos mapas selecionados."
+      ))
+  end
 end
