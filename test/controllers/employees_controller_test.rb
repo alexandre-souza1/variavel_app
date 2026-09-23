@@ -11,6 +11,8 @@ class EmployeesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     get employee_path(@employee)
     assert_response :success
+    assert_select '#promotion_cargo option[value="van"]', count: 0
+    assert_select '#promotion_cargo option[value="motorista"]', count: 1
     post change_role_employee_path(@employee), params: { employee_role: { cargo: 'motorista', promax: 'RH-VAN', starts_on: '2026-09-10', reason: 'Promoção' } }
     assert_redirected_to employee_path(@employee)
     assert_equal 'motorista', @employee.reload.role_on(Date.new(2026, 9, 10)).cargo
@@ -71,12 +73,55 @@ class EmployeesControllerTest < ActionDispatch::IntegrationTest
     source = Employee.create!(nome: 'Mesmo Colaborador', matricula: 'RH-SOURCE', cpf: '12345678900')
     source.employee_roles.create!(cargo: 'motorista', promax: 'RH-SOURCE', legacy: true, reason: 'Migração')
     closing = VariableClosing.capture!(employee: source, user: users(:one), year: 2026, month: 8, reason: 'Histórico original')
+    destination_closing = VariableClosing.capture!(employee: @employee, user: users(:one), year: 2026, month: 8, reason: 'Fechamento do cadastro principal')
     post link_record_employee_path(@employee), params: { source_employee_id: source.id, starts_on: '2026-09-10', reason: 'Vínculo e promoção' }
     assert_redirected_to employee_path(@employee)
     assert_equal 'motorista', @employee.reload.role_on(Date.new(2026, 9, 10)).cargo
-    assert_equal source.id, closing.reload.employee_id
+    assert_equal @employee.id, closing.reload.employee_id
+    assert_equal @employee.id, destination_closing.reload.employee_id
+    assert_equal 2, @employee.variable_closings.where(year: 2026, month: 8).count
+    assert_equal [1, 2], @employee.variable_closings.where(year: 2026, month: 8).order(:revision).pluck(:revision)
     assert_empty source.employee_roles.reload
     assert_not source.reload.active?
+  end
+
+  test 'link review resolves the same merge when opened from either cadastro' do
+    @employee.update!(cpf: '12345678900')
+    source = Employee.create!(nome: 'Cadastro legado', matricula: 'RH-SOURCE-REVERSE', cpf: '12345678900')
+    source.employee_roles.create!(cargo: 'motorista', promax: 'RH-SOURCE-REVERSE', legacy: true, reason: 'Migração')
+    driver = source.drivers.create!(nome: source.nome, matricula: source.matricula, promax: 'RH-SOURCE-REVERSE')
+
+    get link_record_employee_path(source), params: { source_employee_id: @employee.id }
+    assert_response :success
+    assert_includes response.body, 'Cadastro principal'
+    assert_includes response.body, @employee.nome
+    assert_includes response.body, source.nome
+    assert source.reload.active?
+    assert_equal source.id, driver.reload.employee_id
+
+    post link_record_employee_path(source), params: { source_employee_id: @employee.id, starts_on: '2026-09-10', reason: 'Vínculo conferido pelo RH' }
+    assert_redirected_to employee_path(@employee)
+    assert_equal 'motorista', @employee.reload.role_on(Date.new(2026, 9, 10)).cargo
+    assert_equal @employee.id, driver.reload.employee_id
+    assert_not source.reload.active?
+  end
+
+  test 'link review can invert two legacy records and preserve the progression order' do
+    cpf = '98765432100'
+    old_record = Employee.create!(nome: 'Ajudante legado', matricula: 'LEGACY-HELPER', cpf: cpf)
+    old_record.employee_roles.create!(cargo: 'ajudante', promax: 'LEGACY-HELPER', legacy: true, reason: 'Migração')
+    new_record = Employee.create!(nome: 'Van legado', matricula: 'LEGACY-VAN', cpf: cpf)
+    new_record.employee_roles.create!(cargo: 'van', promax: 'LEGACY-VAN', legacy: true, reason: 'Migração')
+
+    post link_record_employee_path(old_record), params: {
+      source_employee_id: new_record.id, invert_positions: '1',
+      starts_on: '2026-09-10', reason: 'Correção da direção do vínculo'
+    }
+
+    assert_redirected_to employee_path(new_record)
+    assert_equal 'ajudante', new_record.reload.role_on(Date.new(2026, 9, 9)).cargo
+    assert_equal 'van', new_record.role_on(Date.new(2026, 9, 10)).cargo
+    assert_not old_record.reload.active?
   end
 
   test 'CSV import rolls back all records if a career date is missing' do
@@ -150,15 +195,28 @@ class EmployeesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'initial and intermediate roles cannot be deleted' do
-    initial = @employee.employee_roles.first
-    middle = @employee.change_role!({ cargo: 'motorista', promax: 'RH-VAN', starts_on: '2026-09-10', reason: 'Promoção' }, user: users(:one))
-    @employee.change_role!({ cargo: 'van', promax: 'RH-VAN', starts_on: '2026-10-10', reason: 'Mudança' }, user: users(:one))
+    person = Employee.create!(nome: 'Histórico completo', matricula: 'RH-HISTORY')
+    initial = person.change_role!({ cargo: 'ajudante', promax: 'RH-HISTORY', starts_on: '2026-01-01', reason: 'Admissão' }, user: users(:one))
+    middle = person.change_role!({ cargo: 'van', promax: 'RH-HISTORY', starts_on: '2026-09-10', reason: 'Promoção' }, user: users(:one))
+    person.change_role!({ cargo: 'motorista', promax: 'RH-HISTORY', starts_on: '2026-10-10', reason: 'Promoção' }, user: users(:one))
     [initial, middle].each do |role|
-      delete delete_role_employee_path(@employee), params: { role_id: role.id }
-      assert_redirected_to employee_path(@employee)
+      delete delete_role_employee_path(person), params: { role_id: role.id }
+      assert_redirected_to employee_path(person)
       assert EmployeeRole.exists?(role.id)
       assert flash[:alert].present?
     end
+  end
+
+  test 'a motorista cannot be moved back to van or ajudante' do
+    @employee.change_role!({ cargo: 'motorista', promax: 'RH-VAN', starts_on: '2026-09-10', reason: 'Promoção' }, user: users(:one))
+
+    assert_raises(EmployeeRole::HistoryError) do
+      @employee.change_role!({ cargo: 'van', promax: 'RH-VAN', starts_on: '2026-10-10', reason: 'Correção indevida' }, user: users(:one))
+    end
+    assert_raises(EmployeeRole::HistoryError) do
+      @employee.change_role!({ cargo: 'ajudante', promax: 'RH-VAN', starts_on: '2026-10-10', reason: 'Correção indevida' }, user: users(:one))
+    end
+    assert_equal 'motorista', @employee.reload.role_on(Date.new(2026, 10, 10)).cargo
   end
 
 end

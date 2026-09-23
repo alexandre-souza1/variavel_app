@@ -1,0 +1,89 @@
+<div class="app-page employees-page">
+  <%= link_to employee_path(@employee), class: 'employees-back' do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar ao cadastro<% end %>
+  <header class="app-page-header">
+    <div>
+      <p class="app-page-eyebrow">Revisão de identidade · RH</p>
+      <h1>Conferir vínculo de cadastros</h1>
+      <p>Nada será alterado até a confirmação abaixo.</p>
+    </div>
+  </header>
+
+  <div class="alert alert-warning" role="alert">
+    <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+    Confira os dois lados. O cadastro principal permanecerá ativo, receberá o histórico do outro cadastro e será usado nas próximas consultas.
+  </div>
+
+  <div class="d-flex justify-content-end mb-3">
+    <%= link_to link_record_employee_path(@employee, source_employee_id: @requested_record.id, invert_positions: !@invert_positions), class: 'btn btn-outline-secondary' do %>
+      <i class="bi bi-arrow-left-right me-1" aria-hidden="true"></i> Inverter posições
+    <% end %>
+  </div>
+
+  <div class="employees-profile-grid">
+    <% [[@destination, @destination_roles, @destination_maps_count, @destination_closings_count, 'Cadastro principal', 'employees-badge--accent'], [@source, @source_roles, @source_maps_count, @source_closings_count, 'Cadastro incorporado', '']].each do |person, roles, maps_count, closings_count, label, badge_class| %>
+      <section class="app-panel">
+        <div class="app-panel__header">
+          <div>
+            <span class="app-panel__kicker"><%= label %></span>
+            <h2 class="app-panel__title"><%= person.nome %></h2>
+            <p class="app-panel__subtitle">Cadastro #<%= person.id %> · <%= person.active? ? 'Ativo' : 'Inativo' %></p>
+          </div>
+          <span class="employees-badge <%= badge_class %>"><%= label %></span>
+        </div>
+        <div class="app-panel__body">
+          <dl class="row mb-3">
+            <div class="col-sm-6"><dt>Matrícula</dt><dd><%= person.matricula.presence || '—' %></dd></div>
+            <div class="col-sm-6"><dt>CPF</dt><dd><%= person.cpf.presence || 'Não informado' %></dd></div>
+          </dl>
+          <div class="employees-overview mb-3">
+            <div class="employees-stat"><span><i class="bi bi-map" aria-hidden="true"></i> Mapas</span><strong><%= maps_count %></strong></div>
+            <div class="employees-stat"><span><i class="bi bi-journal-check" aria-hidden="true"></i> Fechamentos</span><strong><%= closings_count %></strong></div>
+          </div>
+          <h3 class="h6">Histórico de cargos</h3>
+          <ul class="list-group list-group-flush">
+            <% roles.each do |role| %>
+              <li class="list-group-item px-0 d-flex justify-content-between gap-2">
+                <span><strong><%= role.label %></strong><br><small>Promax <%= role.promax %> · <%= role.starts_on ? l(role.starts_on) : 'Início desconhecido' %> até <%= role.ends_on ? l(role.ends_on) : 'em aberto' %></small></span>
+                <% if role.legacy? %><span class="employees-badge">Legado</span><% end %>
+              </li>
+            <% end %>
+          </ul>
+          <h3 class="h6 mt-4">Últimas variáveis</h3>
+          <% closings = person == @destination ? @destination_closings : @source_closings %>
+          <% if closings.any? %>
+            <ul class="list-group list-group-flush">
+              <% closings.each do |closing| %>
+                <% finish_date = Date.new(closing.year, closing.month, 20) %>
+                <% start_date = finish_date.prev_month.change(day: 21) %>
+                <li class="list-group-item px-0 d-flex justify-content-between gap-2">
+                  <span><strong><%= I18n.t('date.month_names')[closing.month].capitalize %> / <%= closing.year %></strong><br><small>Período <%= l(start_date) %> a <%= l(finish_date) %> · revisão <%= closing.revision %></small></span>
+                  <strong><%= number_to_currency(closing.result.dig('totals', 'valor_total').to_d, unit: 'R$ ', separator: ',', delimiter: '.') %></strong>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p class="employees-muted mb-0">Nenhuma variável registrada.</p>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  </div>
+
+  <section class="app-panel employees-section">
+    <div class="app-panel__header">
+      <div><span class="app-panel__kicker">Confirmação</span><h2 class="app-panel__title">Registrar a incorporação</h2><p class="app-panel__subtitle">A data informa quando o cargo do cadastro incorporado passa a valer no histórico consolidado.</p></div>
+      <i class="bi bi-link-45deg employees-panel-icon" aria-hidden="true"></i>
+    </div>
+    <div class="app-panel__body">
+      <%= form_with url: link_record_employee_path(@employee), class: 'employees-form' do |f| %>
+        <%= hidden_field_tag :source_employee_id, @requested_record.id %>
+        <%= hidden_field_tag :invert_positions, @invert_positions ? '1' : '0' %>
+        <div class="employees-fields">
+          <div class="employees-field"><%= f.label :starts_on, 'Data efetiva da progressão', for: 'link_starts_on' %><%= f.date_field :starts_on, id: 'link_starts_on', required: true, class: 'form-control' %></div>
+          <div class="employees-field employees-field--full"><%= f.label :reason, 'Motivo do vínculo', for: 'link_reason' %><%= f.text_area :reason, id: 'link_reason', rows: 3, required: true, class: 'form-control', placeholder: 'Informe a promoção, a conferência do cadastro ou a origem da correção' %></div>
+        </div>
+        <div class="employees-form-actions"><%= link_to 'Cancelar', employee_path(@employee), class: 'btn btn-outline-secondary' %><%= f.submit 'Confirmar vínculo e mesclar histórico', class: 'btn btn-primary', data: { turbo_confirm: "Confirmar a mesclagem de #{@source.nome} no cadastro principal de #{@destination.nome}?" } %></div>
+      <% end %>
+    </div>
+  </section>
+</div>

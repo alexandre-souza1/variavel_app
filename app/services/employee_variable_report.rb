@@ -6,6 +6,7 @@ class EmployeeVariableReport
     candidates = (maps || employee.maps).to_a
     @issues = []
     @roles = {}
+    @effective_cargos = {}
     @services = {}
     @values = {}
     codes = employee.employee_roles.map(&:promax)
@@ -29,18 +30,24 @@ class EmployeeVariableReport
         next false
       end
       @roles[mapa.id] = role
+      @effective_cargos[mapa.id] = mapa.cargo_override.presence || role.cargo
       true
     end
   end
 
   def values(mapa)
     role = @roles.fetch(mapa.id)
-    @values[mapa.id] ||= service(role.cargo).values(mapa).merge(role_id: role.id)
+    cargo = @effective_cargos.fetch(mapa.id)
+    @values[mapa.id] ||= service(cargo).values(mapa).merge(
+      role_id: role.id,
+      cargo_historico: role.cargo,
+      cargo_override: mapa.cargo_override.presence
+    )
   end
 
   def groups
-    @groups ||= maps.group_by { |mapa| @roles.fetch(mapa.id).cargo }.transform_values do |records|
-      service(@roles.fetch(records.first.id).cargo).totals(records)
+    @groups ||= maps.group_by { |mapa| @effective_cargos.fetch(mapa.id) }.transform_values do |records|
+      service(@effective_cargos.fetch(records.first.id)).totals(records)
     end
   end
 

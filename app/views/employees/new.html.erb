@@ -16,7 +16,7 @@
     </section>
     <section class="app-panel">
       <div class="app-panel__header"><div><span class="app-panel__kicker">02 · Histórico profissional</span><h2 class="app-panel__title">Cargo inicial</h2><p class="app-panel__subtitle">Informe a data real de início para preservar a apuração da variável.</p></div><i class="bi bi-briefcase employees-panel-icon" aria-hidden="true"></i></div>
-      <div class="app-panel__body"><%= render 'role_fields', prefix: 'initial' %></div>
+      <div class="app-panel__body"><%= render 'role_fields', prefix: 'initial', allowed_cargos: EmployeeRole::CARGOS.values %></div>
     </section>
     <div class="employees-form-actions"><%= link_to 'Cancelar', employees_path, class: 'btn btn-outline-secondary' %><%= f.submit 'Cadastrar colaborador', class: 'btn btn-primary' %></div>
   <% end %>

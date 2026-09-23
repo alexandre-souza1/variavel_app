@@ -5,6 +5,11 @@
   <p><strong>Data:</strong> <%= @mapa.data %></p>
   <p><strong>Motorista:</strong> <%= @mapa.matric_motorista %></p>
 
+  <div class="alert alert-warning">
+    <strong>Correção de cargo do mapa legado</strong>
+    <p class="mb-0">Use somente quando o cargo aplicado automaticamente estiver incorreto. A alteração vale apenas para este mapa, é registrada com o usuário e o motivo, e pode ser desfeita selecionando a opção do histórico.</p>
+  </div>
+
   <%= form_with(model: @mapa, local: true) do |f| %>
     <div data-controller="ajudantes">
       <div class="mb-3">
@@ -27,6 +32,20 @@
 
       <div class="alert alert-info mb-3" data-ajudantes-target="fatorInfo">
         <!-- Aqui entra a mensagem do fator dinamicamente -->
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :cargo_override, "Cargo aplicado neste mapa" %>
+        <%= f.select :cargo_override,
+                     [["Usar cargo do histórico", ""], ["Ajudante", "ajudante"], ["Motorista de van", "van"], ["Motorista", "motorista"]],
+                     { selected: @mapa.cargo_override },
+                     class: "form-select" %>
+        <small class="form-text text-muted">O cargo do histórico continua preservado. Esta opção apenas corrige a apuração deste mapa.</small>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :cargo_override_reason, "Motivo da correção" %>
+        <%= f.text_area :cargo_override_reason, value: @mapa.cargo_override_reason, rows: 3, class: "form-control", placeholder: "Obrigatório ao alterar o cargo aplicado" %>
       </div>
 
       <%= f.submit "Salvar", class: "btn btn-primary" %>

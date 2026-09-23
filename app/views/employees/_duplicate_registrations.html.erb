@@ -15,7 +15,7 @@
         <div class="employees-duplicate-actions">
           <%= link_to 'Ver cadastro', employee_path(candidate), class: 'btn btn-outline-secondary' %>
           <% if compatible %>
-            <%= link_to 'Revisar e vincular', employee_path(@employee, source_employee_id: candidate.id, anchor: 'vincular-cadastro'), class: 'btn btn-outline-primary' %>
+            <%= link_to 'Revisar e vincular', link_record_employee_path(@employee, source_employee_id: candidate.id), class: 'btn btn-outline-primary' %>
           <% end %>
         </div>
       </div>

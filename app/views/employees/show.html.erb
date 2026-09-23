@@ -43,8 +43,12 @@
       <div class="app-panel__header"><div><span class="app-panel__kicker">Movimentação</span><h2 class="app-panel__title">Registrar mudança de cargo</h2><p class="app-panel__subtitle">O cargo anterior termina na véspera da nova vigência.</p></div><i class="bi bi-arrow-left-right employees-panel-icon" aria-hidden="true"></i></div>
       <div class="app-panel__body">
         <%= form_with url: change_role_employee_path(@employee), class: 'employees-form' do |f| %>
-          <%= render 'role_fields', prefix: 'promotion' %>
-          <div class="employees-form-actions"><%= f.submit 'Registrar movimentação', class: 'btn btn-primary' %></div>
+          <%= render 'role_fields', prefix: 'promotion', allowed_cargos: @next_cargos %>
+          <% if @next_cargos.any? %>
+            <div class="employees-form-actions"><%= f.submit 'Registrar movimentação', class: 'btn btn-primary' %></div>
+          <% else %>
+            <div class="alert alert-info mb-0">Motorista é o último cargo da progressão. Para uma correção excepcional, use a seção “Corrigir uma vigência” abaixo.</div>
+          <% end %>
         <% end %>
       </div>
     </section>
@@ -83,7 +87,7 @@
         <p class="employees-muted">A correção fica registrada. Para alterar um fechamento salvo, registre também uma revisão do período.</p>
         <%= form_with url: revise_role_employee_path(@employee), class: 'employees-form' do |f| %>
           <div class="employees-field"><%= f.label :role_id, 'Vigência a corrigir' %><%= f.select :role_id, @roles.map { |role| ["#{role.label} · #{role.starts_on ? l(role.starts_on) : 'Legado'}", role.id] }, {}, class: 'form-select' %></div>
-          <%= render 'role_fields', prefix: 'correction' %>
+          <%= render 'role_fields', prefix: 'correction', allowed_cargos: EmployeeRole::CARGOS.values %>
           <div class="employees-form-actions"><%= f.submit 'Registrar correção', class: 'btn btn-outline-primary' %></div>
         <% end %>
       </div>
@@ -91,15 +95,13 @@
     <details id="vincular-cadastro" class="app-panel employees-disclosure" <%= 'open' if @suggested_source %>>
       <summary><span class="employees-disclosure__icon"><i class="bi bi-link-45deg" aria-hidden="true"></i></span><span class="employees-disclosure__text"><strong>Vincular outro cadastro</strong><small>Reúna os registros da mesma pessoa.</small></span><i class="bi bi-chevron-down employees-disclosure__chevron" aria-hidden="true"></i></summary>
       <div class="employees-disclosure__body">
-        <p class="employees-muted">Informe o número do outro cadastro e a data da promoção. Os CPFs devem coincidir; os fechamentos de origem permanecem disponíveis.</p>
+        <p class="employees-muted">Informe o número do outro cadastro para abrir uma página de conferência. Os CPFs devem coincidir; nada será mesclado antes da sua confirmação.</p>
         <% if @suggested_source %><p class="employees-note">Cadastro sugerido: <strong><%= @suggested_source.nome %> (#<%= @suggested_source.id %>)</strong>. Confirme a data e o motivo antes de vincular.</p><% end %>
-        <%= form_with url: link_record_employee_path(@employee), class: 'employees-form' do |f| %>
+        <%= form_with url: link_record_employee_path(@employee), method: :get, class: 'employees-form' do |f| %>
           <div class="employees-fields">
             <div class="employees-field"><%= f.label :source_employee_id, 'Número do cadastro de origem' %><%= f.number_field :source_employee_id, value: @suggested_source&.id, required: true, min: 1, class: 'form-control' %></div>
-            <div class="employees-field"><%= f.label :starts_on, 'Data da promoção', for: 'link_starts_on' %><%= f.date_field :starts_on, id: 'link_starts_on', required: true, class: 'form-control' %></div>
-            <div class="employees-field employees-field--full"><%= f.label :reason, 'Motivo do vínculo', for: 'link_reason' %><%= f.text_area :reason, id: 'link_reason', rows: 3, required: true, class: 'form-control' %></div>
           </div>
-          <div class="employees-form-actions"><%= f.submit 'Vincular à mesma pessoa', class: 'btn btn-outline-primary' %></div>
+          <div class="employees-form-actions"><%= f.submit 'Revisar os dois cadastros', class: 'btn btn-outline-primary' %></div>
         <% end %>
       </div>
     </details>

@@ -28,19 +28,29 @@ class MapasController < ApplicationController
 
   def update
     @mapa = Mapa.find(params[:id])
-    if @mapa.update(mapa_params)
+    attributes = mapa_params
+    cargo_override = attributes.delete(:cargo_override)
+    cargo_override_reason = attributes.delete(:cargo_override_reason)
+
+    Mapa.transaction do
+      @mapa.update!(attributes)
+      if cargo_override.to_s.presence != @mapa.cargo_override.to_s.presence
+        @mapa.apply_cargo_override!(cargo: cargo_override, reason: cargo_override_reason, user: current_user)
+      end
+
       # Atualiza o fator baseado nos ajudantes
       ajudante1 = @mapa.matric_ajudante
       ajudante2 = @mapa.matric_ajudante_2
 
       count = [ajudante1, ajudante2].count { |a| a.present? && a != 0 && a != '0' }
 
-      @mapa.update(fator: count.to_f) # 0.0, 1.0 ou 2.0
-
-      redirect_to mapas_path, notice: "Ajudantes atualizados e fator ajustado para #{count.to_f}."
-    else
-      render :edit, alert: "Houve um erro ao atualizar."
+      @mapa.update!(fator: count.to_f) # 0.0, 1.0 ou 2.0
     end
+
+    redirect_to mapas_path, notice: "Mapa atualizado e fator ajustado para #{count.to_f}."
+  rescue ActiveRecord::RecordInvalid => error
+    flash.now[:alert] = error.record&.errors&.full_messages&.to_sentence.presence || error.message
+    render :edit, status: :unprocessable_entity
   end
 
   def show_todos
@@ -170,7 +180,7 @@ class MapasController < ApplicationController
   private
 
   def mapa_params
-    params.require(:mapa).permit(:matric_ajudante, :matric_ajudante_2)
+    params.require(:mapa).permit(:matric_ajudante, :matric_ajudante_2, :cargo_override, :cargo_override_reason)
   end
 
   def aplicar_filtros_mapa(scope)

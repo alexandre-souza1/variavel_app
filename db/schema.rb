@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_23_121000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_23_124000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -587,6 +587,20 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_23_121000) do
     t.index ["action_plan_id"], name: "index_labels_on_action_plan_id"
   end
 
+  create_table "mapa_cargo_overrides", force: :cascade do |t|
+    t.bigint "mapa_id", null: false
+    t.bigint "user_id", null: false
+    t.string "previous_cargo"
+    t.string "cargo"
+    t.text "reason", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["mapa_id"], name: "index_mapa_cargo_overrides_on_mapa_id"
+    t.index ["user_id"], name: "index_mapa_cargo_overrides_on_user_id"
+    t.check_constraint "cargo IS NULL OR (cargo::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[]))", name: "mapa_override_valid_cargo"
+    t.check_constraint "previous_cargo IS NULL OR (previous_cargo::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[]))", name: "mapa_override_valid_previous_cargo"
+  end
+
   create_table "mapas", force: :cascade do |t|
     t.string "mapa"
     t.string "data"
@@ -602,12 +616,18 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_23_121000) do
     t.string "matric_ajudante"
     t.string "matric_ajudante_2"
     t.string "plate"
+    t.string "cargo_override"
+    t.text "cargo_override_reason"
+    t.datetime "cargo_override_at"
+    t.bigint "cargo_override_user_id"
+    t.index ["cargo_override_user_id"], name: "index_mapas_on_cargo_override_user_id"
     t.index ["created_at", "id"], name: "index_mapas_on_created_at_and_id"
     t.index ["data"], name: "index_mapas_on_data"
     t.index ["mapa"], name: "index_mapas_on_mapa"
     t.index ["matric_ajudante"], name: "index_mapas_on_matric_ajudante"
     t.index ["matric_ajudante_2"], name: "index_mapas_on_matric_ajudante_2"
     t.index ["matric_motorista"], name: "index_mapas_on_matric_motorista"
+    t.check_constraint "cargo_override IS NULL OR (cargo_override::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[]))", name: "mapa_valid_cargo_override"
   end
 
   create_table "meeting_minute_edits", force: :cascade do |t|
@@ -1092,6 +1112,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_23_121000) do
   add_foreign_key "invoices", "suppliers"
   add_foreign_key "invoices", "users", column: "purchaser_id"
   add_foreign_key "labels", "action_plans"
+  add_foreign_key "mapa_cargo_overrides", "mapas"
+  add_foreign_key "mapa_cargo_overrides", "users"
+  add_foreign_key "mapas", "users", column: "cargo_override_user_id"
   add_foreign_key "meeting_minute_edits", "meeting_minutes"
   add_foreign_key "meeting_minute_edits", "users"
   add_foreign_key "meeting_minutes", "action_plans"
