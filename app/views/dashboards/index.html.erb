@@ -1,4 +1,4 @@
-<div class="dashboard-page">
+<div class="dashboard-page" data-controller="dashboard-grid" data-dashboard-grid-storage-key-value="fleet-dashboard-grid-<%= current_user.id %>">
 
   <!-- ========== CABEÇALHO ========== -->
   <header class="dashboard-header">
@@ -149,7 +149,18 @@
   </div>
 
   <!-- ========== CARDS DE INFORMAÇÕES ========== -->
-  <div class="info-grid">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <h2 class="h5 mb-0">Visão geral da frota</h2>
+    <div class="d-flex align-items-center gap-2">
+      <span class="small text-muted" id="fleet-grid-label">Organização dos cards</span>
+      <div class="btn-group btn-group-sm" role="group" aria-labelledby="fleet-grid-label">
+        <button type="button" class="btn btn-outline-secondary" data-dashboard-grid-target="option" data-columns="2" data-action="dashboard-grid#change" aria-pressed="false" aria-label="Grid 2 por 2, duas colunas">2×2</button>
+        <button type="button" class="btn btn-outline-secondary active" data-dashboard-grid-target="option" data-columns="3" data-action="dashboard-grid#change" aria-pressed="true" aria-label="Grid 3 por 2, três colunas">3×2</button>
+      </div>
+    </div>
+  </div>
+  <div class="info-grid" data-dashboard-grid-target="grid">
+    <%= render "fuel_goals", report: @fuel_report %>
     <!-- Pneus que precisam recapar -->
     <div class="app-panel info-card retread-tires-card">
       <div class="app-panel__header info-card-header">

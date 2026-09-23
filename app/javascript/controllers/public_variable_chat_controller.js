@@ -17,6 +17,12 @@ export default class extends Controller {
     if (!question || this.submitTarget.disabled) return
 
     const formData = new FormData(this.formTarget)
+    const pageParams = new URLSearchParams(window.location.search)
+    const month = pageParams.get("periodo_mes")
+    const year = pageParams.get("periodo_ano") || String(new Date().getFullYear())
+    if (/^(?:[1-9]|1[0-2])$/.test(month || "") && /^\d{4}$/.test(year)) {
+      formData.set("consumption_period", `${year}-${month.padStart(2, "0")}`)
+    }
     this.appendMessage("user", question)
     const loadingMessage = this.appendLoadingMessage()
     this.questionTarget.value = ""

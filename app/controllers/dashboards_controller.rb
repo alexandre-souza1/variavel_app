@@ -4,6 +4,11 @@ class DashboardsController < ApplicationController
   before_action :set_mes_ano, only: [:index, :placas_por_setor, :mapas]
 
   def index
+    closing = Date.current.day <= 20 ? Date.current : Date.current.next_month
+    @fuel_report = Gasola::TeamReport.new(
+      from: closing.prev_month.change(day: 21), to: closing.change(day: 20)
+    )
+
     # ------------------------------------------------------------
     # 1. Tarefas
     # ------------------------------------------------------------

@@ -6,10 +6,11 @@ class PublicVariableContext
     há isso me meu minha na nas no nos onde para por que qual quero vejo ver
   ].freeze
 
-  def initialize(identity, question: nil)
+  def initialize(identity, question: nil, selected_period: nil)
     @identity = identity
     @record = identity.record
     @question = question.to_s
+    @selected_period = selected_period
   end
 
   def call
@@ -29,6 +30,7 @@ class PublicVariableContext
         dream: "Ser o melhor DPO da SAZ, com o time motivado, seguro, produtivo e cliente satisfeito."
       },
       documents: document_context,
+      fuel_consumption: fuel_consumption_context,
       people_cycle_current_year: Date.current.year,
       people_cycle_feedbacks: PeopleCycleFeedback.for_identity(@identity).map { |feedback| { cycle: feedback.cycle, stage: feedback.stage, response: feedback.response } },
       period_note: "Os valores são calculados apenas com os dados disponíveis no sistema.",
@@ -37,6 +39,54 @@ class PublicVariableContext
   end
 
   private
+
+  def fuel_consumption_context
+    employee = employee_record
+    eligible = employee ? employee.employee_roles.where(cargo: %w[motorista van]).exists? : @identity.profile == 'motorista'
+    return unless eligible
+
+    current = closing_month_for(Date.current).beginning_of_month
+    selected = consumption_selected_month
+    registration = employee ? employee.matricula : @identity.registration
+    dates = GasolaSupply.consumption.where(registration: registration.to_s.strip)
+      .where('concluded_at >= ?', 2.years.ago).pluck(:concluded_at)
+    months = (dates.map { |date| closing_month_for(date.in_time_zone.to_date).beginning_of_month } +
+      [current, current.prev_month, selected]).compact.uniq.sort
+    monthly = months.to_h do |month|
+      to = month.change(day: 20)
+      report = Gasola::ConsumptionReport.new(registration: registration, from: to.prev_month.change(day: 21), to: to)
+      totals = report.totals
+      [month.strftime('%Y-%m'), {
+        from: report.from.iso8601, to: report.to.iso8601,
+        average_km_per_liter: totals[:average]&.round(2)&.to_f,
+        goal_km_per_liter: totals[:goal]&.round(2)&.to_f,
+        achieved: totals[:achieved], refuelings: totals[:count],
+        liters: number(totals[:liters]), distance_km: number(totals[:distance]),
+        excluded_refuelings: totals[:excluded], complete: report.complete?,
+        updated_at: report.sync&.created_at&.iso8601,
+        by_plate: report.by_plate.map { |plate, values| {
+          plate: plate, average_km_per_liter: values[:average]&.round(2)&.to_f,
+          goal_km_per_liter: values[:goal]&.round(2)&.to_f, achieved: values[:achieved]
+        } }
+      }]
+    end
+    {
+      source: 'Gasola', current_period: current.strftime('%Y-%m'),
+      selected_period: selected&.strftime('%Y-%m'), monthly: monthly,
+      period_definition: 'Dia 21 do mês anterior ao dia 20 do mês indicado.',
+      calculation: 'Média = quilômetros totais / litros totais. Meta ponderada pelos litros. ARLA e registros sem distância ou litros positivos ficam fora.',
+      economical_driving_lup: Rails.application.routes.url_helpers.open_download_url(232)
+    }
+  end
+
+  def consumption_selected_month
+    value = @selected_period.to_s
+    return unless value.match?(/\A[0-9]{4}-(0[1-9]|1[0-2])\z/)
+
+    Date.strptime(value, '%Y-%m').beginning_of_month
+  rescue Date::Error
+    nil
+  end
 
   def employee_record
     @record.is_a?(Employee) ? @record : (@record.respond_to?(:employee) ? @record.employee : nil)

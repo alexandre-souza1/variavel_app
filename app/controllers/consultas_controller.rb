@@ -86,6 +86,7 @@ class ConsultasController < ApplicationController
       prepare_parameter_profiles!
       apply_function_filter!
     end
+    prepare_fuel_consumption! if @driver
   end
 
   private
@@ -126,11 +127,30 @@ class ConsultasController < ApplicationController
     apply_function_filter!
     @mapa_totals = @mapa_totals&.merge(caixas_reais: @mapa_totals[:cx_real], pdvs_reais: @mapa_totals[:pdv_real])
     definir_datas_periodo(@mapas)
+    prepare_fuel_consumption!
     render :show
   rescue Date::Error, EmployeeRole::HistoryError => error
     @parametros = ParametroCalculo.all.group_by(&:categoria)
     flash.now[:alert] = error.message
     render :new, status: :unprocessable_entity
+  end
+
+  def prepare_fuel_consumption!
+    return if params[:periodo_mes].blank?
+    return if @selected_function == 'ajudante'
+
+    to = Date.new((params[:periodo_ano].presence || Date.current.year).to_i, params[:periodo_mes].to_i, 20)
+    from = to.prev_month.change(day: 21)
+    if @employee
+      eligible = @employee.employee_roles.any? do |role|
+        %w[motorista van].include?(role.cargo) &&
+          (role.starts_on.nil? || role.starts_on <= to) && (role.ends_on.nil? || role.ends_on >= from)
+      end
+      return unless eligible
+    end
+    @gasola_consumption = Gasola::ConsumptionReport.new(registration: @driver.matricula, from: from, to: to)
+  rescue Date::Error
+    @gasola_consumption = nil
   end
 
   def filtrar_por_periodo!

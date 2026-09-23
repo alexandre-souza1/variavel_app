@@ -1,0 +1,79 @@
+<% totals = report.totals %>
+<section class="az-report-panel mb-4" aria-label="Meu consumo">
+  <details class="consumption-tab">
+    <summary class="consumption-tab__summary">
+      <span class="consumption-tab__title"><i class="bi bi-fuel-pump" aria-hidden="true"></i> Meu consumo</span>
+      <% if totals[:goal] %>
+        <span class="consumption-tab__status <%= totals[:achieved] ? 'is-achieved' : 'is-below' %>">
+          <i class="bi <%= totals[:achieved] ? 'bi-check-circle' : 'bi-exclamation-circle' %>" aria-hidden="true"></i>
+          <%= totals[:achieved] ? 'Você bateu a meta! Continue assim 😃' : 'Você está abaixo da meta.' %>
+        </span>
+        <% unless totals[:achieved] %>
+          <%= link_to 'Que tal ver essas dicas de condução econômica pra te ajudar? 😃', open_download_path(232), class: 'consumption-tab__lup', target: '_blank', rel: 'noopener', aria: { label: 'Ver dicas de condução econômica (abre em nova aba)' } %>
+        <% end %>
+      <% else %>
+        <span class="consumption-tab__status">Ainda não temos dados suficientes para comparar sua média.</span>
+      <% end %>
+      <span class="consumption-tab__toggle"><span class="consumption-tab__show">Ver detalhes</span><span class="consumption-tab__hide">Fechar detalhes</span> <i class="bi bi-chevron-down" aria-hidden="true"></i></span>
+    </summary>
+    <div class="az-panel-body">
+      <p class="text-muted small"><%= l(report.from) %> a <%= l(report.to) %> · Abastecimentos Gasola</p>
+    <% if report.sync %>
+      <p class="text-muted small">Última atualização: <%= report.sync.created_at.in_time_zone.strftime('%d/%m/%Y %H:%M') %></p>
+      <% if report.to >= Date.current && report.sync.created_at < 2.hours.ago %>
+        <p class="alert alert-warning">A atualização está atrasada. Os valores abaixo são da última sincronização.</p>
+      <% end %>
+    <% end %>
+    <% unless report.complete? %>
+      <p class="alert alert-info">Aguardando atualização completa deste período. Os dados disponíveis podem estar parciais.</p>
+    <% end %>
+    <% if totals[:count].zero? %>
+      <p class="mb-0"><%= report.complete? ? 'Nenhum abastecimento de combustível encontrado para sua matrícula neste período.' : 'Ainda não há abastecimentos disponíveis para sua matrícula neste período.' %></p>
+    <% else %>
+      <div class="az-report-overview">
+        <div class="az-overview-card">
+          <div class="az-overview-label">Média de consumo</div>
+          <div class="az-overview-value"><%= totals[:average] ? "#{number_with_precision(totals[:average], separator: ",", precision: 2)} km/l" : 'Indisponível' %></div>
+          <div class="az-overview-detail"><%= totals[:count] %> abastecimento(s)</div>
+        </div>
+        <div class="az-overview-card">
+          <div class="az-overview-label">Meta do período</div>
+          <div class="az-overview-value"><%= totals[:goal] ? "#{number_with_precision(totals[:goal], separator: ",", precision: 2)} km/l" : 'Não informada' %></div>
+          <% if totals[:goal] %><div class="az-overview-detail"><%= totals[:achieved] ? 'Meta atingida' : 'Abaixo da meta' %></div><% end %>
+        </div>
+        <div class="az-overview-card">
+          <div class="az-overview-label">Distância considerada</div>
+          <div class="az-overview-value"><%= number_with_precision(totals[:distance], separator: ",", precision: 1, delimiter: '.') %> km</div>
+        </div>
+        <div class="az-overview-card">
+          <div class="az-overview-label">Combustível considerado</div>
+          <div class="az-overview-value"><%= number_with_precision(totals[:liters], separator: ",", precision: 2, delimiter: '.') %> l</div>
+        </div>
+      </div>
+      <% if totals[:excluded].positive? %>
+        <p class="alert alert-warning"><%= totals[:excluded] %> abastecimento(s) sem distância ou litros válidos ficaram fora do cálculo da média e da meta.</p>
+      <% end %>
+      <div class="mt-3">
+        <h3 class="h6">Consumo por placa</h3>
+        <div class="az-report-table-wrap">
+          <table class="az-report-table">
+            <thead><tr><th>Placa</th><th>Abastecimentos</th><th>Km</th><th>Litros</th><th>Média (km/l)</th><th>Meta (km/l)</th></tr></thead>
+            <tbody>
+              <% report.by_plate.each do |plate, values| %>
+                <tr>
+                  <td><%= plate.presence || 'Não informada' %></td><td><%= values[:count] %></td>
+                  <td><%= number_with_precision(values[:distance], separator: ",", precision: 1) %></td>
+                  <td><%= number_with_precision(values[:liters], separator: ",", precision: 2) %></td>
+                  <td><%= values[:average] ? number_with_precision(values[:average], separator: ",", precision: 2) : '—' %></td>
+                  <td><%= values[:goal] ? number_with_precision(values[:goal], separator: ",", precision: 2) : '—' %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="text-muted small mt-3 mb-0">Média: distância total ÷ litros. Meta ponderada pelos litros de cada abastecimento. ARLA não entra no cálculo. O consumo considera todos os veículos vinculados à sua matrícula no período.</p>
+    <% end %>
+    </div>
+  </details>
+</section>

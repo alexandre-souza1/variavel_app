@@ -1,65 +1,112 @@
 <div class="app-page">
   <div class="app-page-header">
     <div>
-      <p class="app-page-eyebrow"><i class="bi bi-bar-chart-line me-1"></i>Indicadores · Operação</p>
-      <h1><i class="bi bi-fuel-pump me-2"></i>Consumo de combustível</h1>
-      <p>Acompanhe médias, metas e registros importados dos motoristas.</p>
+      <p class="app-page-eyebrow"><i class="bi bi-bar-chart-line me-1"></i>Indicadores · Frota</p>
+      <h1><i class="bi bi-fuel-pump me-2"></i>Consumo do time</h1>
+      <p>Médias, metas e emissões dos abastecimentos Gasola.</p>
     </div>
     <div class="app-page-actions">
-      <%= link_to new_fuel_consumption_path, class: "btn btn-primary" do %><i class="bi bi-upload me-1"></i> Importar CSV<% end %>
-      <%= link_to "Voltar", root_path, class: "btn btn-outline-secondary" %>
+      <%= link_to 'Importar CSV legado', new_fuel_consumption_path, class: 'btn btn-outline-secondary' %>
+      <%= link_to 'Voltar', root_path, class: 'btn btn-outline-secondary' %>
     </div>
   </div>
 
-  <!-- Card Resumo -->
-  <div class="card shadow-sm rounded mb-4">
-    <div class="card-body">
-      <div class="row align-items-center">
-        <div class="col-md-6">
-          <h2 class="mb-1">Resumo do consumo</h2>
-          <p class="text-muted mb-0">
-            Total de registros: <%= @fuel_consumptions.size %> <br>
-            Média geral (Km/L): <%= @fuel_consumptions.average(:km_per_liter).to_f.round(2) %> <br>
-            Motoristas dentro da meta: <%= @fuel_consumptions.select { |fc| fc.km_per_liter >= fc.km_per_liter_goal }.count %> <br>
-            Motoristas abaixo da meta: <%= @fuel_consumptions.select { |fc| fc.km_per_liter < fc.km_per_liter_goal }.count %>
-          </p>
-        </div>
-      </div>
-    </div>
+  <div class="card border-0 shadow-sm mb-4"><div class="card-body">
+    <%= form_with url: fuel_consumptions_path, method: :get, class: 'row g-3 align-items-end', local: true do %>
+      <div class="col-6 col-lg-2"><%= label_tag :from, 'De', class: 'form-label' %><%= date_field_tag :from, @from, class: 'form-control', required: true %></div>
+      <div class="col-6 col-lg-2"><%= label_tag :to, 'Até', class: 'form-label' %><%= date_field_tag :to, @to, class: 'form-control', required: true %></div>
+      <div class="col-12 col-lg-3"><%= label_tag :registration, 'Motorista', class: 'form-label' %><%= select_tag :registration, options_for_select(@report.drivers, params[:registration]), include_blank: 'Todo o time', class: 'form-select' %></div>
+      <div class="col-6 col-lg-2"><%= label_tag :plate, 'Placa', class: 'form-label' %><%= select_tag :plate, options_for_select(@report.plates, params[:plate]), include_blank: 'Todas', class: 'form-select' %></div>
+      <div class="col-6 col-lg-3"><%= label_tag :fuel, 'Combustível', class: 'form-label' %><%= select_tag :fuel, options_for_select(@report.fuels.map { |fuel| [fuel_label(fuel), fuel] }, params[:fuel]), include_blank: 'Todos', class: 'form-select' %></div>
+      <div class="col-12 d-flex gap-2"><%= submit_tag 'Aplicar filtros', class: 'btn btn-primary' %><%= link_to 'Período atual', fuel_consumptions_path, class: 'btn btn-outline-secondary' %></div>
+    <% end %>
+    <p class="text-muted small mt-3 mb-0"><%= l(@from) %> a <%= l(@to) %> · <%= @report.sync ? "Última sincronização: #{@report.sync.created_at.in_time_zone.strftime('%d/%m/%Y %H:%M')}" : 'Ainda sem sincronização deste período' %></p>
+  </div></div>
+
+  <% unless @report.complete? %><p class="alert alert-warning">O período ainda não está totalmente atualizado. Os indicadores usam os abastecimentos disponíveis.</p><% end %>
+  <% if @totals[:excluded].positive? %><p class="alert alert-warning"><%= @totals[:excluded] %> abastecimento(s) sem distância ou litros válidos ficaram fora da média de consumo e da meta.</p><% end %>
+
+  <div class="row g-3 mb-4">
+    <% [
+      ['Média do time', "#{fuel_metric(@totals[:average])} km/l", 'Distância total ÷ litros considerados'],
+      ['Meta ponderada', "#{fuel_metric(@totals[:goal])} km/l", fuel_goal_status(@totals)],
+      ['Distância considerada', "#{fuel_metric(@totals[:distance], precision: 0)} km", "#{@totals[:count]} abastecimentos"],
+      ['Combustível considerado', "#{fuel_metric(@totals[:liters])} l", "#{@report.by_plate.size} veículos"]
+    ].each do |title, value, description| %>
+      <div class="col-6 col-xl-3"><div class="card border-0 shadow-sm h-100"><div class="card-body">
+        <p class="text-muted small mb-2"><%= title %></p><div class="h3 mb-2"><%= value %></div><small class="text-muted"><%= description %></small>
+      </div></div></div>
+    <% end %>
   </div>
 
-  <!-- Tabela de histórico -->
-  <div class="app-table-section">
-    <div class="app-table-section__body">
-      <div class="app-table-shell"><table class="table app-table app-table--data">
-        <thead class="table-light">
-          <tr>
-            <th>Motorista</th>
-            <th>Média / Meta (Km/L)</th>
-            <th>Período</th>
-            <th>Data Importação</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @fuel_consumptions.each do |fc| %>
-            <tr>
-              <td><%= fc.driver_name %></td>
-              <td class="<%= fc.km_per_liter >= fc.km_per_liter_goal ? 'table-success' : 'table-danger' %>">
-                <strong>Média:</strong> <%= fc.km_per_liter %> <br>
-                <strong>Meta:</strong> <%= fc.km_per_liter_goal %>
-                <% if fc.km_per_liter >= fc.km_per_liter_goal %>
-                  ✅
-                <% else %>
-                  ❌
-                <% end %>
-              </td>
-              <td><%= fc.period %></td>
-              <td><%= l(fc.created_at, format: :short) %></td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table></div>
-      <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
-    </div>
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8"><div class="card border-0 shadow-sm h-100"><div class="card-body">
+      <h2 class="h5">Evolução da média de consumo</h2><p class="text-muted small">Média ponderada por dia de aprovação do abastecimento.</p>
+      <% if @report.records.any? %><%= line_chart @report.daily_average, height: '240px', suffix: ' km/l', colors: ['#2563eb'], min: 0, empty: 'Sem distância e litros válidos para o gráfico' %><% else %><p class="text-muted py-5 text-center">Nenhum abastecimento encontrado para os filtros selecionados.</p><% end %>
+    </div></div></div>
+    <div class="col-lg-4"><div class="card border-0 shadow-sm h-100"><div class="card-body">
+      <h2 class="h5">Situação do time</h2>
+      <% groups = @report.by_driver %>
+      <div class="d-flex justify-content-between border-bottom py-3"><span>Motoristas com matrícula</span><strong><%= groups.count { |entry| entry[:registration].present? } %></strong></div>
+      <div class="d-flex justify-content-between border-bottom py-3"><span class="text-success">Meta atingida</span><strong><%= groups.count { |entry| entry[:registration].present? && entry[:totals][:achieved] == true } %></strong></div>
+      <div class="d-flex justify-content-between border-bottom py-3"><span class="text-warning">Abaixo da meta</span><strong><%= groups.count { |entry| entry[:registration].present? && entry[:totals][:achieved] == false } %></strong></div>
+      <div class="d-flex justify-content-between py-3"><span>Sem meta comparável</span><strong><%= groups.count { |entry| entry[:registration].present? && entry[:totals][:goal].nil? } %></strong></div>
+      <% if @report.records.any? { |row| row.registration.blank? } %><p class="small text-muted">Há abastecimentos sem matrícula, exibidos separadamente na tabela.</p><% end %>
+    </div></div></div>
   </div>
+
+  <section class="card border-0 shadow-sm mb-4" aria-label="Emissões de CO₂"><div class="card-body">
+    <h2 class="h5"><i class="bi bi-cloud me-2"></i>Emissões de CO₂</h2>
+    <div class="row g-3 mt-1">
+      <div class="col-md-4"><p class="text-muted mb-1">Média por abastecimento</p><strong class="h3"><%= fuel_metric(@emissions[:average]) %></strong></div>
+      <div class="col-md-4"><p class="text-muted mb-1">Emissão total informada</p><strong class="h3"><%= fuel_metric(@emissions[:total]) %></strong></div>
+      <div class="col-md-4"><p class="text-muted mb-1">Cobertura dos dados</p><strong class="h3"><%= @emissions[:count] %> / <%= @totals[:count] %></strong><span class="d-block small text-muted">abastecimentos com emissão válida</span></div>
+    </div>
+    <p class="small text-muted mt-3 mb-0">Valores de emissão na unidade da API Gasola, ainda não especificada na documentação. A média divide a emissão total pelo número de abastecimentos com emissão válida. Registros sem emissão não são tratados como zero. ARLA não entra nestes indicadores.</p>
+    <% if @emissions[:count].zero? %><p class="mt-2 mb-0">Nenhuma emissão informada nos abastecimentos selecionados.</p><% end %>
+  </div></section>
+
+  <section class="card border-0 shadow-sm mb-4"><div class="card-body">
+    <h2 class="h5">Consumo por motorista</h2><p class="small text-muted">Motoristas abaixo da meta aparecem primeiro. As médias respeitam os filtros acima.</p>
+    <div class="table-responsive"><table class="table align-middle">
+      <thead><tr><th>Motorista / matrícula</th><th>Placas</th><th>Abast.</th><th>Km</th><th>Litros</th><th>Média km/l</th><th>Meta km/l</th><th>Situação</th><th>CO₂ médio¹</th></tr></thead>
+      <tbody>
+      <% @report.by_driver.each do |entry| %><% values = entry[:totals] %>
+        <tr><td><strong><%= entry[:name] %></strong><small class="d-block text-muted"><%= entry[:registration].presence || 'Sem matrícula' %></small></td>
+          <td><%= entry[:plates].join(', ') %></td><td><%= values[:count] %></td><td><%= fuel_metric(values[:distance], precision: 0) %></td><td><%= fuel_metric(values[:liters]) %></td>
+          <td><strong><%= fuel_metric(values[:average]) %></strong></td><td><%= fuel_metric(values[:goal]) %></td>
+          <td><span class="badge <%= values[:goal].nil? ? 'bg-secondary' : (values[:achieved] ? 'bg-success' : 'bg-warning text-dark') %>"><%= fuel_goal_status(values) %></span></td>
+          <td><%= fuel_metric(entry[:emissions][:average]) %><small class="d-block text-muted"><%= entry[:emissions][:count] %> registros</small></td></tr>
+      <% end %>
+      <% if @report.by_driver.empty? %><tr><td colspan="9" class="text-center text-muted py-4">Sem dados para este período e filtros.</td></tr><% end %>
+      </tbody>
+    </table></div>
+    <p class="small text-muted mb-0">¹ Por abastecimento com emissão válida, na unidade da API. Meta de consumo ponderada pelos litros; fica indisponível se faltar meta em qualquer abastecimento considerado.</p>
+  </div></section>
+
+  <details class="card border-0 shadow-sm mb-4"><summary class="card-header bg-transparent py-3">Consumo por veículo</summary><div class="card-body table-responsive">
+    <table class="table"><thead><tr><th>Placa</th><th>Abastecimentos</th><th>Km</th><th>Litros</th><th>Média km/l</th><th>Meta km/l</th></tr></thead><tbody>
+      <% @report.by_plate.each do |plate, values| %><tr><td><%= plate.presence || 'Sem placa' %></td><td><%= values[:count] %></td><td><%= fuel_metric(values[:distance], precision: 0) %></td><td><%= fuel_metric(values[:liters]) %></td><td><%= fuel_metric(values[:average]) %></td><td><%= fuel_metric(values[:goal]) %></td></tr><% end %>
+    </tbody></table>
+  </div></details>
+
+  <details class="card border-0 shadow-sm mb-4" <%= 'open' if params[:page].present? %>><summary class="card-header bg-transparent py-3">Abastecimentos do período · <%= @totals[:count] %> registros</summary><div class="card-body">
+    <div class="table-responsive"><table class="table"><thead><tr><th>Aprovação</th><th>Motorista</th><th>Placa</th><th>Combustível</th><th>Km</th><th>Litros</th><th>CO₂¹</th></tr></thead><tbody>
+      <% @supplies.each do |row| %><tr><td><%= row.concluded_at.in_time_zone.strftime('%d/%m/%Y %H:%M') %></td><td><%= @report.name(row.registration) %><small class="d-block text-muted"><%= row.registration %></small></td><td><%= row.plate %></td><td><%= fuel_label(row.fuel) %></td><td><%= fuel_metric(row.distance) %></td><td><%= fuel_metric(row.liters) %></td><td><%= fuel_metric(row.co2_emission) %></td></tr><% end %>
+    </tbody></table></div>
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="small text-muted">Página <%= @page %> de <%= @pages %> · até 50 registros por página</span>
+      <div><% if @page > 1 %><%= link_to 'Anterior', fuel_consumptions_path(request.query_parameters.merge(page: @page - 1)), class: 'btn btn-sm btn-outline-secondary' %><% end %>
+      <% if @page < @pages %><%= link_to 'Próxima', fuel_consumptions_path(request.query_parameters.merge(page: @page + 1)), class: 'btn btn-sm btn-outline-secondary' %><% end %></div>
+    </div>
+  </div></details>
+
+  <% if @legacy_consumptions.any? %>
+    <details class="card border-0 shadow-sm mb-4"><summary class="card-header bg-transparent py-3">Importações antigas de CSV</summary><div class="card-body table-responsive">
+      <p class="small text-muted">Últimos 100 registros legados. Não compõem os indicadores Gasola nem os filtros acima.</p>
+      <table class="table"><thead><tr><th>Motorista</th><th>Período</th><th>Média km/l</th><th>Meta km/l</th></tr></thead><tbody>
+      <% @legacy_consumptions.each do |row| %><tr><td><%= row.driver_name %></td><td><%= row.period %></td><td><%= fuel_metric(row.km_per_liter) %></td><td><%= fuel_metric(row.km_per_liter_goal) %></td></tr><% end %>
+      </tbody></table>
+    </div></details>
+  <% end %>
 </div>

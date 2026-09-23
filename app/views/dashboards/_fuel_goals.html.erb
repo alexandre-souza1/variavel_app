@@ -1,0 +1,49 @@
+<%
+  totals = report.totals
+  drivers = report.by_driver.select { |entry| entry[:registration].present? }
+  achieved = drivers.count { |entry| entry[:totals][:achieved] == true }
+  below = drivers.count { |entry| entry[:totals][:achieved] == false }
+  unknown = drivers.size - achieved - below
+  comparable = achieved + below
+  percentage = comparable.positive? ? (100.0 * achieved / comparable).round : nil
+%>
+<section class="app-panel info-card" aria-label="Metas de consumo de combustível">
+  <div class="app-panel__header info-card-header">
+    <div class="dashboard-panel-heading">
+      <span class="dashboard-panel-kicker"><i class="bi bi-fuel-pump me-1"></i>Gasola · Time</span>
+      <h2>Metas de consumo</h2>
+      <small>Fechamento atual · <%= l(report.from) %> a <%= l(report.to) %></small>
+    </div>
+  </div>
+  <div class="app-panel__body info-card-body">
+    <% if report.records.empty? %>
+      <p class="text-muted">Ainda não há abastecimentos disponíveis neste período.</p>
+    <% else %>
+      <div class="d-flex justify-content-between align-items-baseline gap-2 mb-2">
+        <strong class="h2 mb-0"><%= percentage.nil? ? '—' : "#{percentage}%" %></strong>
+        <span class="text-muted small">dos motoristas com meta comparável atingiram a meta</span>
+      </div>
+      <% if percentage %>
+        <div class="progress mb-3" role="progressbar" aria-label="Motoristas que atingiram a meta" aria-valuenow="<%= percentage %>" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress-bar bg-success" style="width: <%= percentage %>%"></div>
+        </div>
+      <% end %>
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <span class="badge bg-success"><%= achieved %> na meta</span>
+        <span class="badge bg-warning text-dark"><%= below %> abaixo da meta</span>
+        <span class="badge bg-secondary"><%= unknown %> sem meta comparável</span>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-6"><small class="text-muted d-block">Média do time</small><strong><%= fuel_metric(totals[:average]) %> km/l</strong></div>
+        <div class="col-6"><small class="text-muted d-block">Meta ponderada</small><strong><%= fuel_metric(totals[:goal]) %> km/l</strong></div>
+      </div>
+      <p class="small text-muted"><%= drivers.size %> motoristas com matrícula · <%= totals[:count] %> abastecimentos</p>
+      <% if totals[:excluded].positive? %><p class="small text-muted"><%= totals[:excluded] %> abastecimento(s) sem distância ou litros válidos ficaram fora da média.</p><% end %>
+    <% end %>
+    <% unless report.complete? %><p class="small text-warning">Aguardando atualização completa do período.</p><% end %>
+    <% if report.sync %><p class="small text-muted">Atualizado em <%= report.sync.created_at.in_time_zone.strftime('%d/%m/%Y %H:%M') %></p><% end %>
+    <%= link_to fuel_consumptions_path(from: report.from.iso8601, to: report.to.iso8601), class: 'btn btn-outline-primary w-100' do %>
+      Ver consumo do time <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+    <% end %>
+  </div>
+</section>

@@ -248,3 +248,34 @@ html[data-bs-theme="dark"] {
     }
   }
 }
+
+// Faixa compacta de consumo, com expansão nativa por mouse e teclado.
+.consumption-tab {
+  &__summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5rem 1rem;
+    padding: .8rem 1rem;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker { display: none; }
+    &:focus-visible { outline: 2px solid #2563eb; outline-offset: -2px; }
+  }
+
+  &__title { font-weight: 600; }
+  &__status { font-size: .875rem; color: #475569; }
+  &__status.is-achieved { color: #166534; }
+  &__status.is-below { color: #92400e; }
+  &__lup { font-size: .875rem; text-decoration: underline; }
+  &__toggle { margin-left: auto; font-size: .8rem; color: #475569; white-space: nowrap; }
+  &__hide { display: none; }
+
+  &[open] > summary {
+    border-bottom: 1px solid #e2e8f0;
+    .consumption-tab__show { display: none; }
+    .consumption-tab__hide { display: inline; }
+    .bi-chevron-down { display: inline-block; transform: rotate(180deg); }
+  }
+}

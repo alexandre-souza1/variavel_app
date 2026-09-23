@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_23_130000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_23_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -483,6 +483,34 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_23_130000) do
     t.decimal "km_driven"
     t.decimal "co2_impact"
     t.string "period"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "gasola_supplies", force: :cascade do |t|
+    t.string "external_id", null: false
+    t.string "registration"
+    t.string "plate"
+    t.string "fuel"
+    t.string "category"
+    t.string "status"
+    t.datetime "concluded_at", null: false
+    t.decimal "liters", precision: 16, scale: 6
+    t.decimal "distance", precision: 16, scale: 6
+    t.decimal "goal", precision: 16, scale: 6
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "co2_emission", precision: 20, scale: 6
+    t.decimal "co2_goal", precision: 20, scale: 6
+    t.decimal "co2_impact", precision: 20, scale: 6
+    t.index ["external_id"], name: "index_gasola_supplies_on_external_id", unique: true
+    t.index ["registration", "concluded_at"], name: "index_gasola_supplies_on_registration_and_concluded_at"
+  end
+
+  create_table "gasola_sync_runs", force: :cascade do |t|
+    t.datetime "from_at", null: false
+    t.datetime "to_at", null: false
+    t.integer "records_count", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

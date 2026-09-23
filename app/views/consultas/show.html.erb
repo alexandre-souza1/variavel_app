@@ -76,19 +76,8 @@
 
   <div class="az-report-flashes">
     <% Array(@report_issues).each do |issue| %><p class="alert alert-warning"><%= issue %></p><% end %>
-    <% if @closing %><p class="alert alert-info"><%= @closing.legacy_baseline? ? "Referência da prévia legada (não comprova pagamento)" : "Fechamento registrado" %> · revisão <%= @closing.revision %>. Valores preservados conforme o registro.</p><% end %>
+    <% if @closing && !@closing.legacy_baseline? %><p class="alert alert-info">Fechamento registrado · revisão <%= @closing.revision %>. Valores preservados conforme o registro.</p><% end %>
   </div>
-  <% if @career_groups.present? %>
-    <section class="az-report-panel mb-3 p-3">
-      <h2>Apuração por cargo</h2>
-      <p>O mínimo de 15 mapas e o bônus de devolução são apurados separadamente para cada cargo.</p>
-      <table class="table"><thead><tr><th>Cargo</th><th>Mapas</th><th>Bônus de devolução</th><th>Total</th></tr></thead><tbody>
-      <% @career_groups.each do |cargo, group| %>
-        <tr><td><%= EmployeeRole::CARGOS.key(cargo) %></td><td><%= group[:quantidade_mapas].to_i %></td><td><%= number_to_currency(group[:bonus_devolucao], unit: 'R$ ') %></td><td><%= number_to_currency(group[:valor_total], unit: 'R$ ') %></td></tr>
-      <% end %>
-      </tbody></table>
-    </section>
-  <% end %>
 
   <section class="az-report-overview" aria-label="Resumo da variável">
     <div class="az-overview-card az-overview-card--total">
@@ -115,6 +104,8 @@
       <div class="az-overview-detail"><%= totals[:pdvs_reais].to_i %> entrega(s)</div>
     </div>
   </section>
+
+  <%= render "consumption", report: @gasola_consumption if @gasola_consumption %>
 
   <section class="az-report-grid">
     <article class="az-report-panel">

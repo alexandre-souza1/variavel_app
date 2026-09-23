@@ -47,7 +47,8 @@ class PublicVariableChatController < ApplicationController
     answer = PublicVariableChatService.new(
       identity: @identity,
       history: Array(session.dig(:public_variable_chat, "history")),
-      question: question
+      question: question,
+      selected_period: params[:consumption_period]
     ).call
 
     add_message_to_history(question, answer)
