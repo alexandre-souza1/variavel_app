@@ -8,6 +8,7 @@ class AzMapasImportService
   TMA_HEADERS = ["ano", "nome_mes_abrev", "dia", "tr", "meta"].freeze
 
   EFD_HEADERS = ["data", "meta (%) - quanto maior melhor", "realizado (%)"].freeze
+  SUPRIMENTO_HEADERS = ["data", "meta", "realizado", "atingimento"].freeze
 
   def initialize(file)
     @files = Array(file).reject(&:blank?)
@@ -31,21 +32,33 @@ class AzMapasImportService
     sheet = workbook.sheet(0)
     header_row = (1..[sheet.last_row.to_i, 30].min).find do |number|
       normalized = sheet.row(number).map { |value| normalize(value) }
-      [HEADERS, TMA_HEADERS, EFD_HEADERS].any? { |format| (format - normalized).empty? }
+      [HEADERS, TMA_HEADERS, EFD_HEADERS, SUPRIMENTO_HEADERS].any? { |format| (format - normalized).empty? }
     end
-    raise Error, "Cabeçalho esperado: Ano, Mês, Dia, % EFC e Meta; ou ANO, NOME_MES_ABREV, DIA, TR e Meta; ou Data, Meta (%) - QUANTO MAIOR MELHOR e Realizado (%)." unless header_row
+    raise Error, "Cabeçalho esperado: Ano, Mês, Dia, % EFC e Meta; ANO, NOME_MES_ABREV, DIA, TR e Meta; Data, Meta (%) - QUANTO MAIOR MELHOR e Realizado (%); ou Data, Meta, Realizado e Atingimento." unless header_row
 
     headers = sheet.row(header_row).map { |value| normalize(value) }
     tma = (TMA_HEADERS - headers).empty?
     efd = (EFD_HEADERS - headers).empty?
-    columns = efd ? EFD_HEADERS : (tma ? TMA_HEADERS : HEADERS)
+    suprimento = (SUPRIMENTO_HEADERS - headers).empty?
+    columns = if suprimento
+                SUPRIMENTO_HEADERS
+              else
+                efd ? EFD_HEADERS : (tma ? TMA_HEADERS : HEADERS)
+              end
     entries = ((header_row + 1)..sheet.last_row).filter_map do |number|
       row = sheet.row(number)
       next if row.all?(&:blank?)
 
       values = columns.map { |header| row[headers.index(header)] }
       begin
-        if efd
+        if suprimento
+          raw_date, goal, result, attainment = values
+          date = spreadsheet_date(raw_date)
+          goal = percentage(goal)
+          result = percentage(result)
+          attained = attainment.present? ? percentage(attainment) >= 100 : result >= goal
+          next({ data: date, tipo: :suprimento, turno: [0], resultado: result, atingiu_meta: attained })
+        elsif efd
           raw_date, goal, result = values
           date = spreadsheet_date(raw_date)
           goal = percentage(goal)

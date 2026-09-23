@@ -61,12 +61,12 @@
   </div></div>
   <div class="app-panel mb-4"><div class="app-panel__body">
     <h2 class="h4">Ajudantes · Ranking de variável</h2>
-    <p class="text-muted">Montagem, Blitz Refugo, atividades sob demanda e EFC (R$ 5,00 por dia de meta atingida nos turnos A, B e C, exceto aos domingos), conforme a consulta individual. Os links abrem o ciclo completo.</p>
-    <div class="table-responsive"><table class="table app-table"><thead><tr><th>Colaborador</th><th>Turno</th><th>Pontos</th><th>Montagem</th><th>Refugos</th><th>Valor refugo</th><th>Unidades On Demand</th><th>Sob demanda</th><th>Dias EFC</th><th>Valor EFC</th><th>Total</th></tr></thead><tbody>
+    <p class="text-muted">Montagem, Blitz Refugo, atividades sob demanda, EFC (R$ 5,00 por dia nos turnos A, B e C) e Ressuprimento (R$ 4,00 por dia no turno A), exceto domingos, conforme a consulta individual. Os links abrem o ciclo completo.</p>
+    <div class="table-responsive"><table class="table app-table"><thead><tr><th>Colaborador</th><th>Turno</th><th>Pontos</th><th>Montagem</th><th>Refugos</th><th>Valor refugo</th><th>Unidades On Demand</th><th>Sob demanda</th><th>Dias EFC</th><th>Valor EFC</th><th>Dias Ressuprimento</th><th>Valor Ressuprimento</th><th>Total</th></tr></thead><tbody>
       <% @dashboard.helpers.each do |row| %>
-        <tr><td><%= link_to "#{row[:person].nome} · #{row[:person].matricula}", az_consulta_path(perfil: "ajudante", matricula: row[:person].matricula, turno: row[:person].turno, periodo_mes: @mes, periodo_ano: @ano) %></td><td><%= AzMapa::TURNOS[row[:person].turno] %></td><td><%= number_with_delimiter(row[:points]) %></td><td><%= number_to_currency(row[:point_value]) %></td><td><%= row[:refugo] %></td><td><%= number_to_currency(row[:refugo_value]) %></td><td><%= number_with_precision(row[:activities], precision: 2, strip_insignificant_zeros: true, separator: ",", delimiter: ".") %></td><td><%= number_to_currency(row[:activity_value]) %></td><td><%= row[:efc_days] %></td><td><%= number_to_currency(row[:efc_value]) %></td><td><%= number_to_currency(row[:total]) %></td></tr>
+        <tr><td><%= link_to "#{row[:person].nome} · #{row[:person].matricula}", az_consulta_path(perfil: "ajudante", matricula: row[:person].matricula, turno: row[:person].turno, periodo_mes: @mes, periodo_ano: @ano) %></td><td><%= AzMapa::TURNOS[row[:person].turno] %></td><td><%= number_with_delimiter(row[:points]) %></td><td><%= number_to_currency(row[:point_value]) %></td><td><%= row[:refugo] %></td><td><%= number_to_currency(row[:refugo_value]) %></td><td><%= number_with_precision(row[:activities], precision: 2, strip_insignificant_zeros: true, separator: ",", delimiter: ".") %></td><td><%= number_to_currency(row[:activity_value]) %></td><td><%= row[:efc_days] %></td><td><%= number_to_currency(row[:efc_value]) %></td><td><%= row[:suprimento_days] %></td><td><%= number_to_currency(row[:suprimento_value]) %></td><td><%= number_to_currency(row[:total]) %></td></tr>
       <% end %>
-      <% if @dashboard.helpers.empty? %><tr><td colspan="11">Nenhum ajudante encontrado para o filtro.</td></tr><% end %>
+      <% if @dashboard.helpers.empty? %><tr><td colspan="13">Nenhum ajudante encontrado para o filtro.</td></tr><% end %>
     </tbody></table></div>
   </div></div>
 </div>

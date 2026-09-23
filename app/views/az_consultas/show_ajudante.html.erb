@@ -82,6 +82,11 @@
       <div class="az-overview-value"><%= number_to_currency(@efc_value, unit: "R$ ", separator: ",", delimiter: ".") %></div>
       <div class="az-overview-detail"><%= @efc_daily_values.size %> dia(s) com meta atingida · R$ 5,00 por dia</div>
     </div>
+    <div class="az-overview-card">
+      <div class="az-overview-label"><i class="bi bi-box-seam"></i> Ressuprimento</div>
+      <div class="az-overview-value"><%= number_to_currency(@suprimento_value, unit: "R$ ", separator: ",", delimiter: ".") %></div>
+      <div class="az-overview-detail"><%= @suprimento_daily_values.size %> dia(s) com meta atingida · R$ 4,00 por dia · turno A</div>
+    </div>
   </section>
 
   <section class="az-report-grid">
@@ -109,6 +114,10 @@
           <div class="az-total-row">
             <span class="az-total-name"><span class="az-total-dot"></span>EFC</span>
             <span class="az-total-amount"><%= number_to_currency(@efc_value, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+          </div>
+          <div class="az-total-row">
+            <span class="az-total-name"><span class="az-total-dot"></span>Ressuprimento</span>
+            <span class="az-total-amount"><%= number_to_currency(@suprimento_value, unit: "R$ ", separator: ",", delimiter: ".") %></span>
           </div>
           <div class="az-total-row az-total-row--grand">
             <span class="az-total-name"><i class="bi bi-check2-circle"></i>Total geral</span>
@@ -161,6 +170,7 @@
               <th class="text-end">Refugo</th>
               <th class="text-end">On Demand</th>
               <th class="text-end">EFC</th>
+              <th class="text-end">Ressuprimento</th>
               <th class="text-end">Total do dia</th>
             </tr>
           </thead>
@@ -173,6 +183,7 @@
                 <td data-label="Refugo" class="text-end"><%= daily[:refugo] %> · <%= number_to_currency(daily[:refugo_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 <td data-label="On Demand" class="text-end"><%= number_with_precision(daily[:ondemand], precision: 2, strip_insignificant_zeros: true, separator: ",", delimiter: ".") %> · <%= number_to_currency(daily[:ondemand_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 <td data-label="EFC" class="text-end"><%= number_to_currency(daily[:efc_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                <td data-label="Ressuprimento" class="text-end"><%= number_to_currency(daily[:suprimento_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 <td data-label="Total do dia" class="text-end az-table-total"><%= number_to_currency(daily[:total_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
               </tr>
             <% end %>

@@ -129,6 +129,8 @@ class AzMapasController < ApplicationController
       [0, 2]     # A, C
     when :eficiencia_descarga
       [1]        # B
+    when :suprimento
+      [0]        # Ajudantes do turno A
     else
       []
     end

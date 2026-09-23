@@ -2,15 +2,16 @@ class AzMapa < ApplicationRecord
   enum tipo: {
     tempo_atendimento: 0,
     eficiencia_carregamento: 1,
-    eficiencia_descarga: 2
+    eficiencia_descarga: 2,
+    suprimento: 3
   }
 
   scope :considerados_na_variavel, -> {
-    where.not("tipo = ? AND EXTRACT(DOW FROM data) = 0", tipos.fetch("eficiencia_carregamento"))
+    where.not("tipo IN (?) AND EXTRACT(DOW FROM data) = 0", [tipos.fetch("eficiencia_carregamento"), tipos.fetch("suprimento")])
   }
 
   def meta_remunerada?
-    atingiu_meta? && !(eficiencia_carregamento? && data&.sunday?)
+    atingiu_meta? && !(%w[eficiencia_carregamento suprimento].any? { |indicator| public_send("#{indicator}?") } && data&.sunday?)
   end
 
   # Constante para mapear os turnos

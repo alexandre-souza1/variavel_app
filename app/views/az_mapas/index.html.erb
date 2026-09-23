@@ -62,7 +62,8 @@
                 ["Todos", ""],
                 ["Tempo de atendimento", "tempo_atendimento"],
                 ["Eficiência de carregamento", "eficiencia_carregamento"],
-                ["Eficiência de descarga", "eficiencia_descarga"]
+                ["Eficiência de descarga", "eficiencia_descarga"],
+                ["Ressuprimento", "suprimento"]
               ], params[:tipo]),
               {},
               class: "form-select" %>
@@ -135,7 +136,7 @@
                           <% horas = decimal.floor %>
                           <% minutos = ((decimal - horas) * 60).round %>
                           <%= "#{horas}:#{minutos.to_s.rjust(2, '0')} h" %>
-                        <% when "eficiencia_carregamento", "eficiencia_descarga" %>
+                        <% when "eficiencia_carregamento", "eficiencia_descarga", "suprimento" %>
                           <%= number_to_percentage(az_mapa.resultado, precision: 2) %>
                         <% else %>
                           <%= az_mapa.resultado %>
