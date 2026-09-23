@@ -150,7 +150,8 @@
 @media (prefers-reduced-motion: reduce) { .rotogramas * { scroll-behavior: auto !important; } }
 /* Keep this page usable inside the application's shared Bootstrap spacing. */
 .app-content:has(> .rotogramas) { margin: 32px !important; }
-.rotogramas .roto-footer { background: transparent; }
+// Override the shared dark-theme footer background, which uses !important.
+.rotogramas .roto-footer { background: transparent !important; }
 .rotogramas .roto-map-panel { scroll-margin-top: 85px; }
 @media (max-width: 700px) {
   .app-content:has(> .rotogramas) { margin: 20px 16px !important; }

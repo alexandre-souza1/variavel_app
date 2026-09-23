@@ -1,60 +1,82 @@
-<div class="container py-4">
-  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+<div class="az-import-page app-page">
+  <div class="app-page-header">
     <div>
-      <p class="text-uppercase text-muted small fw-semibold mb-1">Remuneração variável</p>
-      <h1 class="h3 mb-1">Importação</h1>
+      <p class="app-page-eyebrow"><i class="bi bi-box-seam me-1" aria-hidden="true"></i> Armazém · Remuneração variável</p>
+      <h1>Central de importações AZ</h1>
       <p class="text-muted mb-0">Centralize os arquivos usados nos cálculos de operadores e ajudantes.</p>
     </div>
     <%= link_to "Voltar para consultas", az_consultas_new_path, class: "btn btn-outline-secondary" %>
   </div>
 
 
-  <div class="card border-0 shadow-sm">
-    <div class="card-body p-4">
+  <nav class="az-import-nav" aria-label="Seções da central de importações">
+    <a href="#arquivos-az"><i class="bi bi-cloud-arrow-up" aria-hidden="true"></i> Arquivos CSV</a>
+    <a href="#manual-az"><i class="bi bi-pencil-square" aria-hidden="true"></i> Lançamento manual</a>
+    <% if current_user&.admin? %><a href="#contingencia-az"><i class="bi bi-file-earmark-spreadsheet" aria-hidden="true"></i> Contingência</a><% end %>
+    <a href="#historico-az"><i class="bi bi-clock-history" aria-hidden="true"></i> Histórico</a>
+  </nav>
+
+  <div id="arquivos-az" class="app-panel az-import-panel">
+    <div class="az-import-heading">
+      <span class="az-import-icon"><i class="bi bi-cloud-arrow-up" aria-hidden="true"></i></span>
+      <div><h2>Importar arquivos da operação</h2><p>Selecione um ou mais relatórios CSV para atualizar a variável.</p></div>
+      <span class="az-import-tag">CSV</span>
+    </div>
+    <div class="app-panel__body">
       <%= form_with url: import_az_consultas_path, method: :post, local: true, multipart: true do |form| %>
         <div class="row g-4">
           <div class="col-12 col-lg-4">
+            <div class="az-import-upload">
+            <i class="bi bi-stars az-import-upload-icon" aria-hidden="true"></i>
             <%= form.label :points_file, "Pontos", class: "form-label fw-semibold" %>
             <%= form.file_field :points_file, accept: ".csv", class: "form-control" %>
             <div class="form-text">O relatório não traz a data. Informe abaixo o dia em que esses pontos foram gerados.</div>
-          </div>
-
-          <div class="col-12 col-lg-4">
-            <%= form.label :tasks_file, "Tarefas WMS / Refugo", class: "form-label fw-semibold" %>
-            <%= form.file_field :tasks_file, accept: ".csv", class: "form-control" %>
-            <div class="form-text">Alimenta os operadores e importa somente Blitz Refugo para os ajudantes.</div>
-          </div>
-
-          <div class="col-12 col-lg-4">
-            <%= form.label :ondemand_file, "On Demand", class: "form-label fw-semibold" %>
-            <%= form.file_field :ondemand_file, accept: ".csv", class: "form-control" %>
-            <div class="form-text">Atividades adicionais e suas observações.</div>
-          </div>
-
-          <div class="col-12 col-md-5 col-lg-3">
+          <div class="mt-3">
             <%= form.label :points_reference_date, "Data dos pontos", class: "form-label fw-semibold" %>
             <%= form.date_field :points_reference_date, value: Date.current, class: "form-control" %>
           </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-4">
+            <div class="az-import-upload">
+            <i class="bi bi-boxes az-import-upload-icon" aria-hidden="true"></i>
+            <%= form.label :tasks_file, "Tarefas WMS / Refugo", class: "form-label fw-semibold" %>
+            <%= form.file_field :tasks_file, accept: ".csv", class: "form-control" %>
+            <div class="form-text">Alimenta os operadores e importa somente Blitz Refugo para os ajudantes.</div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-4">
+            <div class="az-import-upload">
+            <i class="bi bi-clipboard-check az-import-upload-icon" aria-hidden="true"></i>
+            <%= form.label :ondemand_file, "On Demand", class: "form-label fw-semibold" %>
+            <%= form.file_field :ondemand_file, accept: ".csv", class: "form-control" %>
+            <div class="form-text">Atividades adicionais e suas observações.</div>
+            </div>
+          </div>
+
+
         </div>
 
         <div class="d-flex flex-wrap align-items-center gap-3 mt-4 pt-3 border-top">
-          <%= form.submit "Importar arquivos", class: "btn btn-primary" %>
+          <%= form.submit "Importar arquivos", class: "btn btn-primary", data: { turbo_submits_with: "Importando…" } %>
           <span class="text-muted small">Os arquivos já importados não serão duplicados.</span>
         </div>
       <% end %>
 
-      <div class="alert alert-info border-0 small mt-4 mb-0">
+      <div class="az-import-note mt-3">
         <i class="bi bi-info-circle me-1"></i>
         O arquivo de tarefas é processado uma única vez e compartilhado entre WMS, operadores e ajudantes.
       </div>
     </div>
   </div>
 
-  <div class="card border-0 shadow-sm mt-4">
-    <div class="card-body p-4">
+  <div id="manual-az" class="app-panel az-import-panel mt-4">
+    <div class="app-panel__body">
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <div>
-          <p class="text-uppercase text-muted small fw-semibold mb-1">Armazém</p>
+          <p class="app-page-eyebrow"><i class="bi bi-pencil-square me-1" aria-hidden="true"></i> Resultado diário</p>
           <h2 class="h5 mb-0">Lançamento manual de resultado diário</h2>
         </div>
         <%= link_to "Abrir cadastro completo", az_mapas_path, class: "btn btn-outline-secondary btn-sm" %>
@@ -98,11 +120,29 @@
     </div>
   </div>
 
-  <% if @recent_imports.any? %>
-    <section class="mt-5">
-      <h2 class="h5 mb-3">Últimas importações</h2>
-      <div class="table-responsive bg-white shadow-sm rounded">
-        <table class="table table-sm align-middle mb-0">
+  <% if current_user&.admin? %>
+    <section id="contingencia-az" class="app-panel az-import-contingency mt-4" aria-labelledby="contingencia-heading">
+      <div class="app-panel__body d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <p class="text-uppercase text-muted small fw-semibold mb-1">Resultados diários · Excel</p>
+          <h2 id="contingencia-heading" class="h5">Importação de contingência</h2>
+          <p class="text-muted mb-0">Importe planilhas de EFC, TMA e EFD para lançar vários dias de uma vez, preservando os lançamentos existentes.</p>
+        </div>
+        <%= link_to import_az_mapas_path, class: "btn btn-outline-primary" do %>
+          <i class="bi bi-file-earmark-spreadsheet me-1" aria-hidden="true"></i> Importar EFC, TMA e EFD
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+    <section id="historico-az" class="app-panel az-import-panel mt-4">
+      <div class="az-import-heading">
+        <span class="az-import-icon"><i class="bi bi-clock-history" aria-hidden="true"></i></span>
+        <div><h2>Últimas importações</h2><p>Acompanhe os últimos arquivos de pontos, tarefas e On Demand.</p></div>
+      </div>
+      <% if @recent_imports.any? %>
+      <div class="table-responsive app-table-shell">
+        <table class="table app-table app-table--data align-middle mb-0">
           <thead>
             <tr>
               <th>Fonte</th>
@@ -140,6 +180,12 @@
           </tbody>
         </table>
       </div>
+      <% else %>
+        <div class="az-import-empty">
+          <i class="bi bi-inbox" aria-hidden="true"></i>
+          <h3>Nenhum arquivo importado ainda</h3>
+          <p>Após importar os relatórios CSV, acompanhe o histórico por aqui.</p>
+        </div>
+      <% end %>
     </section>
-  <% end %>
 </div>

@@ -1,0 +1,34 @@
+<div class="container py-4">
+  <h1>Ciclo de Gente</h1>
+  <p class="text-muted">Importe e consulte as respostas e os feedbacks dos colaboradores.</p>
+  <div class="card shadow-sm mb-4"><div class="card-body">
+    <h2 class="h5">Importar planilha</h2>
+    <p>Use um arquivo Excel (.xlsx) com as colunas Colaborador, ETAPA CICLO DE GENTE e Resposta. Reimportar o mesmo ciclo atualiza as respostas do colaborador e da etapa.</p>
+    <%= form_with url: people_cycle_feedbacks_path, multipart: true, class: "row g-3" do |form| %>
+      <div class="col-md-4"><%= form.label :cycle, "Ano do ciclo", class: "form-label" %><%= form.number_field :cycle, value: @selected_cycle.presence || Date.current.year, required: true, min: 2000, max: 2099, class: "form-control" %></div>
+      <div class="col-md-6"><%= form.label :file, "Planilha Excel (até 5 MB)", class: "form-label" %><%= form.file_field :file, accept: ".xlsx", required: true, class: "form-control" %></div>
+      <div class="col-md-2 align-self-end"><%= form.submit "Importar", class: "btn btn-primary" %></div>
+    <% end %>
+    <p class="small text-muted mt-3 mb-0">A IA consulta apenas as respostas vinculadas ao colaborador identificado. Nomes ausentes ou ambíguos no cadastro ficam sem vínculo; corrija o cadastro e reimporte para vincular.</p>
+  </div></div>
+  <%= form_with url: people_cycle_feedbacks_path, method: :get, class: "row g-3 mb-3" do |form| %>
+    <div class="col-md-4"><%= form.label :cycle, "Filtrar ciclo", for: "filter_cycle", class: "form-label" %><%= form.select :cycle, options_for_select(@cycles, @selected_cycle), { include_blank: "Todos os ciclos" }, id: "filter_cycle", class: "form-select" %></div>
+    <div class="col-md-6"><%= form.label :q, "Colaborador", class: "form-label" %><%= form.search_field :q, value: @query, class: "form-control" %></div>
+    <div class="col-md-2 align-self-end"><%= form.submit "Filtrar", class: "btn btn-outline-primary" %></div>
+  <% end %>
+  <p><%= @total %> resposta(s)</p>
+  <% if @feedbacks.empty? %><p class="alert alert-info">Nenhuma resposta encontrada.</p><% else %>
+    <div class="table-responsive"><table class="table table-striped align-middle">
+      <thead><tr><th>Ciclo</th><th>Colaborador</th><th>Etapa</th><th>Resposta</th><th>Consulta na IA</th></tr></thead>
+      <tbody><% @feedbacks.each do |feedback| %><tr>
+        <td><%= feedback.cycle %></td><td><%= feedback.employee_name %></td><td><%= feedback.stage %></td>
+        <td style="min-width: 300px; white-space: pre-wrap"><%= feedback.response %></td>
+        <td><%= feedback.employee_id.present? ? "Vinculado" : "Sem vínculo" %></td>
+      </tr><% end %></tbody>
+    </table></div>
+  <% end %>
+  <div class="d-flex gap-3">
+    <% if @page > 1 %><%= link_to "Anterior", people_cycle_feedbacks_path(cycle: @selected_cycle, q: @query, page: @page - 1) %><% end %>
+    <% if @page * 50 < @total %><%= link_to "Próxima", people_cycle_feedbacks_path(cycle: @selected_cycle, q: @query, page: @page + 1) %><% end %>
+  </div>
+</div>

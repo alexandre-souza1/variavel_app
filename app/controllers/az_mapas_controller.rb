@@ -1,5 +1,17 @@
 class AzMapasController < ApplicationController
+  before_action :authenticate_user!, :require_admin!, only: %i[import import_form]
   before_action :set_az_mapa, only: %i[ show edit update destroy ]
+
+  def import_form
+  end
+
+  def import
+    result = AzMapasImportService.new(params[:files].presence || params[:file]).call
+    redirect_to az_mapas_path, notice: "#{result[:imported]} lançamento(s) importado(s). #{result[:skipped]} ignorado(s) por já existir lançamento para a data e os turnos. #{result[:without_result]} dia(s) sem resultado ignorado(s)."
+  rescue AzMapasImportService::Error => error
+    @import_error = error.message
+    render :import_form, status: :unprocessable_entity
+  end
 
   # GET /az_mapas or /az_mapas.json
   def index

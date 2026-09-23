@@ -1,0 +1,67 @@
+.az-import-page {
+  max-width: 1320px;
+  margin-inline: auto;
+
+  [id$="-az"] { scroll-margin-top: 6rem; }
+  .az-import-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .65rem;
+    margin-bottom: 1.5rem;
+    a {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .65rem 1rem;
+      border: 1px solid var(--bs-border-color);
+      border-radius: .75rem;
+      color: var(--bs-body-color);
+      background: var(--bs-body-bg);
+      text-decoration: none;
+      font-size: .88rem;
+      font-weight: 600;
+      &:hover, &:focus-visible { color: var(--bs-primary); border-color: var(--bs-primary); }
+    }
+  }
+  .az-import-panel { overflow: hidden; }
+  .az-import-heading {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    h2 { margin: 0 0 .25rem; font-size: 1.15rem; }
+    p { margin: 0; font-size: .9rem; color: var(--bs-secondary-color); }
+  }
+  .az-import-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 2.75rem;
+    height: 2.75rem;
+    border-radius: .8rem;
+    background: rgba(var(--bs-primary-rgb), .1);
+    color: var(--bs-primary);
+    font-size: 1.25rem;
+  }
+  .az-import-tag { margin-left: auto; padding: .25rem .6rem; border-radius: .4rem; color: var(--bs-primary); background: rgba(var(--bs-primary-rgb), .08); font-size: .75rem; font-weight: 700; }
+  .az-import-upload {
+    height: 100%;
+    padding: 1.25rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .85rem;
+    background: rgba(var(--bs-primary-rgb), .035);
+    .form-label { display: block; }
+    .form-text { line-height: 1.6; }
+    .az-import-upload-icon { display: block; color: var(--bs-primary); font-size: 1.4rem; margin-bottom: .75rem; }
+    &:focus-within { border-color: var(--bs-primary); }
+  }
+  .az-import-note { padding: .85rem 1rem; border-radius: .65rem; background: rgba(var(--bs-primary-rgb), .07); color: var(--bs-secondary-color); font-size: .85rem; }
+  .az-import-contingency { border-left: 3px solid var(--bs-primary); }
+  .az-import-empty { padding: 2.5rem 1rem; text-align: center; color: var(--bs-secondary-color); i { font-size: 2rem; } h3 { font-size: 1rem; margin: .75rem 0 .35rem; } p { margin: 0; font-size: .9rem; } }
+  @media (max-width: 575.98px) {
+    .az-import-nav { gap: .5rem; a { flex: 1 1 45%; font-size: .8rem; padding: .65rem; } }
+    .az-import-heading { padding: 1rem; gap: .75rem; }
+    .az-import-tag { display: none; }
+    .az-import-contingency .btn { width: 100%; }
+  }
+}

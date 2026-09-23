@@ -1,0 +1,26 @@
+<div class="container py-4">
+  <h1>Importação de contingência · Resultados AZ</h1>
+  <p>Use esta opção para contingência ou lançamentos retroativos. Confira os filtros de unidade e período nos arquivos antes de importar.</p>
+  <p>Selecione uma ou mais planilhas .xlsx. O formato é identificado pelas colunas da primeira aba, mesmo quando o cabeçalho vem após os filtros do relatório.</p>
+  <ul>
+    <li><strong>EFC:</strong> Ano, Mês, Dia, % EFC e Meta. Eficiência de carregamento nos turnos A e C; atinge a meta quando EFC ≥ Meta.</li>
+    <li><strong>TMA:</strong> ANO, NOME_MES_ABREV, DIA, TR e Meta. Tempo de atendimento nos turnos A, B e C; TR e Meta em minutos, com meta atingida quando TR ≤ Meta. Exemplo: 138 minutos = 2h18.</li>
+    <li><strong>EFD:</strong> Data, Meta (%) - QUANTO MAIOR MELHOR e Realizado (%). Eficiência de descarga no turno B; atinge a meta quando Realizado ≥ Meta. Dias sem Realizado serão ignorados, sem lançar zero.</li>
+  </ul>
+  <div class="alert alert-info">
+    Datas com lançamentos existentes para o mesmo indicador e turnos serão ignoradas, sem alterar os resultados salvos.
+    Somente os dias presentes nas planilhas serão lançados. Se houver dados inválidos em qualquer arquivo, nenhum lançamento do lote será salvo.
+  </div>
+  <% if @import_error %>
+    <div class="alert alert-danger" role="alert"><%= @import_error %></div>
+  <% end %>
+  <%= form_with url: import_az_mapas_path, multipart: true, local: true, class: "card p-4 shadow-sm" do |form| %>
+    <div class="mb-3">
+      <%= form.label :files, "Planilhas Excel", class: "form-label" %>
+      <%= form.file_field :files, multiple: true, accept: ".xlsx", required: true, class: "form-control" %>
+      <p class="form-text">Percentuais do Excel (0,98) são convertidos para 98%. Se houver dados inválidos, nenhum lançamento será salvo.</p>
+    </div>
+    <%= form.submit "Importar resultados", class: "btn btn-primary", data: { turbo_submits_with: "Importando…" } %>
+  <% end %>
+  <%= link_to "Voltar", az_mapas_path, class: "btn btn-outline-secondary mt-3" %>
+</div>

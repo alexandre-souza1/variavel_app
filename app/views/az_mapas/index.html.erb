@@ -6,7 +6,9 @@
       <p>Consulte os lançamentos e indicadores diários da operação AZ.</p>
     </div>
     <div class="app-page-actions">
+      <% if current_user&.can_access_az_dashboard? %><%= link_to "Dashboard de metas", dashboard_az_path, class: "btn btn-outline-primary" %><% end %>
       <% if current_user.admin? %>
+        <%= link_to "Importação de contingência", import_az_mapas_path, class: "btn btn-outline-primary" %>
         <%= link_to new_az_mapa_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg me-1"></i> Novo lançamento<% end %>
       <% end %>
       <%= link_to "Voltar", root_path, class: "btn btn-outline-secondary" %>

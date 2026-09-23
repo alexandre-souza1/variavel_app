@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :people_cycle_feedbacks, only: %i[index create], path: "rh/ciclo-de-gente"
   get 'labels/create'
   get 'fuel_consumptions/index'
   get 'fuel_consumptions/new'
@@ -10,6 +11,7 @@ Rails.application.routes.draw do
   get 'checklist_templates/create'
   get 'checklist_templates/show'
   get 'dashboard/placas_por_setor', to: 'dashboards#placas_por_setor', as: 'placas_por_setor'
+  get "dashboard/az", to: "az_dashboards#show", as: :dashboard_az
   get 'dashboard/mapas', to: 'dashboards#mapas', as: 'dashboard_mapas'
   get 'dashboard', to: 'dashboards#index', as: 'dashboard'
   get "minhas-tarefas", to: "mechanic_tasks#index", as: :mechanic_tasks
@@ -241,6 +243,7 @@ Rails.application.routes.draw do
 
   resources :az_mapas do
     collection do
+      get :import, action: :import_form
       post :import
       delete :destroy_all
     end

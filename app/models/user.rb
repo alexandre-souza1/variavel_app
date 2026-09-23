@@ -69,6 +69,10 @@ class User < ApplicationRecord
     !mechanical? && sector == "du"
   end
 
+  def can_access_az_dashboard?
+    !mechanical? && (admin? || supervisor? || sector_warehouse?)
+  end
+
   USER_SECTORS = {
     "Frota" => :fleet,
     "DU" => :du,

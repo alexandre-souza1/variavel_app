@@ -6,6 +6,7 @@ class CommonController < ApplicationController
       redirect_to mechanic_tasks_path, status: :see_other and return if current_user&.mechanical?
       redirect_to dashboard_path, status: :see_other and return if current_user&.sector_fleet?
       redirect_to dashboard_mapas_path, status: :see_other and return if current_user&.sector_du?
+      redirect_to dashboard_az_path, status: :see_other and return if current_user&.sector_warehouse?
     end
     @public_chat_identity = PublicVariableIdentity.from_session(session[:public_variable_chat])
     @public_chat_history = Array(session.dig(:public_variable_chat, "history"))

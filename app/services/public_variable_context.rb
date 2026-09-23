@@ -29,6 +29,8 @@ class PublicVariableContext
         dream: "Ser o melhor DPO da SAZ, com o time motivado, seguro, produtivo e cliente satisfeito."
       },
       documents: document_context,
+      people_cycle_current_year: Date.current.year,
+      people_cycle_feedbacks: PeopleCycleFeedback.for_identity(@identity).map { |feedback| { cycle: feedback.cycle, stage: feedback.stage, response: feedback.response } },
       period_note: "Os valores são calculados apenas com os dados disponíveis no sistema.",
       data: data
     }

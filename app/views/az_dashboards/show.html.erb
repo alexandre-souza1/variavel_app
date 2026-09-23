@@ -1,0 +1,72 @@
+<div class="mapas-dashboard-page">
+  <header class="mapas-dashboard-header">
+    <div>
+      <p class="mapas-dashboard-eyebrow">Gestão · Armazém</p>
+      <h1><i class="bi bi-speedometer2 me-2"></i>Dashboard de metas AZ</h1>
+      <p>Resultados, produtividade e variável de operadores e ajudantes do armazém.</p>
+    </div>
+    <%= link_to "Resultados diários", az_mapas_path, class: "btn btn-outline-primary" %>
+  </header>
+  <div class="app-panel mb-4"><div class="app-panel__body">
+    <h2 class="h5"><%= @periodo_inicio.strftime("%d/%m/%Y") %> a <%= @periodo_fim.strftime("%d/%m/%Y") %></h2>
+    <p class="text-muted">Ciclo AZ: dia 19 do mês anterior ao dia 18 do mês selecionado.</p>
+    <%= form_with url: dashboard_az_path, method: :get, local: true, class: "row g-3 align-items-end" do %>
+      <div class="col-sm-3"><%= label_tag :mes, "Mês", class: "form-label" %><%= select_tag :mes, options_for_select((1..12).map { |m| [I18n.t("date.month_names")[m], m] }, @mes), class: "form-select" %></div>
+      <div class="col-sm-2"><%= label_tag :ano, "Ano", class: "form-label" %><%= number_field_tag :ano, @ano, min: 2000, max: 2100, class: "form-control" %></div>
+      <div class="col-sm-3"><%= label_tag :periodo_tipo, "Período", class: "form-label" %><%= select_tag :periodo_tipo, options_for_select([["Ciclo completo", "mes"], ["1ª quinzena", "primeira_quinzena"], ["2ª quinzena", "segunda_quinzena"]], @periodo_tipo), class: "form-select" %></div>
+      <div class="col-sm-2"><%= label_tag :turno, "Turno", class: "form-label" %><%= select_tag :turno, options_for_select([["Todos", ""], ["A", 0], ["B", 1], ["C", 2]], @turno), class: "form-select" %></div>
+      <div class="col-sm-2"><%= submit_tag "Filtrar", class: "btn btn-primary" %></div>
+    <% end %>
+  </div></div>
+  <div class="row g-3 mb-4">
+    <% [["Operadores", @dashboard.operators.size], ["Ajudantes", @dashboard.helpers.size], ["Variável · Operadores", number_to_currency(@dashboard.operators.sum { |r| r[:total] })], ["Variável · Ajudantes", number_to_currency(@dashboard.helpers.sum { |r| r[:total] })]].each do |label, value| %>
+      <div class="col-sm-6 col-lg-3"><div class="card h-100 shadow-sm"><div class="card-body"><p class="text-muted"><%= label %></p><h2 class="h4"><%= value %></h2></div></div></div>
+    <% end %>
+  </div>
+  <div class="row g-3 mb-4">
+    <% @dashboard.indicators.each do |indicator| %>
+      <div class="col-md-4"><div class="card h-100"><div class="card-body">
+        <h2 class="h5"><%= indicator[:type].humanize %></h2>
+        <% if indicator[:count].positive? %>
+          <h3><%= number_to_percentage(100.0 * indicator[:achieved] / indicator[:count], precision: 1) %></h3>
+          <p class="mb-0"><%= indicator[:achieved] %> de <%= indicator[:count] %> lançamentos com meta atingida</p>
+        <% else %><p class="text-muted mb-0">Sem lançamentos no período.</p><% end %>
+      </div></div></div>
+    <% end %>
+  </div>
+  <p class="text-muted">Os percentuais consideram somente os lançamentos disponíveis. Dias sem lançamento não contam como meta perdida. Os valores seguem os parâmetros atuais da consulta AZ.</p>
+  <div class="row g-3 mb-4">
+    <% [["Operadores", @dashboard.operators], ["Ajudantes", @dashboard.helpers]].each do |title, ranking| %>
+      <div class="col-lg-6"><div class="app-panel"><div class="app-panel__body">
+        <h2 class="h5">Top 10 · <%= title %> por variável</h2>
+        <%= bar_chart ranking.first(10).map { |r| ["#{r[:person].nome} (#{r[:person].matricula})", r[:total]] }, prefix: "R$ ", empty: "Sem colaboradores no período", height: "300px" %>
+      </div></div></div>
+    <% end %>
+  </div>
+  <div class="app-panel mb-4"><div class="app-panel__body">
+    <h2 class="h5">Metas atingidas por dia · Operação</h2>
+    <%= column_chart @dashboard.daily, empty: "Sem lançamentos no período", height: "260px" %>
+  </div></div>
+  <div class="app-panel mb-4"><div class="app-panel__body">
+    <h2 class="h4">Operadores · Ranking de variável</h2>
+    <p class="text-muted">EFC nos turnos A e C; EFD no turno B. Quantidades de metas atingidas e tarefas WMS remuneradas.</p>
+    <div class="table-responsive"><table class="table app-table"><thead><tr><th>Colaborador</th><th>Turno</th><th>TMA</th><th>EFC/EFD</th><th>WMS</th><th>Valor TMA</th><th>Valor EFC/EFD</th><th>Valor WMS</th><th>Total</th></tr></thead><tbody>
+      <% @dashboard.operators.each do |row| %>
+        <tr><td><%= link_to "#{row[:person].nome} · #{row[:person].matricula}", az_consulta_path(matricula: row[:person].matricula, turno: row[:person].turno, periodo_mes: @mes, periodo_ano: @ano) %></td><td><%= AzMapa::TURNOS[row[:person].turno] %></td>
+        <% [:tma, :efficiency, :wms].each do |key| %><td><%= row[key] %></td><% end %>
+        <% [:tma_value, :efficiency_value, :wms_value, :total].each do |key| %><td><%= number_to_currency(row[key]) %></td><% end %></tr>
+      <% end %>
+      <% if @dashboard.operators.empty? %><tr><td colspan="9">Nenhum operador encontrado para o filtro.</td></tr><% end %>
+    </tbody></table></div>
+  </div></div>
+  <div class="app-panel mb-4"><div class="app-panel__body">
+    <h2 class="h4">Ajudantes · Ranking de variável</h2>
+    <p class="text-muted">Montagem, Blitz Refugo e atividades sob demanda, conforme a consulta individual. Os links abrem o ciclo completo.</p>
+    <div class="table-responsive"><table class="table app-table"><thead><tr><th>Colaborador</th><th>Turno</th><th>Pontos</th><th>Montagem</th><th>Refugos</th><th>Valor refugo</th><th>Atividades</th><th>Sob demanda</th><th>Total</th></tr></thead><tbody>
+      <% @dashboard.helpers.each do |row| %>
+        <tr><td><%= link_to "#{row[:person].nome} · #{row[:person].matricula}", az_consulta_path(perfil: "ajudante", matricula: row[:person].matricula, turno: row[:person].turno, periodo_mes: @mes, periodo_ano: @ano) %></td><td><%= AzMapa::TURNOS[row[:person].turno] %></td><td><%= number_with_delimiter(row[:points]) %></td><td><%= number_to_currency(row[:point_value]) %></td><td><%= row[:refugo] %></td><td><%= number_to_currency(row[:refugo_value]) %></td><td><%= row[:activities] %></td><td><%= number_to_currency(row[:activity_value]) %></td><td><%= number_to_currency(row[:total]) %></td></tr>
+      <% end %>
+      <% if @dashboard.helpers.empty? %><tr><td colspan="9">Nenhum ajudante encontrado para o filtro.</td></tr><% end %>
+    </tbody></table></div>
+  </div></div>
+</div>
