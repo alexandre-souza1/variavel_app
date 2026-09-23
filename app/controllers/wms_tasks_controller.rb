@@ -32,14 +32,10 @@ def import
       # Remove BOM se existir e converte para UTF-8
       file_content = remove_bom_and_convert_to_utf8(file_content)
 
-      # Salva o arquivo temporariamente
-      filename = "import_#{Time.now.to_i}_#{SecureRandom.hex(8)}.csv"
-      file_path = Rails.root.join('tmp', filename).to_s
-
-      File.write(file_path, file_content, mode: 'wb')
-
-      # Enfileira o job
-      WmsTaskImportJob.perform_later(file_path, current_user.id, params[:file].original_filename)
+      WmsTaskImportJob.enqueue_upload(
+        StringIO.new(file_content), current_user.id,
+        original_filename: params[:file].original_filename
+      )
 
       # ✅ SOLUÇÃO 1: Fica na mesma página em vez de redirect
       respond_to do |format|

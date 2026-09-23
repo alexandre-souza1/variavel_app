@@ -1,14 +1,49 @@
 class WmsTaskImportJob < ApplicationJob
   queue_as :default
 
-  def perform(file_path, user_id = nil, original_filename = nil)
-    file_path = file_path.to_s
+  # The web and worker dynos must exchange a storage reference, not a local path.
+  def self.enqueue_upload(file, user_id, original_filename: file.original_filename)
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: file,
+      filename: original_filename,
+      content_type: "text/csv",
+      identify: false
+    )
+    job = perform_later({ "blob_id" => blob.id }, user_id, original_filename)
+    raise "Não foi possível enfileirar a importação." unless job
 
-    unless File.exist?(file_path)
-      show_result(user_id, "❌ Arquivo não encontrado", false, true)
-      return
+    job
+  rescue StandardError
+    blob&.purge
+    raise
+  end
+
+  def perform(source, user_id = nil, original_filename = nil)
+    if source.is_a?(Hash)
+      blob = ActiveStorage::Blob.find(source.fetch("blob_id"))
+      blob.open do |file|
+        import_file(file.path, user_id, original_filename || blob.filename.to_s)
+      end
+    else
+      # Compatibility with jobs already queued before deployment.
+      file_path = source.to_s
+      unless File.exist?(file_path)
+        show_result(user_id, "❌ Arquivo não encontrado. Envie o CSV novamente.", true, true)
+        return
+      end
+      import_file(file_path, user_id, original_filename)
     end
+  rescue StandardError => e
+    Rails.logger.error("Falha na importação WMS/refugo: #{e.class}: #{e.message}")
+    show_result(user_id, "❌ Erro: #{e.message}", true, true)
+  ensure
+    blob&.purge
+    File.delete(file_path) if file_path.present? && File.exist?(file_path)
+  end
 
+  private
+
+  def import_file(file_path, user_id, original_filename)
     result = SharedTasksImportService.new(
       file: file_path,
       user: User.find_by(id: user_id),
@@ -19,13 +54,7 @@ class WmsTaskImportJob < ApplicationJob
     ).call
 
     show_import_result(user_id, result)
-  rescue StandardError => e
-    show_result(user_id, "❌ Erro: #{e.message}", false, true)
-  ensure
-    File.delete(file_path) if file_path.present? && File.exist?(file_path)
   end
-
-  private
 
   def show_progress(user_id, current, total, message)
     return unless user_id

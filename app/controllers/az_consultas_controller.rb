@@ -18,7 +18,6 @@ class AzConsultasController < ApplicationController
 
   def import
     reference_date = Date.iso8601(params[:points_reference_date]) if params[:points_reference_date].present?
-    task_file_path = nil
     messages = []
 
     if params[:points_file].present? || params[:ondemand_file].present?
@@ -32,8 +31,7 @@ class AzConsultasController < ApplicationController
     end
 
     if params[:tasks_file].present?
-      task_file_path = stage_shared_tasks_file(params[:tasks_file])
-      WmsTaskImportJob.perform_later(task_file_path, current_user.id, params[:tasks_file].original_filename)
+      WmsTaskImportJob.enqueue_upload(params[:tasks_file], current_user.id)
       messages << "Tarefas WMS/refugo enviadas para processamento"
     end
 
@@ -41,10 +39,8 @@ class AzConsultasController < ApplicationController
 
     redirect_to az_consultas_import_path, notice: "Importação iniciada/concluída. #{messages.join(" | ")}."
   rescue ArgumentError => e
-    File.delete(task_file_path) if task_file_path.present? && File.exist?(task_file_path)
     redirect_to az_consultas_import_path, alert: e.message
   rescue StandardError => e
-    File.delete(task_file_path) if task_file_path.present? && File.exist?(task_file_path)
     Rails.logger.error("Falha na importação de RV do armazém: #{e.class}: #{e.message}")
     redirect_to az_consultas_import_path, alert: "Não foi possível importar os arquivos: #{e.message}"
   end
@@ -279,13 +275,6 @@ class AzConsultasController < ApplicationController
 
     redirect_to az_consultas_import_path, alert: "Somente administradores e supervisores podem excluir importações."
   end
-
-  def stage_shared_tasks_file(file)
-    path = Rails.root.join("tmp", "shared_tasks_#{Time.current.to_i}_#{SecureRandom.hex(8)}.csv").to_s
-    File.binwrite(path, file.read)
-    path
-  end
-
 
   def definir_datas_periodo(azmapas)
     # seleciona apenas a coluna data
