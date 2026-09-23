@@ -1,4 +1,6 @@
 class VariableClosing < ApplicationRecord
+  require 'bigdecimal'
+
   belongs_to :employee
   belongs_to :user, optional: true
   validates :user, presence: true, unless: :legacy_baseline?
@@ -17,6 +19,59 @@ class VariableClosing < ApplicationRecord
         revision: where(employee: employee, year: year, month: month).maximum(:revision).to_i + 1,
         result: report.snapshot)
     end
+  end
+
+  def self.merge_results(*results, employee:)
+    maps = {}
+    groups = {}
+    roles = {}
+    issues = []
+
+    results.compact.each do |snapshot|
+      snapshot.fetch('maps', []).each do |entry|
+        source = entry.fetch('source')
+        key = source['id'] || source[:id] || "#{source['mapa']}-#{maps.size}"
+        maps[key] ||= entry
+      end
+      snapshot.fetch('groups', {}).each do |cargo, values|
+        groups[cargo] ||= {}
+        values.each do |key, value|
+          next if key.to_s == 'percentual_devolucao'
+          groups[cargo][key] = add_numeric(groups[cargo][key], value, integer: %w[quantidade_mapas total_mapas recargas].include?(key.to_s))
+        end
+      end
+      snapshot.fetch('roles', []).each do |role|
+        roles[role['id'] || role[:id]] ||= role
+      end
+      issues.concat(snapshot.fetch('issues', []))
+    end
+
+    totals = groups.empty? ? {} : MapaRemuneracaoService.new('motorista').totals([])
+    groups.each_value do |group|
+      group.each do |key, value|
+        symbol_key = key.to_sym
+        totals[symbol_key] = add_numeric(totals[symbol_key], value, integer: %i[quantidade_mapas total_mapas recargas].include?(symbol_key)) unless symbol_key == :percentual_devolucao
+      end
+    end
+    unless totals.empty?
+      totals[:percentual_devolucao] = totals[:pdv_real] + totals[:devolucoes] == 0 ? 0 : totals[:devolucoes] / (totals[:pdv_real] + totals[:devolucoes])
+    end
+
+    {
+      'employee' => employee.attributes.slice('id', 'nome', 'matricula', 'cpf'),
+      'totals' => totals,
+      'groups' => groups,
+      'roles' => roles.values,
+      'maps' => maps.values,
+      'issues' => issues.uniq,
+      'rule' => 'Fechamento consolidado por período; cargos diferentes permanecem em grupos separados.'
+    }
+  end
+
+  def self.add_numeric(current, value, integer: false)
+    return value.to_i if current.nil? && integer
+    return BigDecimal(value.to_s) if current.nil?
+    integer ? current.to_i + value.to_i : BigDecimal(current.to_s) + BigDecimal(value.to_s)
   end
 
   def revise_cargo!(from_cargo:, to_cargo:, user:, reason:)

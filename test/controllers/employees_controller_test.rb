@@ -11,6 +11,8 @@ class EmployeesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     get employee_path(@employee)
     assert_response :success
+    assert_not_includes response.body, 'Registrar fechamento'
+    assert_not_includes response.body, 'Motivo do fechamento ou revisão'
     assert_select '#promotion_cargo option[value="van"]', count: 0
     assert_select '#promotion_cargo option[value="motorista"]', count: 1
     post change_role_employee_path(@employee), params: { employee_role: { cargo: 'motorista', promax: 'RH-VAN', starts_on: '2026-09-10', reason: 'Promoção' } }
@@ -74,13 +76,23 @@ class EmployeesControllerTest < ActionDispatch::IntegrationTest
     source.employee_roles.create!(cargo: 'motorista', promax: 'RH-SOURCE', legacy: true, reason: 'Migração')
     closing = VariableClosing.capture!(employee: source, user: users(:one), year: 2026, month: 8, reason: 'Histórico original')
     destination_closing = VariableClosing.capture!(employee: @employee, user: users(:one), year: 2026, month: 8, reason: 'Fechamento do cadastro principal')
+    VariableClosing.where(id: closing.id).update_all(result: closing.result.merge('groups' => { 'motorista' => { 'quantidade_mapas' => 1, 'bonus_devolucao' => 10, 'valor_total' => 10 } }))
+    VariableClosing.where(id: destination_closing.id).update_all(result: destination_closing.result.merge('groups' => { 'van' => { 'quantidade_mapas' => 1, 'bonus_devolucao' => 20, 'valor_total' => 20 } }))
     post link_record_employee_path(@employee), params: { source_employee_id: source.id, starts_on: '2026-09-10', reason: 'Vínculo e promoção' }
     assert_redirected_to employee_path(@employee)
     assert_equal 'motorista', @employee.reload.role_on(Date.new(2026, 9, 10)).cargo
-    assert_equal @employee.id, closing.reload.employee_id
+    assert_equal source.id, closing.reload.employee_id
     assert_equal @employee.id, destination_closing.reload.employee_id
     assert_equal 2, @employee.variable_closings.where(year: 2026, month: 8).count
     assert_equal [1, 2], @employee.variable_closings.where(year: 2026, month: 8).order(:revision).pluck(:revision)
+    consolidated = @employee.variable_closings.where(year: 2026, month: 8).order(:revision).last
+    assert_equal %w[motorista van], consolidated.result.fetch('groups').keys.sort
+    get employee_path(@employee)
+    assert_select '.employees-closing', count: 1
+    get employee_path(@employee), params: { cargo: 'van' }
+    assert_select '.employees-closing', count: 1
+    assert_select '.employees-closing td', text: 'Motorista de van', count: 1
+    assert_select '.employees-closing td', text: 'Motorista', count: 0
     assert_empty source.employee_roles.reload
     assert_not source.reload.active?
   end

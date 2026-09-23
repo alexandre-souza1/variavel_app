@@ -37,7 +37,16 @@ class EmployeesController < ApplicationController
     @roles = @employee.employee_roles.order(Arel.sql('starts_on DESC NULLS LAST'))
     latest_role = @roles.first
     @next_cargos = latest_role ? EmployeeRole.next_cargos(latest_role.cargo) : EmployeeRole::CARGOS.values
-    @closings = @employee.variable_closings.order(year: :desc, month: :desc, revision: :desc)
+    all_closings = @employee.variable_closings.order(year: :desc, month: :desc, revision: :desc).to_a
+    latest_by_period = all_closings.group_by { |closing| [closing.year, closing.month] }.transform_values(&:first)
+    consolidated_periods = latest_by_period.filter_map do |period, closing|
+      period if closing.result['consolidated_from'].present?
+    end
+    @closings = all_closings.reject do |closing|
+      consolidated_periods.include?([closing.year, closing.month]) && !closing.result['consolidated_from'].present?
+    end
+    @closing_cargos = @closings.flat_map { |closing| closing.result.fetch('groups', {}).keys }.select { |cargo| EmployeeRole::CARGOS.value?(cargo) }.uniq
+    @cargo_filter = params[:cargo].presence
   end
 
   def change_role
@@ -112,7 +121,7 @@ class EmployeesController < ApplicationController
       original = role.attributes
       role.destroy!
       destination.merge_linked_role!(original, starts_on: params[:starts_on], reason: params[:reason], user: current_user)
-      merged_closings = destination.merge_variable_closings_from!(source)
+      merged_closings = destination.merge_variable_closings_from!(source, user: current_user)
       source.drivers.update_all(employee_id: destination.id)
       source.ajudantes.update_all(employee_id: destination.id)
       source.update!(active: false)

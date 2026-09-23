@@ -194,22 +194,27 @@ class Employee < ApplicationRecord
     end
   end
 
-  def merge_variable_closings_from!(source)
-    used_revisions = variable_closings.group_by { |closing| [closing.year, closing.month] }
-      .transform_values { |closings| closings.map(&:revision).to_set }
+  def merge_variable_closings_from!(source, user:)
     merged = []
+    source_closings = source.variable_closings.to_a.group_by { |closing| [closing.year, closing.month] }
+      .transform_values { |closings| closings.max_by(&:revision) }
 
-    source.variable_closings.order(:year, :month, :revision, :id).to_a.each do |closing|
+    source_closings.sort_by { |period, _closing| period }.each do |period, closing|
       period = [closing.year, closing.month]
-      revisions = used_revisions[period] ||= Set.new
-      revision = closing.revision
-      if revisions.include?(revision)
-        revision = revisions.max + 1
+      destination_closing = variable_closings.where(year: period[0], month: period[1]).order(revision: :desc).first
+      if destination_closing
+        consolidated = VariableClosing.create!(employee: self, user: user, year: period[0], month: period[1],
+          revision: variable_closings.where(year: period[0], month: period[1]).maximum(:revision).to_i + 1,
+          reason: 'Mesclagem de variáveis de cadastros vinculados',
+          result: VariableClosing.merge_results(destination_closing.result, closing.result, employee: self).merge(
+            'consolidated_from' => [destination_closing.id, closing.id]
+          ))
+        merged << { closing_id: closing.id, destination_closing_id: destination_closing.id, consolidated_closing_id: consolidated.id,
+                    year: period[0], month: period[1] }
+      else
+        VariableClosing.where(id: closing.id).update_all(employee_id: id, updated_at: Time.current)
+        merged << { closing_id: closing.id, year: period[0], month: period[1], moved: true }
       end
-      VariableClosing.where(id: closing.id).update_all(employee_id: id, revision: revision, updated_at: Time.current)
-      revisions.add(revision)
-      merged << { closing_id: closing.id, year: closing.year, month: closing.month,
-                  original_revision: closing.revision, revision: revision }
     end
     merged
   end
