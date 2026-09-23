@@ -40,4 +40,22 @@ class AzConsultasControllerTest < ActionDispatch::IntegrationTest
     blob&.purge
   end
 
+  test "helper consultation includes EFC in daily and period totals for every shift" do
+    AzMapa.delete_all
+    AzMapa.create!(data: "2026-09-18", tipo: :eficiencia_carregamento, turno: [0, 2], resultado: 95, atingiu_meta: true)
+    AzMapa.create!(data: "2026-09-19", tipo: :eficiencia_carregamento, turno: [0, 2], resultado: 95, atingiu_meta: true)
+    helper = az_ajudantes(:one)
+    helper.update!(nome: "Ajudante EFC")
+
+    [0, 1, 2].each do |shift|
+      helper.update!(turno: shift)
+      get az_consulta_path, params: { perfil: "ajudante", matricula: helper.matricula, periodo_mes: 9, periodo_ano: 2026 }
+      assert_response :success
+      assert_select ".az-overview-card--total .az-overview-value", text: "R$ 5,00"
+      assert_select "td[data-label='EFC']", text: "R$ 5,00", count: 1
+      assert_select "td[data-label='Total do dia']", text: "R$ 5,00", count: 1
+      assert_select "td[data-label='Data']", text: "18/09/2026", count: 1
+    end
+  end
+
 end

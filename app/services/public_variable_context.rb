@@ -128,7 +128,8 @@ class PublicVariableContext
     points = AzRvPoint.where(employee_key: key).where(reference_date: start_date..Date.current).to_a
     refugo = AzRvTask.where(employee_key: key).between(start_date, Date.current).where(task_type: "Blitz Refugo").to_a
     activities = AzRvOnDemandActivity.where(employee_key: key).between(start_date, Date.current).to_a
-    dates = (points.map(&:reference_date) + refugo.filter_map { |item| item.associated_at&.to_date } + activities.filter_map { |item| item.created_at_source&.to_date }).compact.uniq
+    efc_daily_values = AzHelperEfcService.new(start_date: start_date, end_date: Date.current).daily_values
+    dates = (efc_daily_values.keys + points.map(&:reference_date) + refugo.filter_map { |item| item.associated_at&.to_date } + activities.filter_map { |item| item.created_at_source&.to_date }).compact.uniq
 
     months = dates.map { |date| az_closing_month_for(date) }.uniq.sort
     monthly = months.to_h do |month_date|
@@ -141,14 +142,15 @@ class PublicVariableContext
       point_value = month_points.sum(&:montagem_value)
       refugo_value = BigDecimal("1.10") * month_refugo.size
       ondemand_value = month_activities.sum(&:rv_amount)
-      [month, { points: number(month_points.sum(&:total_points)), point_value: number(point_value), refugo: number(refugo_value), ondemand: number(ondemand_value), total: number(point_value + refugo_value + ondemand_value) }]
+      efc_value = efc_daily_values.select { |date, _| date.between?(start_month, end_month) }.values.sum(BigDecimal("0"))
+      [month, { efc: number(efc_value), points: number(month_points.sum(&:total_points)), point_value: number(point_value), refugo: number(refugo_value), ondemand: number(ondemand_value), total: number(point_value + refugo_value + ondemand_value + efc_value) }]
     end
 
     {
       period_definition: "Ajudantes do armazém usam o período de fechamento do dia 19 ao dia 18.",
       current_period: az_closing_month_for(Date.current).strftime("%Y-%m"),
       monthly: monthly,
-      rules: { refugo_value: "Cada Blitz Refugo vale R$ 1,10.", other_values: "Os demais valores seguem as taxas cadastradas no sistema." }
+      rules: { efc: "Ajudantes dos turnos A, B e C recebem R$ 5,00 por dia de meta EFC atingida. EFD não compõe esse valor.", refugo_value: "Cada Blitz Refugo vale R$ 1,10.", other_values: "Os demais valores seguem as taxas cadastradas no sistema." }
     }
   end
 

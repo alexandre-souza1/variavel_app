@@ -183,9 +183,11 @@ class AzConsultasController < ApplicationController
     @ondemand_by_category = @ondemand_activities.group_by(&:rv_category).reject { |category, _| category.nil? }.sort_by { |category, _| category.to_s }.map do |category, activities|
       [category, { count: activities.length, value: activities.sum(&:rv_amount) }]
     end
-    @daily_summary = build_daily_summary(@points, @refugo_tasks, @ondemand_activities)
+    @efc_daily_values = AzHelperEfcService.new(start_date: @start_date, end_date: @end_date).daily_values
+    @efc_value = @efc_daily_values.values.sum(BigDecimal("0"))
+    @daily_summary = build_daily_summary(@points, @refugo_tasks, @ondemand_activities, @efc_daily_values)
     @total_activities = @refugo_count + @ondemand_activities.size
-    @total_variable = @point_value + @refugo_value + @ondemand_value
+    @total_variable = @point_value + @refugo_value + @ondemand_value + @efc_value
     @period_days = (@end_date - @start_date).to_i + 1
 
     render :show_ajudante
@@ -224,7 +226,7 @@ class AzConsultasController < ApplicationController
     { 0 => "A", 1 => "B", 2 => "C" }.fetch(turno.to_i, "não informado")
   end
 
-  def build_daily_summary(points, refugo_tasks, ondemand_activities)
+  def build_daily_summary(points, refugo_tasks, ondemand_activities, efc_daily_values)
     summary = Hash.new do |hash, date|
       hash[date] = {
         points: BigDecimal("0"),
@@ -232,7 +234,8 @@ class AzConsultasController < ApplicationController
         refugo: 0,
         refugo_value: BigDecimal("0"),
         ondemand: 0,
-        ondemand_value: BigDecimal("0")
+        ondemand_value: BigDecimal("0"),
+        efc_value: BigDecimal("0")
       }
     end
 
@@ -262,10 +265,12 @@ class AzConsultasController < ApplicationController
       daily[:ondemand_value] += activity.rv_amount
     end
 
+    efc_daily_values.each { |date, value| summary[date][:efc_value] = value }
+
     summary.sort_by { |date, _| date }.map do |date, daily|
       daily.merge(
         date: date,
-        total_value: daily[:point_value] + daily[:refugo_value] + daily[:ondemand_value]
+        total_value: daily[:point_value] + daily[:refugo_value] + daily[:ondemand_value] + daily[:efc_value]
       )
     end
   end

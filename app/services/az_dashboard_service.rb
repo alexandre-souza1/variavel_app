@@ -54,6 +54,7 @@ class AzDashboardService
   end
 
   def helper_ranking
+    efc = AzHelperEfcService.new(start_date: @start_date, end_date: @end_date)
     employees = people(AzAjudante).to_a
     keys = employees.map { |person| employee_key(person.nome) }
     points = AzRvPoint.where(employee_key: keys).between(@start_date, @end_date).group_by(&:employee_key)
@@ -69,7 +70,8 @@ class AzDashboardService
       { person: person, points: person_points.sum { |point| point.total_points.to_d },
         point_value: point_value, refugo: refugo.fetch(key, 0), refugo_value: refugo_value,
         activities: person_activities.size, activity_value: activity_value,
-        total: point_value + refugo_value + activity_value }
+        efc_days: efc.daily_values.size, efc_value: efc.total,
+        total: point_value + refugo_value + activity_value + efc.total }
     end.sort_by { |row| [-row[:total], row[:person].nome.to_s] }
   end
 end

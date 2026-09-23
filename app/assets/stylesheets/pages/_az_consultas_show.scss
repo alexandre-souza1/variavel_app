@@ -790,3 +790,9 @@ html[data-bs-theme="dark"] .az-operator-report-page {
     background: linear-gradient(135deg, rgba(37, 99, 235, .2), var(--bs-body-bg) 72%);
   }
 }
+
+@media (min-width: 1200px) {
+  .az-helper-report-page .az-report-overview--helper {
+    grid-template-columns: minmax(220px, 1.35fr) repeat(4, minmax(0, 1fr));
+  }
+}

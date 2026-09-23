@@ -46,6 +46,7 @@ class AzDashboardsControllerTest < ActionDispatch::IntegrationTest
   test "helper amounts use official points refugo and on demand rules" do
     helper = az_ajudantes(:one)
     helper.update!(nome: "José Teste", active: true, turno: 0)
+    AzMapa.create!(data: "2026-09-18", tipo: :eficiencia_carregamento, turno: [0, 2], resultado: 95, atingiu_meta: true)
     source = AzRvImport.create!(source_type: "points", original_filename: "test.csv", file_digest: "dashboard-test")
     AzRvPoint.create!(az_rv_import: source, employee_name: helper.nome, employee_key: "jose teste", reference_date: "2026-09-18", total_points: 1000, reported_value: 10)
     AzRvTask.create!(az_rv_import: source, source_key: "dashboard-refugo", employee_name: helper.nome, employee_key: "jose teste", task_type: "Blitz Refugo", associated_at: Time.zone.parse("2026-09-18 23:00"))
@@ -56,6 +57,11 @@ class AzDashboardsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 10, row[:point_value]
     assert_equal 1, row[:refugo]
     assert_equal 5, row[:activity_value]
-    assert_equal BigDecimal("16.10"), row[:total]
+    assert_equal BigDecimal("5"), row[:efc_value]
+    assert_equal BigDecimal("21.10"), row[:total]
+    get dashboard_az_path, params: { mes: 9, ano: 2026, turno: 0 }
+    assert_response :success
+    assert_select "th", text: "Dias EFC"
+    assert_select "th", text: "Valor EFC"
   end
 end
