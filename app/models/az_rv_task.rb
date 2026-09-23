@@ -1,4 +1,5 @@
 class AzRvTask < ApplicationRecord
+  include AzRvEmployeeMatching
   belongs_to :az_rv_import
 
   # A planilha usa a Data Última Associação para fechar as tarefas/refugo.

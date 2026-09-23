@@ -1,4 +1,5 @@
 class AzRvOnDemandActivity < ApplicationRecord
+  include AzRvEmployeeMatching
   belongs_to :az_rv_import
 
   scope :between, ->(start_date, end_date) { where(created_at_source: start_date.beginning_of_day..end_date.end_of_day) }
@@ -37,24 +38,25 @@ class AzRvOnDemandActivity < ApplicationRecord
     return :blitz_retorno_rota if activity_key == "blitz retorno de rota"
     return :maquina_limpeza if activity_key == "maquina de limpeza"
     return :remonte if activity_key == "remonte de palete - pbr1/pbr2"
+    return :demais_atividades if demais_activity?(activity_key)
     return :ondemand_operacional if [
       "ajuste de empilhamento lote",
       "descarga",
-      "rebaixamento de palete",
-      "markplace/bees - recebimento/carregamento"
+      "rebaixamento de palete"
     ].include?(activity_key)
-    return :demais_atividades if demais_activity?(activity_key)
 
     nil
   end
 
   def rv_quantity
+    return BigDecimal("0") unless rv_category
     return BigDecimal("1") unless quantity_from_observation?
 
     value = observation.to_s.gsub(/\s+/, "")
     return BigDecimal("0") if value.blank?
 
-    BigDecimal(value.delete(".").tr(",", "."))
+    quantity = BigDecimal(value.delete(".").tr(",", "."))
+    rv_category == :blitz_carregamento ? quantity / 2 : quantity
   rescue ArgumentError
     BigDecimal("0")
   end
@@ -64,6 +66,14 @@ class AzRvOnDemandActivity < ApplicationRecord
     return BigDecimal("0") unless category
 
     RV_RATES.fetch(category) * rv_quantity
+  end
+
+  # The spreadsheet shows Remonte separately, but its amount is not included
+  # in the On Demand grand total.
+  def rv_total_amount
+    return BigDecimal("0") if rv_category == :remonte
+
+    rv_amount
   end
 
   private
@@ -88,7 +98,6 @@ class AzRvOnDemandActivity < ApplicationRecord
 
   def demais_activity?(activity_key)
     [
-      "ajuste de empilhamento lote",
       "separacao chapatex",
       "separacao itens marketing place",
       "separacao pallete/chapatex",
@@ -97,16 +106,7 @@ class AzRvOnDemandActivity < ApplicationRecord
       "carregamento de veiculos",
       "colocar fitilho",
       "reabastecimento pre-picking",
-      "limpeza repack",
-      "5s-",
-      "estreche",
-      "descarga de empurrada",
-      "descarga",
-      "limpeza armazem",
-      "recolha de quebra",
-      "separacao palete",
-      "pnc - filme strech",
-      "rebaixamento de palete"
+      "markplace/bees - recebimento/carregamento"
     ].include?(activity_key)
   end
 

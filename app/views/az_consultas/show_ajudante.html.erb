@@ -75,7 +75,7 @@
     <div class="az-overview-card">
       <div class="az-overview-label"><i class="bi bi-lightning-charge"></i> On Demand</div>
       <div class="az-overview-value"><%= number_to_currency(@ondemand_value, unit: "R$ ", separator: ",", delimiter: ".") %></div>
-      <div class="az-overview-detail"><%= @ondemand_activities.size %> atividade(s)</div>
+      <div class="az-overview-detail"><%= number_with_precision(@ondemand_quantity, precision: 2, strip_insignificant_zeros: true, separator: ",", delimiter: ".") %> unidades · <%= @ondemand_activities.size %> registros importados</div>
     </div>
     <div class="az-overview-card">
       <div class="az-overview-label"><i class="bi bi-speedometer2"></i> EFC</div>
@@ -130,7 +130,7 @@
           <div class="az-detail-item"><span>Fechamento</span><span><%= I18n.t("date.month_names")[@periodo_mes.to_i].capitalize %>/<%= @periodo_ano %></span></div>
           <div class="az-detail-item"><span>Intervalo</span><span><%= l(@start_date) %> — <%= l(@end_date) %></span></div>
           <div class="az-detail-item"><span>Dias no intervalo</span><span><%= @period_days %></span></div>
-          <div class="az-detail-item"><span>Atividades consideradas</span><span><%= @total_activities %></span></div>
+          <div class="az-detail-item"><span>Unidades consideradas</span><span><%= number_with_precision(@total_activities, precision: 2, strip_insignificant_zeros: true, separator: ",", delimiter: ".") %></span></div>
         </div>
       </div>
     </article>
@@ -171,7 +171,7 @@
                 <td data-label="Pontos" class="text-end"><%= number_with_precision(daily[:points], precision: 2, delimiter: ".", separator: ",") %></td>
                 <td data-label="Valor pontos" class="text-end"><%= number_to_currency(daily[:point_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 <td data-label="Refugo" class="text-end"><%= daily[:refugo] %> · <%= number_to_currency(daily[:refugo_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
-                <td data-label="On Demand" class="text-end"><%= daily[:ondemand] %> · <%= number_to_currency(daily[:ondemand_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                <td data-label="On Demand" class="text-end"><%= number_with_precision(daily[:ondemand], precision: 2, strip_insignificant_zeros: true, separator: ",", delimiter: ".") %> · <%= number_to_currency(daily[:ondemand_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 <td data-label="EFC" class="text-end"><%= number_to_currency(daily[:efc_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 <td data-label="Total do dia" class="text-end az-table-total"><%= number_to_currency(daily[:total_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
               </tr>
@@ -189,7 +189,7 @@
       <div class="az-panel-header">
         <div>
           <h2 class="az-report-section-title"><i class="bi bi-list-check"></i> Atividades por tipo</h2>
-          <p>Distribuição das atividades On Demand.</p>
+          <p>Unidades calculadas por atividade On Demand.</p>
         </div>
         <span class="az-overview-detail">Refugo: <strong><%= @refugo_count %></strong></span>
       </div>
@@ -199,7 +199,7 @@
           <table class="az-report-table">
             <tbody>
               <% @activities_by_type.each do |activity, count| %>
-                <tr><td data-label="Atividade"><%= activity %></td><td data-label="Quantidade" class="text-end az-table-total"><%= count %></td></tr>
+                <tr><td data-label="Atividade"><%= activity %></td><td data-label="Quantidade" class="text-end az-table-total"><%= number_with_precision(count, precision: 2, strip_insignificant_zeros: true, separator: ",", delimiter: ".") %></td></tr>
               <% end %>
             </tbody>
           </table>
@@ -220,12 +220,12 @@
       <% if @ondemand_by_category.any? %>
         <div class="az-report-table-wrap">
           <table class="az-report-table">
-            <thead><tr><th>Categoria</th><th class="text-end">Qtd.</th><th class="text-end">Valor</th></tr></thead>
+            <thead><tr><th>Categoria</th><th class="text-end">Unidades</th><th class="text-end">Valor</th></tr></thead>
             <tbody>
               <% @ondemand_by_category.each do |category, summary| %>
                 <tr>
                   <td data-label="Categoria"><%= category.to_s.humanize.capitalize %></td>
-                  <td data-label="Quantidade" class="text-end"><%= summary[:count] %></td>
+                  <td data-label="Quantidade" class="text-end"><%= number_with_precision(summary[:count], precision: 2, strip_insignificant_zeros: true, separator: ",", delimiter: ".") %></td>
                   <td data-label="Valor" class="text-end az-table-total"><%= number_to_currency(summary[:value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 </tr>
               <% end %>

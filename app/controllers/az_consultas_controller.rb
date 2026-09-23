@@ -167,26 +167,29 @@ class AzConsultasController < ApplicationController
     @periodo_ano = params[:periodo_ano].presence || default_period.year
     @start_date, @end_date = consultation_period(@periodo_ano, @periodo_mes)
 
-    @points = AzRvPoint.where(employee_key: @employee_key).between(@start_date, @end_date).order(:reference_date)
-    @refugo_tasks = AzRvTask.where(employee_key: @employee_key).between(@start_date, @end_date)
+    @points = AzRvPoint.for_employee(@employee_name).between(@start_date, @end_date).order(:reference_date)
+    @refugo_tasks = AzRvTask.for_employee(@employee_name).between(@start_date, @end_date)
                              .where(task_type: "Blitz Refugo")
                              .order(associated_at: :desc)
-    @ondemand_activities = AzRvOnDemandActivity.where(employee_key: @employee_key).between(@start_date, @end_date).order(created_at_source: :desc)
+    @ondemand_activities = AzRvOnDemandActivity.for_employee(@employee_name).between(@start_date, @end_date).order(created_at_source: :desc)
 
     @point_total = @points.sum(:total_points)
     @point_value = @points.sum(&:montagem_value)
     @reported_point_value = @points.sum(:reported_value)
     @refugo_count = @refugo_tasks.size
     @refugo_value = @refugo_count * BigDecimal("1.10")
-    @activities_by_type = @ondemand_activities.where.not(activity: [nil, ""]).reorder(nil).group(:activity).count.sort_by { |activity, count| [-count, activity.to_s] }
-    @ondemand_value = @ondemand_activities.sum(&:rv_amount)
+    @ondemand_quantity = @ondemand_activities.sum(&:rv_quantity)
+    @activities_by_type = @ondemand_activities.select { |activity| activity.rv_category.present? }
+      .group_by(&:activity).map { |activity, records| [activity, records.sum(&:rv_quantity)] }
+      .sort_by { |activity, quantity| [-quantity, activity.to_s] }
+    @ondemand_value = @ondemand_activities.sum(&:rv_total_amount)
     @ondemand_by_category = @ondemand_activities.group_by(&:rv_category).reject { |category, _| category.nil? }.sort_by { |category, _| category.to_s }.map do |category, activities|
-      [category, { count: activities.length, value: activities.sum(&:rv_amount) }]
+      [category, { count: activities.sum(&:rv_quantity), value: activities.sum(&:rv_amount) }]
     end
     @efc_daily_values = AzHelperEfcService.new(start_date: @start_date, end_date: @end_date).daily_values
     @efc_value = @efc_daily_values.values.sum(BigDecimal("0"))
     @daily_summary = build_daily_summary(@points, @refugo_tasks, @ondemand_activities, @efc_daily_values)
-    @total_activities = @refugo_count + @ondemand_activities.size
+    @total_activities = @refugo_count + @ondemand_quantity
     @total_variable = @point_value + @refugo_value + @ondemand_value + @efc_value
     @period_days = (@end_date - @start_date).to_i + 1
 
@@ -261,8 +264,8 @@ class AzConsultasController < ApplicationController
       next if date.blank?
 
       daily = summary[date]
-      daily[:ondemand] += 1
-      daily[:ondemand_value] += activity.rv_amount
+      daily[:ondemand] += activity.rv_quantity
+      daily[:ondemand_value] += activity.rv_total_amount
     end
 
     efc_daily_values.each { |date, value| summary[date][:efc_value] = value }

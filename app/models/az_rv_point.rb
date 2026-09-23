@@ -1,4 +1,5 @@
 class AzRvPoint < ApplicationRecord
+  include AzRvEmployeeMatching
   belongs_to :az_rv_import
 
   scope :between, ->(start_date, end_date) { where(reference_date: start_date..end_date) }

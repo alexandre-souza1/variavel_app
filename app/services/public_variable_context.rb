@@ -124,10 +124,9 @@ class PublicVariableContext
 
   def az_helper_context
     start_date = 2.years.ago.to_date
-    key = normalize(@record.nome)
-    points = AzRvPoint.where(employee_key: key).where(reference_date: start_date..Date.current).to_a
-    refugo = AzRvTask.where(employee_key: key).between(start_date, Date.current).where(task_type: "Blitz Refugo").to_a
-    activities = AzRvOnDemandActivity.where(employee_key: key).between(start_date, Date.current).to_a
+    points = AzRvPoint.for_employee(@record.nome).where(reference_date: start_date..Date.current).to_a
+    refugo = AzRvTask.for_employee(@record.nome).between(start_date, Date.current).where(task_type: "Blitz Refugo").to_a
+    activities = AzRvOnDemandActivity.for_employee(@record.nome).between(start_date, Date.current).to_a
     efc_daily_values = AzHelperEfcService.new(start_date: start_date, end_date: Date.current).daily_values
     dates = (efc_daily_values.keys + points.map(&:reference_date) + refugo.filter_map { |item| item.associated_at&.to_date } + activities.filter_map { |item| item.created_at_source&.to_date }).compact.uniq
 
@@ -141,9 +140,9 @@ class PublicVariableContext
       month_activities = activities.select { |item| item.created_at_source&.to_date&.between?(start_month, end_month) }
       point_value = month_points.sum(&:montagem_value)
       refugo_value = BigDecimal("1.10") * month_refugo.size
-      ondemand_value = month_activities.sum(&:rv_amount)
+      ondemand_value = month_activities.sum(&:rv_total_amount)
       efc_value = efc_daily_values.select { |date, _| date.between?(start_month, end_month) }.values.sum(BigDecimal("0"))
-      [month, { efc: number(efc_value), points: number(month_points.sum(&:total_points)), point_value: number(point_value), refugo: number(refugo_value), ondemand: number(ondemand_value), total: number(point_value + refugo_value + ondemand_value + efc_value) }]
+      [month, { efc: number(efc_value), points: number(month_points.sum(&:total_points)), point_value: number(point_value), refugo: number(refugo_value), ondemand: number(ondemand_value), ondemand_quantity: number(month_activities.sum(&:rv_quantity)), total: number(point_value + refugo_value + ondemand_value + efc_value) }]
     end
 
     {

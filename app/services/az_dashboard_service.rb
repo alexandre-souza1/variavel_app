@@ -56,20 +56,16 @@ class AzDashboardService
   def helper_ranking
     efc = AzHelperEfcService.new(start_date: @start_date, end_date: @end_date)
     employees = people(AzAjudante).to_a
-    keys = employees.map { |person| employee_key(person.nome) }
-    points = AzRvPoint.where(employee_key: keys).between(@start_date, @end_date).group_by(&:employee_key)
-    refugo = AzRvTask.where(employee_key: keys, task_type: "Blitz Refugo").between(@start_date, @end_date).group(:employee_key).count
-    activities = AzRvOnDemandActivity.where(employee_key: keys).between(@start_date, @end_date).group_by(&:employee_key)
     employees.map do |person|
-      key = employee_key(person.nome)
-      person_points = Array(points[key])
-      person_activities = Array(activities[key])
+      person_points = AzRvPoint.for_employee(person.nome).between(@start_date, @end_date).to_a
+      person_refugo = AzRvTask.for_employee(person.nome).where(task_type: "Blitz Refugo").between(@start_date, @end_date).count
+      person_activities = AzRvOnDemandActivity.for_employee(person.nome).between(@start_date, @end_date).to_a
       point_value = person_points.sum(&:montagem_value)
-      refugo_value = refugo.fetch(key, 0) * BigDecimal("1.10")
-      activity_value = person_activities.sum(&:rv_amount)
+      refugo_value = person_refugo * BigDecimal("1.10")
+      activity_value = person_activities.sum(&:rv_total_amount)
       { person: person, points: person_points.sum { |point| point.total_points.to_d },
-        point_value: point_value, refugo: refugo.fetch(key, 0), refugo_value: refugo_value,
-        activities: person_activities.size, activity_value: activity_value,
+        point_value: point_value, refugo: person_refugo, refugo_value: refugo_value,
+        activities: person_activities.sum(&:rv_quantity), activity_value: activity_value,
         efc_days: efc.daily_values.size, efc_value: efc.total,
         total: point_value + refugo_value + activity_value + efc.total }
     end.sort_by { |row| [-row[:total], row[:person].nome.to_s] }

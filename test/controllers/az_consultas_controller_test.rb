@@ -76,4 +76,45 @@ class AzConsultasControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "On Demand displays remunerated units separately from imported records" do
+    helper = az_ajudantes(:one)
+    helper.update!(nome: "Teste Unidades")
+    source = AzRvImport.create!(source_type: "ondemand", original_filename: "units.csv", file_digest: "units")
+    [["Repack - Lata", "98"], ["Blitz carregamento", "8"], ["5S-", "1"], ["Colocar Fitilho", "10"]].each_with_index do |(name, observation), index|
+      AzRvOnDemandActivity.create!(az_rv_import: source, source_key: "units-#{index}", employee_name: helper.nome,
+        employee_key: "teste unidades", activity: name, observation: observation, created_at_source: Time.zone.local(2026, 8, 11))
+    end
+    get az_consulta_path, params: { perfil: "ajudante", matricula: helper.matricula, periodo_mes: 8, periodo_ano: 2026 }
+    assert_response :success
+    assert_select ".az-overview-detail", text: /103 unidades · 4 registros importados/
+    assert_select "td[data-label='On Demand']", text: /103 · R\$ 22,60/
+    assert_select "td[data-label='Atividade']", text: "5S-", count: 0
+    dashboard = AzDashboardService.new(start_date: Date.new(2026, 7, 19), end_date: Date.new(2026, 8, 18)).call
+    row = dashboard.helpers.find { |item| item[:person].id == helper.id }
+    assert_equal 103, row[:activities]
+    assert_equal BigDecimal("22.60"), row[:activity_value]
+  end
+
+  test "helper consultation matches an imported name truncated at the end" do
+    helper = az_ajudantes(:one)
+    helper.update!(nome: "VITOR MANOEL MATOS RIBEIRO DA ROCHA")
+    source = AzRvImport.create!(source_type: "ondemand", original_filename: "truncated.csv", file_digest: "truncated-name")
+    AzRvOnDemandActivity.create!(
+      az_rv_import: source,
+      source_key: "truncated-name-1",
+      employee_name: "VITOR MANOEL MATOS RIBEIRO DA",
+      employee_key: "vitor manoel matos ribeiro da",
+      activity: "Repack - Lata",
+      observation: "87",
+      created_at_source: Time.zone.local(2026, 8, 11)
+    )
+
+    get az_consulta_path, params: { perfil: "ajudante", matricula: helper.matricula, periodo_mes: 8, periodo_ano: 2026 }
+
+    assert_response :success
+    assert_select ".az-overview-card .az-overview-label", text: "On Demand"
+    assert_select ".az-overview-card:nth-child(4) .az-overview-detail", text: /87 unidades · 1 registros importados/
+    assert_select ".az-overview-card--total .az-overview-value", text: "R$ 17,40"
+  end
+
 end
