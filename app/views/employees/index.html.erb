@@ -1,0 +1,55 @@
+<div class="app-page employees-page">
+  <header class="app-page-header">
+    <div>
+      <p class="app-page-eyebrow">Gestão de pessoas · RH</p>
+      <h1><i class="bi bi-people" aria-hidden="true"></i> Colaboradores</h1>
+      <p>Pessoas, cargos e movimentações em um só lugar.</p>
+    </div>
+    <div class="app-page-actions">
+      <%= link_to new_employee_path, class: 'btn btn-primary' do %><i class="bi bi-plus-lg" aria-hidden="true"></i> Novo colaborador<% end %>
+    </div>
+  </header>
+
+  <section class="app-panel">
+    <div class="app-panel__header">
+      <div><span class="app-panel__kicker">Equipe</span><h2 class="app-panel__title">Encontre um colaborador</h2></div>
+      <span class="employees-badge"><%= @employees.size %> exibidos</span>
+    </div>
+    <div class="app-panel__body">
+      <%= form_with url: employees_path, method: :get, class: 'employees-search' do |f| %>
+        <div class="employees-field">
+          <%= f.label :q, 'Buscar por nome ou matrícula' %>
+          <div class="employees-search__input"><i class="bi bi-search" aria-hidden="true"></i><%= f.search_field :q, value: params[:q], placeholder: 'Digite o nome ou a matrícula', class: 'form-control' %></div>
+        </div>
+        <%= f.submit 'Buscar', class: 'btn btn-primary' %>
+        <% if params[:q].present? %><%= link_to 'Limpar', employees_path, class: 'btn btn-outline-secondary' %><% end %>
+      <% end %>
+    </div>
+    <% if @employees.any? %>
+      <div class="app-table-shell">
+        <table class="table app-table app-table--data employees-table">
+          <thead><tr><th>Colaborador</th><th>Matrícula</th><th>Cargo atual</th><th>Situação</th><th><span class="visually-hidden">Acessar cadastro</span></th></tr></thead>
+          <tbody>
+            <% @employees.each do |employee| %>
+              <% role = employee.role_on(Date.current) %>
+              <tr>
+                <td><%= link_to employee, class: 'employees-person' do %><span class="employees-avatar" aria-hidden="true"><%= employee.nome.split.first(2).map(&:first).join %></span><span><strong><%= employee.nome %></strong><small>Ver cadastro e histórico</small></span><% end %></td>
+                <td><span class="employees-code"><%= employee.matricula %></span>
+                  <% if @duplicate_counts.key?(employee.matricula) %>
+                    <%= link_to employee_path(employee, anchor: 'cadastros-duplicados'), class: 'employees-duplicate-link' do %><i class="bi bi-intersect" aria-hidden="true"></i> Matrícula repetida · revisar vínculo<% end %>
+                  <% end %>
+                </td>
+                <td><span class="employees-badge"><%= role&.label || 'Sem vigência' %></span></td>
+                <td><span class="employees-status <%= 'employees-status--active' if employee.active? %>"><%= employee.active? ? 'Ativo' : 'Inativo' %></span></td>
+                <td><%= link_to employee, class: 'icon-btn', aria: { label: "Abrir cadastro de #{employee.nome}" } do %><i class="bi bi-arrow-up-right" aria-hidden="true"></i><% end %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="employees-empty"><i class="bi bi-search" aria-hidden="true"></i><h3>Nenhum colaborador encontrado</h3><p>Tente outro nome ou matrícula para encontrar a pessoa.</p></div>
+    <% end %>
+  </section>
+  <div class="employees-note"><i class="bi bi-info-circle" aria-hidden="true"></i><p>Cadastros antigos podem ter início de cargo desconhecido. Revise o histórico antes de registrar um fechamento.</p></div>
+</div>

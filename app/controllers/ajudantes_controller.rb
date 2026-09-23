@@ -39,16 +39,21 @@ class AjudantesController < ApplicationController
     require "csv"
 
     begin
-      CSV.foreach(file.path, headers: true, col_sep: ";", encoding: "ISO-8859-1:utf-8") do |row|
-        Ajudante.create!(
-          matricula: row["matricula"],
-          promax: row["promax"].to_s.strip.to_i.to_s,
-          nome: row["nome"],
-          cpf: row["cpf"],
-          data_nascimento: row["data_nascimento"]
-        )
-      end
+      Ajudante.transaction do
+        CSV.foreach(file.path, headers: true, col_sep: ";", encoding: "ISO-8859-1:utf-8") do |row|
+          Ajudante.create!(
+            career_starts_on: row["inicio_cargo"],
+            career_cargo: row["cargo"],
+            career_recorded_by: current_user,
+            matricula: row["matricula"],
+            promax: row["promax"].to_s.strip.to_i.to_s,
+            nome: row["nome"],
+            cpf: row["cpf"],
+            data_nascimento: row["data_nascimento"]
+          )
+        end
 
+      end
       redirect_to ajudantes_path, notice: "Ajudantes importados com sucesso!"
     rescue => e
       redirect_to import_ajudantes_path, alert: "Erro ao importar: #{e.message}"
@@ -64,11 +69,15 @@ class AjudantesController < ApplicationController
 
   def create
     @ajudante = Ajudante.new(ajudante_params)
+    @ajudante.career_recorded_by = current_user
     if @ajudante.save
       redirect_to @ajudante, notice: "Motorista criado com sucesso."
     else
       render :new
     end
+  rescue ActiveRecord::RecordInvalid, EmployeeRole::HistoryError => error
+    @ajudante.errors.add(:base, error.message)
+    render :new, status: :unprocessable_entity
   end
 
   def edit
@@ -99,6 +108,6 @@ class AjudantesController < ApplicationController
   end
 
   def ajudante_params
-    params.require(:ajudante).permit(:nome, :matricula, :promax, :cpf, :data_nascimento)
+    params.require(:ajudante).permit(:career_starts_on, :career_cargo, :nome, :matricula, :promax, :cpf, :data_nascimento)
   end
 end

@@ -46,7 +46,7 @@
 
           <li class="nav-item dropdown">
             <button class="nav-link dropdown-toggle app-dropdown-toggle" id="rhDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-people me-1"></i> RH</button>
-            <ul class="dropdown-menu app-dropdown-menu"><li><%= link_to "Importar Ciclo de Gente", people_cycle_feedbacks_path, class: "dropdown-item app-dropdown-item" %></li></ul>
+            <ul class="dropdown-menu app-dropdown-menu"><li><%= link_to "Colaboradores", employees_path, class: "dropdown-item app-dropdown-item" %></li><li><%= link_to "Importar Ciclo de Gente", people_cycle_feedbacks_path, class: "dropdown-item app-dropdown-item" %></li></ul>
           </li>
 
           <!-- Links rápidos (exceto Cadastros) -->
@@ -313,7 +313,7 @@
 
       <div class="app-mobile-nav-section">
         <button class="app-mobile-nav-section__title w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#mobileRhCollapse" aria-expanded="false"><i class="bi bi-people"></i> RH</button>
-        <div class="collapse" id="mobileRhCollapse"><%= link_to "Importar Ciclo de Gente", people_cycle_feedbacks_path, class: "app-mobile-nav-link" %></div>
+        <div class="collapse" id="mobileRhCollapse"><%= link_to "Colaboradores", employees_path, class: "app-mobile-nav-link" %><%= link_to "Importar Ciclo de Gente", people_cycle_feedbacks_path, class: "app-mobile-nav-link" %></div>
       </div>
 
       <!-- ATALHOS (estático, sem collapse) -->

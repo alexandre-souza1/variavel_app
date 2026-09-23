@@ -1,5 +1,6 @@
 class PublicVariableIdentity
   PROFILES = {
+    "colaborador" => Employee,
     "motorista" => Driver,
     "operador" => Operator,
     "ajudante" => Ajudante,
@@ -7,6 +8,7 @@ class PublicVariableIdentity
   }.freeze
 
   LABELS = {
+    "colaborador" => "Colaborador",
     "motorista" => "Motorista",
     "operador" => "Operador",
     "ajudante" => "Ajudante",
@@ -35,9 +37,10 @@ class PublicVariableIdentity
 
     date = Date.iso8601(birth_date.to_s)
     scope = model.where(data_nascimento: date)
-    scope = scope.where(matricula: registration.to_s.strip) if model == Driver || model == Ajudante
+    scope = scope.where(matricula: registration.to_s.strip) if [Driver, Ajudante, Employee].include?(model)
     scope = scope.where(matricula: registration.to_i) if model == Operator || model == AzAjudante
-    scope.where(active: true).first
+    records = scope.where(active: true).limit(2).to_a
+    records.one? ? records.first : nil
   rescue ArgumentError
     nil
   end

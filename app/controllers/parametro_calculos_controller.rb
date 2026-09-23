@@ -91,7 +91,9 @@ class ParametroCalculosController < ApplicationController
 
   # DELETE /parametro_calculos/1
   def destroy
-    @parametro_calculo.destroy
+    unless @parametro_calculo.destroy
+      return redirect_to parametro_calculos_url, alert: @parametro_calculo.errors.full_messages.to_sentence
+    end
     redirect_to parametro_calculos_url, notice: 'Parâmetro de cálculo excluído com sucesso.'
   end
 
@@ -102,6 +104,6 @@ class ParametroCalculosController < ApplicationController
     end
 
     def parametro_calculo_params
-      params.require(:parametro_calculo).permit(:nome, :valor, :categoria)
+      params.require(:parametro_calculo).permit(:nome, :valor, :categoria, :effective_on)
     end
 end

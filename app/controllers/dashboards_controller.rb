@@ -297,11 +297,43 @@ class DashboardsController < ApplicationController
     end
   end
 
+  def career_ranking(mapas, cargos)
+    career_reports(mapas).flat_map do |employee, report|
+      groups = report.groups
+      snapshot_maps = nil
+      if @periodo_tipo == 'mes'
+        closing = employee.variable_closings.where(year: @ano, month: @mes).order(revision: :desc).first
+        if closing
+          groups = closing.result.fetch('groups').transform_values { |group| group.symbolize_keys.transform_values { |value| value.to_d } }
+          snapshot_maps = closing.result.fetch('maps')
+        end
+      end
+      groups.filter_map do |cargo, totals|
+        next unless cargos.include?(cargo)
+        records = report.maps.select { |mapa| report.values(mapa)[:categoria] == cargo }
+        plates = if snapshot_maps
+          snapshot_maps.select { |entry| entry.dig('calculation', 'categoria') == cargo }.map { |entry| entry.dig('source', 'plate') }
+        else
+          records.map(&:plate)
+        end
+        totals.merge(promax: employee.employee_roles.map(&:promax).uniq.join(', '), nome: "#{employee.nome} (#{EmployeeRole::CARGOS.key(cargo)})",
+          matricula: employee.matricula, mapas: totals[:quantidade_mapas].to_i, placas: plates.compact_blank.uniq.size)
+      end
+    end
+  end
+
+  def career_reports(mapas)
+    @career_reports ||= Employee.includes(:employee_roles).where.associated(:employee_roles).distinct.map do |employee|
+      candidates = mapas.select { |mapa| employee.employee_roles.any? { |role| role.matches_map?(mapa) } }
+      [employee, EmployeeVariableReport.new(employee, maps: candidates)]
+    end
+  end
+
   def ranking_motoristas(mapas)
     promaxes = mapas.map { |mapa| mapa.matric_motorista.to_s }.reject(&:blank?).uniq
-    drivers_by_promax = Driver.where(promax: promaxes).index_by { |driver| driver.promax.to_s }
+    drivers_by_promax = Driver.where(employee_id: nil).where(promax: promaxes).index_by { |driver| driver.promax.to_s }
 
-    mapas
+    legacy = mapas
       .group_by(&:matric_motorista)
       .map do |promax, mapas_motorista|
         driver = drivers_by_promax[promax.to_s]
@@ -326,6 +358,7 @@ class DashboardsController < ApplicationController
       end
       .compact  # remove os nils gerados pelo 'next unless driver'
       .sort_by { |item| [-item[:mapas], -item[:valor_total], item[:nome].to_s] }
+    (legacy + career_ranking(mapas, %w[motorista van])).sort_by { |item| [-item[:mapas], -item[:valor_total], item[:nome].to_s] }
   end
 
   def ranking_ajudantes(mapas)
@@ -341,9 +374,9 @@ class DashboardsController < ApplicationController
     end
 
     promaxes = mapas_por_ajudante.keys
-    ajudantes_by_promax = Ajudante.where(promax: promaxes).index_by { |a| a.promax.to_s }
+    ajudantes_by_promax = Ajudante.where(employee_id: nil).where(promax: promaxes).index_by { |a| a.promax.to_s }
 
-    mapas_por_ajudante
+    legacy = mapas_por_ajudante
       .map do |promax, mapas_ajudante|
         ajudante = ajudantes_by_promax[promax.to_s]
         next unless ajudante
@@ -367,6 +400,7 @@ class DashboardsController < ApplicationController
       end
       .compact
       .sort_by { |item| [-item[:mapas], -item[:valor_total], item[:nome].to_s] }
+    (legacy + career_ranking(mapas, %w[ajudante])).sort_by { |item| [-item[:mapas], -item[:valor_total], item[:nome].to_s] }
   end
 
   def ranking_placas(mapas)

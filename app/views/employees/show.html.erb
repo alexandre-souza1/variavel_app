@@ -1,0 +1,110 @@
+<% current_role = @employee.role_on(Date.current) %>
+<div class="app-page employees-page">
+  <%= link_to employees_path, class: 'employees-back' do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Colaboradores<% end %>
+  <header class="app-page-header">
+    <div><p class="app-page-eyebrow">Gestão de pessoas · RH</p><h1><%= @employee.nome %></h1><p>Matrícula <%= @employee.matricula %> <span aria-hidden="true">·</span> Cadastro #<%= @employee.id %></p></div>
+    <div class="app-page-actions"><%= link_to consulta_path(matricula: @employee.matricula, categoria: 'colaborador'), class: 'btn btn-primary' do %><i class="bi bi-bar-chart" aria-hidden="true"></i> Consultar variável<% end %></div>
+  </header>
+  <% if @duplicate_employees.any? && @roles.any? %>
+    <%= render 'duplicate_registrations' %>
+  <% end %>
+  <section class="employees-overview" aria-label="Resumo do colaborador">
+    <div class="app-panel employees-stat"><span><i class="bi bi-briefcase" aria-hidden="true"></i> Cargo atual</span><strong><%= current_role&.label || 'Sem vigência' %></strong></div>
+    <div class="app-panel employees-stat"><span><i class="bi bi-calendar-check" aria-hidden="true"></i> Início no cargo</span><strong><%= current_role&.starts_on ? l(current_role.starts_on) : 'Não informado' %></strong></div>
+    <div class="app-panel employees-stat"><span><i class="bi bi-person-badge" aria-hidden="true"></i> Promax atual</span><strong><%= current_role&.promax || '—' %></strong></div>
+    <div class="app-panel employees-stat"><span><i class="bi bi-person-check" aria-hidden="true"></i> Situação</span><strong class="employees-status <%= 'employees-status--active' if @employee.active? %>"><%= @employee.active? ? 'Ativo' : 'Inativo' %></strong></div>
+  </section>
+
+  <div class="employees-profile-grid">
+    <section class="app-panel">
+      <div class="app-panel__header"><div><span class="app-panel__kicker">Trajetória</span><h2 class="app-panel__title">Histórico de cargos</h2><p class="app-panel__subtitle">Cada movimentação preserva o período anterior.</p></div><span class="employees-badge"><%= @roles.size %> registros</span></div>
+      <div class="app-panel__body">
+        <% if @roles.any? %>
+          <ol class="employees-timeline">
+            <% @roles.each do |role| %>
+              <li class="employees-timeline__item <%= 'employees-timeline__item--current' if role.covers?(Date.current) %>">
+                <div class="employees-timeline__heading"><h3><%= role.label %></h3><% if role.covers?(Date.current) %><span class="employees-badge employees-badge--accent">Atual</span><% elsif role.starts_on && role.starts_on > Date.current %><span class="employees-badge">Agendado</span><% end %></div>
+                <p class="employees-timeline__period"><i class="bi bi-calendar3" aria-hidden="true"></i> <%= role.starts_on ? l(role.starts_on) : 'Início desconhecido' %> <span>→</span> <%= role.ends_on ? l(role.ends_on) : 'Em aberto' %></p>
+                <p><span class="employees-badge">Promax <%= role.promax %></span></p>
+                <p class="employees-timeline__reason"><%= role.reason %></p>
+                <small><i class="bi bi-person" aria-hidden="true"></i> <%= role.created_by&.email || 'Migração do cadastro' %></small>
+                <% if current_user.admin? && role.created_by_id == current_user.id && role == @roles.first && @roles.size > 1 %>
+                  <div class="employees-role-actions">
+                    <%= button_to delete_role_employee_path(@employee, role_id: role.id), method: :delete, class: 'btn btn-outline-danger', data: { turbo_confirm: 'Excluir esta movimentação e restaurar o cargo anterior? Os fechamentos salvos serão preservados.' } do %><i class="bi bi-trash" aria-hidden="true"></i> Excluir movimentação<% end %>
+                  </div>
+                <% end %>
+              </li>
+            <% end %>
+          </ol>
+        <% else %><div class="employees-empty"><i class="bi bi-clock-history" aria-hidden="true"></i><h3>Sem vigências neste cadastro</h3><p>As referências históricas continuam disponíveis nos fechamentos abaixo.</p></div><% end %>
+      </div>
+    </section>
+    <section class="app-panel">
+      <div class="app-panel__header"><div><span class="app-panel__kicker">Movimentação</span><h2 class="app-panel__title">Registrar mudança de cargo</h2><p class="app-panel__subtitle">O cargo anterior termina na véspera da nova vigência.</p></div><i class="bi bi-arrow-left-right employees-panel-icon" aria-hidden="true"></i></div>
+      <div class="app-panel__body">
+        <%= form_with url: change_role_employee_path(@employee), class: 'employees-form' do |f| %>
+          <%= render 'role_fields', prefix: 'promotion' %>
+          <div class="employees-form-actions"><%= f.submit 'Registrar movimentação', class: 'btn btn-primary' %></div>
+        <% end %>
+      </div>
+    </section>
+  </div>
+
+  <section class="app-panel employees-section">
+    <div class="app-panel__header"><div><span class="app-panel__kicker">Remuneração variável</span><h2 class="app-panel__title">Fechamentos e revisões</h2><p class="app-panel__subtitle">Período de 21 a 20 · Bônus apurado separadamente por cargo.</p></div><i class="bi bi-journal-check employees-panel-icon" aria-hidden="true"></i></div>
+    <div class="app-panel__body">
+      <%= form_with url: close_period_employee_path(@employee), class: 'employees-fields employees-closing-form' do |f| %>
+        <div class="employees-field"><%= f.label :month, 'Mês', for: 'closing_month' %><%= f.select :month, (1..12).map { |month| [I18n.t('date.month_names')[month].capitalize, month] }, { prompt: 'Selecione' }, id: 'closing_month', required: true, class: 'form-select' %></div>
+        <div class="employees-field"><%= f.label :year, 'Ano', for: 'closing_year' %><%= f.number_field :year, id: 'closing_year', min: 1901, max: 9999, required: true, placeholder: Date.current.year.to_s, class: 'form-control' %></div>
+        <div class="employees-field employees-field--full"><%= f.label :reason, 'Motivo do fechamento ou revisão', for: 'closing_reason' %><%= f.text_field :reason, id: 'closing_reason', required: true, placeholder: 'Referência da conferência ou motivo da correção', class: 'form-control' %></div>
+        <div class="employees-form-actions employees-field--full"><span>Cada revisão mantém as versões anteriores.</span><%= f.submit 'Registrar fechamento', class: 'btn btn-primary' %></div>
+      <% end %>
+      <div class="employees-closings">
+        <% if @closings.empty? %><div class="employees-empty"><i class="bi bi-journal" aria-hidden="true"></i><h3>Nenhum fechamento registrado</h3><p>Após conferir os mapas, registre o primeiro fechamento acima.</p></div><% end %>
+        <% @closings.each do |closing| %>
+          <details class="employees-disclosure employees-closing">
+            <summary><span class="employees-disclosure__icon"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span><span class="employees-disclosure__text"><strong><%= I18n.t('date.month_names')[closing.month].capitalize %> / <%= closing.year %></strong><small><%= closing.legacy_baseline? ? 'Referência legada' : 'Fechamento' %> · Revisão <%= closing.revision %></small></span><strong class="employees-closing__total"><%= number_to_currency(closing.result.dig('totals', 'valor_total').to_d, unit: 'R$ ', separator: ',', delimiter: '.') %></strong><i class="bi bi-chevron-down employees-disclosure__chevron" aria-hidden="true"></i></summary>
+            <div class="employees-disclosure__body">
+              <p class="employees-muted"><%= closing.reason %></p><p class="employees-muted"><%= closing.user&.email || 'Referência legada da implantação' %> · <%= l(closing.created_at) %></p>
+              <div class="app-table-shell"><table class="table app-table"><thead><tr><th>Cargo</th><th>Mapas</th><th>Bônus</th><th>Total</th></tr></thead><tbody>
+                <% closing.result.fetch('groups', {}).each do |cargo, totals| %><tr><td><%= EmployeeRole::CARGOS.key(cargo) %></td><td><%= totals['quantidade_mapas'] %></td><td><%= number_to_currency(totals['bonus_devolucao'].to_d, unit: 'R$ ', separator: ',', delimiter: '.') %></td><td><%= number_to_currency(totals['valor_total'].to_d, unit: 'R$ ', separator: ',', delimiter: '.') %></td></tr><% end %>
+              </tbody></table></div>
+            </div>
+          </details>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <div class="employees-adjustments">
+    <details class="app-panel employees-disclosure">
+      <summary><span class="employees-disclosure__icon"><i class="bi bi-pencil-square" aria-hidden="true"></i></span><span class="employees-disclosure__text"><strong>Corrigir uma vigência</strong><small>Ajuste uma informação registrada no histórico.</small></span><i class="bi bi-chevron-down employees-disclosure__chevron" aria-hidden="true"></i></summary>
+      <div class="employees-disclosure__body">
+        <p class="employees-muted">A correção fica registrada. Para alterar um fechamento salvo, registre também uma revisão do período.</p>
+        <%= form_with url: revise_role_employee_path(@employee), class: 'employees-form' do |f| %>
+          <div class="employees-field"><%= f.label :role_id, 'Vigência a corrigir' %><%= f.select :role_id, @roles.map { |role| ["#{role.label} · #{role.starts_on ? l(role.starts_on) : 'Legado'}", role.id] }, {}, class: 'form-select' %></div>
+          <%= render 'role_fields', prefix: 'correction' %>
+          <div class="employees-form-actions"><%= f.submit 'Registrar correção', class: 'btn btn-outline-primary' %></div>
+        <% end %>
+      </div>
+    </details>
+    <details id="vincular-cadastro" class="app-panel employees-disclosure" <%= 'open' if @suggested_source %>>
+      <summary><span class="employees-disclosure__icon"><i class="bi bi-link-45deg" aria-hidden="true"></i></span><span class="employees-disclosure__text"><strong>Vincular outro cadastro</strong><small>Reúna os registros da mesma pessoa.</small></span><i class="bi bi-chevron-down employees-disclosure__chevron" aria-hidden="true"></i></summary>
+      <div class="employees-disclosure__body">
+        <p class="employees-muted">Informe o número do outro cadastro e a data da promoção. Os CPFs devem coincidir; os fechamentos de origem permanecem disponíveis.</p>
+        <% if @suggested_source %><p class="employees-note">Cadastro sugerido: <strong><%= @suggested_source.nome %> (#<%= @suggested_source.id %>)</strong>. Confirme a data e o motivo antes de vincular.</p><% end %>
+        <%= form_with url: link_record_employee_path(@employee), class: 'employees-form' do |f| %>
+          <div class="employees-fields">
+            <div class="employees-field"><%= f.label :source_employee_id, 'Número do cadastro de origem' %><%= f.number_field :source_employee_id, value: @suggested_source&.id, required: true, min: 1, class: 'form-control' %></div>
+            <div class="employees-field"><%= f.label :starts_on, 'Data da promoção', for: 'link_starts_on' %><%= f.date_field :starts_on, id: 'link_starts_on', required: true, class: 'form-control' %></div>
+            <div class="employees-field employees-field--full"><%= f.label :reason, 'Motivo do vínculo', for: 'link_reason' %><%= f.text_area :reason, id: 'link_reason', rows: 3, required: true, class: 'form-control' %></div>
+          </div>
+          <div class="employees-form-actions"><%= f.submit 'Vincular à mesma pessoa', class: 'btn btn-outline-primary' %></div>
+        <% end %>
+      </div>
+    </details>
+  </div>
+  <% @employee.employee_career_events.where("details ->> 'action' = ?", 'link_record').each do |event| %>
+    <div class="employees-note"><i class="bi bi-link-45deg" aria-hidden="true"></i><p><%= link_to 'Consultar referências do cadastro vinculado', employee_path(event.details.dig('source', 'id')) %>. Para consolidar os resultados, registre uma revisão do período neste cadastro.</p></div>
+  <% end %>
+</div>

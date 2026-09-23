@@ -1,6 +1,6 @@
 <%
   person = @driver || @ajudante
-  profile_label = @categoria == "van" ? "Van" : @categoria.to_s.capitalize
+  profile_label = @employee ? "Histórico de cargos" : (@categoria == "van" ? "Van" : @categoria.to_s.capitalize)
   totals = @mapa_totals || {}
 %>
 
@@ -59,7 +59,20 @@
   </header>
 
   <div class="az-report-flashes">
+    <% Array(@report_issues).each do |issue| %><p class="alert alert-warning"><%= issue %></p><% end %>
+    <% if @closing %><p class="alert alert-info"><%= @closing.legacy_baseline? ? "Referência da prévia legada (não comprova pagamento)" : "Fechamento registrado" %> · revisão <%= @closing.revision %>. Valores preservados conforme o registro.</p><% end %>
   </div>
+  <% if @career_groups.present? %>
+    <section class="az-report-panel mb-3 p-3">
+      <h2>Apuração por cargo</h2>
+      <p>O mínimo de 15 mapas e o bônus de devolução são apurados separadamente para cada cargo.</p>
+      <table class="table"><thead><tr><th>Cargo</th><th>Mapas</th><th>Bônus de devolução</th><th>Total</th></tr></thead><tbody>
+      <% @career_groups.each do |cargo, group| %>
+        <tr><td><%= EmployeeRole::CARGOS.key(cargo) %></td><td><%= group[:quantidade_mapas].to_i %></td><td><%= number_to_currency(group[:bonus_devolucao], unit: 'R$ ') %></td><td><%= number_to_currency(group[:valor_total], unit: 'R$ ') %></td></tr>
+      <% end %>
+      </tbody></table>
+    </section>
+  <% end %>
 
   <section class="az-report-overview" aria-label="Resumo da variável">
     <div class="az-overview-card az-overview-card--total">
@@ -143,7 +156,7 @@
 
   <div class="az-report-note">
     <i class="bi bi-info-circle-fill"></i>
-    <span>Esta é uma prévia da variável. Os valores podem variar em casos de alocação como ajudante, extra ou ajustes de operação. Em caso de inconsistência, contate a supervisão.</span>
+    <span><%= @closing ? "Resultado registrado. Correções exigem uma nova revisão no RH." : "Esta é uma prévia da variável." %> Os valores podem variar em casos de alocação como ajudante, extra ou ajustes de operação. Em caso de inconsistência, contate a supervisão.</span>
   </div>
 
   <article class="az-report-panel mb-4">
@@ -165,7 +178,7 @@
           <thead>
             <tr>
               <th>Mapa</th>
-              <th>Data</th>
+              <th>Data</th><th>Cargo aplicado</th>
               <% unless @categoria == "van" %><th>Fator</th><% end %>
               <th>Cx total</th><th>Cx real</th><th>PDV total</th><th>PDV real</th>
               <% unless @categoria == "van" %><th>Recarga</th><% end %>
@@ -177,10 +190,11 @@
           <tbody>
             <% @mapas.each do |mapa| %>
               <% values = @mapa_calculations[mapa.id] %>
-              <% recarga = mapa.recarga == "SIM" %>
+              <% recarga = values[:recarga] %>
               <tr>
                 <td data-label="Mapa"><%= mapa.mapa %></td>
                 <td data-label="Data"><%= mapa.data_formatada&.strftime("%d/%m/%Y") || "Data inválida" %></td>
+                <td data-label="Cargo aplicado"><%= EmployeeRole::CARGOS.key(values[:categoria]) %><% if values[:recarga_inconsistente] %><small class="d-block text-warning">Recarga informada; paga como mapa normal.</small><% end %></td>
                 <% unless @categoria == "van" %><td data-label="Fator"><%= mapa.fator %></td><% end %>
                 <td data-label="Cx total"><%= mapa.cx_total %></td>
                 <td data-label="Cx real"><%= mapa.cx_real %></td>
@@ -224,12 +238,14 @@
       <div class="az-panel-header">
         <div>
           <h2 class="az-report-section-title"><i class="bi bi-sliders"></i> Parâmetros de cálculo</h2>
-          <p>Valores configurados para o perfil consultado.</p>
+          <p><%= @employee ? "As tarifas são aplicadas conforme o cargo e a data de cada mapa." : "Valores configurados para o perfil consultado." %></p>
         </div>
       </div>
       <div class="az-panel-body">
         <div class="az-period-details">
-          <% if @categoria == "motorista" %>
+          <% if @employee %>
+            <p>O detalhamento do fechamento preserva as tarifas utilizadas. O bônus usa a tarifa da última data de mapa de cada cargo no período.</p>
+          <% elsif @categoria == "motorista" %>
             <div class="az-detail-item"><span>Caixa real</span><span><%= number_to_currency(@valor_caixa_motorista, unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
             <div class="az-detail-item"><span>PDV real</span><span><%= number_to_currency(@valor_entrega_motorista, unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
             <div class="az-detail-item"><span>Recarga</span><span><%= number_to_currency(@valor_recarga_motorista, unit: "R$ ", separator: ",", delimiter: ".") %></span></div>

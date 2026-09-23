@@ -1,4 +1,13 @@
 Rails.application.routes.draw do
+  resources :employees, path: 'rh/colaboradores', only: %i[index new create show] do
+    member do
+      delete :delete_role
+      post :revise_role
+      post :change_role
+      post :close_period
+      post :link_record
+    end
+  end
   resources :people_cycle_feedbacks, only: %i[index create], path: "rh/ciclo-de-gente"
   get 'labels/create'
   get 'fuel_consumptions/index'

@@ -34,7 +34,11 @@
           <% @drivers.each do |driver| %>
             <tr>
               <td><%= driver.nome %></td>
-              <td><%= driver.matricula %></td>
+              <td><%= driver.matricula %>
+                <% if driver.employee_id && @duplicate_counts.key?(driver.matricula) && (current_user.admin? || current_user.supervisor? || current_user.sector_hr?) %>
+                  <%= link_to 'Matrícula repetida · revisar vínculo', employee_path(driver.employee_id, anchor: 'cadastros-duplicados'), class: 'employees-duplicate-link' %>
+                <% end %>
+              </td>
               <td><%= driver.promax %></td>
               <td><%= driver.cpf %></td>
               <td><%= driver.data_nascimento.strftime("%d/%m/%Y") if driver.data_nascimento %></td>

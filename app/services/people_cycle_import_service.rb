@@ -19,7 +19,9 @@ class PeopleCycleImportService
     raise ImportError, "A planilha deve ter no máximo 5.000 linhas." if sheet.last_row.to_i > 5001
 
     people = PublicVariableIdentity::PROFILES.flat_map do |profile, model|
-      model.where(active: true).pluck(:id, :nome).map { |id, name| [PeopleCycleFeedback.normalize(name), profile, id] }
+      scope = model.where(active: true)
+      scope = scope.where(employee_id: nil) if [Driver, Ajudante].include?(model)
+      scope.pluck(:id, :nome).map { |id, name| [PeopleCycleFeedback.normalize(name), profile, id] }
     end.group_by(&:first)
     rows = []
     seen = {}

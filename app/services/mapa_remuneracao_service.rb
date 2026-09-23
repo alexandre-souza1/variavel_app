@@ -7,29 +7,33 @@ class MapaRemuneracaoService
 
   def initialize(categoria)
     @categoria = categoria.to_s
-    @valor_caixa = decimal(ParametroCalculo.valor_para(categoria: @categoria, nome: "valor_caixa"))
-    @valor_entrega = decimal(ParametroCalculo.valor_para(categoria: @categoria, nome: "valor_entrega"))
-    @valor_recarga = decimal(ParametroCalculo.valor_para(categoria: @categoria, nome: "valor_recarga"))
-    @valor_bonus_devolucao = decimal(ParametroCalculo.valor_para(categoria: "geral", nome: "bonus_devolucao"))
+    @rate_versions = CalculationRateVersion.where(categoria: [@categoria, 'geral']).order(:id).to_a.group_by { |rate| [rate.categoria, rate.nome] }
+    @fallback_rates = ParametroCalculo.where(categoria: [@categoria, 'geral']).order(:id).to_a.group_by { |rate| [rate.categoria, rate.nome] }
+
   end
 
   def values(mapa)
+    date = mapa.data_formatada
+    raise EmployeeRole::HistoryError, "Mapa #{mapa.mapa}: data inválida." unless date
+    valor_caixa = rate("valor_caixa", date)
+    valor_entrega = rate("valor_entrega", date)
+    valor_recarga = rate("valor_recarga", date)
     if mapa.fator == 2
-      valor_cx = decimal(mapa.cx_real) * @valor_caixa / TWO
-      valor_pdv = decimal(mapa.pdv_real) * @valor_entrega / TWO
+      valor_cx = decimal(mapa.cx_real) * valor_caixa / TWO
+      valor_pdv = decimal(mapa.pdv_real) * valor_entrega / TWO
     elsif @categoria == "motorista" && mapa.fator == 0 && decimal(mapa.pdv_total) >= TWO
       multiplicador = TWO
-      valor_cx = decimal(mapa.cx_real) * @valor_caixa * multiplicador
-      valor_pdv = decimal(mapa.pdv_real) * @valor_entrega * multiplicador
+      valor_cx = decimal(mapa.cx_real) * valor_caixa * multiplicador
+      valor_pdv = decimal(mapa.pdv_real) * valor_entrega * multiplicador
     else
-      valor_cx = decimal(mapa.cx_real) * @valor_caixa
-      valor_pdv = decimal(mapa.pdv_real) * @valor_entrega
+      valor_cx = decimal(mapa.cx_real) * valor_caixa
+      valor_pdv = decimal(mapa.pdv_real) * valor_entrega
     end
 
-    valor_rec = mapa.recarga == "SIM" ? @valor_recarga : ZERO
-    valor_mp = mapa.recarga == "SIM" ? valor_rec : valor_cx + valor_pdv
+    valor_rec = recarga?(mapa) ? valor_recarga : ZERO
+    valor_mp = recarga?(mapa) ? valor_rec : valor_cx + valor_pdv
 
-    { valor_cx: valor_cx, valor_pdv: valor_pdv, valor_rec: valor_rec, valor_mp: valor_mp }
+    { valor_cx: valor_cx, valor_pdv: valor_pdv, valor_rec: valor_rec, valor_mp: valor_mp, categoria: @categoria, recarga: recarga?(mapa), recarga_inconsistente: @categoria == "van" && mapa.recarga == "SIM", tarifas: { caixa: valor_caixa, entrega: valor_entrega, recarga: valor_recarga } }
   end
 
   def totals(mapas)
@@ -40,7 +44,7 @@ class MapaRemuneracaoService
     total_recargas = 0
 
     mapas.each do |mapa|
-      recarga = mapa.recarga == "SIM"
+      recarga = recarga?(mapa)
       valores = values(mapa)
 
       unless recarga
@@ -55,25 +59,36 @@ class MapaRemuneracaoService
 
     devolucoes = total_pdv_total - total_pdv_real
     percentual_devolucao = total_pdv_total.zero? ? ZERO : devolucoes / total_pdv_total
+    @valor_bonus_devolucao = rate("bonus_devolucao", mapas.filter_map(&:data_formatada).max || Date.current, categoria: "geral")
     bonus_devolucao = mapas.size >= 15 && percentual_devolucao <= DEVOLUTION_LIMIT ? @valor_bonus_devolucao : ZERO
 
     {
       cx_real: total_cx_real,
       pdv_real: total_pdv_real,
-      recargas: @categoria == "van" ? 0 : total_recargas,
+      recargas: total_recargas,
       devolucoes: devolucoes,
       percentual_devolucao: percentual_devolucao,
-      bonus_devolucao: @categoria == "van" ? ZERO : bonus_devolucao,
-      valor_total: total_valor + (@categoria == "van" ? ZERO : bonus_devolucao),
-      valor_caixas: mapas.sum { |mapa| mapa.recarga == "SIM" ? ZERO : values(mapa)[:valor_cx] },
-      valor_pdvs: mapas.sum { |mapa| mapa.recarga == "SIM" ? ZERO : values(mapa)[:valor_pdv] },
-      valor_recargas: @categoria == "van" ? ZERO : mapas.sum { |mapa| values(mapa)[:valor_rec] },
+      bonus_devolucao: bonus_devolucao,
+      valor_total: total_valor + bonus_devolucao,
+      valor_caixas: mapas.sum { |mapa| recarga?(mapa) ? ZERO : values(mapa)[:valor_cx] },
+      valor_pdvs: mapas.sum { |mapa| recarga?(mapa) ? ZERO : values(mapa)[:valor_pdv] },
+      valor_recargas: mapas.sum { |mapa| values(mapa)[:valor_rec] },
       quantidade_mapas: mapas.size,
       total_mapas: mapas.size
     }
   end
 
   private
+
+  def recarga?(mapa)
+    @categoria != "van" && mapa.recarga == "SIM"
+  end
+
+  def rate(nome, date, categoria: @categoria)
+    versions = @rate_versions[[categoria, nome]] || []
+    version = versions.select { |item| item.effective_on.nil? || item.effective_on <= date }.max_by { |item| [item.effective_on || Date.new(1), item.id] }
+    decimal(versions.any? ? version&.valor : @fallback_rates[[categoria, nome]]&.first&.valor)
+  end
 
   def decimal(value)
     return ZERO if value.nil? || value.to_s.strip.empty?

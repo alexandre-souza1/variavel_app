@@ -1,4 +1,10 @@
 <%= form_with(model: ajudante, local: true) do |form| %>
+  <p class="text-danger"><%= ajudante.errors.full_messages.to_sentence %></p>
+  <% if ajudante.new_record? %>
+    <div class="mb-3"><%= form.label :career_starts_on, 'Data efetiva do cargo inicial' %><%= form.date_field :career_starts_on, required: true, class: 'form-control' %></div>
+  <% elsif ajudante.employee %>
+    <p>Promoções e mudanças de Promax devem ser registradas no <%= link_to 'histórico do colaborador', employee_path(ajudante.employee) %>.</p>
+  <% end %>
   <div>
     <%= form.label :nome %><br>
     <%= form.text_field :nome %>

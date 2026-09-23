@@ -1,0 +1,17 @@
+<div class="app-page employees-page employees-page--form">
+  <%= link_to parametro_calculos_path, class: 'employees-back' do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Parâmetros de cálculo<% end %>
+  <header class="app-page-header"><div><p class="app-page-eyebrow">Remuneração variável</p><h1><i class="bi bi-sliders" aria-hidden="true"></i> <%= @parametro_calculo.persisted? ? 'Alterar parâmetro' : 'Novo parâmetro' %></h1><p>Defina o valor e a data a partir da qual ele deve ser aplicado.</p></div></header>
+  <%= form_with model: @parametro_calculo, class: 'employees-form' do |f| %>
+    <% if @parametro_calculo.errors.any? %><div class="alert alert-danger" role="alert"><%= @parametro_calculo.errors.full_messages.to_sentence %></div><% end %>
+    <section class="app-panel">
+      <div class="app-panel__header"><div><span class="app-panel__kicker">Valores e vigência</span><h2 class="app-panel__title">Parâmetro de cálculo</h2><p class="app-panel__subtitle">Fechamentos registrados mantêm os valores usados na apuração.</p></div></div>
+      <div class="app-panel__body employees-fields">
+        <div class="employees-field"><%= f.label :categoria, 'Categoria' %><%= f.text_field :categoria, class: 'form-control', readonly: @parametro_calculo.persisted?, required: true %></div>
+        <div class="employees-field"><%= f.label :nome, 'Nome' %><%= f.text_field :nome, class: 'form-control', readonly: @parametro_calculo.persisted?, required: true %></div>
+        <div class="employees-field"><%= f.label :valor, 'Valor' %><%= f.number_field :valor, step: 0.000001, min: 0, class: 'form-control', required: true %></div>
+        <div class="employees-field"><%= f.label :effective_on, 'Válido a partir de' %><%= f.date_field :effective_on, value: @parametro_calculo.effective_on || Date.current, class: 'form-control', required: true %></div>
+      </div>
+    </section>
+    <div class="employees-form-actions"><%= link_to 'Cancelar', parametro_calculos_path, class: 'btn btn-outline-secondary' %><%= f.submit 'Salvar nova vigência', class: 'btn btn-primary' %></div>
+  <% end %>
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_23_010000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_23_121000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -71,7 +71,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_23_010000) do
     t.datetime "updated_at", null: false
     t.boolean "active", default: true, null: false
     t.date "retired_at"
+    t.bigint "employee_id"
     t.index ["active"], name: "index_ajudantes_on_active"
+    t.index ["employee_id"], name: "index_ajudantes_on_employee_id"
   end
 
   create_table "autonomies", force: :cascade do |t|
@@ -212,6 +214,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_23_010000) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "calculation_rate_versions", force: :cascade do |t|
+    t.string "categoria", null: false
+    t.string "nome", null: false
+    t.decimal "valor", precision: 16, scale: 6, null: false
+    t.date "effective_on"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["categoria", "nome", "effective_on"], name: "index_calculation_rate_versions_lookup"
+  end
+
   create_table "checklist_defects", force: :cascade do |t|
     t.bigint "checklist_id", null: false
     t.text "description"
@@ -326,7 +338,49 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_23_010000) do
     t.boolean "autonomy", default: false, null: false
     t.boolean "active", default: true, null: false
     t.date "retired_at"
+    t.bigint "employee_id"
     t.index ["active"], name: "index_drivers_on_active"
+    t.index ["employee_id"], name: "index_drivers_on_employee_id"
+  end
+
+  create_table "employee_career_events", force: :cascade do |t|
+    t.bigint "employee_id", null: false
+    t.bigint "user_id", null: false
+    t.jsonb "details", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_id"], name: "index_employee_career_events_on_employee_id"
+    t.index ["user_id"], name: "index_employee_career_events_on_user_id"
+  end
+
+  create_table "employee_roles", force: :cascade do |t|
+    t.bigint "employee_id", null: false
+    t.string "cargo", null: false
+    t.string "promax", null: false
+    t.date "starts_on"
+    t.date "ends_on"
+    t.boolean "legacy", default: false, null: false
+    t.text "reason", null: false
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_employee_roles_on_created_by_id"
+    t.index ["employee_id"], name: "index_employee_roles_on_employee_id"
+    t.index ["promax", "cargo"], name: "index_employee_roles_on_promax_and_cargo"
+    t.check_constraint "cargo::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[])", name: "employee_role_valid_cargo"
+    t.check_constraint "starts_on IS NOT NULL OR legacy = true", name: "employee_role_start_required"
+    t.check_constraint "starts_on IS NULL OR ends_on IS NULL OR ends_on >= starts_on", name: "employee_role_valid_dates"
+  end
+
+  create_table "employees", force: :cascade do |t|
+    t.string "nome", null: false
+    t.string "matricula", null: false
+    t.string "cpf"
+    t.date "data_nascimento"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["matricula"], name: "index_employees_on_matricula"
   end
 
   create_table "fleet_availabilities", force: :cascade do |t|
@@ -945,6 +999,22 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_23_010000) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "variable_closings", force: :cascade do |t|
+    t.bigint "employee_id", null: false
+    t.bigint "user_id"
+    t.integer "year", null: false
+    t.integer "month", null: false
+    t.integer "revision", null: false
+    t.text "reason", null: false
+    t.jsonb "result", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "legacy_baseline", default: false, null: false
+    t.index ["employee_id", "year", "month", "revision"], name: "index_variable_closings_revision", unique: true
+    t.index ["employee_id"], name: "index_variable_closings_on_employee_id"
+    t.index ["user_id"], name: "index_variable_closings_on_user_id"
+  end
+
   create_table "vehicle_remunerations", force: :cascade do |t|
     t.bigint "remuneration_period_id", null: false
     t.string "vehicle_type", null: false
@@ -979,6 +1049,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_23_010000) do
   add_foreign_key "action_plans", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ajudantes", "employees"
   add_foreign_key "az_rv_imports", "users"
   add_foreign_key "az_rv_on_demand_activities", "az_rv_imports"
   add_foreign_key "az_rv_points", "az_rv_imports"
@@ -994,6 +1065,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_23_010000) do
   add_foreign_key "checklists", "users"
   add_foreign_key "comments", "tasks"
   add_foreign_key "comments", "users"
+  add_foreign_key "drivers", "employees"
+  add_foreign_key "employee_career_events", "employees"
+  add_foreign_key "employee_career_events", "users"
+  add_foreign_key "employee_roles", "employees"
+  add_foreign_key "employee_roles", "users", column: "created_by_id"
   add_foreign_key "fleet_availabilities", "users"
   add_foreign_key "fleet_availabilities", "users", column: "locked_by_id"
   add_foreign_key "fleet_availability_changes", "fleet_availability_items"
@@ -1055,6 +1131,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_23_010000) do
   add_foreign_key "tasks", "buckets"
   add_foreign_key "tasks", "users", column: "assignee_id"
   add_foreign_key "tasks", "users", column: "creator_id"
+  add_foreign_key "variable_closings", "employees"
+  add_foreign_key "variable_closings", "users"
   add_foreign_key "vehicle_remunerations", "remuneration_periods"
   add_foreign_key "wms_tasks", "az_rv_imports"
   add_foreign_key "wms_tasks", "operators"

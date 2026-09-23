@@ -23,6 +23,7 @@ class DriversController < ApplicationController
 
   def index
     @drivers = params[:status] == "inactive" ? Driver.inactive : Driver.active
+    @duplicate_counts = Employee.duplicate_registration_counts(@drivers.pluck(:matricula))
   end
 
   def import
@@ -39,16 +40,21 @@ class DriversController < ApplicationController
     require "csv"
 
     begin
-      CSV.foreach(file.path, headers: true, col_sep: ";", encoding: "ISO-8859-1:utf-8") do |row|
-        Driver.create!(
-          matricula: row["matricula"],
-          promax: row["promax"].to_s.strip.to_i.to_s,
-          nome: row["nome"],
-          cpf: row["cpf"],
-          data_nascimento: row["data_nascimento"]
-        )
-      end
+      Driver.transaction do
+        CSV.foreach(file.path, headers: true, col_sep: ";", encoding: "ISO-8859-1:utf-8") do |row|
+          Driver.create!(
+            career_starts_on: row["inicio_cargo"],
+            career_cargo: row["cargo"],
+            career_recorded_by: current_user,
+            matricula: row["matricula"],
+            promax: row["promax"].to_s.strip.to_i.to_s,
+            nome: row["nome"],
+            cpf: row["cpf"],
+            data_nascimento: row["data_nascimento"]
+          )
+        end
 
+      end
       redirect_to drivers_path, notice: "Motoristas importados com sucesso!"
     rescue => e
       redirect_to import_drivers_path, alert: "Erro ao importar: #{e.message}"
@@ -64,11 +70,15 @@ class DriversController < ApplicationController
 
   def create
     @driver = Driver.new(driver_params)
+    @driver.career_recorded_by = current_user
     if @driver.save
       redirect_to @driver, notice: "Motorista criado com sucesso."
     else
       render :new
     end
+  rescue ActiveRecord::RecordInvalid, EmployeeRole::HistoryError => error
+    @driver.errors.add(:base, error.message)
+    render :new, status: :unprocessable_entity
   end
 
   def edit
@@ -99,6 +109,6 @@ class DriversController < ApplicationController
   end
 
   def driver_params
-    params.require(:driver).permit(:nome, :matricula, :promax, :cpf, :data_nascimento, :autonomy)
+    params.require(:driver).permit(:career_starts_on, :career_cargo, :nome, :matricula, :promax, :cpf, :data_nascimento, :autonomy)
   end
 end

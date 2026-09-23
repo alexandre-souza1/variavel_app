@@ -12,6 +12,13 @@ class ConsultasController < ApplicationController
     @categoria = params[:categoria]&.downcase
 
     @periodo_mes = params[:periodo_mes]
+    employees = Employee.where(matricula: @matricula).where.associated(:employee_roles).distinct.limit(2).to_a
+    if employees.size > 1
+      @parametros = ParametroCalculo.all.group_by(&:categoria)
+      flash.now[:alert] = 'Há mais de um colaborador com essa matrícula. Solicite ao RH a revisão dos vínculos.'
+      return render :new, status: :unprocessable_entity
+    end
+    return show_employee(employees.first) if employees.one?
 
     if @categoria == "motorista"
       @driver = Driver.find_by(matricula: @matricula)
@@ -53,7 +60,7 @@ class ConsultasController < ApplicationController
       end
 
     elsif @categoria == "van"
-      @driver = Driver.find_by(matricula: @matricula, promax: 86)
+      @driver = nil # Van exige uma vigência cadastrada no RH.
 
       if @driver
         @mapas = Mapa.where(matric_motorista: @driver.promax)
@@ -78,6 +85,46 @@ class ConsultasController < ApplicationController
   end
 
   private
+
+  def show_employee(employee)
+    @employee = employee
+    @categoria = 'colaborador'
+    @driver = employee
+    from = to = nil
+    if params[:periodo_mes].present?
+      to = Date.new((params[:periodo_ano].presence || Date.current.year).to_i, params[:periodo_mes].to_i, 20)
+      from = to.prev_month.change(day: 21)
+      @closing = employee.variable_closings.where(year: to.year, month: to.month).order(revision: :desc).first
+    end
+    if @closing
+      snapshot = @closing.result
+      @mapas = snapshot.fetch('maps').map { |entry| Mapa.new(entry.fetch('source')) }
+      @mapa_calculations = snapshot.fetch('maps').to_h do |entry|
+        values = entry.fetch('calculation').deep_symbolize_keys
+        %i[valor_cx valor_pdv valor_rec valor_mp].each { |key| values[key] = values[key].to_d }
+        [entry.fetch('source').fetch('id'), values]
+      end
+      @mapa_totals = snapshot.fetch('totals').symbolize_keys.transform_values { |value| value.to_d }
+      @career_groups = snapshot.fetch('groups').transform_values { |group| group.symbolize_keys.transform_values { |value| value.to_d } }
+      @report_issues = []
+    else
+      report = EmployeeVariableReport.new(employee, from: from, to: to)
+      @mapas = report.maps
+      @report_issues = report.issues
+      if to
+        @mapa_calculations = @mapas.to_h { |mapa| [mapa.id, report.values(mapa)] }
+        @mapa_totals = report.totals
+        @career_groups = report.groups
+      end
+    end
+    @mapa_totals = @mapa_totals&.merge(caixas_reais: @mapa_totals[:cx_real], pdvs_reais: @mapa_totals[:pdv_real])
+    definir_datas_periodo(@mapas)
+    render :show
+  rescue Date::Error, EmployeeRole::HistoryError => error
+    @parametros = ParametroCalculo.all.group_by(&:categoria)
+    flash.now[:alert] = error.message
+    render :new, status: :unprocessable_entity
+  end
 
   def filtrar_por_periodo!
     return unless params[:periodo_mes].present? && params[:periodo_ano].present?

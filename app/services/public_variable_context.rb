@@ -14,8 +14,8 @@ class PublicVariableContext
 
   def call
     data = case @identity.profile
-           when "motorista" then du_context(Mapa.where(matric_motorista: @record.promax))
-           when "ajudante" then du_context(ajudante_mapas)
+           when "colaborador", "motorista" then employee_record ? career_context : du_context(Mapa.where(matric_motorista: @record.promax))
+           when "ajudante" then employee_record ? career_context : du_context(ajudante_mapas)
            when "operador" then operator_context
            when "az_ajudante" then az_helper_context
            else {}
@@ -37,6 +37,33 @@ class PublicVariableContext
   end
 
   private
+
+  def employee_record
+    @record.is_a?(Employee) ? @record : (@record.respond_to?(:employee) ? @record.employee : nil)
+  end
+
+  def career_context
+    employee = employee_record
+    report = EmployeeVariableReport.new(employee, from: 2.years.ago.to_date)
+    monthly = report.maps.group_by { |mapa| closing_month_for(mapa.data_formatada).strftime('%Y-%m') }.sort.to_h do |month, records|
+      period = EmployeeVariableReport.new(employee, maps: records)
+      [month, money_totals(period.totals).merge(by_role: period.groups.transform_values { |totals| money_totals(totals) }, source: 'prévia')]
+    end
+    employee.variable_closings.order(:revision).each do |closing|
+      month = format('%04d-%02d', closing.year, closing.month)
+      totals = closing.result.fetch('totals').symbolize_keys.transform_values { |value| value.to_d }
+      groups = closing.result.fetch('groups').transform_values { |group| money_totals(group.symbolize_keys.transform_values { |value| value.to_d }) }
+      monthly[month] = money_totals(totals).merge(by_role: groups, source: closing.legacy_baseline? ? 'referência legada, não comprova pagamento' : 'fechamento registrado', revision: closing.revision)
+    end
+    {
+      period_definition: 'Fechamento do dia 21 do mês anterior ao dia 20 do mês informado.',
+      current_period: closing_month_for(Date.current).strftime('%Y-%m'), monthly: monthly.sort.to_h,
+      issues: report.issues,
+      roles: employee.employee_roles.map { |role| { cargo: role.label, inicio: role.starts_on, fim: role.ends_on } },
+      rules: { devolution_target: 'Até 3% de devolução e pelo menos 15 mapas, apurados separadamente por cargo. Van também recebe bônus.',
+        note: 'Van recebe caixas e entregas nos mapas marcados como recarga, sem remuneração de recarga. O cargo e as tarifas respeitam a data do mapa.' }
+    }
+  end
 
   def du_context(scope)
     mapas = scope.to_a.filter_map { |mapa| [mapa.data_formatada, mapa] if mapa.data_formatada }.select { |date, _| date >= 2.years.ago.to_date }

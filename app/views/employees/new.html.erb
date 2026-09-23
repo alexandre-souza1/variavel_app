@@ -1,0 +1,23 @@
+<div class="app-page employees-page employees-page--form">
+  <%= link_to employees_path, class: 'employees-back' do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Colaboradores<% end %>
+  <header class="app-page-header">
+    <div><p class="app-page-eyebrow">Gestão de pessoas · RH</p><h1><i class="bi bi-person-plus" aria-hidden="true"></i> Novo colaborador</h1><p>Cadastre os dados da pessoa e a primeira vigência do cargo.</p></div>
+  </header>
+  <%= form_with model: @employee, class: 'employees-form' do |f| %>
+    <% if @employee.errors.any? %><div class="alert alert-danger" role="alert"><%= @employee.errors.full_messages.to_sentence %></div><% end %>
+    <section class="app-panel">
+      <div class="app-panel__header"><div><span class="app-panel__kicker">01 · Identificação</span><h2 class="app-panel__title">Dados do colaborador</h2><p class="app-panel__subtitle">A pessoa mantém este cadastro nas mudanças de cargo.</p></div><i class="bi bi-person-badge employees-panel-icon" aria-hidden="true"></i></div>
+      <div class="app-panel__body employees-fields">
+        <% { nome: 'Nome completo', matricula: 'Matrícula', cpf: 'CPF' }.each do |field, label| %>
+          <div class="employees-field <%= 'employees-field--full' if field == :nome %>"><%= f.label field, label %><%= f.text_field field, required: field != :cpf, class: 'form-control', autocomplete: field == :nome ? 'name' : 'off' %></div>
+        <% end %>
+        <div class="employees-field"><%= f.label :data_nascimento, 'Data de nascimento' %><%= f.date_field :data_nascimento, class: 'form-control' %></div>
+      </div>
+    </section>
+    <section class="app-panel">
+      <div class="app-panel__header"><div><span class="app-panel__kicker">02 · Histórico profissional</span><h2 class="app-panel__title">Cargo inicial</h2><p class="app-panel__subtitle">Informe a data real de início para preservar a apuração da variável.</p></div><i class="bi bi-briefcase employees-panel-icon" aria-hidden="true"></i></div>
+      <div class="app-panel__body"><%= render 'role_fields', prefix: 'initial' %></div>
+    </section>
+    <div class="employees-form-actions"><%= link_to 'Cancelar', employees_path, class: 'btn btn-outline-secondary' %><%= f.submit 'Cadastrar colaborador', class: 'btn btn-primary' %></div>
+  <% end %>
+</div>

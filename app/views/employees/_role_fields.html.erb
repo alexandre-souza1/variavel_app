@@ -1,0 +1,9 @@
+<% field_prefix = local_assigns.fetch(:prefix, 'career') %>
+<%= fields_for :employee_role do |f| %>
+  <div class="employees-fields">
+    <div class="employees-field"><%= f.label :cargo, 'Cargo', for: "#{field_prefix}_cargo" %><%= f.select :cargo, EmployeeRole::CARGOS, {}, id: "#{field_prefix}_cargo", class: 'form-select' %></div>
+    <div class="employees-field"><%= f.label :promax, 'Código Promax', for: "#{field_prefix}_promax" %><%= f.text_field :promax, id: "#{field_prefix}_promax", required: true, class: 'form-control', placeholder: 'Código nesse cargo' %></div>
+    <div class="employees-field employees-field--full"><%= f.label :starts_on, 'Data efetiva de início', for: "#{field_prefix}_starts_on" %><%= f.date_field :starts_on, id: "#{field_prefix}_starts_on", required: true, class: 'form-control' %><small>A data determina quando o novo cargo passa a valer.</small></div>
+    <div class="employees-field employees-field--full"><%= f.label :reason, 'Motivo da alteração', for: "#{field_prefix}_reason" %><%= f.text_area :reason, id: "#{field_prefix}_reason", rows: 3, required: true, class: 'form-control', placeholder: 'Descreva a admissão, promoção ou correção' %></div>
+  </div>
+<% end %>
