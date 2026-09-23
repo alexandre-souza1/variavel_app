@@ -9,6 +9,14 @@ class Employee < ApplicationRecord
   validates :nome, :matricula, presence: true
   validates :matricula, uniqueness: true, on: :create
 
+  scope :active, -> { where(active: true) }
+  scope :archived, -> { where(active: false) }
+
+  def self.normalized_cpf(value)
+    digits = value.to_s.gsub(/\D/, '')
+    digits.present? && digits.length <= 11 ? digits.rjust(11, '0') : digits
+  end
+
   scope :with_career_history, -> { where(id: EmployeeRole.select(:employee_id)) }
 
   def self.duplicate_registration_counts(registrations)
@@ -29,8 +37,8 @@ class Employee < ApplicationRecord
   def resolve_link_pair(other, invert: false)
     raise EmployeeRole::HistoryError, 'Selecione outro cadastro.' if other == self
 
-    cpf_digits = cpf.to_s.gsub(/\D/, '')
-    other_cpf_digits = other.cpf.to_s.gsub(/\D/, '')
+    cpf_digits = self.class.normalized_cpf(cpf)
+    other_cpf_digits = self.class.normalized_cpf(other.cpf)
     raise EmployeeRole::HistoryError, 'Os cadastros devem ter o mesmo CPF para confirmar a identidade.' if cpf_digits.blank? || cpf_digits != other_cpf_digits
 
     people = [self, other]

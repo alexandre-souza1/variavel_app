@@ -69,8 +69,8 @@ class EmployeesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'linking a legacy registration preserves original closings and records promotion' do
-    @employee.update!(cpf: '12345678900')
-    source = Employee.create!(nome: 'Mesmo Colaborador', matricula: 'RH-SOURCE', cpf: '12345678900')
+    @employee.update!(cpf: '01234567890')
+    source = Employee.create!(nome: 'Mesmo Colaborador', matricula: 'RH-SOURCE', cpf: '1234567890')
     source.employee_roles.create!(cargo: 'motorista', promax: 'RH-SOURCE', legacy: true, reason: 'Migração')
     closing = VariableClosing.capture!(employee: source, user: users(:one), year: 2026, month: 8, reason: 'Histórico original')
     destination_closing = VariableClosing.capture!(employee: @employee, user: users(:one), year: 2026, month: 8, reason: 'Fechamento do cadastro principal')
@@ -83,6 +83,20 @@ class EmployeesControllerTest < ActionDispatch::IntegrationTest
     assert_equal [1, 2], @employee.variable_closings.where(year: 2026, month: 8).order(:revision).pluck(:revision)
     assert_empty source.employee_roles.reload
     assert_not source.reload.active?
+  end
+
+  test 'archived employees are separated from the active list' do
+    @employee.update!(active: false)
+
+    get employees_path
+    assert_response :success
+    assert_select 'h2', text: 'Encontre um colaborador'
+    assert_not_includes response.body, @employee.nome
+
+    get employees_path, params: { status: 'archived' }
+    assert_response :success
+    assert_select 'h2', text: 'Colaboradores arquivados'
+    assert_includes response.body, @employee.nome
   end
 
   test 'link review resolves the same merge when opened from either cadastro' do

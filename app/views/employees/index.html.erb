@@ -6,23 +6,29 @@
       <p>Pessoas, cargos e movimentações em um só lugar.</p>
     </div>
     <div class="app-page-actions">
+      <% if @archived_view %>
+        <%= link_to employees_path, class: 'btn btn-outline-secondary' do %><i class="bi bi-people me-1" aria-hidden="true"></i> Ativos<% end %>
+      <% elsif @archived_count.positive? %>
+        <%= link_to employees_path(status: 'archived'), class: 'btn btn-outline-secondary' do %><i class="bi bi-archive me-1" aria-hidden="true"></i> Arquivados (<%= @archived_count %>)<% end %>
+      <% end %>
       <%= link_to new_employee_path, class: 'btn btn-primary' do %><i class="bi bi-plus-lg" aria-hidden="true"></i> Novo colaborador<% end %>
     </div>
   </header>
 
   <section class="app-panel">
     <div class="app-panel__header">
-      <div><span class="app-panel__kicker">Equipe</span><h2 class="app-panel__title">Encontre um colaborador</h2></div>
+      <div><span class="app-panel__kicker"><%= @archived_view ? 'Arquivo RH' : 'Equipe ativa' %></span><h2 class="app-panel__title"><%= @archived_view ? 'Colaboradores arquivados' : 'Encontre um colaborador' %></h2></div>
       <span class="employees-badge"><%= @employees.size %> exibidos</span>
     </div>
     <div class="app-panel__body">
       <%= form_with url: employees_path, method: :get, class: 'employees-search' do |f| %>
+        <%= hidden_field_tag :status, 'archived' if @archived_view %>
         <div class="employees-field">
           <%= f.label :q, 'Buscar por nome ou matrícula' %>
           <div class="employees-search__input"><i class="bi bi-search" aria-hidden="true"></i><%= f.search_field :q, value: params[:q], placeholder: 'Digite o nome ou a matrícula', class: 'form-control' %></div>
         </div>
         <%= f.submit 'Buscar', class: 'btn btn-primary' %>
-        <% if params[:q].present? %><%= link_to 'Limpar', employees_path, class: 'btn btn-outline-secondary' %><% end %>
+        <% if params[:q].present? %><%= link_to 'Limpar', employees_path(status: (@archived_view ? 'archived' : nil)), class: 'btn btn-outline-secondary' %><% end %>
       <% end %>
     </div>
     <% if @employees.any? %>

@@ -4,7 +4,9 @@ class EmployeesController < ApplicationController
   before_action :set_employee, only: %i[show change_role close_period link_record revise_role delete_role revise_closing]
 
   def index
-    @employees = Employee.order(:nome).includes(:employee_roles)
+    @archived_view = params[:status].to_s == 'archived'
+    @employees = (@archived_view ? Employee.archived : Employee.active).order(:nome).includes(:employee_roles)
+    @archived_count = Employee.archived.count
     if params[:q].present?
       query = "%#{Employee.sanitize_sql_like(params[:q].strip)}%"
       @employees = @employees.where('nome ILIKE ? OR matricula ILIKE ?', query, query)
