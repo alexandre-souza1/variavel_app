@@ -38,13 +38,7 @@ class EmployeesController < ApplicationController
     latest_role = @roles.first
     @next_cargos = latest_role ? EmployeeRole.next_cargos(latest_role.cargo) : EmployeeRole::CARGOS.values
     all_closings = @employee.variable_closings.order(year: :desc, month: :desc, revision: :desc).to_a
-    latest_by_period = all_closings.group_by { |closing| [closing.year, closing.month] }.transform_values(&:first)
-    consolidated_periods = latest_by_period.filter_map do |period, closing|
-      period if closing.result['consolidated_from'].present?
-    end
-    @closings = all_closings.reject do |closing|
-      consolidated_periods.include?([closing.year, closing.month]) && !closing.result['consolidated_from'].present?
-    end
+    @closings = all_closings.group_by { |closing| [closing.year, closing.month] }.values.map(&:first)
     @closing_cargos = @closings.flat_map { |closing| closing.result.fetch('groups', {}).keys }.select { |cargo| EmployeeRole::CARGOS.value?(cargo) }.uniq
     @cargo_filter = params[:cargo].presence
   end

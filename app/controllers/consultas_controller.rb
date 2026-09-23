@@ -81,7 +81,11 @@ class ConsultasController < ApplicationController
       render :new
     end
 
-    prepare_report_totals! if @mapas && params[:periodo_mes].present?
+    if @mapas && params[:periodo_mes].present?
+      prepare_report_totals!
+      prepare_parameter_profiles!
+      apply_function_filter!
+    end
   end
 
   private
@@ -117,6 +121,9 @@ class ConsultasController < ApplicationController
         @career_groups = report.groups
       end
     end
+    @mapa_totals = @mapa_totals&.merge(caixas_reais: @mapa_totals[:cx_real], pdvs_reais: @mapa_totals[:pdv_real])
+    prepare_parameter_profiles!
+    apply_function_filter!
     @mapa_totals = @mapa_totals&.merge(caixas_reais: @mapa_totals[:cx_real], pdvs_reais: @mapa_totals[:pdv_real])
     definir_datas_periodo(@mapas)
     render :show
@@ -161,6 +168,59 @@ class ConsultasController < ApplicationController
       caixas_reais: totals[:cx_real],
       pdvs_reais: totals[:pdv_real]
     )
+  end
+
+  def prepare_parameter_profiles!
+    @parameter_profiles = []
+    return unless @mapas.present? && @mapa_calculations.present?
+
+    maps_by_id = @mapas.index_by(&:id)
+    entries = @mapa_calculations.filter_map do |map_id, values|
+      cargo = values[:categoria].to_s
+      next if cargo.blank?
+
+      [cargo, map_id, values]
+    end
+
+    @parameter_profiles = entries.group_by(&:first).sort_by(&:first).map do |cargo, cargo_entries|
+      latest = cargo_entries.max_by do |(_, map_id, _values)|
+        maps_by_id[map_id]&.data_formatada || Date.new(1, 1, 1)
+      end
+      map_id = latest[1]
+      values = latest[2]
+      map_date = maps_by_id[map_id]&.data_formatada
+      tariffs = (values[:tarifas] || {}).to_h.transform_keys(&:to_sym)
+
+      {
+        cargo: cargo,
+        label: EmployeeRole::CARGOS.key(cargo) || cargo.humanize,
+        map_date: map_date,
+        caixa: tariffs[:caixa].to_d,
+        entrega: tariffs[:entrega].to_d,
+        recarga: tariffs[:recarga].to_d,
+        bonus_devolucao: (ParametroCalculo.valor_para(categoria: 'geral', nome: 'bonus_devolucao', date: map_date) || 0).to_d
+      }
+    end
+    requested_function = params[:funcao].to_s
+    @selected_function = @parameter_profiles.map { |profile| profile[:cargo] }.include?(requested_function) ? requested_function : nil
+    @selected_parameter_profile = @parameter_profiles.find { |profile| profile[:cargo] == @selected_function } || @parameter_profiles.first
+    @selected_parameter_profiles = @selected_function ? [@selected_parameter_profile] : @parameter_profiles
+  end
+
+  def apply_function_filter!
+    return if @selected_function.blank? || @mapa_calculations.blank?
+
+    selected_map_ids = @mapa_calculations.filter_map do |map_id, values|
+      map_id if values[:categoria].to_s == @selected_function
+    end
+    @mapas = @mapas.select { |mapa| selected_map_ids.include?(mapa.id) }
+    @mapa_calculations = @mapa_calculations.slice(*selected_map_ids)
+    @career_groups = @career_groups&.slice(@selected_function)
+
+    selected_group = @career_groups&.fetch(@selected_function, nil)
+    return unless selected_group
+
+    @mapa_totals = selected_group.dup
   end
 
   def mapa_values(mapa)

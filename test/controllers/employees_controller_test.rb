@@ -41,6 +41,9 @@ class EmployeesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, 'Fechamento registrado'
     assert_includes response.body, 'RH-TEST'
     assert_not_includes response.body, '>999'
+    assert_includes response.body, 'Parâmetros efetivamente usados no cálculo da função selecionada.'
+    assert_includes response.body, 'Caixa real'
+    assert_includes response.body, 'R$ 1,00'
   end
   test 'dashboard and chat use the employee role for van recarga' do
     CalculationRateVersion.create!(categoria: 'van', nome: 'valor_caixa', valor: 1)
@@ -51,6 +54,32 @@ class EmployeesControllerTest < ActionDispatch::IntegrationTest
     get dashboard_mapas_path, params: { mes: 9, ano: 2026 }
     assert_response :success
     assert_includes response.body, 'Colaborador RH (Motorista de van)'
+  end
+
+  test 'consultation switch filters the whole report and offers all cargos' do
+    CalculationRateVersion.create!(categoria: 'van', nome: 'valor_caixa', valor: 1)
+    CalculationRateVersion.create!(categoria: 'van', nome: 'valor_entrega', valor: 2)
+    CalculationRateVersion.create!(categoria: 'motorista', nome: 'valor_caixa', valor: 3)
+    CalculationRateVersion.create!(categoria: 'motorista', nome: 'valor_entrega', valor: 4)
+    @employee.change_role!({ cargo: 'motorista', promax: 'RH-MOTOR', starts_on: '2026-09-10', reason: 'Promoção' }, user: users(:one))
+    Mapa.create!(mapa: 'RH-SWITCH-VAN', data: '09/09/2026', matric_motorista: 'RH-VAN', fator: 1, cx_real: 10, pdv_real: 5, pdv_total: 5, recarga: 'NAO')
+    Mapa.create!(mapa: 'RH-SWITCH-MOTOR', data: '10/09/2026', matric_motorista: 'RH-MOTOR', fator: 1, cx_real: 10, pdv_real: 5, pdv_total: 5, recarga: 'NAO')
+    VariableClosing.capture!(employee: @employee, user: users(:one), year: 2026, month: 9, reason: 'Fechamento')
+
+    get consulta_path, params: { matricula: 'RH-100', categoria: 'colaborador', periodo_mes: 9, periodo_ano: 2026 }
+    assert_response :success
+    assert_includes response.body, 'Todos os cargos'
+    assert_includes response.body, 'Motorista de van'
+    assert_includes response.body, 'Motorista'
+    assert_includes response.body, 'RH-SWITCH-VAN'
+    assert_includes response.body, 'RH-SWITCH-MOTOR'
+    assert_includes response.body, '<strong>2</strong> mapa(s)'
+
+    get consulta_path, params: { matricula: 'RH-100', categoria: 'colaborador', periodo_mes: 9, periodo_ano: 2026, funcao: 'van' }
+    assert_response :success
+    assert_includes response.body, 'RH-SWITCH-VAN'
+    assert_not_includes response.body, 'RH-SWITCH-MOTOR'
+    assert_includes response.body, '<strong>1</strong> mapa(s)'
   end
 
   test 'new operational driver gets dated employee history' do

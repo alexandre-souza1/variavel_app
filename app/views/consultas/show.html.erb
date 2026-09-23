@@ -1,7 +1,8 @@
 <%
   person = @driver || @ajudante
-  profile_label = @employee ? "Histórico de cargos" : (@categoria == "van" ? "Van" : @categoria.to_s.capitalize)
+  profile_label = @employee ? (@selected_function ? @selected_parameter_profile[:label] : "Todos os cargos") : (@categoria == "van" ? "Van" : @categoria.to_s.capitalize)
   totals = @mapa_totals || {}
+  show_recarga = @selected_function ? @selected_function != "van" : @categoria != "van"
 %>
 
 <div class="az-operator-report-page consultas-report-page">
@@ -28,32 +29,47 @@
           <i class="bi bi-arrow-left"></i> Voltar
         <% end %>
 
-        <%= form_with url: consulta_path, method: :get, local: true,
-                      class: "az-period-filter",
-                      data: { controller: "autosubmit", autosubmit_target: "form" } do %>
-          <%= hidden_field_tag :matricula, @matricula %>
-          <%= hidden_field_tag :categoria, @categoria %>
+        <div class="az-report-actions__controls">
+          <%= form_with url: consulta_path, method: :get, local: true,
+                        class: "az-period-filter",
+                        data: { controller: "autosubmit", autosubmit_target: "form" } do %>
+            <%= hidden_field_tag :matricula, @matricula %>
+            <%= hidden_field_tag :categoria, @categoria %>
+            <%= hidden_field_tag :funcao, params[:funcao] if params[:funcao].present? %>
 
-          <div class="az-period-field">
-            <%= label_tag :periodo_mes, "Mês" %>
-            <%= select_tag :periodo_mes,
-                options_for_select((1..12).map { |month| [I18n.t("date.month_names")[month], month] }, params[:periodo_mes]),
-                class: "form-select form-select-sm",
-                data: { autosubmit_target: "select", action: "change->autosubmit#submitOnChange" },
-                required: true %>
-          </div>
+            <div class="az-period-field">
+              <%= label_tag :periodo_mes, "Mês" %>
+              <%= select_tag :periodo_mes,
+                  options_for_select((1..12).map { |month| [I18n.t("date.month_names")[month], month] }, params[:periodo_mes]),
+                  class: "form-select form-select-sm",
+                  data: { autosubmit_target: "select", action: "change->autosubmit#submitOnChange" },
+                  required: true %>
+            </div>
 
-          <div class="az-period-field">
-            <%= label_tag :periodo_ano, "Ano" %>
-            <%= select_tag :periodo_ano,
-                options_for_select((Date.current.year - 5..Date.current.year).to_a.reverse, params[:periodo_ano] || Date.current.year),
-                class: "form-select form-select-sm",
-                data: { autosubmit_target: "select", action: "change->autosubmit#submitOnChange" },
-                required: true %>
-          </div>
+            <div class="az-period-field">
+              <%= label_tag :periodo_ano, "Ano" %>
+              <%= select_tag :periodo_ano,
+                  options_for_select((Date.current.year - 5..Date.current.year).to_a.reverse, params[:periodo_ano] || Date.current.year),
+                  class: "form-select form-select-sm",
+                  data: { autosubmit_target: "select", action: "change->autosubmit#submitOnChange" },
+                  required: true %>
+            </div>
 
-          <%= submit_tag "Atualizar", class: "az-period-submit" %>
-        <% end %>
+            <%= submit_tag "Atualizar", class: "az-period-submit" %>
+          <% end %>
+
+          <% if @parameter_profiles&.many? %>
+            <div class="az-function-switch" aria-label="Selecionar função do período" data-controller="function-switch">
+              <div class="az-function-switch__options" role="tablist" aria-label="Funções disponíveis">
+                <%= link_to 'Todos', consulta_path(matricula: @matricula, categoria: @categoria, periodo_mes: params[:periodo_mes], periodo_ano: params[:periodo_ano], funcao: 'todos'), class: "az-function-switch__option #{'is-active' if @selected_function.blank?}", aria: { selected: @selected_function.blank? }, data: { action: 'click->function-switch#change' } %>
+                <% @parameter_profiles.each do |profile| %>
+                  <% switch_label = profile[:cargo] == 'van' ? 'Van' : profile[:cargo].capitalize %>
+                  <%= link_to switch_label, consulta_path(matricula: @matricula, categoria: @categoria, periodo_mes: params[:periodo_mes], periodo_ano: params[:periodo_ano], funcao: profile[:cargo]), class: "az-function-switch__option #{'is-active' if @selected_function == profile[:cargo]}", aria: { selected: @selected_function == profile[:cargo] }, title: profile[:label], data: { action: 'click->function-switch#change' } %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
       </div>
     </div>
   </header>
@@ -118,7 +134,7 @@
             <span class="az-total-name"><span class="az-total-dot"></span>PDV real</span>
             <span class="az-total-amount"><%= number_to_currency(totals[:valor_pdvs].to_f, unit: "R$ ", separator: ",", delimiter: ".") %></span>
           </div>
-          <% unless @categoria == "van" %>
+          <% if show_recarga %>
             <div class="az-total-row">
               <span class="az-total-name"><span class="az-total-dot"></span>Recargas</span>
               <span class="az-total-amount"><%= number_to_currency(totals[:valor_recargas].to_f, unit: "R$ ", separator: ",", delimiter: ".") %></span>
@@ -179,11 +195,11 @@
             <tr>
               <th>Mapa</th>
               <th>Data</th><th>Cargo aplicado</th>
-              <% unless @categoria == "van" %><th>Fator</th><% end %>
+              <% if show_recarga %><th>Fator</th><% end %>
               <th>Cx total</th><th>Cx real</th><th>PDV total</th><th>PDV real</th>
-              <% unless @categoria == "van" %><th>Recarga</th><% end %>
+              <% if show_recarga %><th>Recarga</th><% end %>
               <th class="text-end">Valor cx</th><th class="text-end">Valor PDV</th>
-              <% unless @categoria == "van" %><th class="text-end">Valor rec.</th><% end %>
+              <% if show_recarga %><th class="text-end">Valor rec.</th><% end %>
               <th class="text-end">Valor MP</th>
             </tr>
           </thead>
@@ -195,15 +211,15 @@
                 <td data-label="Mapa"><%= mapa.mapa %></td>
                 <td data-label="Data"><%= mapa.data_formatada&.strftime("%d/%m/%Y") || "Data inválida" %></td>
                 <td data-label="Cargo aplicado"><%= EmployeeRole::CARGOS.key(values[:categoria]) %><% if values[:recarga_inconsistente] %><small class="d-block text-warning">Recarga informada; paga como mapa normal.</small><% end %></td>
-                <% unless @categoria == "van" %><td data-label="Fator"><%= mapa.fator %></td><% end %>
+                <% if show_recarga %><td data-label="Fator"><%= mapa.fator %></td><% end %>
                 <td data-label="Cx total"><%= mapa.cx_total %></td>
                 <td data-label="Cx real"><%= mapa.cx_real %></td>
                 <td data-label="PDV total"><%= mapa.pdv_total %></td>
                 <td data-label="PDV real"><%= mapa.pdv_real %></td>
-                <% unless @categoria == "van" %><td data-label="Recarga"><%= mapa.recarga %></td><% end %>
+                <% if show_recarga %><td data-label="Recarga"><%= mapa.recarga %></td><% end %>
                 <td data-label="Valor cx" class="text-end"><%= number_to_currency(recarga ? 0 : values[:valor_cx], unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 <td data-label="Valor PDV" class="text-end"><%= number_to_currency(recarga ? 0 : values[:valor_pdv], unit: "R$ ", separator: ",", delimiter: ".") %></td>
-                <% unless @categoria == "van" %><td data-label="Valor rec." class="text-end"><%= number_to_currency(values[:valor_rec], unit: "R$ ", separator: ",", delimiter: ".") %></td><% end %>
+                <% if show_recarga %><td data-label="Valor rec." class="text-end"><%= number_to_currency(values[:valor_rec], unit: "R$ ", separator: ",", delimiter: ".") %></td><% end %>
                 <td data-label="Valor MP" class="text-end az-table-total"><%= number_to_currency(values[:valor_mp], unit: "R$ ", separator: ",", delimiter: ".") %></td>
               </tr>
             <% end %>
@@ -226,7 +242,7 @@
           <tbody>
             <tr><td data-label="Caixa real"><%= totals[:caixas_reais].to_i %></td><td data-label="Valor" class="text-end az-table-total"><%= number_to_currency(totals[:valor_caixas].to_f, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr>
             <tr><td data-label="PDV real"><%= totals[:pdvs_reais].to_i %></td><td data-label="Valor" class="text-end az-table-total"><%= number_to_currency(totals[:valor_pdvs].to_f, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr>
-            <% unless @categoria == "van" %><tr><td data-label="Recargas"><%= totals[:recargas].to_i %></td><td data-label="Valor" class="text-end az-table-total"><%= number_to_currency(totals[:valor_recargas].to_f, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr><% end %>
+            <% if show_recarga %><tr><td data-label="Recargas"><%= totals[:recargas].to_i %></td><td data-label="Valor" class="text-end az-table-total"><%= number_to_currency(totals[:valor_recargas].to_f, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr><% end %>
             <tr><td data-label="Devolução"><%= totals[:devolucoes].to_f.to_i %> · <%= (totals[:percentual_devolucao].to_f * 100).round(2) %>%</td><td data-label="Bônus" class="text-end az-table-total"><%= number_to_currency(totals[:bonus_devolucao].to_f, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr>
             <tr><td data-label="Quantidade de mapas"> <%= totals[:total_mapas].to_i %></td><td data-label="Total" class="text-end az-table-total"><%= number_to_currency(totals[:valor_total].to_f, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr>
           </tbody>
@@ -238,27 +254,33 @@
       <div class="az-panel-header">
         <div>
           <h2 class="az-report-section-title"><i class="bi bi-sliders"></i> Parâmetros de cálculo</h2>
-          <p><%= @employee ? "As tarifas são aplicadas conforme o cargo e a data de cada mapa." : "Valores configurados para o perfil consultado." %></p>
+          <p>Parâmetros efetivamente usados no cálculo da função selecionada.</p>
         </div>
       </div>
       <div class="az-panel-body">
-        <div class="az-period-details">
-          <% if @employee %>
-            <p>O detalhamento do fechamento preserva as tarifas utilizadas. O bônus usa a tarifa da última data de mapa de cada cargo no período.</p>
-          <% elsif @categoria == "motorista" %>
-            <div class="az-detail-item"><span>Caixa real</span><span><%= number_to_currency(@valor_caixa_motorista, unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
-            <div class="az-detail-item"><span>PDV real</span><span><%= number_to_currency(@valor_entrega_motorista, unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
-            <div class="az-detail-item"><span>Recarga</span><span><%= number_to_currency(@valor_recarga_motorista, unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
-          <% elsif @categoria == "ajudante" %>
-            <div class="az-detail-item"><span>Caixa real</span><span><%= number_to_currency(@valor_caixa_ajudante, unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
-            <div class="az-detail-item"><span>PDV real</span><span><%= number_to_currency(@valor_entrega_ajudante, unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
-            <div class="az-detail-item"><span>Recarga</span><span><%= number_to_currency(@valor_recarga_ajudante, unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
-          <% elsif @categoria == "van" %>
-            <div class="az-detail-item"><span>Caixa real</span><span><%= number_to_currency(@valor_caixa_van, unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
-            <div class="az-detail-item"><span>PDV real</span><span><%= number_to_currency(@valor_entrega_van, unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
-          <% end %>
-          <div class="az-detail-item"><span>Bônus devolução</span><span><%= number_to_currency(@valor_bonus_devolucao, unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
-        </div>
+        <% if @selected_parameter_profiles.present? %>
+          <p class="text-muted small">Valores da última data de mapa de <strong><%= @selected_function ? @selected_parameter_profile[:label] : 'todos os cargos' %></strong> no período. Cada mapa mantém a tarifa usada no seu próprio cálculo.</p>
+          <div class="az-parameter-profiles">
+            <% @selected_parameter_profiles.each do |profile| %>
+              <div class="az-parameter-profile">
+                <div class="az-parameter-profile__header">
+                  <strong><%= profile[:label] %></strong>
+                  <small><%= profile[:map_date] ? l(profile[:map_date]) : 'Data não informada' %></small>
+                </div>
+                <div class="az-period-details">
+                  <div class="az-detail-item"><span>Caixa real</span><span><%= number_to_currency(profile[:caixa], unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
+                  <div class="az-detail-item"><span>PDV real</span><span><%= number_to_currency(profile[:entrega], unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
+                  <% unless profile[:cargo] == "van" %>
+                    <div class="az-detail-item"><span>Recarga</span><span><%= number_to_currency(profile[:recarga], unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
+                  <% end %>
+                  <div class="az-detail-item"><span>Bônus devolução</span><span><%= number_to_currency(profile[:bonus_devolucao], unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-muted mb-0">Selecione um período com mapas calculados para visualizar os parâmetros utilizados.</p>
+        <% end %>
       </div>
     </article>
   </section>
