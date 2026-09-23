@@ -45,6 +45,26 @@ class EmployeesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, 'Caixa real'
     assert_includes response.body, 'R$ 1,00'
   end
+
+  test 'recalculating a closing uses the current dated role history' do
+    Mapa.create!(mapa: 'RH-RECALC-VAN', data: '09/09/2026', matric_motorista: 'RH-VAN', fator: 1,
+      cx_real: 10, pdv_real: 5, pdv_total: 5, recarga: 'NAO')
+    Mapa.create!(mapa: 'RH-RECALC-MOTOR', data: '10/09/2026', matric_motorista: 'RH-VAN', fator: 1,
+      cx_real: 10, pdv_real: 5, pdv_total: 5, recarga: 'NAO')
+    closing = VariableClosing.capture!(employee: @employee, user: users(:one), year: 2026, month: 9, reason: 'Fechamento original')
+    @employee.change_role!({ cargo: 'motorista', promax: 'RH-VAN', starts_on: '2026-09-10', reason: 'Promoção' }, user: users(:one))
+
+    post recalculate_closing_employee_path(@employee), params: { closing_id: closing.id }
+
+    assert_redirected_to employee_path(@employee)
+    revised = @employee.variable_closings.where(year: 2026, month: 9).order(:revision).last
+    assert_equal 2, revised.revision
+    assert_equal 1, revised.result.dig('groups', 'van', 'quantidade_mapas')
+    assert_equal 1, revised.result.dig('groups', 'motorista', 'quantidade_mapas')
+    assert_equal 'van', closing.reload.result.dig('maps', 1, 'calculation', 'categoria')
+    assert_equal 'motorista', revised.result.dig('maps', 1, 'calculation', 'categoria')
+  end
+
   test 'dashboard and chat use the employee role for van recarga' do
     CalculationRateVersion.create!(categoria: 'van', nome: 'valor_caixa', valor: 1)
     CalculationRateVersion.create!(categoria: 'van', nome: 'valor_entrega', valor: 2)

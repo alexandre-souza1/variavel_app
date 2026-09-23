@@ -79,6 +79,13 @@
               <div class="app-table-shell"><table class="table app-table"><thead><tr><th>Cargo</th><th>Mapas</th><th>Bônus</th><th>Total</th></tr></thead><tbody>
                 <% visible_groups.each do |cargo, totals| %><tr><td><%= EmployeeRole::CARGOS.key(cargo) %></td><td><%= totals['quantidade_mapas'] %></td><td><%= number_to_currency(totals['bonus_devolucao'].to_d, unit: 'R$ ', separator: ',', delimiter: '.') %></td><td><%= number_to_currency(totals['valor_total'].to_d, unit: 'R$ ', separator: ',', delimiter: '.') %></td></tr><% end %>
               </tbody></table></div>
+              <div class="mt-3">
+                <%= form_with url: recalculate_closing_employee_path(@employee), class: 'employees-form' do |f| %>
+                  <%= hidden_field_tag :closing_id, closing.id %>
+                  <%= hidden_field_tag :reason, 'Recalculado após correção do histórico de cargos' %>
+                  <div class="employees-form-actions"><%= f.submit 'Recalcular pelo histórico atual', class: 'btn btn-outline-primary', data: { turbo_confirm: 'Criar uma nova revisão deste período usando o histórico atual de cargos?' } %></div>
+                <% end %>
+              </div>
               <% if closing_groups.keys.any? { |cargo| EmployeeRole::CARGOS.value?(cargo) } %>
                 <details class="mt-3">
                   <summary class="btn btn-sm btn-outline-primary">Revisar cargo desta variável</summary>

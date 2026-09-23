@@ -1,7 +1,7 @@
 class EmployeesController < ApplicationController
   before_action :authenticate_user!
   before_action :require_hr!
-  before_action :set_employee, only: %i[show change_role close_period link_record revise_role delete_role revise_closing]
+  before_action :set_employee, only: %i[show change_role close_period recalculate_closing link_record revise_role delete_role revise_closing]
 
   def index
     @archived_view = params[:status].to_s == 'archived'
@@ -73,6 +73,16 @@ class EmployeesController < ApplicationController
       year: params[:year].to_i, month: params[:month].to_i, reason: params[:reason])
     redirect_to @employee, notice: "Fechamento registrado, revisão #{closing.revision}."
   rescue ActiveRecord::RecordInvalid, EmployeeRole::HistoryError, Date::Error => error
+    redirect_to @employee, alert: error.message
+  end
+
+  def recalculate_closing
+    closing = @employee.variable_closings.find(params[:closing_id])
+    reason = params[:reason].presence || 'Recalculado após correção do histórico de cargos'
+    revision = VariableClosing.capture!(employee: @employee, user: current_user,
+      year: closing.year, month: closing.month, reason: reason)
+    redirect_to @employee, notice: "Revisão #{revision.revision} criada com o histórico atual."
+  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound, EmployeeRole::HistoryError, Date::Error => error
     redirect_to @employee, alert: error.message
   end
 

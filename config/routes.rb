@@ -5,6 +5,7 @@ Rails.application.routes.draw do
       post :revise_role
       post :change_role
       post :close_period
+      post :recalculate_closing
       get :link_record
       post :link_record
       post :revise_closing
