@@ -1,11 +1,12 @@
+<%# locals: (employee:, duplicate_employees:) %>
 <section id="cadastros-duplicados" class="app-panel employees-duplicates" aria-labelledby="duplicates-title">
   <div class="app-panel__header">
     <div><span class="app-panel__kicker">Revisão de cadastro</span><h2 id="duplicates-title" class="app-panel__title">Encontramos outros cadastros com esta matrícula</h2><p class="app-panel__subtitle">Confira se pertencem à mesma pessoa. Você pode vincular o cadastro de origem a este colaborador, mantendo as referências históricas.</p></div>
     <i class="bi bi-intersect employees-panel-icon" aria-hidden="true"></i>
   </div>
   <div class="app-panel__body">
-    <% @duplicate_employees.each do |candidate| %>
-      <% compatible = @employee.linkable_legacy_source?(candidate) %>
+    <% duplicate_employees.each do |candidate| %>
+      <% compatible = employee.linkable_legacy_source?(candidate) %>
       <div class="employees-duplicate-candidate">
         <div>
           <strong><%= candidate.nome %></strong>
@@ -15,7 +16,7 @@
         <div class="employees-duplicate-actions">
           <%= link_to 'Ver cadastro', employee_path(candidate), class: 'btn btn-outline-secondary' %>
           <% if compatible %>
-            <%= link_to 'Revisar e vincular', link_record_employee_path(@employee, source_employee_id: candidate.id), class: 'btn btn-outline-primary' %>
+            <%= link_to 'Revisar e vincular', link_record_employee_path(employee, source_employee_id: candidate.id), class: 'btn btn-outline-primary' %>
           <% end %>
         </div>
       </div>

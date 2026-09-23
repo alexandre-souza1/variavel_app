@@ -304,7 +304,7 @@ class DashboardsController < ApplicationController
       if @periodo_tipo == 'mes'
         closing = employee.variable_closings.where(year: @ano, month: @mes).order(revision: :desc).first
         if closing
-          groups = closing.result.fetch('groups').transform_values { |group| group.symbolize_keys.transform_values { |value| value.to_d } }
+          groups = closing.groups_with_devolution_percentages.transform_values { |group| group.symbolize_keys.transform_values { |value| value.nil? ? nil : value.to_d } }
           snapshot_maps = closing.result.fetch('maps')
         end
       end

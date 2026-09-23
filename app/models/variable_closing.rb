@@ -21,6 +21,24 @@ class VariableClosing < ApplicationRecord
     end
   end
 
+  # Older merged snapshots omitted the percentage for each cargo. Recover only
+  # that derived value at read time; saved amounts and snapshots stay unchanged.
+  def groups_with_devolution_percentages
+    self.class.with_devolution_percentages(result.fetch('groups', {}))
+  end
+
+  def self.with_devolution_percentages(groups)
+    groups.transform_values do |values|
+      group = values.stringify_keys
+      if group['percentual_devolucao'].nil? && group['pdv_real'].present? && group['devolucoes'].present?
+        returned = BigDecimal(group['devolucoes'].to_s)
+        total = BigDecimal(group['pdv_real'].to_s) + returned
+        group['percentual_devolucao'] = total.zero? ? BigDecimal('0') : returned / total
+      end
+      group
+    end
+  end
+
   def self.merge_results(*results, employee:)
     maps = {}
     groups = {}
@@ -46,6 +64,7 @@ class VariableClosing < ApplicationRecord
       issues.concat(snapshot.fetch('issues', []))
     end
 
+    groups = with_devolution_percentages(groups)
     totals = groups.empty? ? {} : MapaRemuneracaoService.new('motorista').totals([])
     groups.each_value do |group|
       group.each do |key, value|

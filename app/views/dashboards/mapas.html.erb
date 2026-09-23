@@ -232,7 +232,7 @@
                     <td><%= number_with_precision(m[:cx_real], precision: 0, delimiter: ".") %></td>
                     <td><%= number_with_precision(m[:pdv_real], precision: 0, delimiter: ".") %></td>
                     <td><%= m[:recargas] %></td>
-                    <td><%= (m[:percentual_devolucao] * 100).round(2) %>%</td>
+                    <td><%= m[:percentual_devolucao].nil? ? '—' : "#{(m[:percentual_devolucao] * 100).round(2)}%" %></td>
                     <td class="text-end fw-bold"><%= number_to_currency(m[:valor_total], unit: "R$ ", separator: ",", delimiter: ".") %></td>
                   </tr>
                 <% end %>
@@ -282,7 +282,7 @@
                     <td><%= number_with_precision(a[:cx_real], precision: 0, delimiter: ".") %></td>
                     <td><%= number_with_precision(a[:pdv_real], precision: 0, delimiter: ".") %></td>
                     <td><%= a[:recargas] %></td>
-                    <td><%= (a[:percentual_devolucao] * 100).round(2) %>%</td>
+                    <td><%= a[:percentual_devolucao].nil? ? '—' : "#{(a[:percentual_devolucao] * 100).round(2)}%" %></td>
                     <td class="text-end fw-bold"><%= number_to_currency(a[:valor_total], unit: "R$ ", separator: ",", delimiter: ".") %></td>
                   </tr>
                 <% end %>
