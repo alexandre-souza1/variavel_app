@@ -129,7 +129,8 @@ class PublicVariableContext
     activities = AzRvOnDemandActivity.for_employee(@record.nome).between(start_date, Date.current).to_a
     efc_daily_values = AzHelperEfcService.new(start_date: start_date, end_date: Date.current).daily_values
     suprimento_daily_values = @record.turno.to_i == 0 ? AzHelperSuprimentoService.new(start_date: start_date, end_date: Date.current).daily_values : {}
-    dates = (efc_daily_values.keys + suprimento_daily_values.keys + points.map(&:reference_date) + refugo.filter_map { |item| item.associated_at&.to_date } + activities.filter_map { |item| item.created_at_source&.to_date }).compact.uniq
+    remonte_daily_values = @record.turno.to_i == 1 ? AzHelperRemonteService.new(start_date: start_date, end_date: Date.current).daily_values : {}
+    dates = (efc_daily_values.keys + suprimento_daily_values.keys + remonte_daily_values.keys + points.map(&:reference_date) + refugo.filter_map { |item| item.associated_at&.to_date } + activities.filter_map { |item| item.created_at_source&.to_date }).compact.uniq
 
     months = dates.map { |date| az_closing_month_for(date) }.uniq.sort
     monthly = months.to_h do |month_date|
@@ -144,7 +145,8 @@ class PublicVariableContext
       ondemand_value = month_activities.sum(&:rv_total_amount)
       efc_value = efc_daily_values.select { |date, _| date.between?(start_month, end_month) }.values.sum(BigDecimal("0"))
       suprimento_value = suprimento_daily_values.select { |date, _| date.between?(start_month, end_month) }.values.sum(BigDecimal("0"))
-      [month, { efc: number(efc_value), suprimento: number(suprimento_value), points: number(month_points.sum(&:total_points)), point_value: number(point_value), refugo: number(refugo_value), ondemand: number(ondemand_value), ondemand_quantity: number(month_activities.sum(&:rv_quantity)), total: number(point_value + refugo_value + ondemand_value + efc_value + suprimento_value) }]
+      remonte_value = remonte_daily_values.select { |date, _| date.between?(start_month, end_month) }.values.sum(BigDecimal("0"))
+      [month, { efc: number(efc_value), suprimento: number(suprimento_value), remonte: number(remonte_value), points: number(month_points.sum(&:total_points)), point_value: number(point_value), refugo: number(refugo_value), ondemand: number(ondemand_value), ondemand_quantity: number(month_activities.sum(&:rv_quantity)), total: number(point_value + refugo_value + ondemand_value + efc_value + suprimento_value + remonte_value) }]
     end
 
     {

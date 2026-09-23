@@ -65,6 +65,13 @@
       <div class="az-overview-value"><%= number_to_currency(@point_value, unit: "R$ ", separator: ",", delimiter: ".") %></div>
       <div class="az-overview-detail"><%= number_with_precision(@point_total, precision: 2, delimiter: ".", separator: ",") %> pontos</div>
     </div>
+    <% if @turno.to_i == 1 %>
+    <div class="az-overview-card">
+      <div class="az-overview-label"><i class="bi bi-stack"></i> Remonte</div>
+      <div class="az-overview-value"><%= number_to_currency(@remonte_value, unit: "R$ ", separator: ",", delimiter: ".") %></div>
+      <div class="az-overview-detail"><%= @remonte_daily_values.values.sum { |value| value / AzHelperRemonteService::PALETTE_RATE } %> paletes · R$ 0,10 por palete · turno B</div>
+    </div>
+    <% end %>
 
     <div class="az-overview-card">
       <div class="az-overview-label"><i class="bi bi-exclamation-circle"></i> Refugos</div>
@@ -82,11 +89,13 @@
       <div class="az-overview-value"><%= number_to_currency(@efc_value, unit: "R$ ", separator: ",", delimiter: ".") %></div>
       <div class="az-overview-detail"><%= @efc_daily_values.size %> dia(s) com meta atingida · R$ 5,00 por dia</div>
     </div>
+    <% if @turno.to_i == 0 %>
     <div class="az-overview-card">
       <div class="az-overview-label"><i class="bi bi-box-seam"></i> Ressuprimento</div>
       <div class="az-overview-value"><%= number_to_currency(@suprimento_value, unit: "R$ ", separator: ",", delimiter: ".") %></div>
       <div class="az-overview-detail"><%= @suprimento_daily_values.size %> dia(s) com meta atingida · R$ 4,00 por dia · turno A</div>
     </div>
+    <% end %>
   </section>
 
   <section class="az-report-grid">
@@ -103,6 +112,12 @@
             <span class="az-total-name"><span class="az-total-dot"></span>Montagem por pontos</span>
             <span class="az-total-amount"><%= number_to_currency(@point_value, unit: "R$ ", separator: ",", delimiter: ".") %></span>
           </div>
+          <% if @turno.to_i == 1 %>
+          <div class="az-total-row">
+            <span class="az-total-name"><span class="az-total-dot"></span>Remonte</span>
+            <span class="az-total-amount"><%= number_to_currency(@remonte_value, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+          </div>
+          <% end %>
           <div class="az-total-row">
             <span class="az-total-name"><span class="az-total-dot"></span>Refugos</span>
             <span class="az-total-amount"><%= number_to_currency(@refugo_value, unit: "R$ ", separator: ",", delimiter: ".") %></span>
@@ -115,10 +130,10 @@
             <span class="az-total-name"><span class="az-total-dot"></span>EFC</span>
             <span class="az-total-amount"><%= number_to_currency(@efc_value, unit: "R$ ", separator: ",", delimiter: ".") %></span>
           </div>
-          <div class="az-total-row">
+          <% if @turno.to_i == 0 %><div class="az-total-row">
             <span class="az-total-name"><span class="az-total-dot"></span>Ressuprimento</span>
             <span class="az-total-amount"><%= number_to_currency(@suprimento_value, unit: "R$ ", separator: ",", delimiter: ".") %></span>
-          </div>
+          </div><% end %>
           <div class="az-total-row az-total-row--grand">
             <span class="az-total-name"><i class="bi bi-check2-circle"></i>Total geral</span>
             <span class="az-total-amount"><%= number_to_currency(@total_variable, unit: "R$ ", separator: ",", delimiter: ".") %></span>
@@ -170,7 +185,8 @@
               <th class="text-end">Refugo</th>
               <th class="text-end">On Demand</th>
               <th class="text-end">EFC</th>
-              <th class="text-end">Ressuprimento</th>
+              <% if @turno.to_i == 0 %><th class="text-end">Ressuprimento</th><% end %>
+              <% if @turno.to_i == 1 %><th class="text-end">Remonte</th><% end %>
               <th class="text-end">Total do dia</th>
             </tr>
           </thead>
@@ -183,7 +199,8 @@
                 <td data-label="Refugo" class="text-end"><%= daily[:refugo] %> · <%= number_to_currency(daily[:refugo_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 <td data-label="On Demand" class="text-end"><%= number_with_precision(daily[:ondemand], precision: 2, strip_insignificant_zeros: true, separator: ",", delimiter: ".") %> · <%= number_to_currency(daily[:ondemand_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
                 <td data-label="EFC" class="text-end"><%= number_to_currency(daily[:efc_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
-                <td data-label="Ressuprimento" class="text-end"><%= number_to_currency(daily[:suprimento_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
+                <% if @turno.to_i == 0 %><td data-label="Ressuprimento" class="text-end"><%= number_to_currency(daily[:suprimento_value], unit: "R$ ", separator: ",", delimiter: ".") %></td><% end %>
+                <% if @turno.to_i == 1 %><td data-label="Remonte" class="text-end"><%= number_to_currency(daily[:remonte_value], unit: "R$ ", separator: ",", delimiter: ".") %></td><% end %>
                 <td data-label="Total do dia" class="text-end az-table-total"><%= number_to_currency(daily[:total_value], unit: "R$ ", separator: ",", delimiter: ".") %></td>
               </tr>
             <% end %>

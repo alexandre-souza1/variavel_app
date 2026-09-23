@@ -9,6 +9,7 @@ class AzMapasImportService
 
   EFD_HEADERS = ["data", "meta (%) - quanto maior melhor", "realizado (%)"].freeze
   SUPRIMENTO_HEADERS = ["data", "meta", "realizado", "atingimento"].freeze
+  REMONTE_HEADERS = ["data", "realizado (qtd.)", "realizado remonte (r$)"].freeze
 
   def initialize(file)
     @files = Array(file).reject(&:blank?)
@@ -32,15 +33,18 @@ class AzMapasImportService
     sheet = workbook.sheet(0)
     header_row = (1..[sheet.last_row.to_i, 30].min).find do |number|
       normalized = sheet.row(number).map { |value| normalize(value) }
-      [HEADERS, TMA_HEADERS, EFD_HEADERS, SUPRIMENTO_HEADERS].any? { |format| (format - normalized).empty? }
+      [HEADERS, TMA_HEADERS, EFD_HEADERS, SUPRIMENTO_HEADERS, REMONTE_HEADERS].any? { |format| (format - normalized).empty? }
     end
-    raise Error, "Cabeçalho esperado: Ano, Mês, Dia, % EFC e Meta; ANO, NOME_MES_ABREV, DIA, TR e Meta; Data, Meta (%) - QUANTO MAIOR MELHOR e Realizado (%); ou Data, Meta, Realizado e Atingimento." unless header_row
+    raise Error, "Cabeçalho esperado: Ano, Mês, Dia, % EFC e Meta; ANO, NOME_MES_ABREV, DIA, TR e Meta; Data, Meta (%) - QUANTO MAIOR MELHOR e Realizado (%); Data, Meta, Realizado e Atingimento; ou Data, Realizado (Qtd.) e Realizado Remonte (R$)." unless header_row
 
     headers = sheet.row(header_row).map { |value| normalize(value) }
     tma = (TMA_HEADERS - headers).empty?
     efd = (EFD_HEADERS - headers).empty?
     suprimento = (SUPRIMENTO_HEADERS - headers).empty?
-    columns = if suprimento
+    remonte = (REMONTE_HEADERS - headers).empty?
+    columns = if remonte
+                REMONTE_HEADERS
+              elsif suprimento
                 SUPRIMENTO_HEADERS
               else
                 efd ? EFD_HEADERS : (tma ? TMA_HEADERS : HEADERS)
@@ -51,7 +55,14 @@ class AzMapasImportService
 
       values = columns.map { |header| row[headers.index(header)] }
       begin
-        if suprimento
+        if remonte
+          raw_date, quantity, _reported_value = values
+          date = spreadsheet_date(raw_date)
+          next if quantity.blank?
+          quantity = decimal_number(quantity)
+          next if quantity <= 0
+          next({ data: date, tipo: :remonte, turno: [1], resultado: quantity, atingiu_meta: true })
+        elsif suprimento
           raw_date, goal, result, attainment = values
           date = spreadsheet_date(raw_date)
           goal = percentage(goal)
@@ -141,6 +152,13 @@ class AzMapasImportService
   end
 
   def minutes(value)
+    number = Float(value.to_s.strip.tr(",", "."))
+    raise ArgumentError unless number.finite? && number >= 0
+
+    number
+  end
+
+  def decimal_number(value)
     number = Float(value.to_s.strip.tr(",", "."))
     raise ArgumentError unless number.finite? && number >= 0
 

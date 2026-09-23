@@ -113,7 +113,7 @@ class AzConsultasControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select ".az-overview-card .az-overview-label", text: "On Demand"
-    assert_select ".az-overview-card:nth-child(4) .az-overview-detail", text: /87 unidades · 1 registros importados/
+    assert_includes response.body, "87 unidades · 1 registros importados"
     assert_select ".az-overview-card--total .az-overview-value", text: "R$ 17,40"
   end
 

@@ -190,9 +190,11 @@ class AzConsultasController < ApplicationController
     @efc_value = @efc_daily_values.values.sum(BigDecimal("0"))
     @suprimento_daily_values = @turno.to_i == 0 ? AzHelperSuprimentoService.new(start_date: @start_date, end_date: @end_date).daily_values : {}
     @suprimento_value = @suprimento_daily_values.values.sum(BigDecimal("0"))
-    @daily_summary = build_daily_summary(@points, @refugo_tasks, @ondemand_activities, @efc_daily_values, @suprimento_daily_values)
+    @remonte_daily_values = @turno.to_i == 1 ? AzHelperRemonteService.new(start_date: @start_date, end_date: @end_date).daily_values : {}
+    @remonte_value = @remonte_daily_values.values.sum(BigDecimal("0"))
+    @daily_summary = build_daily_summary(@points, @refugo_tasks, @ondemand_activities, @efc_daily_values, @suprimento_daily_values, @remonte_daily_values)
     @total_activities = @refugo_count + @ondemand_quantity
-    @total_variable = @point_value + @refugo_value + @ondemand_value + @efc_value + @suprimento_value
+    @total_variable = @point_value + @refugo_value + @ondemand_value + @efc_value + @suprimento_value + @remonte_value
     @period_days = (@end_date - @start_date).to_i + 1
 
     render :show_ajudante
@@ -231,7 +233,7 @@ class AzConsultasController < ApplicationController
     { 0 => "A", 1 => "B", 2 => "C" }.fetch(turno.to_i, "não informado")
   end
 
-  def build_daily_summary(points, refugo_tasks, ondemand_activities, efc_daily_values, suprimento_daily_values)
+  def build_daily_summary(points, refugo_tasks, ondemand_activities, efc_daily_values, suprimento_daily_values, remonte_daily_values)
     summary = Hash.new do |hash, date|
       hash[date] = {
         points: BigDecimal("0"),
@@ -241,7 +243,8 @@ class AzConsultasController < ApplicationController
         ondemand: 0,
         ondemand_value: BigDecimal("0"),
         efc_value: BigDecimal("0"),
-        suprimento_value: BigDecimal("0")
+        suprimento_value: BigDecimal("0"),
+        remonte_value: BigDecimal("0")
       }
     end
 
@@ -273,11 +276,12 @@ class AzConsultasController < ApplicationController
 
     efc_daily_values.each { |date, value| summary[date][:efc_value] = value }
     suprimento_daily_values.each { |date, value| summary[date][:suprimento_value] = value }
+    remonte_daily_values.each { |date, value| summary[date][:remonte_value] = value }
 
     summary.sort_by { |date, _| date }.map do |date, daily|
       daily.merge(
         date: date,
-        total_value: daily[:point_value] + daily[:refugo_value] + daily[:ondemand_value] + daily[:efc_value] + daily[:suprimento_value]
+        total_value: daily[:point_value] + daily[:refugo_value] + daily[:ondemand_value] + daily[:efc_value] + daily[:suprimento_value] + daily[:remonte_value]
       )
     end
   end

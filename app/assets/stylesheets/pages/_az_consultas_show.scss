@@ -793,6 +793,7 @@ html[data-bs-theme="dark"] .az-operator-report-page {
 
 @media (min-width: 1200px) {
   .az-helper-report-page .az-report-overview--helper {
-    grid-template-columns: minmax(220px, 1.35fr) repeat(4, minmax(0, 1fr));
+    grid-template-columns: minmax(220px, 1.35fr) repeat(5, minmax(0, 1fr));
+    align-items: stretch;
   }
 }

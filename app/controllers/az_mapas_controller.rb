@@ -131,6 +131,8 @@ class AzMapasController < ApplicationController
       [1]        # B
     when :suprimento
       [0]        # Ajudantes do turno A
+    when :remonte
+      [1]        # Ajudantes do turno B
     else
       []
     end
