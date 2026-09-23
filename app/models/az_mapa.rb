@@ -5,6 +5,14 @@ class AzMapa < ApplicationRecord
     eficiencia_descarga: 2
   }
 
+  scope :considerados_na_variavel, -> {
+    where.not("tipo = ? AND EXTRACT(DOW FROM data) = 0", tipos.fetch("eficiencia_carregamento"))
+  }
+
+  def meta_remunerada?
+    atingiu_meta? && !(eficiencia_carregamento? && data&.sunday?)
+  end
+
   # Constante para mapear os turnos
   TURNOS = {
     0 => "A",

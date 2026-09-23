@@ -49,7 +49,7 @@
   </div></div>
   <div class="app-panel mb-4"><div class="app-panel__body">
     <h2 class="h4">Operadores · Ranking de variável</h2>
-    <p class="text-muted">EFC nos turnos A e C; EFD no turno B. Quantidades de metas atingidas e tarefas WMS remuneradas.</p>
+    <p class="text-muted">EFC nos turnos A e C, exceto aos domingos; EFD no turno B. Quantidades de metas atingidas e tarefas WMS remuneradas.</p>
     <div class="table-responsive"><table class="table app-table"><thead><tr><th>Colaborador</th><th>Turno</th><th>TMA</th><th>EFC/EFD</th><th>WMS</th><th>Valor TMA</th><th>Valor EFC/EFD</th><th>Valor WMS</th><th>Total</th></tr></thead><tbody>
       <% @dashboard.operators.each do |row| %>
         <tr><td><%= link_to "#{row[:person].nome} · #{row[:person].matricula}", az_consulta_path(matricula: row[:person].matricula, turno: row[:person].turno, periodo_mes: @mes, periodo_ano: @ano) %></td><td><%= AzMapa::TURNOS[row[:person].turno] %></td>
@@ -61,7 +61,7 @@
   </div></div>
   <div class="app-panel mb-4"><div class="app-panel__body">
     <h2 class="h4">Ajudantes · Ranking de variável</h2>
-    <p class="text-muted">Montagem, Blitz Refugo, atividades sob demanda e EFC (R$ 5,00 por dia de meta atingida nos turnos A, B e C), conforme a consulta individual. Os links abrem o ciclo completo.</p>
+    <p class="text-muted">Montagem, Blitz Refugo, atividades sob demanda e EFC (R$ 5,00 por dia de meta atingida nos turnos A, B e C, exceto aos domingos), conforme a consulta individual. Os links abrem o ciclo completo.</p>
     <div class="table-responsive"><table class="table app-table"><thead><tr><th>Colaborador</th><th>Turno</th><th>Pontos</th><th>Montagem</th><th>Refugos</th><th>Valor refugo</th><th>Atividades</th><th>Sob demanda</th><th>Dias EFC</th><th>Valor EFC</th><th>Total</th></tr></thead><tbody>
       <% @dashboard.helpers.each do |row| %>
         <tr><td><%= link_to "#{row[:person].nome} · #{row[:person].matricula}", az_consulta_path(perfil: "ajudante", matricula: row[:person].matricula, turno: row[:person].turno, periodo_mes: @mes, periodo_ano: @ano) %></td><td><%= AzMapa::TURNOS[row[:person].turno] %></td><td><%= number_with_delimiter(row[:points]) %></td><td><%= number_to_currency(row[:point_value]) %></td><td><%= row[:refugo] %></td><td><%= number_to_currency(row[:refugo_value]) %></td><td><%= row[:activities] %></td><td><%= number_to_currency(row[:activity_value]) %></td><td><%= row[:efc_days] %></td><td><%= number_to_currency(row[:efc_value]) %></td><td><%= number_to_currency(row[:total]) %></td></tr>

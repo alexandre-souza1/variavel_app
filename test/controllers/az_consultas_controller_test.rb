@@ -42,6 +42,7 @@ class AzConsultasControllerTest < ActionDispatch::IntegrationTest
 
   test "helper consultation includes EFC in daily and period totals for every shift" do
     AzMapa.delete_all
+    AzMapa.create!(data: "2026-09-13", tipo: :eficiencia_carregamento, turno: [0, 2], resultado: 95, atingiu_meta: true)
     AzMapa.create!(data: "2026-09-18", tipo: :eficiencia_carregamento, turno: [0, 2], resultado: 95, atingiu_meta: true)
     AzMapa.create!(data: "2026-09-19", tipo: :eficiencia_carregamento, turno: [0, 2], resultado: 95, atingiu_meta: true)
     helper = az_ajudantes(:one)
@@ -55,6 +56,23 @@ class AzConsultasControllerTest < ActionDispatch::IntegrationTest
       assert_select "td[data-label='EFC']", text: "R$ 5,00", count: 1
       assert_select "td[data-label='Total do dia']", text: "R$ 5,00", count: 1
       assert_select "td[data-label='Data']", text: "18/09/2026", count: 1
+    end
+  end
+
+  test "operator consultation pays weekday EFC but not Sunday EFC" do
+    AzMapa.delete_all
+    operator = operators(:one)
+    operator.update!(turno: 0, matricula: "EFC-SUNDAY")
+    rate = ParametroCalculo.find_or_initialize_by(categoria: "operador", nome: "valor_efc")
+    rate.update!(valor: 12)
+    ["2026-09-12", "2026-09-13"].each do |date|
+      AzMapa.create!(data: date, tipo: :eficiencia_carregamento, turno: [0, 2], resultado: 95, atingiu_meta: true)
+    end
+    get az_consulta_path, params: { matricula: operator.matricula, turno: 0, periodo_mes: 9, periodo_ano: 2026 }
+    assert_response :success
+    assert_select ".az-overview-card--total .az-overview-value", text: "R$ 12,00"
+    assert_select "tbody tr", text: /13\/09\/2026/ do
+      assert_select "td", text: /R\$ 0,00/
     end
   end
 

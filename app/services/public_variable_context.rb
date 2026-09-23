@@ -109,7 +109,7 @@ class PublicVariableContext
       month_tasks = tasks.select { |task| task.started_at&.to_date&.between?(month_start, month_end) }
       tma = month_maps.count { |mapa| mapa.tipo == "tempo_atendimento" && mapa.atingiu_meta } * tma_value
       efficiency_type = [0, 2].include?(@record.turno.to_i) ? "eficiencia_carregamento" : "eficiencia_descarga"
-      efficiency = month_maps.count { |mapa| mapa.tipo == efficiency_type && mapa.atingiu_meta } * efficiency_value
+      efficiency = month_maps.count { |mapa| mapa.tipo == efficiency_type && mapa.meta_remunerada? } * efficiency_value
       wms = month_tasks.sum { |task| task.duration.to_i >= 10 ? wms_value : 0 }
       [month, { tma: number(tma), efficiency: number(efficiency), wms: number(wms), total: number(tma + efficiency + wms) }]
     end
@@ -150,7 +150,7 @@ class PublicVariableContext
       period_definition: "Ajudantes do armazém usam o período de fechamento do dia 19 ao dia 18.",
       current_period: az_closing_month_for(Date.current).strftime("%Y-%m"),
       monthly: monthly,
-      rules: { efc: "Ajudantes dos turnos A, B e C recebem R$ 5,00 por dia de meta EFC atingida. EFD não compõe esse valor.", refugo_value: "Cada Blitz Refugo vale R$ 1,10.", other_values: "Os demais valores seguem as taxas cadastradas no sistema." }
+      rules: { efc: "Ajudantes dos turnos A, B e C recebem R$ 5,00 por dia de meta EFC atingida, exceto domingos. EFD não compõe esse valor.", refugo_value: "Cada Blitz Refugo vale R$ 1,10.", other_values: "Os demais valores seguem as taxas cadastradas no sistema." }
     }
   end
 

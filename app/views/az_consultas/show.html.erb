@@ -131,7 +131,7 @@
 
   <div class="az-report-note">
     <i class="bi bi-info-circle-fill"></i>
-    <span>Esta é uma prévia da variável coletiva por turno. Todos os operadores do mesmo turno recebem o mesmo valor nos mapas coletivos.</span>
+    <span>Esta é uma prévia da variável coletiva por turno. Todos os operadores do mesmo turno recebem o mesmo valor nos mapas coletivos. Domingos são desconsiderados na EFC.</span>
   </div>
 
   <article class="az-report-panel mb-4">
@@ -159,7 +159,7 @@
               <%
                 if [0, 2].include?(@turno)
                   valor_tma = mapa.tipo == "tempo_atendimento" && mapa.atingiu_meta ? @valor_tma_operator : 0
-                  valor_efc = mapa.tipo == "eficiencia_carregamento" && mapa.atingiu_meta ? @valor_efc_operator : 0
+                  valor_efc = mapa.tipo == "eficiencia_carregamento" && mapa.meta_remunerada? ? @valor_efc_operator : 0
                 else
                   valor_tma = mapa.tipo == "tempo_atendimento" && mapa.atingiu_meta ? @valor_tma_operator : 0
                   valor_efc = mapa.tipo == "eficiencia_descarga" && mapa.atingiu_meta ? @valor_efc_operator : 0

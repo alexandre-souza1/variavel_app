@@ -132,7 +132,7 @@ class AzConsultasController < ApplicationController
         end
         @total_valor_efc = @azmapas.sum do |mapa|
           eficiencia_tipo = [0, 2].include?(@turno) ? "eficiencia_carregamento" : "eficiencia_descarga"
-          mapa.tipo == eficiencia_tipo && mapa.atingiu_meta ? @valor_efc_operator : 0
+          mapa.tipo == eficiencia_tipo && mapa.meta_remunerada? ? @valor_efc_operator : 0
         end
         @total_operator_variable = @total_valor_tma + @total_valor_efc + @total_wms
 

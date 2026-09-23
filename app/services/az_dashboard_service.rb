@@ -6,7 +6,7 @@ class AzDashboardService
   end
 
   def call
-    maps = AzMapa.where(data: @start_date..@end_date)
+    maps = AzMapa.considerados_na_variavel.where(data: @start_date..@end_date)
     maps = maps.where("? = ANY(turno)", @turno) unless @turno.nil?
     maps = maps.to_a
     @indicators = AzMapa.tipos.keys.map do |type|
@@ -37,7 +37,7 @@ class AzDashboardService
                    .where(started_at: @start_date.beginning_of_day..@end_date.end_of_day).group_by(&:operator_id)
     tma_rate, efficiency_rate, wms_rate = rate("valor_tma"), rate("valor_efc"), rate("tarefa_wms")
     employees.map do |person|
-      records = maps.select { |map| map.turno.include?(person.turno) && map.atingiu_meta? }
+      records = maps.select { |map| map.turno.include?(person.turno) && map.meta_remunerada? }
       efficiency = person.turno == 1 ? "eficiencia_descarga" : "eficiencia_carregamento"
       tma = records.count { |map| map.tipo == "tempo_atendimento" }
       ef = records.count { |map| map.tipo == efficiency }
