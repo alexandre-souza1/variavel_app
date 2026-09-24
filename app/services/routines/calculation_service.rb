@@ -191,7 +191,18 @@ module Routines
     end
 
     def total_days
-      @total_days ||= expected_reference_dates.length
+      @total_days ||= begin
+        if indicator.daily?
+          filled_dates = values.map(&:reference_date)
+
+          # Domingos são opcionais, mas participam quando preenchidos.
+          expected_reference_dates.count do |date|
+            !date.sunday? || filled_dates.include?(date)
+          end
+        else
+          expected_reference_dates.length
+        end
+      end
     end
 
     def expected_reference_dates
