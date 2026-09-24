@@ -236,6 +236,8 @@ Rails.application.routes.draw do
   resources :rotogramas, only: :index
   resource :patio, controller: "parking_layouts", only: [:show, :update]
 
+  resources :tire_inspections, only: :index, path: "pneus/divergencias"
+
   resources :plates do
     collection { post :import }
     member do

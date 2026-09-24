@@ -128,6 +128,7 @@ class DashboardsController < ApplicationController
     # 6. Pneus que precisam recapar (Prolog)
     # ------------------------------------------------------------
     @retread_tires = Prolog::TiresClient.new.tires_needing_retread
+    load_tire_divergences
   end
 
 
@@ -189,6 +190,22 @@ class DashboardsController < ApplicationController
   end
 
   private
+
+  def load_tire_divergences
+    @tire_month_start = Date.current.beginning_of_month
+    @tire_divergences = []
+    inspections = Prolog::InspectionsClient.new.fetch(
+      start_time: (@tire_month_start << 3).in_time_zone,
+      end_time: (Date.current + 1).in_time_zone
+    )
+    report = Prolog::InspectionDivergences.new(inspections,
+      start_time: @tire_month_start.in_time_zone, end_time: Date.current.in_time_zone.end_of_day)
+    @tire_divergence_count = report.rows.size
+    @tire_divergence_counts = report.rows.group_by { |row| row[:severity] }.transform_values(&:size)
+    @tire_divergences = report.rows.sort_by { |row| [-row[:current][:time].to_f, row[:tire_id].to_s, row[:groove]] }.first(10)
+  rescue Prolog::InspectionsClient::Error => e
+    @tire_divergences_error = e.message
+  end
 
   def require_fleet_dashboard_access
     return if current_user.admin? || current_user.sector_fleet?

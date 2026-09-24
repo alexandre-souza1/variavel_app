@@ -63,6 +63,16 @@
     }
   }
 
+  .tire-divergences-table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .tire-divergences-table th:last-child,
+  .tire-divergences-table td:last-child {
+    text-align: right;
+  }
+
   // KPI Cards
   .kpi-grid {
     display: grid;

@@ -1,0 +1,37 @@
+<div class="kpi-grid">
+  <% [["Permaneceu baixa", "persisted", "danger"], ["Normalizou", "normalized", "success"], ["Incorreto · pressão baixa no mês atual", "current_low", "danger"], ["Pressão baixa · sem aferição no mês atual", "awaiting_month", "warning"], ["Última leitura baixa no período", "pending", "secondary"], ["Sem comparação válida", "unknown", "secondary"]].each do |label, status, color| %>
+    <div class="kpi-card"><div class="kpi-icon bg-<%= color %>-soft"><i class="bi bi-speedometer2 text-<%= color %>"></i></div><div class="kpi-info"><span class="kpi-label"><%= label %></span><span class="kpi-value"><%= @pressure_counts.fetch(status, 0) %></span></div></div>
+  <% end %>
+</div>
+<details class="tire-methodology"><summary><i class="bi bi-info-circle"></i> Como acompanhamos a calibragem</summary><div>
+  Cada linha é uma aferição abaixo do limite proporcional de 100/115 da pressão recomendada (aproximadamente 86,96%). Para recomendação de 115 PSI, apenas valores abaixo de 100 PSI são divergências; 100 PSI está no limite aceitável. “Permaneceu baixa” significa que a próxima aferição disponível do mesmo pneu e vida também estava abaixo do limite proporcional daquela data; não comprova que a pressão ficou baixa durante todo o intervalo.
+  <br>A comparação termina em <%= @end_date.strftime("%d/%m/%Y") %>. A última leitura baixa recebe aviso vermelho quando foi realizada no mês atual e amarelo quando é de um mês anterior, sem nova aferição neste mês nos dados consultados. Em períodos encerrados antes do mês atual, mostramos “Última leitura baixa no período”, sem concluir se houve aferição depois. Leituras sem pressão ou recomendação válida não confirmam normalização nem persistência.
+  <br>Histórico de referência desde <%= @baseline_date.strftime("%d/%m/%Y") %>. <%= @report.unusable_count %> leituras sem pressão ou recomendação válida no período. Contagens por ocorrência, respeitando a busca por pneu ou placa.
+</div></details>
+<section class="app-panel tire-results">
+  <div class="app-panel__header"><h2 class="h5 mb-0"><%= @total_rows %> ocorrências de calibragem baixa</h2></div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>Pneu / vida</th><th>Aferição com pressão baixa</th><th>Pressão / recomendada (PSI)</th><th>Aferição seguinte</th><th>Acompanhamento</th></tr></thead>
+      <tbody>
+        <% @rows.each do |row| %>
+          <% current = row[:current]; following = row[:following] %>
+          <tr>
+            <td><strong><%= row[:serial].presence || row[:tire_id] %></strong><br><small>Vida <%= row[:life] %></small></td>
+            <td><%= current[:time].in_time_zone.strftime("%d/%m/%Y %H:%M") %><br><%= current[:record].dig("vehicle", "licensePlate").presence || "Aferição individual" %><br><small><%= current[:record].dig("submittedBy", "name") %> · #<%= current[:record]["id"] %></small></td>
+            <td><strong><%= number_with_precision(current[:pressure], precision: 2, separator: ",") %></strong> / <%= number_with_precision(current[:recommended], precision: 2, separator: ",") %><br><small>Limite: <%= number_with_precision(current[:minimum], precision: 2, separator: ",") %> PSI</small><br><small>Diferença para a recomendada: <%= number_with_precision(row[:deficit], precision: 2, separator: ",") %> (<%= number_to_percentage(row[:deficit] / current[:recommended] * 100, precision: 1, separator: ",") %>)</small></td>
+            <td>
+              <% if following %>
+                <%= following[:time].in_time_zone.strftime("%d/%m/%Y %H:%M") %><br>
+                <%= following[:pressure] ? number_with_precision(following[:pressure], precision: 2, separator: ",") : "Não informada" %> / <%= following[:recommended] ? number_with_precision(following[:recommended], precision: 2, separator: ",") : "Não informada" %><br>
+                <small>Limite: <%= following[:minimum] ? number_with_precision(following[:minimum], precision: 2, separator: ",") : "Não informado" %> PSI</small><br><small><%= following[:record].dig("vehicle", "licensePlate") %> · <%= following[:record].dig("submittedBy", "name") %> · #<%= following[:record]["id"] %></small>
+              <% else %>—<% end %>
+            </td>
+            <td><span class="badge tire-status <%= { 'persisted' => 'tire-status--danger', 'normalized' => 'tire-status--success', 'current_low' => 'tire-status--danger', 'awaiting_month' => 'tire-status--warning', 'pending' => 'tire-status--muted', 'unknown' => 'tire-status--muted' }.fetch(row[:status]) %>"><%= pressure_status_label(row[:status]) %></span><br><small><%= row[:streak] %> leituras baixas consecutivas até esta aferição</small></td>
+          </tr>
+        <% end %>
+        <% if @rows.empty? %><tr><td colspan="5" class="text-center py-5 text-muted">Nenhuma ocorrência de pressão baixa para os filtros selecionados.</td></tr><% end %>
+      </tbody>
+    </table>
+  </div>
+</section>

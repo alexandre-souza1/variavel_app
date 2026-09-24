@@ -1,0 +1,16 @@
+<section class="tire-overview" aria-label="Panorama do período">
+  <div class="tire-overview-heading">
+    <div><span class="dashboard-panel-kicker">Panorama da seleção</span><h2><%= @pressure_view ? "Calibragem sob acompanhamento" : "Qualidade das aferições" %></h2></div>
+    <p><strong><%= @affected_inspections %></strong> aferições com ocorrências <span>·</span> <strong><%= @affected_tires %></strong> pneus envolvidos</p>
+  </div>
+  <div class="tire-chart-grid">
+    <article class="app-panel tire-chart">
+      <div class="tire-chart-heading"><i class="bi bi-graph-up"></i><div><h3>Evolução das aferições com ocorrências</h3><p>Aferições distintas por mês, respeitando todos os filtros.</p></div></div>
+      <%= column_chart @chart_evolution, id: "tire-evolution-chart", height: "240px", min: 0, precision: 0, thousands: ".", ytitle: "Aferições", empty: "Sem aferições com ocorrências", library: { scales: { y: { ticks: { precision: 0 } } } } %>
+    </article>
+    <article class="app-panel tire-chart">
+      <div class="tire-chart-heading"><i class="bi bi-pie-chart"></i><div><h3>Distribuição das ocorrências</h3><p><%= @pressure_view ? "Uma ocorrência por pneu com pressão baixa em cada aferição." : "Uma ocorrência por aumento de sulco; não é percentual da frota." %></p></div></div>
+      <%= pie_chart @chart_distribution, id: "tire-distribution-chart", donut: true, height: "240px", legend: "bottom", empty: "Nenhuma ocorrência na seleção" %>
+    </article>
+  </div>
+</section>

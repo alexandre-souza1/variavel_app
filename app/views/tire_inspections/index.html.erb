@@ -1,0 +1,86 @@
+<div class="dashboard-page tire-inspections-page">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div>
+        <p class="dashboard-eyebrow">Frota · Prolog · Auditoria</p>
+        <h1><i class="bi bi-clipboard-data"></i> Pneus</h1>
+        <p class="subtitle">Histórico de sulcos e calibragem para acompanhamento e auditoria.</p>
+      </div>
+      <div class="header-actions">
+        <%= link_to "Placas", plates_path, class: "btn-outline" %>
+        <% if @report && !@error %>
+          <%= link_to "Exportar CSV", tire_inspections_path(request.query_parameters.slice("start_date", "end_date", "q", "status", "view", "sort").merge(format: :csv)), class: "btn-primary-solid" %>
+        <% end %>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tire-view-tabs" aria-label="Visões de pneus">
+    <%= link_to "Divergências de sulco", tire_inspections_path(request.query_parameters.slice("start_date", "end_date", "q", "per_page")), class: "tire-view-tab #{'is-active' unless @pressure_view}", aria: { current: @pressure_view ? nil : "page" } %>
+    <%= link_to "Calibragem baixa", tire_inspections_path(request.query_parameters.slice("start_date", "end_date", "q", "per_page").merge(view: "pressure")), class: "tire-view-tab #{'is-active' if @pressure_view}", aria: { current: @pressure_view ? "page" : nil } %>
+  </nav>
+  <section class="app-panel mb-4">
+    <div class="app-panel__body">
+      <%= form_with url: tire_inspections_path, method: :get, local: true, class: "tire-filters #{'tire-filters--pressure' if @pressure_view}" do %>
+        <%= hidden_field_tag :per_page, @per_page %>
+        <%= hidden_field_tag :view, "pressure" if @pressure_view %>
+        <div class="tire-filter-date"><%= label_tag :start_date, "De", class: "form-label" %><%= date_field_tag :start_date, @start_date, required: true, class: "form-control" %></div>
+        <div class="tire-filter-date"><%= label_tag :end_date, "Até", class: "form-label" %><%= date_field_tag :end_date, @end_date, required: true, max: Date.current, class: "form-control" %></div>
+        <div class="tire-filter-search"><%= label_tag :q, "Pneu ou placa", class: "form-label" %><%= text_field_tag :q, params[:q], class: "form-control", placeholder: "Número de fogo ou placa" %></div>
+        <div class="tire-filter-status"><%= label_tag :status, "Classificação", class: "form-label" %><%= select_tag :status, options_for_select(@pressure_view ? [["Todas as ocorrências", ""], ["Permaneceu baixa", "persisted"], ["Normalizou", "normalized"], ["Incorreto · pressão baixa no mês atual", "current_low"], ["Pressão baixa · sem aferição no mês atual", "awaiting_month"], ["Última leitura baixa no período", "pending"], ["Sem comparação válida", "unknown"]] : [["Todas as divergências", ""], ["Baixa · até 0,50 mm", "low"], ["Média · acima de 0,50 até 2,00 mm", "medium"], ["Alta · acima de 2,00 mm", "high"]], params[:status]), class: "form-select" %></div>
+        <% unless @pressure_view %>
+          <div class="tire-filter-sort"><%= label_tag :sort, "Ordenar por", class: "form-label" %><%= select_tag :sort, options_for_select(TireInspectionsController::SORT_OPTIONS, @sort), class: "form-select" %></div>
+        <% end %>
+        <div class="tire-filter-submit"><%= submit_tag "Consultar", class: "btn-primary-solid w-100" %></div>
+      <% end %>
+      <% unless @pressure_view %><p class="tire-filter-hint">A ordenação por sulco considera a medida da aferição seguinte de cada comparação.</p><% end %>
+    </div>
+  </section>
+
+  <%= render "charts" unless @error %>
+
+  <% if @error %>
+    <div class="alert alert-danger" role="alert"><%= @error %> Os resultados não foram carregados.</div>
+  <% elsif @pressure_view %>
+    <%= render "pressure" %>
+  <% else %>
+    <div class="kpi-grid">
+      <% [["Aferições no período", @report.inspection_count, "primary"], ["Divergências baixas", @severity_counts.fetch("low", 0), "success"], ["Divergências médias", @severity_counts.fetch("medium", 0), "warning"], ["Divergências altas", @severity_counts.fetch("high", 0), "danger"]].each do |label, count, color| %>
+        <div class="kpi-card"><div class="kpi-icon bg-<%= color %>-soft"><i class="bi bi-clipboard-data text-<%= color %>"></i></div><div class="kpi-info"><span class="kpi-label"><%= label %></span><span class="kpi-value"><%= count %></span></div></div>
+      <% end %>
+    </div>
+    <details class="tire-methodology"><summary><i class="bi bi-info-circle"></i> Como as divergências são identificadas</summary><div>
+      Cada divergência representa um aumento em um sulco. Até <strong>0,50 mm</strong>: divergência baixa. Acima de 0,50 até <strong>2,00 mm</strong>: média. Acima de <strong>2,00 mm</strong>: alta. Todos os aumentos aparecem por padrão. Medidas comparadas com duas casas decimais.
+      <br>Referências anteriores buscadas desde <%= @baseline_date.strftime("%d/%m/%Y") %>. <%= @report.without_previous %> leituras de sulco no período ficaram sem referência anterior nessa janela e não puderam ser comparadas. A contagem de aferições é do período completo; as contagens de divergências respeitam a busca por pneu ou placa.
+    </div></details>
+    <section class="app-panel tire-results">
+      <div class="app-panel__header"><h2 class="h5 mb-0"><%= @total_rows %> divergências na seleção</h2></div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>Pneu / vida</th><th>Sulco</th><th>Aferição anterior</th><th>Aferição seguinte</th><th>Aumento</th><th>Classificação</th></tr></thead>
+          <tbody>
+            <% @rows.each do |row| %>
+              <tr>
+                <td><strong><%= row[:serial].presence || row[:tire_id] %></strong><br><small class="text-muted">Vida <%= row[:life] %></small></td>
+                <td><%= row[:groove] %></td>
+                <% [:previous, :current].each do |side| %>
+                  <% reading = row[side]; record = reading[:record] %>
+                  <td>
+                    <strong><%= number_with_precision(reading[:depth], precision: 2, separator: ",") %> mm</strong><br>
+                    <%= reading[:time].in_time_zone.strftime("%d/%m/%Y %H:%M") %><br>
+                    <small><%= record.dig("vehicle", "licensePlate").presence || "Aferição individual" %> · <%= record.dig("submittedBy", "name").presence || "Responsável não informado" %></small><br>
+                    <small class="text-muted">Aferição #<%= record["id"] %> · Posição <%= reading[:measure]["tirePositionAtInspection"].presence || "—" %></small>
+                  </td>
+                <% end %>
+                <td class="text-nowrap fw-bold">+<%= number_with_precision(row[:delta], precision: 2, separator: ",") %> mm</td>
+                <td><span class="badge tire-status <%= { 'low' => 'tire-status--success', 'medium' => 'tire-status--warning', 'high' => 'tire-status--danger' }.fetch(row[:severity]) %>"><%= Prolog::InspectionDivergences::SEVERITIES.fetch(row[:severity]) %></span></td>
+              </tr>
+            <% end %>
+            <% if @rows.empty? %><tr><td colspan="6" class="text-center py-5 text-muted">Nenhum aumento de sulco encontrado para os filtros selecionados.</td></tr><% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% end %>
+  <%= render "pagination" unless @error %>
+</div>

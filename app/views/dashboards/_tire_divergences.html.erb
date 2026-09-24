@@ -1,0 +1,40 @@
+<div class="app-panel info-card">
+  <div class="app-panel__header info-card-header">
+    <div class="dashboard-panel-heading">
+      <span class="dashboard-panel-kicker"><i class="bi bi-circle me-1"></i> Prolog · Pneus</span>
+      <h2>Divergências de aferição</h2>
+      <small>Mês atual · 10 mais recentes</small>
+    </div>
+    <% unless tire_divergences_error %>
+      <div class="info-badges"><span class="badge bg-primary-soft text-primary" aria-label="<%= tire_divergence_count %> aumentos de sulco no mês"><%= tire_divergence_count %></span></div>
+    <% end %>
+  </div>
+  <div class="app-panel__body info-card-body">
+    <% if tire_divergences_error %>
+      <p class="text-muted small mb-0"><%= tire_divergences_error %> Não foi possível carregar o resumo.</p>
+    <% elsif tire_divergences.any? %>
+      <div class="table-responsive dashboard-table-wrapper">
+        <table class="table align-middle dashboard-data-table mb-0 tire-divergences-table" aria-label="Divergências de aferição do mês">
+          <thead><tr><th>Data</th><th>Placa</th><th>Nº de fogo</th><th>Vida</th><th>Aumento</th></tr></thead>
+          <tbody>
+            <% tire_divergences.each do |row| %>
+              <% badge_class = { "low" => "bg-success-subtle text-success-emphasis", "medium" => "bg-warning-subtle text-warning-emphasis", "high" => "bg-danger-subtle text-danger-emphasis" }.fetch(row[:severity]) %>
+              <tr>
+                <td class="text-nowrap"><%= row[:current][:time].in_time_zone.strftime("%d/%m") %></td>
+                <td class="text-nowrap"><%= row[:current][:record].dig("vehicle", "licensePlate").presence || "Individual" %></td>
+                <td><strong><%= row[:serial].presence || row[:tire_id] %></strong> <small class="text-muted"></small></td>
+                <td><small class="text-muted">Vida <%= row[:life] %></small></td>
+                <td class="text-nowrap"><span class="badge rounded-pill <%= badge_class %>">+<%= number_with_precision(row[:delta], precision: 2, separator: ",") %> mm</span></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state-compact"><i class="bi bi-check-circle text-success"></i><span>Nenhuma divergência neste mês.</span></div>
+    <% end %>
+    <div class="text-center mt-3">
+      <%= link_to "Ver todas do mês", tire_inspections_path(start_date: tire_month_start, end_date: Date.current, sort: "newest"), class: "btn-outline btn-sm" %>
+    </div>
+  </div>
+</div>
