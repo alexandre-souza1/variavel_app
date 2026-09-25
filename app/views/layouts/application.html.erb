@@ -59,7 +59,7 @@
     <%= yield %>
     </div>
   </main>
-  <% if defined?(@action_plan) && @action_plan.present? && current_user.present? %>
+  <% if @action_plan&.persisted? && current_user.present? %>
     <%= render "meeting_minutes/recorder_floating", action_plan: @action_plan %>
   <% end %>
   <div id="import-progress"
