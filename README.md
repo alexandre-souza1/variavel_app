@@ -4,7 +4,7 @@ Aplicação web da operação LOG20 Foz. O sistema centraliza rotinas de frota, 
 
 ## Stack
 
-- Ruby 3.3.5
+- Ruby 3.3.12
 - Ruby on Rails 7.1
 - PostgreSQL
 - Puma
@@ -59,7 +59,7 @@ O fuso horário da aplicação é `Brasilia` e o timezone padrão do banco é UT
 
 ## Requisitos locais
 
-- Ruby 3.3.5
+- Ruby 3.3.12
 - Bundler 2.5 ou compatível
 - PostgreSQL 9.3+
 - Node.js/npm, quando necessário para ferramentas auxiliares do projeto
@@ -236,6 +236,13 @@ bin/rails fleet_availabilities:daily
 Também existe o job `FleetAvailabilitiesDailyJob`, que executa o mesmo serviço quando chamado por um adaptador de jobs.
 
 ## Deploy no Heroku
+
+O projeto usa Ruby 3.3.12 e Puma 7. A stack atual é `heroku-24`;
+uma migração de stack deve ser validada separadamente.
+
+Os assets são pré-compilados durante o deploy. Como `config.assets.compile`
+está desativado em produção, novos assets devem estar incluídos em
+`app/assets/config/manifest.js`. Use `bundle exec` em vez de `bin/bundle`.
 
 O deploy é feito pelo remote `heroku`:
 

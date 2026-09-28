@@ -287,7 +287,7 @@ GEM
       date
       stringio
     public_suffix (6.0.2)
-    puma (6.6.0)
+    puma (7.2.1)
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.1.16)
@@ -458,7 +458,7 @@ DEPENDENCIES
   pg (~> 1.1)
   prawn
   prawn-table
-  puma (>= 5.0)
+  puma (~> 7.0, >= 7.0.3)
   rails (~> 7.1.5)
   redis (~> 5.0)
   roo
@@ -476,7 +476,7 @@ DEPENDENCIES
   web-console
 
 RUBY VERSION
-   ruby 3.3.5p100
+   ruby 3.3.12p206
 
 BUNDLED WITH
    2.5.6
