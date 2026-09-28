@@ -1,1 +1,1 @@
-import consumer from "./consumer"
+import consumer from "channels/consumer"
