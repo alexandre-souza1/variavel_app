@@ -1,23 +1,7 @@
 class ApplicationController < ActionController::Base
   before_action :configure_permitted_parameters, if: :devise_controller?
 
-  helper_method :secondary_nav
-
-  def secondary_nav
-    return "admin_nav" if finance_module?
-  end
-
   protected
-
-  def finance_module?
-    controller_path.in?([
-      "invoices",
-      "suppliers",
-      "admin/budget_categories",
-      "admin/cost_centers",
-      "admin/invoice_goals"
-    ])
-  end
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [:photo])

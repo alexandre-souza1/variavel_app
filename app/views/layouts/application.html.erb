@@ -50,7 +50,6 @@
 
   <body class="app-shell" data-user-id="<%= current_user&.id || 'guest' %>" data-controller="chart-theme meeting-recorder-launch">
   <%= render "shared/navbar" %>
-  <%= render "layouts/#{secondary_nav}" if secondary_nav.present? %>
   <div id="flash-container">
     <%= render 'shared/flashes' %>
   </div>

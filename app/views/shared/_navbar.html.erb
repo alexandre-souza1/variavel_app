@@ -63,8 +63,21 @@
             </li>
           <% end %>
 
+          <% if can_view_nav_link?(:finance, current_user) %>
+            <li class="nav-item dropdown">
+              <button class="nav-link dropdown-toggle app-dropdown-toggle" id="financeDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-coin me-1"></i> Financeiro
+              </button>
+              <ul class="dropdown-menu app-dropdown-menu" aria-labelledby="financeDropdown">
+                <% NavbarHelper::FINANCE_LINKS.each do |link| %>
+                  <li><%= link_to link[:label], send(link[:path]), class: "dropdown-item app-dropdown-item" %></li>
+                <% end %>
+              </ul>
+            </li>
+          <% end %>
+
           <!-- Links rápidos (exceto Cadastros) -->
-          <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS).each do |key, link| %>
+          <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS, :finance).each do |key, link| %>
             <% if can_view_nav_link?(key, current_user) %>
               <%= link_to send(link[:path]), class: "nav-link app-nav-link" do %>
                 <i class="bi <%= link[:icon] %> me-1"></i> <%= link[:label] %>
@@ -344,12 +357,25 @@
         </div>
       <% end %>
 
+      <% if can_view_nav_link?(:finance, current_user) %>
+        <div class="app-mobile-nav-section">
+          <button class="app-mobile-nav-section__title w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#mobileFinanceCollapse" aria-expanded="false" aria-controls="mobileFinanceCollapse">
+            <i class="bi bi-coin"></i> Financeiro
+          </button>
+          <div class="collapse" id="mobileFinanceCollapse">
+            <% NavbarHelper::FINANCE_LINKS.each do |link| %>
+              <%= link_to link[:label], send(link[:path]), class: "app-mobile-nav-link" %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
       <!-- ATALHOS (estático, sem collapse) -->
       <div class="app-mobile-nav-section">
         <div class="app-mobile-nav-section__title-static">
           <i class="bi bi-compass"></i> Atalhos
         </div>
-        <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS).each do |key, link| %>
+        <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS, :finance).each do |key, link| %>
           <% if can_view_nav_link?(key, current_user) %>
             <%= link_to send(link[:path]), class: "app-mobile-nav-link" do %>
               <i class="bi <%= link[:icon] %>"></i> <%= link[:label] %>

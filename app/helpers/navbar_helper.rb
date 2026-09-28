@@ -2,6 +2,16 @@
 module NavbarHelper
   FLEET_LINK_KEYS = %i[fleet_dashboard availability stress_test tires].freeze
 
+  FINANCE_LINKS = [
+    { label: "Dashboard", path: :dashboard_invoices_path },
+    { label: "Lançamentos", path: :invoices_path },
+    { label: "Novo Lançamento", path: :new_invoice_path },
+    { label: "Centros de Custo", path: :admin_cost_centers_path },
+    { label: "Categorias", path: :admin_budget_categories_path },
+    { label: "Metas por setor", path: :admin_invoice_goals_path },
+    { label: "Fornecedores", path: :suppliers_path }
+  ].freeze
+
   NAVBAR_LINKS = {
     fleet_dashboard: { path: :dashboard_path, icon: "bi-speedometer", label: "Dashboard de Frota", sectors: [:fleet] },
     tires: { path: :tire_inspections_path, icon: "bi-circle", label: "Pneus", sectors: [:fleet, :du, :safety] },
