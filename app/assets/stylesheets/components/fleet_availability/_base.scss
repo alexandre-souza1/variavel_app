@@ -589,7 +589,8 @@
     text-align: center;
   }
 
-  .fleet-tread-depth-badge {
+  @at-root .fleet-availability-page .fleet-tread-depth-badge,
+    .fleet-plate-item--fallback .fleet-tread-depth-badge {
     display: inline-flex;
     align-items: center;
     flex: 0 0 auto;
@@ -625,17 +626,20 @@
     }
   }
 
-  .fleet-tread-depth-badge--good {
+  @at-root .fleet-availability-page .fleet-tread-depth-badge--good,
+    .fleet-plate-item--fallback .fleet-tread-depth-badge--good {
     background: rgba(var(--bs-success-rgb), 0.10);
     color: var(--bs-success-text-emphasis);
   }
 
-  .fleet-tread-depth-badge--attention {
+  @at-root .fleet-availability-page .fleet-tread-depth-badge--attention,
+    .fleet-plate-item--fallback .fleet-tread-depth-badge--attention {
     background: rgba(var(--bs-warning-rgb), 0.14);
     color: var(--bs-warning-text-emphasis);
   }
 
-  .fleet-tread-depth-badge--critical {
+  @at-root .fleet-availability-page .fleet-tread-depth-badge--critical,
+    .fleet-plate-item--fallback .fleet-tread-depth-badge--critical {
     background: rgba(var(--bs-danger-rgb), 0.10);
     color: var(--bs-danger-text-emphasis);
   }
@@ -968,20 +972,37 @@
   }
 
   .fleet-availability-slot__body {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     min-width: 0;
     min-height: 4.5rem;
+    border-radius: 0.6rem;
+
+    // Keep the placeholder and drag preview in the same row while Sortable moves it.
+    &:has(> .sortable-item) > .fleet-empty-slot {
+      visibility: hidden;
+    }
+
+    &:has(> .fleet-plate-item--ghost) {
+      outline: 2px solid var(--bs-primary);
+      outline-offset: 2px;
+      background-color: rgba(var(--bs-primary-rgb), 0.08);
+    }
   }
 
   .fleet-availability-slot__body > .sortable-item,
   .fleet-availability-slot__body > .fleet-empty-slot {
-    flex: 0 0 auto;
+    grid-area: 1 / 1;
+    align-self: start;
     width: 100%;
   }
 
   .fleet-availability-slot__body > .sortable-item {
     margin: 0;
+
+    &.fleet-plate-item--ghost {
+      opacity: 0.55;
+    }
   }
 }
 

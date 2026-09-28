@@ -22,11 +22,16 @@ export default class extends Controller {
 
         group: "fleet",
 
-        animation: 150,
+        animation: availabilitySlot || window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 240,
+
+        easing: "cubic-bezier(0.2, 0, 0, 1)",
 
         disabled: this.mobileMode(),
 
         sort: !availabilitySlot,
+
+        // Slots only accept a plate when the pointer is inside their own bounds.
+        emptyInsertThreshold: availabilitySlot ? 0 : 5,
 
         draggable: ".sortable-item",
 
@@ -690,11 +695,29 @@ export default class extends Controller {
 
     const item = await response.json()
 
+    const card = itemElement?.querySelector(".fleet-plate-card")
+    const previousHeight = card?.getBoundingClientRect().height
+
     if (itemElement) {
       this.refreshItem(itemElement, item)
     }
 
     this.refreshBoard()
+
+    if (card && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const nextHeight = card.getBoundingClientRect().height
+
+      if (Math.abs(nextHeight - previousHeight) > 1) {
+        card.animate(
+          { height: [`${previousHeight}px`, `${nextHeight}px`], overflow: ["hidden", "hidden"] },
+          { duration: 240, easing: "cubic-bezier(0.2, 0, 0, 1)" }
+        )
+      }
+
+      card.querySelectorAll("[data-live-details], [data-observation-display]").forEach((details) => {
+        details.animate({ opacity: [0, 1] }, { duration: 240, easing: "ease-out" })
+      })
+    }
 
     return item
 

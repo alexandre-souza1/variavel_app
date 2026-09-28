@@ -1,0 +1,58 @@
+.fuel-consumptions-page {
+  .form-label {
+    color: var(--bs-secondary-color);
+    font-size: .75rem;
+    font-weight: 650;
+  }
+
+  .form-control, .form-select { border-radius: 9px; }
+  .app-panel__title { margin-bottom: .5rem; }
+  .app-table-shell { margin-bottom: 1rem; }
+  .app-table { font-variant-numeric: tabular-nums; }
+  .badge { padding: .45rem .65rem; white-space: normal; }
+
+  .fuel-consumption-metric {
+    display: flex;
+    align-items: flex-start;
+    gap: .8rem;
+    padding: 1rem 1.1rem;
+
+    &__icon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(var(--bs-primary-rgb), .1);
+      color: var(--bs-primary);
+      font-size: 1.25rem;
+    }
+
+    &__label { margin: 0 0 .3rem; font-size: .78rem; color: var(--bs-secondary-color); }
+    &__value { display: block; margin-bottom: .3rem; font-size: 1.5rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
+    small { display: block; font-size: .72rem; }
+  }
+
+  .fuel-consumptions-summary {
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    font-size: .92rem;
+    font-weight: 650;
+
+    &::marker { color: var(--bs-primary); }
+    &:hover { background: var(--bs-tertiary-bg); }
+    &:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: -4px; }
+  }
+
+  details[open] > summary { border-bottom: 1px solid var(--bs-border-color); }
+
+  .fuel-consumptions-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .75rem;
+
+    > div { display: flex; gap: .5rem; }
+  }
+}

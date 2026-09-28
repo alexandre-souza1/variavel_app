@@ -14,8 +14,8 @@
       <p class="text-muted small mb-0"><%= tire_divergences_error %> Não foi possível carregar o resumo.</p>
     <% elsif tire_divergences.any? %>
       <div class="table-responsive dashboard-table-wrapper">
-        <table class="table align-middle dashboard-data-table mb-0 tire-divergences-table" aria-label="Divergências de aferição do mês">
-          <thead><tr><th>Data</th><th>Placa</th><th>Nº de fogo</th><th>Vida</th><th>Aumento</th></tr></thead>
+        <table class="table align-middle dashboard-data-table dashboard-tire-table mb-0" aria-label="Divergências de aferição do mês">
+          <thead><tr><th scope="col">Data</th><th scope="col">Placa</th><th scope="col">Nº de fogo</th><th scope="col">Vida</th><th scope="col">Aumento</th></tr></thead>
           <tbody>
             <% tire_divergences.each do |row| %>
               <% badge_class = { "low" => "bg-success-subtle text-success-emphasis", "medium" => "bg-warning-subtle text-warning-emphasis", "high" => "bg-danger-subtle text-danger-emphasis" }.fetch(row[:severity]) %>
