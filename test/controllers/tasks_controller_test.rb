@@ -9,6 +9,24 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:one)
   end
 
+  test "creates a task with bimonthly recurrence reminder and assignees" do
+    assert_difference -> { Task.count }, 1 do
+      post action_plan_bucket_tasks_url(@task.bucket.action_plan, @task.bucket),
+           params: { task: { title: "Inspeção bimestral", due_at: "2027-02-28", recurrence: "bimonthly",
+                             due_notification_enabled: "1", user_ids: [users(:one).id] } },
+           as: :turbo_stream
+    end
+
+    assert_response :success
+    created = Task.order(:id).last
+    assert_equal "bimonthly", created.recurrence
+    assert created.due_notification_enabled?
+    assert_equal Date.new(2027, 2, 28), created.due_at.to_date
+    assert_equal [users(:one).id], created.user_ids
+    assert_select "#task_#{created.id} .bi-bell"
+    assert_select "#task_#{created.id} .bi-arrow-repeat"
+  end
+
   test "toggling the reminder preserves existing assignees and label badges" do
     assert_equal [users(:one).id], @task.user_ids
     assert_equal [labels(:one).id], @task.label_ids

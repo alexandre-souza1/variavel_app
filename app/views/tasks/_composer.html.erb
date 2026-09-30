@@ -1,0 +1,57 @@
+<% composer_id = "task-composer-#{bucket.id}" %>
+<div class="task-composer" data-controller="new-task"
+     data-action="new-task:opened@window->new-task#otherOpened click@window->new-task#outside keydown.esc->new-task#escape">
+  <button type="button" class="action-plan-kanban-add-task" aria-expanded="false"
+          aria-controls="<%= composer_id %>" data-new-task-target="button" data-action="new-task#toggle">
+    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+    <span data-new-task-target="buttonLabel">Adicionar tarefa</span>
+  </button>
+
+  <div id="<%= composer_id %>" class="task-composer__wrapper" data-new-task-target="wrapper" inert>
+    <div class="task-composer__inner">
+      <%= form_with model: [action_plan, bucket, Task.new], namespace: composer_id,
+          class: "task-composer__form",
+          data: { new_task_target: "form", action: "change->new-task#update turbo:submit-start->new-task#submitting turbo:submit-end->new-task#afterSubmit" } do |f| %>
+        <%= hidden_field_tag :view, local_assigns[:view] if local_assigns[:view].present? %>
+        <%= f.label :title, "Nova tarefa", class: "task-composer__heading" %>
+        <%= f.text_field :title, placeholder: "O que precisa ser feito?", class: "form-control task-composer__title", required: true, autocomplete: "off", data: { new_task_target: "title" } %>
+
+        <div class="task-composer__tools">
+          <% [["date", "calendar3", "Prazo"], ["users", "person-plus", "Responsáveis"], ["repeat", "arrow-repeat", "Repetição"]].each do |panel, icon, label| %>
+            <button type="button" class="task-composer__tool" data-new-task-target="tool"
+                    data-panel="<%= panel %>" data-action="new-task#showPanel"
+                    aria-expanded="false" aria-controls="<%= composer_id %>-<%= panel %>">
+              <i class="bi bi-<%= icon %>" aria-hidden="true"></i>
+              <span data-summary="<%= panel %>"><%= label %></span>
+            </button>
+          <% end %>
+          <label class="task-composer__tool task-composer__reminder" title="Avisar sobre o vencimento">
+            <%= f.check_box :due_notification_enabled, data: { new_task_target: "reminder" } %>
+            <i class="bi bi-bell" aria-hidden="true"></i> Alerta
+          </label>
+        </div>
+
+        <div id="<%= composer_id %>-date" class="task-composer__panel" data-new-task-target="panel" data-panel="date" hidden>
+          <%= f.label :due_at, "Prazo da tarefa", class: "form-label" %>
+          <%= f.date_field :due_at, class: "form-control form-control-sm", data: { new_task_target: "date", action: "invalid->new-task#invalidDate" } %>
+        </div>
+        <div id="<%= composer_id %>-users" class="task-composer__panel" data-new-task-target="panel" data-panel="users" hidden>
+          <%= f.label :user_ids, "Responsáveis", class: "form-label" %>
+          <%= f.collection_select :user_ids, User.all, :id, :name, {}, { multiple: true, class: "form-select form-select-sm", data: { controller: "tom-select-users", new_task_target: "users" } } %>
+        </div>
+        <div id="<%= composer_id %>-repeat" class="task-composer__panel" data-new-task-target="panel" data-panel="repeat" hidden>
+          <%= f.label :recurrence, "Repetir ao concluir", class: "form-label" %>
+          <%= f.select :recurrence, [["Não repetir", ""], ["Diariamente", "daily"], ["Semanalmente", "weekly"], ["Mensalmente", "monthly"], ["Bimestralmente", "bimonthly"]], {}, class: "form-select form-select-sm", data: { new_task_target: "recurrence" } %>
+        </div>
+        <p class="task-composer__hint" data-new-task-target="hint" hidden>Defina um prazo para usar repetição ou alerta.</p>
+        <p class="task-composer__error" data-new-task-target="error" role="alert" hidden>Não foi possível salvar. Seu rascunho foi mantido. Tente novamente.</p>
+        <div class="task-composer__footer">
+          <button type="button" class="btn btn-sm task-composer__cancel" data-action="new-task#cancel">Cancelar</button>
+          <%= f.button class: "btn btn-primary btn-sm", data: { new_task_target: "submit", turbo_submits_with: "Salvando…" } do %>
+            <i class="bi bi-plus-lg" aria-hidden="true"></i> Criar tarefa
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

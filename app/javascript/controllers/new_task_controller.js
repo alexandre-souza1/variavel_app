@@ -1,104 +1,106 @@
 import { Controller } from "@hotwired/stimulus"
-import { Collapse } from "bootstrap"
 
 export default class extends Controller {
-  static targets = ["wrapper", "button", "title", "form"]
+  static targets = ["wrapper", "button", "buttonLabel", "title", "form", "tool", "panel", "date", "users", "recurrence", "reminder", "hint", "error", "submit"]
 
   connect() {
-    this.collapse = new Collapse(this.wrapperTarget, {
-      toggle: false
-    })
+    this.open = false
+    this.saving = false
+    this.update()
+  }
 
-    // 🔥 bind pra conseguir remover depois
-    this.handleClickOutside = this.handleClickOutside.bind(this)
-    this.handleKeydown = this.handleKeydown.bind(this)
+  disconnect() {
+    cancelAnimationFrame(this.focusFrame)
   }
 
   toggle() {
-    this.collapse.toggle()
-    this.buttonTarget.classList.toggle("d-none")
-
-    const isOpen = this.wrapperTarget.classList.contains("show")
-
-    if (isOpen) {
-      document.addEventListener("click", this.handleClickOutside)
-      document.addEventListener("keydown", this.handleKeydown)
-
-      setTimeout(() => {
-        this.titleTarget.focus()
-      }, 200)
-    } else {
-      this.removeListeners()
+    this.setOpen(!this.open)
+    if (this.open) {
+      this.dispatch("opened")
+      this.focusFrame = requestAnimationFrame(() => this.titleTarget.focus())
     }
   }
 
-  isEmpty() {
-    return this.titleTarget.value.trim() === ""
+  setOpen(open) {
+    this.open = open
+    this.element.classList.toggle("is-open", open)
+    this.wrapperTarget.inert = !open
+    this.buttonTarget.setAttribute("aria-expanded", String(open))
+    this.buttonLabelTarget.textContent = open ? "Nova tarefa" : (this.hasDraft() ? "Continuar tarefa" : "Adicionar tarefa")
   }
 
-  handleKeydown(event) {
-    if (event.key === "Escape" && this.isEmpty()) {
-      this.cancel()
+  hasDraft() {
+    return this.titleTarget.value.trim() || this.dateTarget.value || this.usersTarget.selectedOptions.length || this.recurrenceTarget.value || this.reminderTarget.checked
+  }
+
+  otherOpened(event) {
+    if (event.target !== this.element && !this.saving) this.setOpen(false)
+  }
+
+  outside(event) {
+    if (this.open && !this.saving && !this.element.contains(event.target)) this.setOpen(false)
+  }
+
+  escape(event) {
+    if (this.saving) return
+    event.preventDefault()
+    this.setOpen(false)
+    this.buttonTarget.focus()
+  }
+
+  showPanel(event) {
+    const name = event.currentTarget.dataset.panel
+    const panel = this.panelTargets.find(panel => panel.dataset.panel === name)
+    this.activatePanel(panel.hidden ? name : null)
+  }
+
+  activatePanel(name) {
+    this.panelTargets.forEach(panel => { panel.hidden = panel.dataset.panel !== name })
+    this.toolTargets.forEach(tool => tool.setAttribute("aria-expanded", String(tool.dataset.panel === name)))
+    if (name === "users") this.usersTarget.tomselect?.focus()
+  }
+
+  update() {
+    const date = this.dateTarget.value
+    const users = Array.from(this.usersTarget.selectedOptions)
+    const recurrence = this.recurrenceTarget
+    const summaries = {
+      date: date ? date.split("-").reverse().slice(0, 2).join("/") : "Prazo",
+      users: users.length ? `${users.length} ${users.length === 1 ? "responsável" : "responsáveis"}` : "Responsáveis",
+      repeat: recurrence.value ? recurrence.selectedOptions[0].textContent : "Repetição"
     }
+    this.toolTargets.forEach(tool => {
+      tool.querySelector("[data-summary]").textContent = summaries[tool.dataset.panel]
+      tool.classList.toggle("is-filled", Boolean({ date, users: users.length, repeat: recurrence.value }[tool.dataset.panel]))
+    })
+    this.dateTarget.required = Boolean(recurrence.value || this.reminderTarget.checked)
+    this.hintTarget.hidden = !this.dateTarget.required || Boolean(date)
   }
 
-  handleClickOutside(event) {
-    if (!this.element.contains(event.target) && this.isEmpty()) {
-      this.cancel()
-    }
+  invalidDate() {
+    this.activatePanel("date")
+    this.dateTarget.focus()
   }
-  
-  cancel() {
-    this.resetForm()
 
-    this.collapse.hide()
-    this.buttonTarget.classList.remove("d-none")
-
-    this.removeListeners()
+  submitting() {
+    this.saving = true
+    this.errorTarget.hidden = true
   }
 
   afterSubmit(event) {
-    if (event.detail.success) {
-      this.cancel()
-    }
+    this.saving = false
+    if (event.detail.success) this.cancel()
+    else this.errorTarget.hidden = false
   }
 
-  resetForm() {
+  cancel() {
+    if (this.saving) return
     this.formTarget.reset()
-
-    const selects = this.formTarget.querySelectorAll("select")
-    selects.forEach(select => {
-      if (select.tomselect) {
-        select.tomselect.clear()
-      }
-    })
-
-    this.resetToggles()
-  }
-
-  resetToggles() {
-    const toggleControllers = this.element.querySelectorAll("[data-controller='toggle-field']")
-
-    toggleControllers.forEach(el => {
-      const button = el.querySelector("[data-toggle-field-target='button']")
-      const field = el.querySelector("[data-toggle-field-target='field']")
-
-      if (button) {
-        if (button.innerText.includes("📅")) {
-          button.innerText = "📅 Definir data"
-        } else if (button.innerText.includes("👤")) {
-          button.innerText = "👤 Atribuir responsável"
-        }
-      }
-
-      if (field) field.classList.add("d-none")
-      if (button) button.classList.remove("d-none")
-    })
-  }
-
-  // 🔥 remove listeners (importante pra não bugar)
-  removeListeners() {
-    document.removeEventListener("click", this.handleClickOutside)
-    document.removeEventListener("keydown", this.handleKeydown)
+    this.usersTarget.tomselect?.clear(true)
+    this.activatePanel(null)
+    this.update()
+    this.errorTarget.hidden = true
+    this.setOpen(false)
+    this.buttonTarget.focus()
   }
 }

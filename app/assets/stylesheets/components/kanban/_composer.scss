@@ -1,0 +1,68 @@
+.task-composer {
+  .action-plan-kanban-add-task { min-height: 34px; }
+  .action-plan-kanban-add-task .bi { transition: transform .2s ease; }
+  &.is-open > .action-plan-kanban-add-task { border-style: solid; color: var(--bs-primary); background: rgba(var(--bs-primary-rgb), .06); }
+  &.is-open > .action-plan-kanban-add-task .bi { transform: rotate(45deg); }
+  &.is-open .task-composer__wrapper { grid-template-rows: 1fr; opacity: 1; }
+}
+
+.task-composer__wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows .22s ease, opacity .18s ease;
+}
+.task-composer__inner { min-height: 0; overflow: hidden; }
+.task-composer.is-open .task-composer__inner { overflow: visible; }
+.task-composer__form {
+  margin-top: .5rem;
+  padding: .65rem;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .04);
+}
+.task-composer__heading { font-size: .7rem; font-weight: 600; color: var(--bs-secondary-color); margin-bottom: .35rem; }
+.task-composer__title { font-size: .85rem; padding: .45rem .5rem; }
+.task-composer__tools { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .6rem; }
+.task-composer__tool {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  min-height: 32px;
+  max-width: 100%;
+  padding: .25rem .45rem;
+  margin: 0;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 8px;
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-secondary-color);
+  font-size: .7rem;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+  &:hover, &[aria-expanded="true"], &.is-filled, &:has(input:checked) {
+    background: rgba(var(--bs-primary-rgb), .08);
+    border-color: rgba(var(--bs-primary-rgb), .3);
+    color: var(--bs-primary);
+  }
+  &:focus-visible, &:focus-within { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
+  input[type="checkbox"] { width: 13px; height: 13px; accent-color: var(--bs-primary); }
+}
+.task-composer__panel {
+  margin-top: .6rem;
+  padding: .55rem;
+  border-radius: 8px;
+  background: var(--bs-tertiary-bg);
+  animation: task-composer-panel-in .16s ease;
+  .form-label { font-size: .72rem; margin-bottom: .3rem; }
+  .ts-wrapper { min-width: 0; }
+}
+.task-composer__hint, .task-composer__error { font-size: .7rem; margin: .5rem 0 0; color: var(--bs-secondary-color); }
+.task-composer__error { color: var(--bs-danger); }
+.task-composer__footer { display: flex; justify-content: space-between; align-items: center; gap: .4rem; margin-top: .65rem; }
+.task-composer__footer .btn { font-size: .75rem; min-height: 34px; }
+.task-composer__cancel { color: var(--bs-secondary-color); }
+@keyframes task-composer-panel-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .task-composer *, .task-composer__wrapper { transition: none !important; animation: none !important; }
+}
