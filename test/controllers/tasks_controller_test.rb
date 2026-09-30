@@ -9,16 +9,37 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:one)
   end
 
-  test "updating the reminder preserves existing assignees" do
+  test "toggling the reminder preserves existing assignees and label badges" do
     assert_equal [users(:one).id], @task.user_ids
+    assert_equal [labels(:one).id], @task.label_ids
 
+    [true, false].each do |enabled|
+      patch action_plan_bucket_task_url(@task.bucket.action_plan, @task.bucket, @task),
+            params: { task: { due_notification_enabled: enabled } },
+            as: :turbo_stream
+
+      assert_response :success
+      assert_equal [users(:one).id], @task.reload.user_ids
+      assert_equal [labels(:one).id], @task.label_ids
+      assert_equal enabled, @task.due_notification_enabled?
+      assert_select "#task_#{@task.id} .task-labels .badge", text: labels(:one).name
+    end
+  end
+
+  test "explicit label updates filter labels from other plans and allow clearing" do
     patch action_plan_bucket_task_url(@task.bucket.action_plan, @task.bucket, @task),
-          params: { task: { due_notification_enabled: true } },
+          params: { task: { label_ids: ["", labels(:one).id.to_s, labels(:two).id.to_s] } },
           as: :turbo_stream
 
     assert_response :success
-    assert_equal [users(:one).id], @task.reload.user_ids
-    assert @task.due_notification_enabled?
+    assert_equal [labels(:one).id], @task.reload.label_ids
+
+    patch action_plan_bucket_task_url(@task.bucket.action_plan, @task.bucket, @task),
+          params: { task: { label_ids: [""] } },
+          as: :turbo_stream
+
+    assert_response :success
+    assert_empty @task.reload.label_ids
   end
 
   test "completing a bimonthly task renders the next occurrence" do

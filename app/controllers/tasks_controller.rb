@@ -199,7 +199,7 @@ class TasksController < ApplicationController
         whitelisted[:user_ids] = whitelisted[:user_ids].reject(&:blank?).map(&:to_i)
       end
 
-      if @task&.persisted?
+      if @task&.persisted? && whitelisted.key?(:label_ids)
         whitelisted[:label_ids] &= @task.bucket.action_plan.label_ids
       end
 
