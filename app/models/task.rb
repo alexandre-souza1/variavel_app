@@ -41,6 +41,7 @@ class Task < ApplicationRecord
                 when "daily"   then due_at + 1.day
                 when "weekly"  then due_at + 1.week
                 when "monthly" then due_at + 1.month
+                when "bimonthly" then due_at + 2.months
                 end
 
     return if Task.exists?(bucket: bucket, due_at: next_date, title: title)

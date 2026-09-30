@@ -37,7 +37,8 @@ wb.add_worksheet(name: "Tarefas") do |sheet|
   recurrence_labels = {
     "daily" => "Diária",
     "weekly" => "Semanal",
-    "monthly" => "Mensal"
+    "monthly" => "Mensal",
+    "bimonthly" => "Bimestral"
   }
   headers = ["ID", "Coluna", "Status", "Tarefa", "Descrição", "Responsáveis", "Etiquetas", "Criada por", "Criada em", "Início", "Prazo", "Recorrência", "Checklist"]
   sheet.add_row headers, style: headers.map { header }

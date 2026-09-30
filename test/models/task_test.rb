@@ -5,6 +5,25 @@ class TaskTest < ActiveSupport::TestCase
     users(:one).update!(name: "User One")
   end
 
+  test "bimonthly recurrence advances two calendar months and handles shorter months" do
+    [
+      [Time.zone.local(2026, 7, 15, 10), Time.zone.local(2026, 9, 15, 10)],
+      [Time.zone.local(2026, 12, 31, 10), Time.zone.local(2027, 2, 28, 10)],
+      [Time.zone.local(2027, 12, 31, 10), Time.zone.local(2028, 2, 29, 10)]
+    ].each do |due_at, expected_due_at|
+      task = tasks(:one)
+      task.update!(due_at: due_at, recurrence: "bimonthly", completed: false)
+
+      assert_difference -> { Task.count }, 1 do
+        task.update!(completed: true)
+      end
+
+      next_task = Task.find_by!(bucket: task.bucket, title: task.title, due_at: expected_due_at)
+      assert_equal "bimonthly", next_task.recurrence
+      assert_not next_task.completed?
+    end
+  end
+
   test "clones the checklist as pending items when a recurring task is completed" do
     task = tasks(:one)
     task.update!(
