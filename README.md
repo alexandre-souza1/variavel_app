@@ -184,6 +184,12 @@ ACTION_CABLE_URL
 
 Não versionar `.env`, chaves, tokens ou credenciais. Em produção, configure os valores no provedor de hospedagem.
 
+## Avisos de vencimento de tarefas
+
+Com o sininho ativo, tarefas abertas recebem um aviso entre 48 e 24 horas antes do prazo e outro nas últimas 24 horas. Cada aviso é enviado uma vez aos responsáveis ou, se não houver responsáveis, ao criador. Se a primeira verificação ocorrer nas últimas 24 horas, apenas o aviso dessa janela é enviado. Alterar o prazo ou a opção de alerta reinicia o controle dos avisos.
+
+A verificação acontece ao salvar a tarefa e ao executar `bundle exec rake task_notifications:due_soon`. Para avisar sem edições na tarefa, esse comando precisa ser executado periodicamente pelo agendador do ambiente. O horário de envio depende dessa execução; não há agendamento automático desse comando no `Procfile`.
+
 ## Aplicativo Android
 
 A base Android em Kotlin/Hotwire Native está em [`android/`](android/README.md). Ela utiliza o servidor Rails hospedado, com endereço HTTPS configurado no build. Consulte o guia para gerar o APK de teste localmente ou pelo workflow manual do GitHub Actions, além das pendências de validação no celular.

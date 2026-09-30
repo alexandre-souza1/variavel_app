@@ -12,8 +12,8 @@ class NotificationDelivery
     )
   end
 
-  def self.task_due_soon(task:)
-    new.task_due_soon(task: task)
+  def self.task_due_soon(task:, early: false)
+    new.task_due_soon(task: task, early: early)
   end
 
   def task_assigned(task:, user:, actor:)
@@ -48,7 +48,7 @@ class NotificationDelivery
     end
   end
 
-  def task_due_soon(task:)
+  def task_due_soon(task:, early: false)
     recipients_for_task_due_soon(task).find_each do |user|
       Notification.create!(
         user: user,
@@ -56,7 +56,8 @@ class NotificationDelivery
         notifiable: task,
         kind: "task_due_soon",
         title: "Tarefa prestes a vencer",
-        body: "#{task.title} vence em #{I18n.l(task.due_at, format: :short)}.",
+        body: early ? "#{task.title} vence nas próximas 48 horas (#{I18n.l(task.due_at, format: :short)})." :
+                      "#{task.title} vence em #{I18n.l(task.due_at, format: :short)}.",
         action_text: "Abrir tarefa",
         action_url: action_plan_path(task.bucket.action_plan)
       )

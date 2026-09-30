@@ -1,5 +1,6 @@
 class TaskDueNotificationService
   WINDOW = 24.hours
+  EARLY_WINDOW = 48.hours
 
   def self.call(now: Time.current)
     new(now: now).call
@@ -26,8 +27,9 @@ class TaskDueNotificationService
       task.reload
       return false unless due_soon?(task)
 
-      NotificationDelivery.task_due_soon(task: task)
-      task.update_column(:due_notification_sent_at, Time.current)
+      early = task.due_at > now + WINDOW
+      NotificationDelivery.task_due_soon(task: task, early: early)
+      task.update_column(notification_timestamp(task), now)
     end
 
     true
@@ -38,18 +40,24 @@ class TaskDueNotificationService
   attr_reader :now
 
   def eligible_tasks
-    Task
-      .where(due_notification_enabled: true, due_notification_sent_at: nil)
+    scope = Task
+      .where(due_notification_enabled: true)
       .where(completed: [false, nil])
-      .where(due_at: now..(now + WINDOW))
+    scope.where(due_notification_sent_at: nil, due_at: now..(now + WINDOW))
+      .or(scope.where(early_due_notification_sent_at: nil)
+        .where("due_at > ? AND due_at <= ?", now + WINDOW, now + EARLY_WINDOW))
       .includes(:users, bucket: :action_plan)
   end
 
   def due_soon?(task)
     task.due_notification_enabled? &&
-      task.due_notification_sent_at.blank? &&
       !task.completed? &&
       task.due_at.present? &&
-      task.due_at.between?(now, now + WINDOW)
+      task.due_at.between?(now, now + EARLY_WINDOW) &&
+      task.public_send(notification_timestamp(task)).blank?
+  end
+
+  def notification_timestamp(task)
+    task.due_at > now + WINDOW ? :early_due_notification_sent_at : :due_notification_sent_at
   end
 end

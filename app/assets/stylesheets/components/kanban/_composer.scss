@@ -1,3 +1,10 @@
+.action-plan-kanban-card__composer:has(.task-composer.is-open) {
+  max-height: 65vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+  scrollbar-width: thin;
+}
+
 .task-composer {
   .action-plan-kanban-add-task { min-height: 34px; }
   .action-plan-kanban-add-task .bi { transition: transform .2s ease; }
@@ -22,14 +29,16 @@
   border-radius: 12px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, .04);
 }
-.task-composer__heading { font-size: .7rem; font-weight: 600; color: var(--bs-secondary-color); margin-bottom: .35rem; }
 .task-composer__title { font-size: .85rem; padding: .45rem .5rem; }
-.task-composer__tools { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .6rem; }
+.task-composer__tools { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; margin-top: .6rem; }
 .task-composer__tool {
   display: inline-flex;
   align-items: center;
   gap: .3rem;
-  min-height: 32px;
+  min-height: 36px;
+  min-width: 0;
+  width: 100%;
+  text-align: left;
   max-width: 100%;
   padding: .25rem .45rem;
   margin: 0;
@@ -38,6 +47,8 @@
   background: var(--bs-tertiary-bg);
   color: var(--bs-secondary-color);
   font-size: .7rem;
+  span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bi { flex-shrink: 0; }
   cursor: pointer;
   transition: background .15s ease, border-color .15s ease;
   &:hover, &[aria-expanded="true"], &.is-filled, &:has(input:checked) {
@@ -46,8 +57,10 @@
     color: var(--bs-primary);
   }
   &:focus-visible, &:focus-within { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
-  input[type="checkbox"] { width: 13px; height: 13px; accent-color: var(--bs-primary); }
+  input[type="checkbox"] { position: absolute; width: 1px; height: 1px; opacity: 0; }
 }
+.task-composer__reminder { position: relative; }
+.task-composer__reminder:has(input:checked)::after { content: "✓"; margin-left: auto; font-weight: 700; }
 .task-composer__panel {
   margin-top: .6rem;
   padding: .55rem;
@@ -55,8 +68,57 @@
   background: var(--bs-tertiary-bg);
   animation: task-composer-panel-in .16s ease;
   .form-label { font-size: .72rem; margin-bottom: .3rem; }
-  .ts-wrapper { min-width: 0; }
 }
+.task-composer__people { max-height: 164px; overflow-y: auto; overscroll-behavior: contain; margin-top: .45rem; scrollbar-width: thin; }
+.task-composer__people-popover {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: .75rem;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 12px;
+  color: var(--bs-body-color);
+  background: var(--bs-body-bg);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .3), 0 2px 8px rgba(0, 0, 0, .15);
+  overflow: auto;
+  &:popover-open { display: flex; flex-direction: column; }
+  .form-label, > input, .task-composer__people-footer { flex-shrink: 0; }
+  .task-composer__people { max-height: 240px; min-height: 0; flex: 1 1 auto; }
+  .task-composer__person { padding: .55rem .35rem; }
+  .task-composer__avatar { flex-basis: 28px; height: 28px; }
+  &::backdrop { background: transparent; pointer-events: none; }
+}
+.task-composer__calendar-header { display: flex; justify-content: space-between; align-items: center; gap: .35rem; font-size: .8rem; margin-bottom: .5rem; }
+.task-composer__calendar-header .btn { color: var(--bs-body-color); }
+.task-composer__calendar-week, .task-composer__calendar-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .2rem; text-align: center; }
+.task-composer__calendar-week { color: var(--bs-secondary-color); font-size: .7rem; margin-bottom: .3rem; }
+.task-composer__calendar-days button {
+  border: 0; border-radius: 7px; min-height: 32px; padding: .3rem 0; background: transparent; color: var(--bs-body-color); font-size: .8rem;
+  &:hover, &:focus-visible { background: rgba(var(--bs-primary-rgb), .15); outline: 2px solid var(--bs-primary); }
+  &[aria-current="date"] { box-shadow: inset 0 0 0 1px var(--bs-primary); }
+  &[aria-pressed="true"] { background: var(--bs-primary); color: white; }
+}
+.task-composer__person {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  margin: 0;
+  padding: .45rem .3rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--bs-body-color);
+  font-size: .75rem;
+  &[hidden] { display: none; }
+  &:hover, &:has(input:checked) { background: rgba(var(--bs-primary-rgb), .1); }
+  &:focus-within { outline: 2px solid var(--bs-primary); outline-offset: -2px; }
+  input { flex-shrink: 0; accent-color: var(--bs-primary); width: 14px; height: 14px; margin: 0; }
+}
+.task-composer__avatar { display: grid; place-items: center; flex: 0 0 24px; height: 24px; border-radius: 50%; background: var(--bs-secondary-bg); color: var(--bs-secondary-color); font-size: .65rem; }
+.task-composer__person-name { min-width: 0; overflow-wrap: anywhere; line-height: 1.35; }
+.task-composer__people-footer { display: flex; justify-content: space-between; align-items: center; gap: .3rem; border-top: 1px solid var(--bs-border-color); margin-top: .4rem; padding-top: .4rem; font-size: .7rem; color: var(--bs-secondary-color); }
+.task-composer__people-footer .btn { font-size: .7rem; }
 .task-composer__hint, .task-composer__error { font-size: .7rem; margin: .5rem 0 0; color: var(--bs-secondary-color); }
 .task-composer__error { color: var(--bs-danger); }
 .task-composer__footer { display: flex; justify-content: space-between; align-items: center; gap: .4rem; margin-top: .65rem; }

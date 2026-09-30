@@ -11,9 +11,9 @@
     <div class="task-composer__inner">
       <%= form_with model: [action_plan, bucket, Task.new], namespace: composer_id,
           class: "task-composer__form",
-          data: { new_task_target: "form", action: "change->new-task#update turbo:submit-start->new-task#submitting turbo:submit-end->new-task#afterSubmit" } do |f| %>
+          data: { new_task_target: "form", action: "submit->new-task#validate change->new-task#update turbo:submit-start->new-task#submitting turbo:submit-end->new-task#afterSubmit" } do |f| %>
         <%= hidden_field_tag :view, local_assigns[:view] if local_assigns[:view].present? %>
-        <%= f.label :title, "Nova tarefa", class: "task-composer__heading" %>
+        <%= f.label :title, "Título da tarefa", class: "visually-hidden" %>
         <%= f.text_field :title, placeholder: "O que precisa ser feito?", class: "form-control task-composer__title", required: true, autocomplete: "off", data: { new_task_target: "title" } %>
 
         <div class="task-composer__tools">
@@ -31,13 +31,45 @@
           </label>
         </div>
 
-        <div id="<%= composer_id %>-date" class="task-composer__panel" data-new-task-target="panel" data-panel="date" hidden>
-          <%= f.label :due_at, "Prazo da tarefa", class: "form-label" %>
-          <%= f.date_field :due_at, class: "form-control form-control-sm", data: { new_task_target: "date", action: "invalid->new-task#invalidDate" } %>
+        <%= f.hidden_field :due_at, data: { new_task_target: "date" } %>
+        <div id="<%= composer_id %>-date" class="task-composer__panel task-composer__people-popover task-composer__calendar"
+             popover="manual" role="dialog" aria-label="Escolher prazo"
+             data-new-task-target="panel" data-panel="date" hidden>
+          <div class="task-composer__calendar-header">
+            <button type="button" class="btn btn-sm" aria-label="Mês anterior" data-action="new-task#changeMonth" data-offset="-1"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+            <strong data-new-task-target="calendarMonth" aria-live="polite"></strong>
+            <button type="button" class="btn btn-sm" aria-label="Próximo mês" data-action="new-task#changeMonth" data-offset="1"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+          </div>
+          <div class="task-composer__calendar-week" aria-hidden="true"><% %w[D S T Q Q S S].each do |day| %><span><%= day %></span><% end %></div>
+          <div class="task-composer__calendar-days" data-new-task-target="calendarDays" data-action="click->new-task#chooseDate"></div>
+          <div class="task-composer__people-footer">
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-action="new-task#clearDate">Sem prazo</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-action="new-task#today">Hoje</button>
+          </div>
         </div>
-        <div id="<%= composer_id %>-users" class="task-composer__panel" data-new-task-target="panel" data-panel="users" hidden>
-          <%= f.label :user_ids, "Responsáveis", class: "form-label" %>
-          <%= f.collection_select :user_ids, User.all, :id, :name, {}, { multiple: true, class: "form-select form-select-sm", data: { controller: "tom-select-users", new_task_target: "users" } } %>
+        <div id="<%= composer_id %>-users" class="task-composer__panel task-composer__people-popover"
+             popover="manual" role="dialog" aria-label="Atribuir responsáveis"
+             data-new-task-target="panel" data-panel="users" hidden>
+          <label for="<%= composer_id %>-user-search" class="form-label">Selecione os responsáveis</label>
+          <input id="<%= composer_id %>-user-search" type="search" class="form-control form-control-sm"
+                 placeholder="Digite um nome ou e-mail" autocomplete="off" data-new-task-target="userSearch"
+                 data-action="input->new-task#filterUsers keydown.enter->new-task#preventSearchSubmit">
+          <%= hidden_field_tag "task[user_ids][]", "", id: nil %>
+          <div class="task-composer__people" role="group" aria-label="Responsáveis">
+            <% User.order(:name, :id).each do |user| %>
+              <% name = user.name.presence || user.email %>
+              <label class="task-composer__person" data-new-task-target="userOption" data-name="<%= name %> <%= user.email %>">
+                <input type="checkbox" name="task[user_ids][]" value="<%= user.id %>" data-new-task-target="assignee">
+                <span class="task-composer__avatar" aria-hidden="true"><%= name.first.upcase %></span>
+                <span class="task-composer__person-name"><%= name %></span>
+              </label>
+            <% end %>
+          </div>
+          <p class="task-composer__hint" data-new-task-target="noUsers" role="status" hidden>Nenhum responsável encontrado.</p>
+          <div class="task-composer__people-footer">
+            <span data-new-task-target="userCount" aria-live="polite">Nenhum selecionado</span>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-action="new-task#closeUsers">Pronto</button>
+          </div>
         </div>
         <div id="<%= composer_id %>-repeat" class="task-composer__panel" data-new-task-target="panel" data-panel="repeat" hidden>
           <%= f.label :recurrence, "Repetir ao concluir", class: "form-label" %>

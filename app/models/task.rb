@@ -126,6 +126,7 @@ class Task < ApplicationRecord
 
   def reset_due_notification_sent_at
     self.due_notification_sent_at = nil
+    self.early_due_notification_sent_at = nil
   end
 
   def clone_tasklist_to(new_task)
