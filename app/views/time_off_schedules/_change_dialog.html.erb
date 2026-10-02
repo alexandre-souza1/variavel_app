@@ -1,0 +1,12 @@
+<% if can_edit? %>
+    <dialog class="time-off-dialog" data-time-off-target="dialog" data-action="cancel->time-off#cancel">
+      <%= form_with scope: :change, url: update_day_time_off_schedule_path, method: :patch, data: { action: 'submit->time-off#save', time_off_target: 'form' } do |form| %>
+        <span class="time-off-eyebrow">AJUSTE INDIVIDUAL · <%= l(@date) %></span><h2>Alterar disponibilidade</h2><p data-time-off-target="personName"></p>
+        <%= form.hidden_field :membership_id %><%= form.hidden_field :date, value: @date %><%= form.hidden_field :expected_revision %>
+        <%= form.label :status, 'Situação no dia' %><%= form.select :status, [['Em escala', 'working'], ['De folga', 'off'], ['Indisponível', 'unavailable'], ['Restaurar rodízio original', 'original']], {}, class: 'form-select' %>
+        <%= form.label :reason, 'Motivo da alteração', class: 'mt-3' %><%= form.text_area :reason, required: true, maxlength: 500, rows: 3, class: 'form-control', placeholder: 'Ex.: atestado, falta, convocação ou troca de folga.' %>
+        <p class="time-off-muted mt-2">O ajuste vale apenas para o dia selecionado.</p><p role="alert" class="text-danger" data-time-off-target="error"></p>
+        <div class="d-flex justify-content-end gap-2 mt-3"><button type="button" class="btn btn-outline-secondary" data-action="time-off#cancel">Cancelar</button><%= form.submit 'Salvar alteração', class: 'btn btn-primary', data: { time_off_target: 'submit' } %></div>
+      <% end %>
+    </dialog>
+  <% end %>

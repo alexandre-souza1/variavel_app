@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_30_130000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_02_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -1028,6 +1028,93 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_30_130000) do
     t.index ["due_notification_enabled", "due_notification_sent_at", "due_at"], name: "index_tasks_on_due_notification_status"
   end
 
+  create_table "time_off_changes", force: :cascade do |t|
+    t.bigint "time_off_schedule_id", null: false
+    t.bigint "time_off_membership_id"
+    t.bigint "user_id"
+    t.date "date", null: false
+    t.jsonb "details", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["time_off_membership_id"], name: "index_time_off_changes_on_time_off_membership_id"
+    t.index ["time_off_schedule_id"], name: "index_time_off_changes_on_time_off_schedule_id"
+    t.index ["user_id"], name: "index_time_off_changes_on_user_id"
+  end
+
+  create_table "time_off_daily_plans", force: :cascade do |t|
+    t.bigint "time_off_schedule_id", null: false
+    t.date "date", null: false
+    t.jsonb "details", default: {}, null: false
+    t.string "dimensioning_signature", null: false
+    t.string "reason", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["time_off_schedule_id", "date"], name: "time_off_one_plan_per_day", unique: true
+    t.index ["time_off_schedule_id"], name: "index_time_off_daily_plans_on_time_off_schedule_id"
+  end
+
+  create_table "time_off_memberships", force: :cascade do |t|
+    t.bigint "time_off_schedule_id", null: false
+    t.bigint "driver_id"
+    t.bigint "ajudante_id"
+    t.string "group_code", null: false
+    t.date "starts_on", null: false
+    t.date "ends_on"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "fixed_weekday"
+    t.string "pilot_key"
+    t.string "standard_operation"
+    t.index ["ajudante_id"], name: "index_time_off_memberships_on_ajudante_id"
+    t.index ["driver_id"], name: "index_time_off_memberships_on_driver_id"
+    t.index ["time_off_schedule_id", "ajudante_id"], name: "time_off_current_helper", unique: true, where: "((ends_on IS NULL) AND (ajudante_id IS NOT NULL))"
+    t.index ["time_off_schedule_id", "driver_id"], name: "time_off_current_driver", unique: true, where: "((ends_on IS NULL) AND (driver_id IS NOT NULL))"
+    t.index ["time_off_schedule_id", "pilot_key"], name: "time_off_pilot_slot", unique: true, where: "(pilot_key IS NOT NULL)"
+    t.index ["time_off_schedule_id"], name: "index_time_off_memberships_on_time_off_schedule_id"
+    t.check_constraint "(driver_id IS NOT NULL) <> (ajudante_id IS NOT NULL)", name: "time_off_exactly_one_person"
+    t.check_constraint "ends_on IS NULL OR ends_on >= starts_on", name: "time_off_valid_membership_dates"
+    t.check_constraint "fixed_weekday IS NULL OR fixed_weekday >= 1 AND fixed_weekday <= 6", name: "time_off_valid_fixed_weekday"
+    t.check_constraint "group_code::text = ANY (ARRAY['A'::character varying, 'B'::character varying, 'C'::character varying, 'D'::character varying, 'E'::character varying, 'F'::character varying, 'FIXO'::character varying]::text[])", name: "time_off_valid_group"
+    t.check_constraint "standard_operation IS NULL OR group_code::text = 'FIXO'::text AND fixed_weekday = 6 AND (standard_operation::text = 'vespertina'::text OR standard_operation::text = 'as'::text AND driver_id IS NOT NULL)", name: "time_off_valid_standard_operation"
+  end
+
+  create_table "time_off_overrides", force: :cascade do |t|
+    t.bigint "time_off_membership_id", null: false
+    t.date "date", null: false
+    t.string "status", null: false
+    t.string "reason", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["time_off_membership_id", "date"], name: "time_off_one_override_per_day", unique: true
+    t.index ["time_off_membership_id"], name: "index_time_off_overrides_on_time_off_membership_id"
+    t.check_constraint "status::text = ANY (ARRAY['working'::character varying, 'off'::character varying, 'unavailable'::character varying]::text[])", name: "time_off_valid_status"
+  end
+
+  create_table "time_off_schedules", force: :cascade do |t|
+    t.string "name", null: false
+    t.date "starts_on", null: false
+    t.date "ends_on", null: false
+    t.date "rotation_anchor", null: false
+    t.boolean "recurring", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "time_off_vacations", force: :cascade do |t|
+    t.bigint "time_off_schedule_id", null: false
+    t.bigint "time_off_membership_id", null: false
+    t.date "starts_on", null: false
+    t.date "ends_on", null: false
+    t.text "reason", null: false
+    t.datetime "cancelled_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["time_off_membership_id"], name: "index_time_off_vacations_on_time_off_membership_id"
+    t.index ["time_off_schedule_id"], name: "index_time_off_vacations_on_time_off_schedule_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -1183,6 +1270,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_30_130000) do
   add_foreign_key "tasks", "buckets"
   add_foreign_key "tasks", "users", column: "assignee_id"
   add_foreign_key "tasks", "users", column: "creator_id"
+  add_foreign_key "time_off_changes", "time_off_memberships"
+  add_foreign_key "time_off_changes", "time_off_schedules"
+  add_foreign_key "time_off_changes", "users", on_delete: :nullify
+  add_foreign_key "time_off_daily_plans", "time_off_schedules"
+  add_foreign_key "time_off_memberships", "ajudantes"
+  add_foreign_key "time_off_memberships", "drivers"
+  add_foreign_key "time_off_memberships", "time_off_schedules"
+  add_foreign_key "time_off_overrides", "time_off_memberships"
+  add_foreign_key "time_off_vacations", "time_off_memberships"
+  add_foreign_key "time_off_vacations", "time_off_schedules"
   add_foreign_key "variable_closings", "employees"
   add_foreign_key "variable_closings", "users"
   add_foreign_key "vehicle_remunerations", "remuneration_periods"

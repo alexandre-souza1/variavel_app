@@ -29,6 +29,10 @@ O fuso horário da aplicação é `Brasilia` e o timezone padrão do banco é UT
 - Geração de PDF, notificações internas e envio por e-mail da disponibilidade travada.
 - Consumo de combustível e mapas operacionais.
 
+### Escala de folgas 5×2
+
+Calendário por grupo, rodízio contínuo A–F e cartões compactos de disponibilidade em três colunas. A aba Extras mostra dias trabalhados nas folgas por colaborador. Configuração abre um painel lateral com os grupos, vagas e períodos de férias. A aba Cobertura apresenta os carros dimensionados para Rota, Vespertina, AS e Van com sugestão de equipes, vagas de motorista e até dois ajudantes e listas de folga e indisponibilidade. Arraste os nomes ou selecione e toque no destino; salve os ajustes com motivo e histórico. Veja [preparação e uso](docs/escala_folgas.md).
+
 ### Manutenção e segurança
 
 - Checklists e modelos de checklist.

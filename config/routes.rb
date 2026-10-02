@@ -1,4 +1,12 @@
 Rails.application.routes.draw do
+  resource :time_off_schedule, path: 'escala-folgas', only: :show do
+    patch :update_coverage
+    post :assign_group, path: 'grupos'
+    patch :update_day, path: 'dia'
+    patch :update_rotation, path: 'rodizio'
+    post :create_vacation, path: 'ferias'
+    patch :cancel_vacation, path: 'ferias/cancelar'
+  end
   resources :employees, path: 'rh/colaboradores', only: %i[index new create show] do
     member do
       delete :delete_role

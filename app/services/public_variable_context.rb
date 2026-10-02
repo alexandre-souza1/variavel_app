@@ -31,6 +31,7 @@ class PublicVariableContext
       },
       documents: document_context,
       fuel_consumption: fuel_consumption_context,
+      time_off: TimeOff::PersonalSchedule.new(person: @record).call,
       people_cycle_current_year: Date.current.year,
       people_cycle_feedbacks: PeopleCycleFeedback.for_identity(@identity).map { |feedback| { cycle: feedback.cycle, stage: feedback.stage, response: feedback.response } },
       period_note: "Os valores são calculados apenas com os dados disponíveis no sistema.",

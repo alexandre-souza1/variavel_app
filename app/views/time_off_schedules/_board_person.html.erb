@@ -1,0 +1,6 @@
+<% vacation = status_for(member, @date) == 'vacation'; editable = editable && !vacation %>
+<article class="time-off-chip time-off-chip--<%= member.group_code %>" data-member-id="<%= member.id %>" data-movable="<%= !vacation %>" title="<%= member.person.nome %> · <%= member.role_label %> · Grupo <%= member.group_code %><%= ' · Férias' if vacation %>">
+  <button type="button" class="time-off-chip-select" data-action="time-off-board#select" aria-label="Selecionar <%= member.person.nome %>" <%= 'disabled' unless editable %>><span class="time-off-chip-group"><%= member.group_code == 'FIXO' ? 'FX' : member.group_code %></span><span><strong><%= member.person.nome %></strong><small><%= EmployeeRole::CARGOS.key(member.cargo_on(@date)) || member.role_label %> · <%= member.person.promax %></small></span></button>
+  <% if vacation %><span class="time-off-vacation-badge">Férias</span><% end %>
+  <% if editable %><button type="button" class="time-off-chip-remove" data-action="time-off-board#release" aria-label="Retirar <%= member.person.nome %> do carro" <%= 'hidden' unless assigned %>><i class="bi bi-x" aria-hidden="true"></i></button><% end %>
+</article>

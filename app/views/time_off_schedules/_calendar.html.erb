@@ -1,0 +1,59 @@
+<% context = { tab: 'calendar', month: @month.strftime('%Y-%m'), date: @date, role: @role, group: @group } %>
+<section class="time-off-panel" id="time-off-calendar" aria-labelledby="calendar-heading">
+    <div class="time-off-panel-heading"><div><h2 id="calendar-heading"><i class="bi bi-calendar3" aria-hidden="true"></i> <%= l(@month, format: '%B de %Y').capitalize %></h2><p>Selecione um dia para ajustar a escala. Cores identificam os grupos; • indica ajuste individual.</p></div>
+      <nav aria-label="Navegação do calendário" class="d-flex gap-2">
+        <%= link_to '← Mês anterior', calendar_month_path(-1), class: 'btn btn-sm btn-outline-secondary' %>
+        <%= link_to 'Próximo mês →', calendar_month_path(1), class: 'btn btn-sm btn-outline-secondary' %>
+      </nav>
+    </div>
+    <div class="time-off-legend">
+      <span><b>T</b> Em escala</span><span><b>F</b> Folga</span><span><b>D</b> DSR</span><span><b>I</b> Indisponível</span><span><b>V</b> Férias</span><span><b>?</b> Folga fixa a definir</span><span>— Fora da vigência</span>
+    </div>
+    <%= render 'group_legend' %>
+    <%= turbo_frame_tag 'time-off-calendar-content', data: { turbo_action: 'advance', action: 'turbo:frame-load->time-off#syncCalendarContext' } do %>
+    <div class="time-off-calendar-controls">
+      <%= form_with url: time_off_schedule_path, method: :get, class: 'time-off-period-picker', role: 'group', aria: { label: 'Período do calendário' } do %>
+        <% context.merge(page: @page).each do |key, value| %><%= hidden_field_tag key, value, id: nil %><% end %>
+        <% @periods.each do |period| %>
+          <%= button_tag "#{period.first.strftime('%d')}–#{period.last.strftime('%d')}", name: 'calendar_period', value: period.first.iso8601, class: "btn btn-sm time-off-calendar-button #{@calendar_period == period.first.iso8601 ? 'btn-primary is-active' : 'btn-outline-secondary'}", aria: { pressed: @calendar_period == period.first.iso8601 } %>
+        <% end %>
+        <%= button_tag 'Mês inteiro', name: 'calendar_period', value: 'month', class: "btn btn-sm time-off-calendar-button #{@calendar_period == 'month' ? 'btn-primary is-active' : 'btn-outline-secondary'}", aria: { pressed: @calendar_period == 'month' } %>
+      <% end %>
+      <span><%= l(@month, format: '%B').capitalize %> · <%= pluralize(@total_rows, 'colaborador', 'colaboradores') %></span>
+    </div>
+    <div class="time-off-table-scroll" tabindex="0" role="region" aria-label="Calendário <%= @calendar_period == 'month' ? 'mensal' : 'semanal' %> de colaboradores">
+      <table class="time-off-calendar" style="--calendar-days: <%= @days.size %>">
+        <caption class="visually-hidden">Escala de <%= l(@days.first) %> a <%= l(@days.last) %></caption>
+        <colgroup><col class="time-off-person-column"><% @days.size.times do %><col><% end %></colgroup>
+        <thead><tr><th scope="col" class="time-off-person-cell">Colaborador</th>
+          <% @days.each do |day| %><th scope="col" class="<%= 'is-selected' if day == @date %> <%= 'is-sunday' if day.sunday? %>"><%= link_to time_off_tab_path('day', date: day), aria: { label: "Acompanhar #{l(day)}" }, data: { turbo_frame: '_top' }, class: 'time-off-day-link' do %><strong><%= day.day.to_s.rjust(2, '0') %></strong><small><%= %w[dom seg ter qua qui sex sáb][day.wday] %></small><% end %></th><% end %>
+        </tr><tr class="time-off-original"><th scope="row" class="time-off-person-cell">Folga original do grupo</th>
+          <% @days.each do |day| %><td class="<%= 'is-selected' if day == @date %>"><% group = @schedule.off_group_on(day) %><% if group %><span class="time-off-group time-off-group--<%= group %>"><%= group %></span><% elsif @schedule.covers?(day) && day.sunday? %>DSR<% else %>—<% end %></td><% end %>
+        </tr></thead>
+        <tbody>
+          <% @calendar_memberships.each_with_index do |member, index| %><tr class="<%= 'time-off-calendar-group-start' if index.positive? && @calendar_memberships[index - 1].group_code != member.group_code %>">
+            <th scope="row" class="time-off-person-cell"><div class="time-off-person-name"><span class="time-off-group time-off-group--<%= member.group_code %>"><%= member.group_code %></span><span><strong title="<%= member.person.nome %>"><%= member.person.nome %></strong><small><%= member.role_label %> · <%= member.person.promax %> · <%= pluralize(@extras.dates(member).size, 'extra', 'extras') %><% if member.ends_on %> · até <%= l(member.ends_on) %><% end %></small></span></div></th>
+            <% @days.each do |day| %>
+              <% base = @schedule.base_status(member, day); override = base ? @availability.override(member, day) : nil; status = base && status_for(member, day); vacation = base && @availability.vacation(member, day) %>
+              <td class="<%= 'is-selected' if day == @date %> <%= 'is-sunday' if day.sunday? %>">
+                <%= link_to time_off_tab_path('day', date: day), data: { turbo_frame: '_top' }, class: "time-off-cell time-off-cell--#{status || 'none'} #{"time-off-group--#{member.group_code}" if status == 'off'}", title: "#{member.person.nome}: #{TimeOffSchedule::STATUSES[status] || 'Fora da vigência'}#{vacation ? " · #{l(vacation.starts_on)} a #{l(vacation.ends_on)} · #{vacation.reason}" : (" · #{override.reason}" if override)}", aria: { label: "#{member.person.nome}, #{l(day)}: #{TimeOffSchedule::STATUSES[status] || 'Fora da vigência'}" } do %>
+                  <span class="time-off-cell-label"><%= { 'working' => 'T', 'off' => 'F', 'dsr' => 'D', 'unavailable' => 'I', 'vacation' => 'V', 'pending' => '?' }[status] || '—' %><% if override && override.status != base && status != 'vacation' %><sup>•</sup><% end %></span>
+                <% end %>
+              </td>
+            <% end %>
+          </tr><% end %>
+          <% if @calendar_memberships.empty? %><tr><td colspan="<%= @days.size + 1 %>" class="time-off-empty">Nenhum colaborador neste filtro. Cadastre os participantes em Configuração para preencher o calendário.</td></tr><% end %>
+        </tbody>
+      </table>
+    </div>
+    <div class="time-off-calendar-pagination">
+      <p><%= @total_rows.zero? ? 0 : (@page - 1) * @per_page + 1 %>–<%= [@page * @per_page, @total_rows].min %> de <%= @total_rows %> colaboradores</p>
+      <%= form_with url: time_off_schedule_path, method: :get, class: 'time-off-calendar-actions', aria: { label: 'Paginação de colaboradores' } do %>
+        <% context.merge(calendar_period: @calendar_period).each do |key, value| %><%= hidden_field_tag key, value, id: nil %><% end %>
+        <%= button_tag 'Anterior', name: 'page', value: @page - 1, disabled: @page == 1, class: 'btn btn-sm btn-outline-secondary time-off-calendar-button' %>
+        <span aria-live="polite" aria-label="Página <%= @page %> de <%= @total_pages %>"><%= @page %> / <%= @total_pages %></span>
+        <%= button_tag 'Próxima', name: 'page', value: @page + 1, disabled: @page == @total_pages, class: 'btn btn-sm btn-outline-secondary time-off-calendar-button' %>
+      <% end %>
+    </div>
+    <% end %>
+  </section>

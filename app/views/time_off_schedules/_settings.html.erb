@@ -1,0 +1,28 @@
+<% if can_edit? %>
+  <div class="offcanvas offcanvas-end time-off-config" tabindex="-1" id="time-off-settings" aria-labelledby="settings-heading" data-time-off-target="settings">
+    <div class="offcanvas-header"><h2 id="settings-heading">Configuração da escala</h2><button type="button" class="btn-close" aria-label="Fechar configuração" data-action="time-off#closeSettings"></button></div>
+    <div class="offcanvas-body">
+      <%= render 'vacations' %>
+    <% if @pilot_pending.any? %><div class="time-off-notice"><strong>Composição do piloto a completar</strong><ul class="mt-2 mb-0"><% @pilot_pending.each do |entry| %><li>Grupo <%= entry['group'] %> · <%= entry['name'] %> · <%= entry['role'] == 'driver' ? 'Motorista' : 'Ajudante' %><%= entry['vacancy'] ? ' — vaga a preencher' : ' — vincule ao cadastro correspondente' %></li><% end %></ul></div><% end %>
+    <% if can_edit? %>
+      <details class="time-off-settings" <%= 'open' if @memberships.empty? %>><summary><i class="bi bi-person-plus"></i> Adicionar participante ou alterar grupo</summary>
+        <%= form_with scope: :membership, url: assign_group_time_off_schedule_path(date: @date), class: 'time-off-membership-form' do |form| %>
+          <div><%= form.label :person, 'Colaborador cadastrado' %><%= form.select :person, @people_options, { prompt: 'Selecione um motorista ou ajudante' }, required: true, class: 'form-select' %></div>
+          <div><%= form.label :pilot_key, 'Vaga da composição inicial (opcional)' %><%= form.select :pilot_key, @pilot_pending.map { |entry| ["#{entry['group']} · #{entry['name']}", entry['key']] }, { prompt: 'Participante adicional' }, class: 'form-select' %></div>
+          <div><%= form.label :group_code, 'Grupo' %><%= form.select :group_code, TimeOffSchedule::GROUPS.map { |g| ["Grupo #{g}", g] }, {}, class: 'form-select' %></div>
+          <div><%= form.label :fixed_weekday, 'Folga do grupo Fixo' %><%= form.select :fixed_weekday, TimeOffSchedule::WEEKDAYS, { prompt: 'A definir', selected: 6 }, class: 'form-select' %></div>
+          <div><%= form.label :standard_operation, 'Titular de operação fixa' %><%= form.select :standard_operation, TimeOffMembership::STANDARD_OPERATIONS, { prompt: 'Sem operação fixa' }, class: 'form-select' %></div>
+          <div><%= form.label :starts_on, 'Válido a partir de' %><%= form.date_field :starts_on, value: @memberships.empty? ? @schedule.starts_on : @date, required: true, min: @schedule.starts_on, class: 'form-control' %></div>
+          <%= form.submit 'Salvar grupo', class: 'btn btn-primary' %>
+        <% end %><p class="time-off-muted">Vespertina e AS exigem grupo Fixo com folga no sábado. A Van usa o cargo Motorista de van vigente no perfil do colaborador. Para alterar grupo ou operação, escolha uma data posterior ao início da vigência atual.</p>
+      </details>
+      <details class="time-off-settings"><summary><i class="bi bi-arrow-repeat"></i> Continuação após outubro</summary>
+        <%= form_with scope: :schedule, url: update_rotation_time_off_schedule_path(date: @date), method: :patch do |form| %>
+          <label class="d-flex gap-2 align-items-start"><%= form.check_box :recurring, checked: @schedule.recurring? %><span>Continuar o rodízio de 6 semanas: a folga recua um dia por semana (sábado → sexta → quinta → quarta → terça → segunda → sábado).</span></label>
+          <%= form.submit 'Salvar continuação', class: 'btn btn-outline-primary mt-3' %>
+        <% end %>
+      </details>
+    <% end %>
+    </div>
+  </div>
+<% end %>

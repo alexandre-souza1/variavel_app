@@ -1,0 +1,69 @@
+<section class="time-off-panel" id="time-off-coverage" aria-labelledby="coverage-heading"
+  data-controller="time-off-board" data-time-off-board-editable-value="<%= can_edit? && @coverage.editable? %>"
+  data-time-off-board-state-value="<%= @board.state.to_json %>" data-time-off-board-url-value="<%= update_coverage_time_off_schedule_path %>"
+  data-time-off-board-date-value="<%= @date %>" data-time-off-board-revision-value="<%= @coverage.plan&.lock_version || -1 %>" data-time-off-board-signature-value="<%= @coverage.signature %>">
+  <div class="time-off-panel-heading">
+    <div><span class="time-off-eyebrow">EQUIPES DO DIA</span><h2 id="coverage-heading">Painel de <%= l(@date) %></h2><p>Arraste os nomes para os carros ou selecione um nome e toque na vaga.</p></div>
+    <% if @coverage.dimensioning %><span class="time-off-muted"><%= @coverage.dimensioning.label %> · <%= @coverage.plan ? 'Composição salva' : 'Sugestão pela escala' %></span><% end %>
+  </div>
+  <% if !@schedule.covers?(@date) %><div class="time-off-notice">Data fora da vigência da escala.</div>
+  <% elsif @date.sunday? %><div class="time-off-notice">Domingo: DSR para todos. Nenhuma saída prevista nesta escala.</div>
+  <% elsif !@coverage.dimensioning %><div class="time-off-notice"><strong>Sem dimensionamento vigente nesta data.</strong> Cadastre o período em <%= link_to 'Dimensionamento da frota', fleet_dimensionings_path %>. As pessoas continuam na <%= link_to 'Escala do dia', time_off_tab_path('day') %>.</div>
+  <% else %>
+    <% metrics = @board.metrics %>
+    <div class="time-off-metrics">
+      <div><strong><%= metrics[:cars] %></strong><span>Carros previstos</span></div>
+      <div><strong data-time-off-board-target="driverCount"><%= metrics[:drivers] %> / <%= metrics[:cars] %></strong><span>Motoristas nos carros</span></div>
+      <div><strong data-time-off-board-target="helperGap"><%= metrics[:helper_gap] %></strong><span>Vagas de ajudante</span></div>
+    </div>
+    <% if @date.saturday? %><div class="time-off-notice">Sábado: somente as rotas padrão. Vespertina, AS e Van folgam.</div><% end %>
+    <% if @coverage.stale? %><div class="time-off-notice time-off-coverage-warning">O dimensionamento mudou. Confira as posições e salve o painel novamente.</div><% end %>
+    <% if can_edit? %><div class="time-off-board-command"><p data-time-off-board-target="message" role="status" aria-live="polite">Selecione um nome ou arraste para movimentar.</p><div><button type="button" class="btn btn-sm btn-outline-secondary time-off-clear-selection" data-action="time-off-board#clearSelection">Cancelar seleção</button><button type="button" class="btn btn-sm btn-outline-secondary" data-action="time-off-board#reset">Desfazer rascunho</button><button type="button" class="btn btn-sm btn-primary" data-action="time-off-board#openSave">Salvar painel</button></div></div><% end %>
+    <div class="time-off-crew-layout">
+      <div class="time-off-car-groups">
+        <% TimeOff::Coverage::OPERATIONS.each do |operation, label| %>
+          <% cars = @board.cars.select { |car| car['operation'] == operation } %><% next if cars.empty? %>
+          <section class="time-off-car-group" data-operation="<%= operation %>"><header><h3><i class="bi bi-truck"></i> <%= label %></h3><span class="time-off-count"><%= cars.size %> carros</span></header>
+            <div class="time-off-car-grid">
+              <% cars.each do |car| %>
+                <article class="time-off-car" data-car-key="<%= car['key'] %>">
+                  <header><div><small><%= operation == 'route' ? "Posição #{car['position'] + 1}" : label %></small><strong><%= car['label'] %></strong></div><i class="bi bi-truck-front" aria-hidden="true"></i></header>
+                  <% [['driver', 'Motorista'], ['helper1', 'Ajudante'], ['helper2', 'Ajudante 2']].each do |role, role_label| %>
+                    <% next if operation != 'route' && role.start_with?('helper') && role.delete_prefix('helper').to_i > car['helper_count'] %>
+                    <div class="time-off-car-position" data-position-role="<%= role %>" <%= 'hidden' if role.start_with?('helper') && role.delete_prefix('helper').to_i > car['helper_count'] %>>
+                      <span class="time-off-position-label"><%= role_label %></span>
+                      <div class="time-off-person-drop" data-time-off-board-target="drop" data-car="<%= car['key'] %>" data-role="<%= role %>" data-action="click->time-off-board#destination" role="group" aria-label="<%= role_label %> de <%= car['label'] %>">
+                        <% member = @coverage.member(car[role]) %><% if member %><%= render 'board_person', member: member, editable: can_edit?, assigned: true %><% end %>
+                        <button type="button" class="time-off-vacancy" data-action="time-off-board#destination" <%= 'disabled' unless can_edit? %>>Colocar <%= role == 'driver' ? 'motorista' : 'ajudante' %></button>
+                      </div>
+                    </div>
+                  <% end %>
+                  <% if operation == 'route' %><label class="time-off-car-composition">Ajudantes<%= select_tag "helpers_#{car['key']}", options_for_select([['Sem ajudante', 0], ['1 ajudante', 1], ['2 ajudantes', 2]], car['helper_count']), class: 'form-select form-select-sm', disabled: !can_edit?, data: { action: 'change->time-off-board#composition', car: car['key'] }, aria: { label: "Quantidade de ajudantes de #{car['label']}" } %></label><% end %>
+                </article>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+      </div>
+      <aside class="time-off-crew-pools" aria-label="Colaboradores fora dos carros">
+        <% [['working', 'Disponíveis', 'bi-person-check'], ['off', 'De folga', 'bi-cup-hot'], ['unavailable', 'Indisponíveis', 'bi-person-x'], ['pending', 'Folga a definir', 'bi-question-circle']].each do |status, label, icon| %>
+          <% members = @board.pools[status] || [] %><% next if status == 'pending' && members.empty? %>
+          <section class="time-off-crew-pool time-off-crew-pool--<%= status %>">
+            <header><h3><i class="bi <%= icon %>"></i> <%= label %></h3><span class="time-off-count" data-pool-count="<%= status %>"><%= members.size %></span></header>
+            <div class="time-off-person-drop time-off-pool-drop" data-time-off-board-target="drop" data-status="<%= status %>" data-action="click->time-off-board#destination" role="group" aria-label="<%= label %>">
+              <% members.each do |member| %><%= render 'board_person', member: member, editable: can_edit? && status != 'pending', assigned: false %><% end %>
+              <button type="button" class="time-off-pool-placeholder" data-action="time-off-board#destination" <%= 'disabled' unless can_edit? && status != 'pending' %>>Mover para <%= label.downcase %></button>
+            </div>
+          </section>
+        <% end %>
+      </aside>
+    </div>
+    <% if can_edit? %>
+      <div class="time-off-board-save"><span class="time-off-muted" data-time-off-board-target="dirty">Sugestão inicial. Salve para confirmar a composição.</span><button type="button" class="btn btn-primary" data-action="time-off-board#openSave">Salvar painel do dia</button></div>
+      <dialog class="time-off-dialog" data-time-off-board-target="dialog" data-action="cancel->time-off-board#cancelSave"><h2>Salvar painel de <%= l(@date) %></h2><p class="time-off-muted mb-3">A composição dos carros, convocações e indisponibilidades serão registradas com este motivo.</p><label for="board_reason">Motivo das alterações</label><textarea id="board_reason" data-time-off-board-target="reason" class="form-control" rows="3" minlength="4" maxlength="500" placeholder="Ex.: atestado, convocação na folga ou remanejamento da equipe."></textarea><p class="time-off-shortage mt-2" data-time-off-board-target="error" role="alert"></p><div class="d-flex justify-content-end gap-2 mt-3"><button type="button" class="btn btn-outline-secondary" data-action="time-off-board#cancelSave">Cancelar</button><button type="button" class="btn btn-primary" data-action="time-off-board#save" data-time-off-board-target="save">Confirmar e salvar</button></div></dialog>
+    <% end %>
+    <div class="time-off-notice">Tirar alguém da folga para um carro registra a convocação ao salvar. A compensação deve ser combinada na Escala do dia. Motorista pode atuar como ajudante por exceção; ajudante não assume a direção.</div>
+    <% if @coverage.plan %><div class="time-off-notice">Último ajuste: <%= l(@coverage.plan.updated_at, format: '%d/%m %H:%M') %> · <%= @coverage.plan.reason %></div><% end %>
+    <% @board.members.each do |member| %><template data-time-off-board-target="person" data-member-id="<%= member.id %>"><%= render 'board_person', member: member, editable: can_edit?, assigned: false %></template><% end %>
+  <% end %>
+</section>

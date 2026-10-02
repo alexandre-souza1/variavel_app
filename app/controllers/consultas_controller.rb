@@ -87,6 +87,7 @@ class ConsultasController < ApplicationController
       apply_function_filter!
     end
     prepare_fuel_consumption! if @driver
+    prepare_personal_schedule!
   end
 
   private
@@ -128,11 +129,16 @@ class ConsultasController < ApplicationController
     @mapa_totals = @mapa_totals&.merge(caixas_reais: @mapa_totals[:cx_real], pdvs_reais: @mapa_totals[:pdv_real])
     definir_datas_periodo(@mapas)
     prepare_fuel_consumption!
+    prepare_personal_schedule!
     render :show
   rescue Date::Error, EmployeeRole::HistoryError => error
     @parametros = ParametroCalculo.all.group_by(&:categoria)
     flash.now[:alert] = error.message
     render :new, status: :unprocessable_entity
+  end
+
+  def prepare_personal_schedule!
+    @personal_schedule = TimeOff::PersonalSchedule.new(person: @employee || @driver || @ajudante, month: params[:escala_mes]).call
   end
 
   def prepare_fuel_consumption!

@@ -5,3 +5,5 @@
 //= link controllers/public_variable_chat_widget_controller.js
 //= link controllers/meeting_recorder_launch_controller.js
 //= link_tree ../../../vendor/javascript .js
+
+//= link controllers/time_off_controller.js

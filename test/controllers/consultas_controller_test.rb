@@ -38,4 +38,39 @@ class ConsultasControllerTest < ActionDispatch::IntegrationTest
     assert_select 'section[aria-label="Meu consumo"]', count: 0
   end
 
+  test 'personal week and month are displayed without exposing the team calendar' do
+    schedule = TimeOffSchedule.create!(name: 'Piloto', starts_on: '2026-10-01', ends_on: '2026-10-31', rotation_anchor: '2026-09-28', recurring: true)
+    schedule.time_off_memberships.create!(driver: drivers(:one), group_code: 'A', starts_on: schedule.starts_on)
+    travel_to Time.zone.local(2026, 10, 2) do
+      get consultas_show_url, params: { matricula: drivers(:one).matricula, categoria: 'motorista', periodo_mes: 9, periodo_ano: 2026 }
+      assert_response :success
+      assert_select 'section[aria-label="Minhas folgas"]' do
+        assert_select '.personal-schedule__week .personal-schedule__day', count: 7
+        assert_select '.personal-schedule__calendar .personal-schedule__day', count: 31
+        assert_select '.personal-schedule__calendar [data-date="2026-10-06"] strong', text: 'Folga'
+        assert_select 'summary', /Minha escala do mês/
+        assert_select 'a[href*="escala-folgas"]', count: 0
+      end
+      get consultas_show_url, params: { matricula: drivers(:one).matricula, categoria: 'motorista', escala_mes: '2026-11' }
+      assert_response :success
+      assert_select 'details[open] .personal-schedule__calendar .personal-schedule__day', count: 30
+    end
+  end
+
+  test 'RH helper sees own schedule and unregistered employee has a safe empty state' do
+    employee = Employee.create!(nome: 'Ajudante Folgas', matricula: 'TEST-FOLGAS')
+    employee.employee_roles.create!(cargo: 'ajudante', promax: 'TEST-FOLGAS', starts_on: '2026-01-01', reason: 'Admissão')
+    ajudantes(:one).update!(employee: employee)
+    travel_to Time.zone.local(2026, 10, 2) do
+      get consultas_show_url, params: { matricula: employee.matricula, categoria: 'ajudante', escala_mes: 'invalid' }
+      assert_response :success
+      assert_select '.personal-schedule__empty', /não tem uma escala/
+      schedule = TimeOffSchedule.create!(name: 'Piloto', starts_on: '2026-10-01', ends_on: '2026-10-31', rotation_anchor: '2026-09-28', recurring: true)
+      schedule.time_off_memberships.create!(ajudante: ajudantes(:one), group_code: 'E', starts_on: schedule.starts_on)
+      get consultas_show_url, params: { matricula: employee.matricula, categoria: 'ajudante' }
+      assert_response :success
+      assert_select '.personal-schedule__week [data-date="2026-10-02"] strong', text: 'Folga'
+    end
+  end
+
 end

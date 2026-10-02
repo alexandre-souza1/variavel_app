@@ -105,6 +105,7 @@
     </div>
   </section>
 
+  <%= render "personal_schedule", schedule: @personal_schedule if @personal_schedule %>
   <%= render "consumption", report: @gasola_consumption if @gasola_consumption %>
 
   <section class="az-report-grid">

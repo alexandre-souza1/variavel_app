@@ -1,0 +1,74 @@
+<section class="az-report-panel personal-schedule" aria-label="Minhas folgas">
+  <details class="consumption-tab personal-schedule__details" <%= 'open' if schedule[:available] && params[:escala_mes].present? %>>
+    <summary class="consumption-tab__summary">
+      <span class="consumption-tab__title"><i class="bi bi-calendar-heart" aria-hidden="true"></i> Minhas folgas da semana</span>
+      <span class="consumption-tab__status">
+        <% if (next_off = schedule[:next_off]) %>
+          Próximo descanso: <%= l(next_off[:date]) %> · <%= next_off[:label] %><%= ' (hoje)' if next_off[:date] == schedule[:today] %>
+        <% elsif schedule[:available] %>
+          Nenhum próximo descanso registrado.
+        <% else %>
+          Escala ainda não disponível.
+        <% end %>
+      </span>
+      <span class="consumption-tab__toggle"><span class="consumption-tab__show">Ver detalhes</span><span class="consumption-tab__hide">Fechar detalhes</span> <i class="bi bi-chevron-down" aria-hidden="true"></i></span>
+    </summary>
+    <div class="personal-schedule__body">
+      <div class="personal-schedule__heading">
+        <div>
+          <h2>Escala desta semana</h2>
+          <p><%= l(schedule[:week_start]) %> a <%= l(schedule[:week_end]) %> · Segunda a domingo</p>
+        </div>
+      </div>
+
+      <% if schedule[:available] %>
+        <div class="personal-schedule__week" aria-label="Escala desta semana">
+          <% schedule[:week].each do |day| %>
+            <div class="personal-schedule__day is-<%= day[:status] || 'unknown' %> <%= 'is-today' if day[:date] == schedule[:today] %>" data-date="<%= day[:date].iso8601 %>">
+              <span><%= t('date.abbr_day_names')[day[:date].wday].capitalize %> · <%= day[:date].strftime('%d/%m') %></span>
+              <strong><%= day[:label] %></strong>
+              <% if day[:adjusted] %><small>Ajuste individual</small><% end %>
+            </div>
+          <% end %>
+        </div>
+        <p class="personal-schedule__note">Folga e DSR são dias de descanso. A escala considera os ajustes do gestor e pode receber alterações.</p>
+        <details class="personal-schedule__month" <%= 'open' if params[:escala_mes].present? %>>
+          <summary class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar3 me-1"></i> Minha escala do mês <i class="bi bi-chevron-down ms-1"></i></summary>
+          <div class="personal-schedule__month-content">
+            <%= form_with url: consulta_path, method: :get, local: true, class: "personal-schedule__month-filter" do %>
+              <% %i[matricula categoria periodo_mes periodo_ano funcao].each do |key| %>
+                <%= hidden_field_tag key, params[key] if params[key].present? %>
+              <% end %>
+              <%= label_tag :escala_mes, 'Mês da escala', class: 'form-label mb-0' %>
+              <%= month_field_tag :escala_mes, schedule[:month].strftime('%Y-%m'), class: 'form-control form-control-sm', required: true %>
+              <%= submit_tag 'Exibir', class: 'btn btn-primary btn-sm' %>
+            <% end %>
+            <h3><%= l(schedule[:month], format: '%B de %Y').capitalize %></h3>
+            <p class="personal-schedule__legend">
+              <span><b>T</b> Em escala</span><span><b>F</b> Folga</span><span><b>D</b> DSR</span>
+              <span><b>I</b> Indisponível</span><span><b>V</b> Férias</span><span><b>?</b> A definir</span>
+              <span><b>—</b> Sem escala</span><span><b>•</b> Ajuste individual</span>
+            </p>
+            <div class="personal-schedule__calendar" aria-label="Minha escala do mês">
+              <% [1, 2, 3, 4, 5, 6, 0].each do |weekday| %>
+                <span class="personal-schedule__weekday"><%= t('date.abbr_day_names')[weekday].capitalize %></span>
+              <% end %>
+              <% (schedule[:month].cwday - 1).times do %><span aria-hidden="true"></span><% end %>
+              <% schedule[:days].each do |day| %>
+                <div class="personal-schedule__day is-<%= day[:status] || 'unknown' %> <%= 'is-today' if day[:date] == schedule[:today] %>" data-date="<%= day[:date].iso8601 %>" title="<%= l(day[:date]) %> · <%= day[:label] %>">
+                  <span><%= day[:date].day %></span>
+                  <strong><%= day[:label] %></strong>
+                  <span class="personal-schedule__status-code" aria-hidden="true"><%= personal_schedule_status_code(day[:status]) %><%= '•' if day[:adjusted] %></span>
+                  <% if day[:adjusted] %><small>Ajuste individual</small><% end %>
+                </div>
+              <% end %>
+            </div>
+            <p class="personal-schedule__note">Mês de calendário, separado do fechamento da variável (21 a 20). “Sem escala” indica um dia sem cadastro vigente.</p>
+          </div>
+        </details>
+      <% else %>
+        <p class="personal-schedule__empty">Você ainda não tem uma escala de folgas disponível. Consulte o gestor para confirmar seu cadastro.</p>
+      <% end %>
+    </div>
+  </details>
+</section>

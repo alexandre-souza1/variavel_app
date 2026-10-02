@@ -1,0 +1,20 @@
+<section class="time-off-panel" aria-labelledby="day-heading" id="time-off-day">
+    <div class="time-off-panel-heading"><div><span class="time-off-eyebrow">ACOMPANHAMENTO DO DIA</span><h2 id="day-heading"><%= l(@date, format: '%A, %d de %B').capitalize %></h2><p><% if @date.sunday? && @schedule.covers?(@date) %>Domingo: DSR para todos os participantes.<% elsif can_edit? && @schedule.covers?(@date) %>Arraste o colaborador entre as listas. Informe o motivo para salvar.<% else %>Consulte a disponibilidade de cada colaborador neste dia.<% end %></p></div>
+      <% group = @schedule.off_group_on(@date) %><% if group %><span class="time-off-group time-off-group--<%= group %>">Folga original · Grupo <%= group %></span><% end %>
+    </div>
+    <% unless @schedule.covers?(@date) %><div class="time-off-notice">Este dia está fora do piloto, definido de <%= l(@schedule.starts_on) %> a <%= l(@schedule.ends_on) %>. A continuação do rodízio pode ser habilitada na Configuração.</div><% end %>
+    <div class="time-off-board">
+      <% ([['working', 'Em escala', 'bi-person-check'], ['off', @date.sunday? ? 'DSR · Domingo' : 'De folga', 'bi-cup-hot'], ['unavailable', 'Indisponíveis', 'bi-person-x']] + (@daily['pending'].present? ? [['pending', 'Folga fixa a definir', 'bi-question-circle']] : [])).each do |status, label, icon| %>
+        <% members = (@daily[status] || []) + (status == 'off' ? (@daily['dsr'] || []) : []) %>
+        <section class="time-off-column time-off-column--<%= status %>">
+          <header><h3><i class="bi <%= icon %>"></i> <%= label %></h3><span class="time-off-count"><%= members.size %></span></header>
+          <p class="time-off-column-summary"><%= members.count { |m| m.role == 'driver' } %> motoristas · <%= members.count { |m| m.role == 'helper' } %> ajudantes</p>
+          <div class="time-off-list" data-time-off-target="list" data-status="<%= status %>" aria-label="<%= label %>">
+            <% members.each do |member| %><%= render 'person', member: member %><% end %>
+            <p class="time-off-list-empty">Nenhum colaborador nesta lista.</p>
+          </div>
+        </section>
+      <% end %>
+    </div>
+    <div class="time-off-notice"><i class="bi bi-info-circle"></i> Convocar alguém de folga altera somente esse dia. A folga compensatória deve ser registrada na data combinada. O rodízio do grupo permanece como referência.</div>
+  </section>

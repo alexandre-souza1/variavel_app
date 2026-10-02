@@ -1,0 +1,20 @@
+<section class="time-off-settings time-off-vacation-settings" aria-labelledby="vacations-heading">
+  <h3 id="vacations-heading">Férias</h3>
+  <p class="time-off-muted">Informe o período completo. As férias acompanham o colaborador mesmo se o grupo mudar.</p>
+  <%= form_with scope: :vacation, url: create_vacation_time_off_schedule_path(tab: @tab, date: @date), class: 'time-off-vacation-form' do |form| %>
+    <div><%= form.label :membership_id, 'Colaborador' %><%= form.select :membership_id, @vacation_people.map { |m| ["#{m.person.nome} · #{m.role_label}", m.id] }, { prompt: 'Selecione um colaborador' }, class: 'form-select', required: true %></div>
+    <div class="time-off-vacation-dates"><div><%= form.label :starts_on, 'Início das férias' %><%= form.date_field :starts_on, value: @date, class: 'form-control', required: true %></div><div><%= form.label :ends_on, 'Último dia de férias' %><%= form.date_field :ends_on, value: @date, class: 'form-control', required: true %></div></div>
+    <div><%= form.label :reason, 'Observação / motivo' %><%= form.text_area :reason, rows: 2, maxlength: 500, class: 'form-control', required: true %></div>
+    <%= form.submit 'Registrar férias', class: 'btn btn-primary' %>
+  <% end %>
+  <h4>Períodos em <%= l(@month, format: '%B de %Y') %></h4>
+  <% if @vacations.empty? %><p class="time-off-muted">Nenhum período de férias neste mês.</p><% end %>
+  <% @vacations.each do |vacation| %>
+    <article class="time-off-vacation-period">
+      <strong><%= vacation.time_off_membership.person.nome %></strong><p><%= l(vacation.starts_on) %> a <%= l(vacation.ends_on) %></p><p class="time-off-muted"><%= vacation.reason %></p>
+      <details><summary>Cancelar período</summary><%= form_with scope: :vacation, url: cancel_vacation_time_off_schedule_path(tab: @tab, date: @date), method: :patch do |form| %>
+        <%= form.hidden_field :id, value: vacation.id %><%= form.label :reason, 'Motivo do cancelamento', for: "cancel_reason_#{vacation.id}" %><%= form.text_field :reason, id: "cancel_reason_#{vacation.id}", required: true, maxlength: 500, class: 'form-control' %><%= form.submit 'Cancelar férias', class: 'btn btn-sm btn-outline-danger mt-2' %>
+      <% end %></details>
+    </article>
+  <% end %>
+</section>
