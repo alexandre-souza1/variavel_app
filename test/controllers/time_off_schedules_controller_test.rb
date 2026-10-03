@@ -14,7 +14,7 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.time-off-day-link[data-turbo-frame="_top"]', 7
     assert_select '.time-off-board', 0
     assert_select 'dialog', 0
-    assert_select '.time-off-tabs a', 5
+    assert_select '.time-off-tabs a', 4
     assert_select '.time-off-tabs a', text: 'Grupos', count: 0
     assert_select '.time-off-group-legend .time-off-group-summary', 7
     assert_select '#time-off-settings .time-off-membership-form', 1
@@ -38,6 +38,30 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     get time_off_schedule_path(tab: 'day', month: '2026-11', date: '2026-10-02')
     assert_response :success
     assert_select 'input[name="change[date]"][value="2026-11-01"]'
+  end
+
+  test 'daily arrows cross month and year boundaries while retaining tab and filters' do
+    %w[day history].each do |tab|
+      [['2026-10-31', 'next', '2026-11-01'], ['2027-01-01', 'prev', '2026-12-31']].each do |date, direction, destination|
+        get time_off_schedule_path(tab: tab, date: date, role: 'helper', group: 'A', calendar_period: 'month', page: 2)
+        assert_response :success
+        assert_select 'input[type="date"][name="date"]', 0
+        link = css_select(".time-off-day-navigation a[rel='#{direction}']").first
+        assert_equal time_off_schedule_path(tab: tab, date: destination, role: 'helper', group: 'A', calendar_period: 'month', page: '2'), link['href']
+        get link['href']
+        assert_response :success
+        assert_equal destination, request.params['date']
+        assert_select ".time-off-tabs a[aria-current='page'][href*='tab=#{tab}']", 1
+        assert_select '.time-off-day-navigation a[rel="next"]', 1
+        assert_select '.time-off-day-navigation a[rel="prev"]', 1
+        if tab == 'day'
+          assert_select '.time-off-filters input[type="hidden"][name="date"][value=?]', destination
+          assert_select '.time-off-filters input[type="hidden"][name="month"][value=?]', destination[0, 7]
+        else
+          assert_select '.time-off-filters', 0
+        end
+      end
+    end
   end
 
   test 'normal navigation does not report valid page filters as unpermitted parameters' do
@@ -202,79 +226,20 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_user_session_path
   end
 
-  test 'coverage requires dimensioning and keeps its contents separate from daily availability' do
+  test 'coverage has moved to the independent DU PCD and its old writers are retired' do
     get time_off_schedule_path(tab: 'coverage', date: '2026-10-02')
-    assert_response :success
-    assert_select '#time-off-coverage', 1
-    assert_select '.time-off-notice', text: /Sem dimensionamento vigente/
-    assert_select '.time-off-crew-layout', 0
-    assert_select '.time-off-board', 0
-    dimensioning = FleetDimensioning.create!(label: 'Outubro', start_date: '2026-10-01', end_date: '2026-10-31', route_quantity: 18, vespertina_quantity: 1, as_quantity: 1, van_quantity: 1)
-    get time_off_schedule_path(tab: 'coverage', date: '2026-10-02', role: 'helper', group: 'F')
-    assert_select '.time-off-car', 21
-    assert_select '.time-off-car-group[data-operation="route"] .time-off-car', 18
-    assert_select '.time-off-metrics strong', text: '21'
-    assert_select '.time-off-board-command', 1
-    assert_select '.time-off-car[data-car-key="van:0"]', 1
-    assert_select '.time-off-calendar', 0
-    assert_select '.time-off-tabs a[href=?]', time_off_schedule_path(tab: 'day', date: '2026-10-02', role: 'helper', group: 'F')
-    get time_off_schedule_path(tab: 'coverage', date: '2026-10-03')
-    assert_select '.time-off-metrics strong', text: '18'
-    assert_select '.time-off-car[data-car-key="van:0"]', 0
-    get time_off_schedule_path(tab: 'coverage', date: '2026-10-04')
-    assert_select '.time-off-notice', text: /DSR para todos/
-    assert_select '.time-off-crew-layout', 0
-  end
-
-  test 'coverage composition is persisted and audited while conflicting edits are rejected' do
-    FleetDimensioning.create!(label: 'Outubro', start_date: '2026-10-01', end_date: '2026-10-31', route_quantity: 18, vespertina_quantity: 1, as_quantity: 1, van_quantity: 1)
-    signature = TimeOff::Coverage.new(schedule: @schedule, date: Date.new(2026, 10, 2)).signature
-    attributes = { date: '2026-10-02', solo_routes: 2, double_helper_routes: 1, reason: 'Rota curta autorizada', expected_revision: -1, dimensioning_signature: signature, helper_driver_ids: [''], special_assignments: { vespertina: { driver: [''], helper: [''] }, as: { driver: [''] }, van: { driver: [''] } } }
-    assert_difference(['TimeOffDailyPlan.count', 'TimeOffChange.count'], 1) do
-      patch update_coverage_time_off_schedule_path, params: { coverage: attributes }
+    assert_redirected_to pcd_path(date: '2026-10-02')
+    assert_no_difference(['TimeOffDailyPlan.count', 'TimeOffChange.count']) do
+      patch update_coverage_time_off_schedule_path, params: { board: { date: '2026-10-02' } }, as: :json
+      assert_response :gone
+      post preview_routing_time_off_schedule_path, params: { date: '2026-10-02' }, as: :json
+      assert_response :gone
     end
-    assert_redirected_to time_off_schedule_path(tab: 'coverage', date: '2026-10-02')
-    assert_equal 2, @schedule.time_off_daily_plans.last.details['solo_routes']
-    assert_no_difference('TimeOffChange.count') do
-      patch update_coverage_time_off_schedule_path, params: { coverage: attributes.merge(solo_routes: 4) }
-    end
-    assert_match 'outra pessoa', flash[:alert]
-    get time_off_schedule_path(tab: 'history', date: '2026-10-02')
-    assert_select '.time-off-history', text: /Composição e cobertura do dia/
-    assert_select '.time-off-history', text: /Rota curta autorizada/
-  end
-
-  test 'coverage can be consulted by ordinary users but its changes are restricted' do
-    FleetDimensioning.create!(label: 'Outubro', start_date: '2026-10-01', end_date: '2026-10-31', route_quantity: 18, vespertina_quantity: 1, as_quantity: 1, van_quantity: 1)
     users(:one).update!(role: :user, sector: :fleet)
-    get time_off_schedule_path(tab: 'coverage', date: '2026-10-02')
-    assert_response :success
-    assert_select '.time-off-crew-layout', 1
-    assert_select '.time-off-board-command', 0
-    assert_select 'dialog', 0
-    patch update_coverage_time_off_schedule_path, params: { coverage: { date: '2026-10-02' } }
+    patch update_coverage_time_off_schedule_path, params: { board: {} }, as: :json
     assert_response :forbidden
   end
 
-  test 'interactive board saves call up and crew together via JSON' do
-    FleetDimensioning.create!(label: 'Painel', start_date: '2026-10-01', end_date: '2026-10-31', route_quantity: 18, vespertina_quantity: 0, as_quantity: 0, van_quantity: 0)
-    coverage = TimeOff::Coverage.new(schedule: @schedule, date: Date.new(2026, 10, 2))
-    cars = TimeOff::Board.new(coverage).cars
-    cars.first['driver'] = @member.id
-    attributes = { date: '2026-10-02', reason: 'Cobertura da equipe ausente', expected_revision: -1,
-      dimensioning_signature: coverage.signature, cars: cars,
-      statuses: [{ member_id: @member.id, status: 'working', expected_revision: -1 }] }
-    assert_difference('TimeOffChange.count', 2) do
-      patch update_coverage_time_off_schedule_path, params: { board: attributes }, as: :json
-    end
-    assert_response :success
-    assert_equal @member.id, @schedule.time_off_daily_plans.last.details['cars'].first['driver']
-    assert_equal 'working', @member.time_off_overrides.last.status
-    assert_no_difference('TimeOffChange.count') do
-      patch update_coverage_time_off_schedule_path, params: { board: attributes }, as: :json
-    end
-    assert_response :conflict
-  end
   test 'vacations are registered and cancelled with editor access and visible throughout the period' do
     assert_difference(['TimeOffVacation.count', 'TimeOffChange.count'], 1) do
       post create_vacation_time_off_schedule_path(tab: 'day', date: '2026-10-02'), params: { vacation: { membership_id: @member.id, starts_on: '2026-10-02', ends_on: '2026-10-10', reason: 'Férias programadas' } }
@@ -307,7 +272,7 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     drivers(:one).retire!
     ajudantes(:one).retire!
     FleetDimensioning.create!(label: 'Outubro', start_date: '2026-10-01', end_date: '2026-10-31', route_quantity: 18)
-    %w[calendar day coverage extras].each do |tab|
+    %w[calendar day extras].each do |tab|
       get time_off_schedule_path(tab: tab, date: '2026-10-02')
       assert_response :success
       assert_select '.time-off-calendar tbody tr th', 0

@@ -1,18 +1,38 @@
 <section class="time-off-panel" aria-labelledby="day-heading" id="time-off-day">
-    <div class="time-off-panel-heading"><div><span class="time-off-eyebrow">ACOMPANHAMENTO DO DIA</span><h2 id="day-heading"><%= l(@date, format: '%A, %d de %B').capitalize %></h2><p><% if @date.sunday? && @schedule.covers?(@date) %>Domingo: DSR para todos os participantes.<% elsif can_edit? && @schedule.covers?(@date) %>Arraste o colaborador entre as listas. Informe o motivo para salvar.<% else %>Consulte a disponibilidade de cada colaborador neste dia.<% end %></p></div>
+    <div class="time-off-panel-heading"><div><span class="time-off-eyebrow">ACOMPANHAMENTO DO DIA</span><%= render 'day_navigation', heading_id: 'day-heading', title: l(@date, format: '%A, %d de %B').capitalize %><p><% if @date.sunday? && @schedule.covers?(@date) %>Domingo: DSR para todos os participantes.<% elsif can_edit? && @schedule.covers?(@date) %>Arraste o colaborador entre as listas. Informe o motivo para salvar.<% else %>Consulte a disponibilidade de cada colaborador neste dia.<% end %></p></div>
       <% group = @schedule.off_group_on(@date) %><% if group %><span class="time-off-group time-off-group--<%= group %>">Folga original · Grupo <%= group %></span><% end %>
     </div>
     <% unless @schedule.covers?(@date) %><div class="time-off-notice">Este dia está fora do piloto, definido de <%= l(@schedule.starts_on) %> a <%= l(@schedule.ends_on) %>. A continuação do rodízio pode ser habilitada na Configuração.</div><% end %>
-    <div class="time-off-board">
+    <% if @schedule.covers?(@date) && !@date.sunday? && !@coverage.dimensioning %><div class="time-off-notice"><strong>Sem dimensionamento: não é possível calcular quantos motoristas e ajudantes faltam.</strong> Cadastre o período em <%= link_to 'Dimensionamento da frota', fleet_dimensionings_path %> para calcular a necessidade do dia.</div><% end %>
+    <% if @demand && !@date.sunday? && @schedule.covers?(@date) %>
+      <div class="time-off-metrics time-off-shortage-summary">
+        <div><i class="bi bi-truck" aria-hidden="true"></i><div><strong><%= @demand[:cars] %></strong> saídas próprias previstas</div><small><%= @demand[:from_pcd] ? 'Saídas e composições salvas no PCD' : 'Referência do dimensionamento' %> · <%= @demand[:dimensioned_cars] %> posições dimensionadas</small></div>
+        <div class="<%= 'is-missing' if @demand[:driver_gap] > 0 %>"><i class="bi bi-person" aria-hidden="true"></i><div><strong data-day-driver-gap><%= @demand[:driver_gap] %></strong> motoristas faltando</div><small><%= @demand[:drivers] %> em escala · <%= @demand[:cars] %> necessários<%= " · falta #{@demand[:van_gap]} com cargo Motorista de van" if @demand[:van_gap] > 0 %></small></div>
+        <div class="<%= 'is-missing' if @demand[:helper_gap] > 0 %>"><i class="bi bi-people" aria-hidden="true"></i><div><strong data-day-helper-gap><%= @demand[:helper_gap] %></strong> ajudantes faltando</div><small><%= @demand[:helpers] %> em escala · <%= @demand[:helper_need] %> necessários</small></div>
+      </div>
+    <% end %>
+    <% if current_user.admin? || current_user.sector_du? %><div class="time-off-notice">As equipes, placas e composições são definidas no <%= link_to 'PCD do dia', pcd_path(date: @date) %>. Freteiros não entram na necessidade do piloto.</div><% end %>
+    <div class="time-off-board time-off-availability-board">
       <% ([['working', 'Em escala', 'bi-person-check'], ['off', @date.sunday? ? 'DSR · Domingo' : 'De folga', 'bi-cup-hot'], ['unavailable', 'Indisponíveis', 'bi-person-x']] + (@daily['pending'].present? ? [['pending', 'Folga fixa a definir', 'bi-question-circle']] : [])).each do |status, label, icon| %>
         <% members = (@daily[status] || []) + (status == 'off' ? (@daily['dsr'] || []) : []) %>
         <section class="time-off-column time-off-column--<%= status %>">
           <header><h3><i class="bi <%= icon %>"></i> <%= label %></h3><span class="time-off-count"><%= members.size %></span></header>
           <p class="time-off-column-summary"><%= members.count { |m| m.role == 'driver' } %> motoristas · <%= members.count { |m| m.role == 'helper' } %> ajudantes</p>
-          <div class="time-off-list" data-time-off-target="list" data-status="<%= status %>" aria-label="<%= label %>">
-            <% members.each do |member| %><%= render 'person', member: member %><% end %>
-            <p class="time-off-list-empty">Nenhum colaborador nesta lista.</p>
-          </div>
+          <% if status == 'working' %>
+            <div class="time-off-working-roles">
+              <% [['driver', 'Motoristas'], ['helper', 'Ajudantes']].each do |role, role_label| %>
+                <section><h4><%= role_label %></h4><div class="time-off-list" data-time-off-target="list" data-status="working" data-role="<%= role %>" aria-label="<%= role_label %> em escala">
+                  <% members.select { |m| (m.cargo_on(@date) == 'ajudante' ? 'helper' : 'driver') == role }.each do |member| %><%= render 'person', member: member %><% end %>
+                  <p class="time-off-list-empty">Nenhum colaborador nesta lista.</p>
+                </div></section>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="time-off-list" data-time-off-target="list" data-status="<%= status %>" aria-label="<%= label %>">
+              <% members.each do |member| %><%= render 'person', member: member %><% end %>
+              <p class="time-off-list-empty">Nenhum colaborador nesta lista.</p>
+            </div>
+          <% end %>
         </section>
       <% end %>
     </div>

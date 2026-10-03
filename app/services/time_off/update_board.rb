@@ -16,6 +16,8 @@ module TimeOff
             reason: attributes['reason'], expected_revision: change['expected_revision'], user: user)
         end
         proposed = Coverage.new(schedule: schedule, date: date)
+        routing = attributes['routing_token'].present? ? RoutingCsv.verify(attributes['routing_token'], schedule: schedule, date: date) : current.details['routing_import']
+        proposed.details['routing_import'] = routing if routing
         cars = Board.validate!(proposed, attributes['cars'])
         routes = cars.select { |c| c['operation'] == 'route' }
         special = Coverage::SPECIAL_OPERATIONS.index_with do |operation|
@@ -28,7 +30,7 @@ module TimeOff
         UpdateCoverage.call(schedule: schedule, date: date, user: user, attributes: attributes.slice('reason', 'expected_revision', 'dimensioning_signature').merge(
           'solo_routes' => routes.count { |c| c['helper_count'].zero? },
           'double_helper_routes' => routes.count { |c| c['helper_count'] == 2 },
-          'helper_driver_ids' => helper_drivers, 'special_assignments' => special, 'cars' => cars, 'previous_cars' => previous_cars))
+          'helper_driver_ids' => helper_drivers, 'special_assignments' => special, 'cars' => cars, 'previous_cars' => previous_cars, 'routing_import' => routing))
       end
     end
   end

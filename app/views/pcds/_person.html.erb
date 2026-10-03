@@ -1,0 +1,3 @@
+<article class="pcd-person" data-person-id="<%= person['id'] %>" data-movable="<%= person['status'] == 'working' %>" title="<%= person['name'] %> · <%= person['code'] %>">
+  <button type="button" class="pcd-person-select" data-action="pcd#select" aria-label="Selecionar <%= person['name'] %>" <%= 'disabled' unless person['status'] == 'working' %>><span><strong><%= person['name'] %></strong><small><%= person['cargo'] == 'van' ? 'Motorista de van' : person['role'] == 'driver' ? 'Motorista' : 'Ajudante' %> · <%= person['code'] %><%= ' · sem escala no piloto' unless person['has_schedule'] %></small></span></button><button type="button" class="pcd-person-remove" data-action="pcd#release" aria-label="Retirar <%= person['name'] %> da equipe" hidden>×</button>
+</article>

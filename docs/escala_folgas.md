@@ -17,7 +17,7 @@ A composição inicial está em `config/time_off_pilot.yml`. A tarefa vincula so
 
 ### Produção (Heroku)
 
-Inclua todos os arquivos novos do módulo no commit, incluindo as quatro migrações, serviços, views, controllers JavaScript e `config/time_off_pilot.yml`. Os arquivos CSV/XLSM usados como referência local não são necessários para o deploy.
+Inclua todos os arquivos novos do módulo no commit, incluindo as migrações, serviços, views, controllers JavaScript e `config/time_off_pilot.yml`. Os arquivos CSV/XLSM usados como referência local não são necessários para o deploy.
 
 O `Procfile` já executa `db:migrate` na fase de release, e os assets são compilados no build. Após o primeiro deploy do módulo, execute a composição inicial:
 
@@ -29,26 +29,25 @@ Revise os participantes pendentes em **Configuração**, confirme o dimensioname
 
 ## Uso
 
-O módulo está dividido em cinco abas, cada uma com seu conteúdo:
+O módulo está dividido em quatro abas, cada uma com seu conteúdo:
 
 - **Calendário:** blocos semanais do mês ou mês inteiro, com paginação dos participantes. A tabela mantém o visual original, a legenda dos grupos dentro do painel e a rolagem horizontal quando necessária. Todos os colaboradores da página aparecem sem rolagem vertical interna; os botões usam o tema de cores do aplicativo. Selecionar um dia abre a aba Escala do dia.
-- **Escala do dia:** três colunas lado a lado no desktop: Em escala, De folga e Indisponíveis. Dentro de cada coluna, os cartões ocupam três posições por linha quando há espaço, duas em colunas menores e uma quando necessário. No celular, as colunas de situação ficam empilhadas.
-- **Cobertura:** painel de carros dimensionados, com vagas de motorista e ajudantes e listas de disponíveis, folga e indisponíveis.
+- **Escala do dia:** Em escala, De folga e Indisponíveis ficam lado a lado no desktop. Em escala possui duas listas: Motoristas e Ajudantes. Os nomes são compactos e não definem equipes ou placas. Arrastar entre situações pede motivo e salva somente a disponibilidade daquele colaborador. A demanda informa as saídas próprias e as faltas de pessoas: usa as saídas e composições salvas no PCD da data ou o dimensionamento como referência quando ainda não existe PCD. Freteiros ficam fora da necessidade do piloto. Os filtros não alteram os totais de demanda. Sem dimensionamento vigente, a disponibilidade continua acessível e a demanda não é estimada.
 - **Extras:** total mensal e datas de trabalho nas folgas originais, por colaborador.
 - **Histórico:** alterações da data selecionada, com responsável e motivo.
 
-A data e os filtros são mantidos ao trocar de aba. Os filtros exibidos acompanham o conteúdo: mês no Calendário e em Extras; dia na Escala do dia, Cobertura e Histórico. O botão **Configuração** abre um painel lateral para férias, composição do piloto, vagas, alterações de grupo e continuação do rodízio. A legenda do calendário mostra os grupos e suas folgas originais.
+A data e os filtros são mantidos ao trocar de aba. Calendário e Extras oferecem o filtro por mês. Na Escala do dia e Histórico, as setas ao lado da data no cabeçalho permitem voltar ou avançar um dia. As setas preservam função, grupo e contexto do calendário e atravessam meses e anos; não há seletor de data nessas abas. O botão **Configuração** abre um painel lateral para férias, composição do piloto, vagas, alterações de grupo e continuação do rodízio. A legenda do calendário mostra os grupos e suas folgas originais.
 
 - O calendário mostra colaborador por linha e dia por coluna. As cores identificam os grupos. `T` = em escala, `F` = folga, `D` = DSR, `I` = indisponível, `V` = férias. O ponto indica ajuste individual diferente do rodízio. Dias anteriores ao piloto ou fora da vigência ficam com traço.
 - Os botões de período seguem o protótipo: **01–07**, **08–14**, **15–21**, **22–28**, **29–31** e **Mês inteiro**. O primeiro bloco é selecionado inicialmente; o último termina no último dia do mês (fevereiro, por exemplo, pode ter apenas quatro blocos). Um clique troca o período e preserva a página atual. A paginação mostra **12 colaboradores** por página, com **Anterior**, **1 / N** e **Próxima**, preservando função, grupo e período. As trocas atualizam somente o calendário e mantêm a posição da tela. Alterar os filtros reinicia a paginação. As setas do cabeçalho navegam entre meses. A legenda dos grupos e a contagem de extras continuam considerando o mês inteiro.
-- Selecione um dia, função ou grupo. Arraste um colaborador entre Em escala, De folga e Indisponíveis. Ao soltar, informe o motivo e salve na confirmação. Cancelar não muda a escala.
+- Selecione um dia, função ou grupo. Arraste um nome para Em escala, De folga ou Indisponíveis e informe o motivo. Um motorista só entra na lista de motoristas; um ajudante entra na lista de ajudantes. Quem está de férias não pode ser movido. As composições, vagas de ajudantes e placas são responsabilidade do módulo **DU → PCD**.
 - Convocar alguém de folga altera somente a data selecionada. A compensação deve ser registrada separadamente na data combinada. **Restaurar rodízio original** recupera a situação prevista para o dia, preservando o histórico.
 - Mudanças de grupo têm uma data efetiva posterior ao início da vigência atual. Datas anteriores mantêm o grupo antigo; ajustes individuais futuros são preservados no novo vínculo.
 - A configuração de continuação permite limitar a consulta a outubro ou manter o rodízio após o mês.
 
 Administradores, supervisores e usuários de DU, RH ou Planejamento podem editar. Outros usuários autenticados podem consultar; mecânicos permanecem no fluxo próprio. Cada alteração diária registra responsável, situação anterior, situação nova, motivo e horário. Se outra pessoa já alterou o mesmo colaborador e dia, a edição retorna conflito e pede atualização da página.
 
-Somente participantes ativos aparecem no Calendário, Escala do dia, Cobertura, Extras e nas seleções de Configuração. A inativação no cadastro de Motorista/Ajudante ou no RH retira a pessoa das listas e sugestões; uma posição salva com essa pessoa fica vaga ao consultar novamente. Tentativas de edição por páginas antigas são rejeitadas. Vínculos, férias, composições e alterações anteriores continuam armazenados, e o Histórico preserva os nomes dos colaboradores desligados.
+Somente participantes ativos aparecem no Calendário, Escala do dia, Extras e nas seleções de Configuração. A inativação no cadastro de Motorista/Ajudante ou no RH retira a pessoa das listas e sugestões; uma posição salva com essa pessoa fica vaga ao consultar novamente. Tentativas de edição por páginas antigas são rejeitadas. Vínculos, férias, composições e alterações anteriores continuam armazenados, e o Histórico preserva os nomes dos colaboradores desligados.
 
 ## Extras e férias
 
@@ -58,33 +57,17 @@ Em **Configuração → Férias**, selecione o colaborador, o início, o último
 
 O painel lateral lista os períodos ativos que alcançam o mês selecionado. É possível cancelar um período com motivo e registrar outro. O cancelamento preserva o registro e o histórico e faz a disponibilidade anterior voltar a valer. Registro e cancelamento são auditados na data inicial das férias. Sobreposições de férias e períodos sem vínculo válido na escala são rejeitados.
 
-## Demanda, operações fixas e composição
+## Demanda e conexão com o PCD
 
-A aba **Cobertura** usa `FleetDimensioning.for_date` para obter as quantidades de Rota padrão, Vespertina, AS e Van vigentes na data. Não usa o número de mapas nem inclui freteiros. Sem um dimensionamento vigente, a demanda aparece como não definida, com acesso ao cadastro da frota; nenhum número fixo substitui o cadastro.
+O dimensionamento é a capacidade prevista, não a obrigação de usar todos os carros. A Escala do dia usa `FleetDimensioning.for_date`: Rota padrão, Vespertina, AS e Van de segunda a sexta; somente Rota padrão no sábado; domingo é DSR. Com 18 rotas padrão e uma de cada especial, são 21 posições dimensionadas nos dias úteis e 18 no sábado. As saídas efetivas podem ser menores.
 
-De segunda a sexta, entram as quatro operações. No sábado entram somente as rotas padrão; Vespertina, AS e Van folgam. Domingo é DSR para todos. Com 18 rotas padrão e uma saída de cada operação fixa, são 21 saídas nos dias úteis e 18 no sábado.
+Quando há um PCD salvo na data, a demanda considera somente as saídas próprias ativas e suas quantidades de ajudantes. Posições sem saída e freteiros não geram necessidade do piloto. O número de pessoas em escala vem da disponibilidade do dia, independentemente da alocação em equipes. Motoristas usados como ajudantes no PCD são contabilizados nessa função para calcular as faltas. Alterações de disponibilidade aparecem no PCD ao recarregar; quem ficou indisponível, de férias ou inativo deixa a vaga pendente para revisão.
 
-Os titulares do piloto são André (motorista) e Alberto (ajudante) na Vespertina, e Keberson (motorista) no AS. A chave **Titular de operação fixa**, no cadastro do grupo, permite mudar essas definições com vigência e histórico. Exige grupo Fixo com folga no sábado. A tarefa `time_off:setup` também completa essas chaves nos vínculos iniciais já existentes, sem sobrescrever operações definidas pelo gestor ou vigências posteriores.
+Os titulares iniciais continuam configurados no piloto: André e Alberto na Vespertina, Keberson no AS; Ademar é validado pelo cargo Motorista de van no RH. Essas definições ajudam a sugestão inicial do PCD e a classificação do CSV, mas a Escala do dia não monta equipes.
 
-A Van usa o cargo **Motorista de van** vigente na data, obtido do histórico de cargos do colaborador. Ademar já possui esse cargo no cadastro; nenhum cargo é alterado pela configuração da escala. Outro motorista não pode ser colocado para dirigir a Van sem esse cargo vigente.
+**Cobertura** foi retirada das abas. Links antigos com `tab=coverage` redirecionam para `/pcd` na mesma data. Os antigos endpoints de composição e importação retornam 410 para impedir gravações por páginas desatualizadas. As composições e o histórico anteriores permanecem no banco, servindo de sugestão ao abrir um PCD ainda não salvo. Os detalhes completos do CSV devem ser carregados no PCD para preencher cidades e regiões.
 
-Vespertina prevê motorista e um ajudante; AS e Van preveem apenas motorista. Seus titulares já aparecem nos respectivos carros e não podem ocupar duas posições ao mesmo tempo.
-
-O painel abre com uma **sugestão pela escala**: preserva as três duplas titulares de cada grupo informado, distribui os demais colaboradores em trabalho para cobrir as posições abertas e mantém o grupo de folga na lista lateral. Usa as placas padrão do dimensionamento quando cadastradas; posições sem placa continuam identificadas como Carro 1, Carro 2 etc. A sugestão não é gravada durante a consulta. Após salvar, os remanejamentos e vagas deixadas em branco são mantidos, sem redistribuir todas as equipes a cada abertura.
-
-Arraste um nome para a vaga de motorista ou ajudante. Também é possível selecionar o nome e clicar ou tocar na vaga, inclusive pelo teclado e no celular. Substituir um nome devolve a pessoa anterior para Disponíveis. O botão de retirar do carro apenas desaloca; não registra folga ou ausência.
-
-Arrastar para **De folga** ou **Indisponíveis** altera a situação daquele dia no rascunho. Tirar alguém de folga para colocar em um carro convoca a pessoa para trabalhar. **Salvar painel** pede um motivo e grava a composição e todas as mudanças de disponibilidade juntas, com histórico; uma validação ou conflito rejeita o conjunto inteiro. A compensação da folga continua sendo registrada na data combinada. **Desfazer rascunho** retorna ao estado inicial da tela, sem gravações.
-
-Para cada carro da rota padrão, selecione **Sem ajudante**, **1 ajudante** ou **2 ajudantes**. Reduzir a quantidade devolve os nomes das vagas retiradas para Disponíveis. A composição de referência é um ajudante; saídas sem ajudante são permitidas por decisão do gestor. O painel mostra motoristas alocados e vagas de ajudante separadamente.
-
-Motoristas podem ser colocados excepcionalmente nas vagas de ajudante. Mover a pessoa entre posições libera a anterior: cada colaborador ocupa uma única vaga. Ajudantes na direção, cargos incompatíveis, pessoas inativas e duplicidades são rejeitados. Indisponibilidades registradas depois de salvar deixam a posição vaga e mostram a pessoa na lista correspondente, preservando as outras equipes.
-
-Os ajustes são exclusivos da data, exigem motivo e aparecem no Histórico. A revisão da composição e a assinatura do dimensionamento impedem que uma página desatualizada sobrescreva uma edição mais recente. Uma mudança posterior de dimensionamento ou uma ausência gera aviso para revisão. Trocas de grupo preservam as escolhas futuras pela identidade do colaborador.
-
-## Relação com os mapas e futuras integrações
-
-Os vínculos usam `Driver` e `Ajudante`, exibindo o código `promax` usado nos campos `matric_motorista`, `matric_ajudante` e `matric_ajudante_2` de `Mapa`. Esta etapa monta as equipes nas posições dimensionadas e apresenta suas placas padrão. A vinculação aos mapas, a geração da planilha de roteirização e a integração com os veículos efetivamente disponíveis em `FleetAvailability` ficam para a próxima etapa.
+Veja [PCD e impressão por salas](pcd.md) para importação, composição e histórico.
 
 ## Consulta pessoal em Mapas
 
@@ -95,7 +78,7 @@ A IA do chat público recebe a escala da pessoa identificada pela matrícula e n
 ## Validação
 
 ```sh
-PARALLEL_WORKERS=1 bin/rails test test/services/time_off test/controllers/time_off_schedules_controller_test.rb
+PARALLEL_WORKERS=1 bin/rails test test/services/time_off test/controllers/time_off_schedules_controller_test.rb test/controllers/time_off_daily_routes_test.rb
 ```
 
 O teste de navegador usa somente o banco de testes. Prepare os cadastros e inicie um servidor de teste antes de executá-lo:
@@ -105,4 +88,9 @@ RAILS_ENV=test bin/rails runner test/browser/time_off_setup.rb
 PIDFILE=tmp/pids/time_off_test.pid RAILS_ENV=test bin/rails server -p 4318 -P tmp/pids/time_off_test.pid
 # Em outro terminal:
 BASE_URL=http://127.0.0.1:4318 node test/browser/time_off_test.cjs
+# Reprepare os dados antes de testar a importação:
+RAILS_ENV=test bin/rails runner test/browser/time_off_setup.rb
+BASE_URL=http://127.0.0.1:4318 node test/browser/time_off_routing_test.cjs
 ```
+
+Execute a preparação, os testes de navegador e os testes Rails sequencialmente: eles compartilham o banco de testes.

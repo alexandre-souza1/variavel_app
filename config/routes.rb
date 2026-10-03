@@ -1,6 +1,10 @@
 Rails.application.routes.draw do
+  resource :pcd, controller: :pcds, only: %i[show update] do
+    post :preview_routing, path: 'importar'
+  end
   resource :time_off_schedule, path: 'escala-folgas', only: :show do
     patch :update_coverage
+    post :preview_routing, path: 'cobertura/importar'
     post :assign_group, path: 'grupos'
     patch :update_day, path: 'dia'
     patch :update_rotation, path: 'rodizio'

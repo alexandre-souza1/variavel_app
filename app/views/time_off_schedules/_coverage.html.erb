@@ -1,21 +1,24 @@
 <section class="time-off-panel" id="time-off-coverage" aria-labelledby="coverage-heading"
   data-controller="time-off-board" data-time-off-board-editable-value="<%= can_edit? && @coverage.editable? %>"
   data-time-off-board-state-value="<%= @board.state.to_json %>" data-time-off-board-url-value="<%= update_coverage_time_off_schedule_path %>"
+  data-time-off-board-import-url-value="<%= preview_routing_time_off_schedule_path %>" data-time-off-board-plate-options-value="<%= @plate_options.to_json %>"
   data-time-off-board-date-value="<%= @date %>" data-time-off-board-revision-value="<%= @coverage.plan&.lock_version || -1 %>" data-time-off-board-signature-value="<%= @coverage.signature %>">
   <div class="time-off-panel-heading">
-    <div><span class="time-off-eyebrow">EQUIPES DO DIA</span><h2 id="coverage-heading">Painel de <%= l(@date) %></h2><p>Arraste os nomes para os carros ou selecione um nome e toque na vaga.</p></div>
+    <div><span class="time-off-eyebrow">EQUIPES DO DIA</span><%= render 'day_navigation', heading_id: 'coverage-heading', title: "Painel de #{l(@date)}" %><p>Arraste os nomes para os carros ou selecione um nome e toque na vaga.</p></div>
     <% if @coverage.dimensioning %><span class="time-off-muted"><%= @coverage.dimensioning.label %> · <%= @coverage.plan ? 'Composição salva' : 'Sugestão pela escala' %></span><% end %>
   </div>
   <% if !@schedule.covers?(@date) %><div class="time-off-notice">Data fora da vigência da escala.</div>
   <% elsif @date.sunday? %><div class="time-off-notice">Domingo: DSR para todos. Nenhuma saída prevista nesta escala.</div>
   <% elsif !@coverage.dimensioning %><div class="time-off-notice"><strong>Sem dimensionamento vigente nesta data.</strong> Cadastre o período em <%= link_to 'Dimensionamento da frota', fleet_dimensionings_path %>. As pessoas continuam na <%= link_to 'Escala do dia', time_off_tab_path('day') %>.</div>
   <% else %>
-    <% metrics = @board.metrics %>
-    <div class="time-off-metrics">
-      <div><strong><%= metrics[:cars] %></strong><span>Carros previstos</span></div>
-      <div><strong data-time-off-board-target="driverCount"><%= metrics[:drivers] %> / <%= metrics[:cars] %></strong><span>Motoristas nos carros</span></div>
-      <div><strong data-time-off-board-target="helperGap"><%= metrics[:helper_gap] %></strong><span>Vagas de ajudante</span></div>
+    <div class="time-off-routing-import">
+      <% if can_edit? %><%= form_with url: preview_routing_time_off_schedule_path, multipart: true, data: { time_off_board_target: 'routingForm', action: 'submit->time-off-board#importRouting' } do |form| %>
+        <%= form.hidden_field :date, value: @date %><div><%= form.label :file, 'Roteirização do dia (CSV)' %><%= form.file_field :file, accept: '.csv,text/csv', required: true, class: 'form-control form-control-sm' %></div><button type="submit" class="btn btn-sm btn-outline-primary" data-time-off-board-target="routingButton"><i class="bi bi-upload" aria-hidden="true"></i> Carregar CSV</button>
+      <% end %><% end %>
+      <% source = @coverage.details['routing_import'] %><p class="time-off-muted" data-time-off-board-target="routingReport"><% if source %><%= source['filename'] %>: <%= source['rows'].size %> placas próprias · <%= source['ignored_freight'] %> freteiros ignorados. As operações ausentes do arquivo precisam de conferência.<% else %>Importe as placas e mapas do dia. O dimensionamento permanece como capacidade prevista.<% end %></p>
+      <% if can_edit? %><small>No dia da saída, importe o CSV dessa data e organize as equipes conforme a operação. Revise o rascunho e clique em Salvar painel. Para datas futuras, o dimensionamento continua como referência.</small><% end %>
     </div>
+    <%= render 'board_shortages' %>
     <% if @date.saturday? %><div class="time-off-notice">Sábado: somente as rotas padrão. Vespertina, AS e Van folgam.</div><% end %>
     <% if @coverage.stale? %><div class="time-off-notice time-off-coverage-warning">O dimensionamento mudou. Confira as posições e salve o painel novamente.</div><% end %>
     <% if can_edit? %><div class="time-off-board-command"><p data-time-off-board-target="message" role="status" aria-live="polite">Selecione um nome ou arraste para movimentar.</p><div><button type="button" class="btn btn-sm btn-outline-secondary time-off-clear-selection" data-action="time-off-board#clearSelection">Cancelar seleção</button><button type="button" class="btn btn-sm btn-outline-secondary" data-action="time-off-board#reset">Desfazer rascunho</button><button type="button" class="btn btn-sm btn-primary" data-action="time-off-board#openSave">Salvar painel</button></div></div><% end %>
@@ -26,11 +29,15 @@
           <section class="time-off-car-group" data-operation="<%= operation %>"><header><h3><i class="bi bi-truck"></i> <%= label %></h3><span class="time-off-count"><%= cars.size %> carros</span></header>
             <div class="time-off-car-grid">
               <% cars.each do |car| %>
-                <article class="time-off-car" data-car-key="<%= car['key'] %>">
-                  <header><div><small><%= operation == 'route' ? "Posição #{car['position'] + 1}" : label %></small><strong><%= car['label'] %></strong></div><i class="bi bi-truck-front" aria-hidden="true"></i></header>
+                <article class="time-off-car <%= 'is-not-scheduled' unless car['scheduled'] %>" data-car-key="<%= car['key'] %>">
+                  <header><div><small><%= operation == 'route' ? "Posição #{car['position'] + 1}" : label %></small><strong data-car-label="<%= car['key'] %>"><%= car['label'] %></strong></div><i class="bi bi-truck-front" aria-hidden="true"></i></header>
+                  <% if can_edit? %><label class="time-off-car-departure"><%= check_box_tag "scheduled_#{car['key']}", '1', car['scheduled'], data: { car: car['key'], action: 'change->time-off-board#scheduled' } %> Saída prevista neste dia</label>
+                    <%= select_tag "plate_#{car['key']}", options_for_select((@plate_options + Array(source&.fetch('rows', nil)).map { |row| row['plate'] } + [car['plate']]).compact.uniq.sort, car['plate']), include_blank: 'Selecionar placa', class: 'form-select form-select-sm time-off-plate-select', disabled: !car['scheduled'], data: { car: car['key'], action: 'change->time-off-board#plate' }, aria: { label: "Placa de #{label} #{car['position'] + 1}" } %>
+                  <% end %>
+                  <% imported = Array(source&.fetch('rows', nil)).find { |row| row['plate'] == car['plate'] } %><p class="time-off-car-routing" data-car-routing="<%= car['key'] %>"><% if !car['scheduled'] %>Sem saída no dia. Não gera falta de colaboradores.<% elsif imported %>Mapa(s): <%= imported['maps'].join(', ') %> · Motorista no CSV: <%= imported['driver_code'].presence || 'não informado' %><% elsif source %>Não consta no CSV; confira a saída e a placa desta operação.<% end %></p>
                   <% [['driver', 'Motorista'], ['helper1', 'Ajudante'], ['helper2', 'Ajudante 2']].each do |role, role_label| %>
                     <% next if operation != 'route' && role.start_with?('helper') && role.delete_prefix('helper').to_i > car['helper_count'] %>
-                    <div class="time-off-car-position" data-position-role="<%= role %>" <%= 'hidden' if role.start_with?('helper') && role.delete_prefix('helper').to_i > car['helper_count'] %>>
+                    <div class="time-off-car-position" data-position-role="<%= role %>" <%= 'hidden' if !car['scheduled'] || (role.start_with?('helper') && role.delete_prefix('helper').to_i > car['helper_count']) %>>
                       <span class="time-off-position-label"><%= role_label %></span>
                       <div class="time-off-person-drop" data-time-off-board-target="drop" data-car="<%= car['key'] %>" data-role="<%= role %>" data-action="click->time-off-board#destination" role="group" aria-label="<%= role_label %> de <%= car['label'] %>">
                         <% member = @coverage.member(car[role]) %><% if member %><%= render 'board_person', member: member, editable: can_edit?, assigned: true %><% end %>
@@ -60,7 +67,7 @@
     </div>
     <% if can_edit? %>
       <div class="time-off-board-save"><span class="time-off-muted" data-time-off-board-target="dirty">Sugestão inicial. Salve para confirmar a composição.</span><button type="button" class="btn btn-primary" data-action="time-off-board#openSave">Salvar painel do dia</button></div>
-      <dialog class="time-off-dialog" data-time-off-board-target="dialog" data-action="cancel->time-off-board#cancelSave"><h2>Salvar painel de <%= l(@date) %></h2><p class="time-off-muted mb-3">A composição dos carros, convocações e indisponibilidades serão registradas com este motivo.</p><label for="board_reason">Motivo das alterações</label><textarea id="board_reason" data-time-off-board-target="reason" class="form-control" rows="3" minlength="4" maxlength="500" placeholder="Ex.: atestado, convocação na folga ou remanejamento da equipe."></textarea><p class="time-off-shortage mt-2" data-time-off-board-target="error" role="alert"></p><div class="d-flex justify-content-end gap-2 mt-3"><button type="button" class="btn btn-outline-secondary" data-action="time-off-board#cancelSave">Cancelar</button><button type="button" class="btn btn-primary" data-action="time-off-board#save" data-time-off-board-target="save">Confirmar e salvar</button></div></dialog>
+      <%= render 'board_save_dialog' %>
     <% end %>
     <div class="time-off-notice">Tirar alguém da folga para um carro registra a convocação ao salvar. A compensação deve ser combinada na Escala do dia. Motorista pode atuar como ajudante por exceção; ajudante não assume a direção.</div>
     <% if @coverage.plan %><div class="time-off-notice">Último ajuste: <%= l(@coverage.plan.updated_at, format: '%d/%m %H:%M') %> · <%= @coverage.plan.reason %></div><% end %>

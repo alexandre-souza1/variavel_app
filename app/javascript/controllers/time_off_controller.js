@@ -19,7 +19,7 @@ export default class extends Controller {
     if (!this.editableValue) return
     this.listTargets.forEach(list => {
       this.sortables.push(Sortable.create(list, {
-        group: { name: "time-off", put: list.dataset.status !== "pending", pull: list.dataset.status !== "pending" }, draggable: '.time-off-person[data-movable="true"]', sort: false,
+        group: { name: "time-off", put: (_to, _from, person) => list.dataset.status !== "pending" && (!list.dataset.role || person.dataset.role === list.dataset.role), pull: list.dataset.status !== "pending" }, draggable: '.time-off-person[data-movable="true"]', sort: false,
         animation: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 150,
         forceFallback: true, fallbackOnBody: true, fallbackTolerance: 3,
         delay: 150, delayOnTouchOnly: true,
@@ -30,6 +30,7 @@ export default class extends Controller {
           // Restore immediately: only a successful save changes availability.
           const siblings = [...event.from.querySelectorAll(".time-off-person")]
           event.from.insertBefore(event.item, siblings[event.oldDraggableIndex] || event.from.querySelector(".time-off-list-empty"))
+          if (status === event.item.dataset.status) return
           this.open(event.item, status)
         }
       }))

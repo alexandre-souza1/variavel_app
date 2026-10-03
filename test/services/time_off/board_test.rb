@@ -96,6 +96,7 @@ class TimeOffBoardTest < ActiveSupport::TestCase
   end
 
   test 'car labels use standard plates and plate layout changes invalidate an open draft' do
+    plates(:one).update_columns(placa: 'AAA1B23')
     signature = coverage.signature
     @dimensioning.fleet_dimensioning_standard_plates.create!(position: 0, plate: plates(:one))
     assert_equal plates(:one).placa, board.cars.first['label']

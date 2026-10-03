@@ -1,0 +1,8 @@
+<% if can_edit? %>
+  <dialog class="time-off-dialog" data-time-off-board-target="dialog" data-action="cancel->time-off-board#cancelSave">
+    <h2>Salvar painel de <%= l(@date) %></h2><p class="time-off-muted mb-3">Equipes, convocações e indisponibilidades serão registradas juntas com este motivo.</p>
+    <label for="board_reason">Motivo das alterações</label><textarea id="board_reason" data-time-off-board-target="reason" class="form-control" rows="3" minlength="4" maxlength="500" placeholder="Ex.: atestado, convocação na folga ou remanejamento da equipe."></textarea>
+    <p class="time-off-shortage mt-2" data-time-off-board-target="error" role="alert"></p>
+    <div class="d-flex justify-content-end gap-2 mt-3"><button type="button" class="btn btn-outline-secondary" data-action="time-off-board#cancelSave">Cancelar</button><button type="button" class="btn btn-primary" data-action="time-off-board#save" data-time-off-board-target="save">Confirmar e salvar</button></div>
+  </dialog>
+<% end %>

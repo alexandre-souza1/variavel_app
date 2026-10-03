@@ -19,6 +19,7 @@ module TimeOff
             'helper_driver_ids' => Array(attributes['helper_driver_ids']).reject(&:blank?).map { |id| integer(id) },
             'special_assignments' => attributes.fetch('special_assignments', {})
           }
+          details['routing_import'] = attributes['routing_import'] || current.details['routing_import'] if attributes['routing_import'] || current.details['routing_import']
           if details['solo_routes'] + details['double_helper_routes'] > current.quantities['route']
             raise UpdateDay::InvalidChange, 'A soma das rotas sem ajudante e com dois ajudantes excede o dimensionamento.'
           end
@@ -83,6 +84,8 @@ module TimeOff
           "#{label} · #{role == 'driver' ? 'Motorista' : "Ajudante #{role[-1]}"}: #{from&.person&.nome || 'vaga'} → #{to&.person&.nome || 'vaga'}"
         end
         changes << "#{label} · Ajudantes: #{old['helper_count']} → #{car['helper_count']}" if old['helper_count'] && old['helper_count'] != car['helper_count']
+        changes << "#{label} · Placa: #{old['plate'].presence || 'sem placa'} → #{car['plate'].presence || 'sem placa'}" if old['plate'] != car['plate']
+        changes << "#{label} · #{car['scheduled'] ? 'Saída prevista' : 'Sem saída no dia'}" if old.fetch('scheduled', true) != car['scheduled']
         changes
       end
     end

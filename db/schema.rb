@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_02_130000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_03_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -745,6 +745,39 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_02_130000) do
     t.check_constraint "id = 1", name: "parking_layouts_singleton"
   end
 
+  create_table "pcd_changes", force: :cascade do |t|
+    t.bigint "pcd_plan_id", null: false
+    t.bigint "user_id"
+    t.string "action", null: false
+    t.string "reason", null: false
+    t.jsonb "details", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["pcd_plan_id"], name: "index_pcd_changes_on_pcd_plan_id"
+    t.index ["user_id"], name: "index_pcd_changes_on_user_id"
+  end
+
+  create_table "pcd_imports", force: :cascade do |t|
+    t.bigint "pcd_plan_id", null: false
+    t.bigint "user_id"
+    t.string "filename", null: false
+    t.string "digest", null: false
+    t.jsonb "details", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["pcd_plan_id"], name: "index_pcd_imports_on_pcd_plan_id"
+    t.index ["user_id"], name: "index_pcd_imports_on_user_id"
+  end
+
+  create_table "pcd_plans", force: :cascade do |t|
+    t.date "date", null: false
+    t.jsonb "details", default: {}, null: false
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["date"], name: "index_pcd_plans_on_date", unique: true
+  end
+
   create_table "people_cycle_feedbacks", force: :cascade do |t|
     t.string "cycle", null: false
     t.string "employee_name", null: false
@@ -1239,6 +1272,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_02_130000) do
   add_foreign_key "notifications", "users"
   add_foreign_key "notifications", "users", column: "actor_id"
   add_foreign_key "parking_layouts", "users", column: "updated_by_id"
+  add_foreign_key "pcd_changes", "pcd_plans"
+  add_foreign_key "pcd_changes", "users", on_delete: :nullify
+  add_foreign_key "pcd_imports", "pcd_plans"
+  add_foreign_key "pcd_imports", "users", on_delete: :nullify
   add_foreign_key "people_cycle_feedbacks", "users", column: "imported_by_id"
   add_foreign_key "push_devices", "users"
   add_foreign_key "remuneration_category_values", "budget_categories"

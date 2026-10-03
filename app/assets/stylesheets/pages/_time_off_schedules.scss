@@ -17,6 +17,17 @@
 .time-off-filters { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; > div { flex: 1 1 150px; } }
 .time-off-panel { border: 1px solid var(--bs-border-color); background: var(--bs-body-bg); border-radius: 14px; overflow: hidden; min-width: 0; }
 .time-off-panel-heading { padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--bs-border-color); p { color: var(--bs-secondary-color); font-size: .8rem; line-height: 1.6; } }
+.time-off-panel-heading > div { min-width: 0; }
+.time-off-day-navigation {
+  display: grid; grid-template-columns: 34px minmax(0, 1fr) 34px; align-items: center; gap: .65rem; width: fit-content; max-width: 100%; margin: .3rem 0 .5rem;
+  h2 { margin: 0; line-height: 1.4; text-align: center; }
+}
+.time-off-day-arrow {
+  display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;
+  border: 1px solid var(--bs-border-color); border-radius: 8px; background: var(--bs-body-bg);
+  color: var(--bs-secondary-color); text-decoration: none; font-size: 1.5rem; line-height: 1;
+  &:hover { color: var(--bs-primary); border-color: var(--bs-primary); background: color-mix(in srgb, var(--bs-primary) 8%, var(--bs-body-bg)); }
+}
 .time-off-legend { display: flex; flex-wrap: wrap; gap: .7rem; padding: 1rem 1.25rem; align-items: center; font-size: .72rem; color: var(--bs-secondary-color); }
 .time-off-group { --group-color: var(--time-off-a); display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; font-size: .72rem; font-weight: 700; padding: .25rem .55rem; color: var(--group-color); background: color-mix(in srgb, var(--group-color) 12%, var(--bs-body-bg)); border: 1px solid color-mix(in srgb, var(--group-color) 30%, transparent); white-space: nowrap; }
 @each $group in A, B, C, D, E, F, FIXO { .time-off-group--#{$group} { --group-color: var(--time-off-#{to-lower-case($group)}); } }
@@ -297,3 +308,90 @@
 @media (max-width: 1100px) { .time-off-group-legend { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 760px) { #time-off-day .time-off-board { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .time-off-group-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.time-off-metrics.time-off-shortage-summary {
+  padding: 1rem 1.25rem; gap: .7rem;
+  > div { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .2rem .65rem; padding: .7rem .85rem; border: 1px solid var(--bs-border-color); }
+  i { grid-row: span 2; font-size: 1.25rem; color: var(--bs-secondary-color); }
+  strong { display: inline; font-size: 1.2rem; margin-right: .3rem; }
+  span { font-size: .8rem; color: var(--bs-body-color); }
+  small, small span { font-size: .65rem; color: var(--bs-secondary-color); }
+  .is-missing { background: color-mix(in srgb, var(--bs-danger) 7%, var(--bs-body-bg)); border-color: color-mix(in srgb, var(--bs-danger) 25%, var(--bs-border-color)); strong, i { color: var(--bs-danger-text-emphasis); } }
+}
+#time-off-day.time-off-day-routes {
+  [hidden] { display: none !important; }
+  .time-off-board { grid-template-columns: minmax(0, 3fr) repeat(2, minmax(0, 1fr)); }
+  .time-off-column { min-width: 0; }
+  .time-off-column-summary { min-height: 1.1rem; }
+  .time-off-chip-extras { display: block; padding: 0 .4rem .3rem; font-size: .57rem; color: var(--bs-secondary-color); }
+  .time-off-chip-select small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .time-off-pool-drop { grid-template-columns: 1fr; }
+  .time-off-route-list { display: grid; gap: .3rem; }
+  .time-off-route-column-labels, .time-off-route-positions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
+  .time-off-route-column-labels { margin: .6rem 93px .4rem 48px; font-size: .7rem; font-weight: 600; color: var(--bs-secondary-color); }
+  .time-off-route-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) 83px; align-items: center; gap: .35rem; min-width: 0; border: 1px solid color-mix(in srgb, var(--bs-body-color) 10%, transparent); border-radius: 7px; padding: .3rem; background: var(--bs-body-bg); }
+  .time-off-route-row > header { text-align: center; min-width: 0; }
+  .time-off-route-row > header strong { font-size: .63rem; color: var(--bs-secondary-color); overflow-wrap: anywhere; }
+  .time-off-route-row select { width: 83px; min-height: 28px; font-size: .62rem; padding: .2rem 1.2rem .2rem .3rem; }
+  .time-off-route-row .time-off-chip-select { padding: .25rem .3rem; gap: .3rem; }
+  .time-off-route-row .time-off-chip-select strong { display: block; min-height: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .7rem; line-height: 1.3; }
+  .time-off-route-row .time-off-chip-select small { font-size: .55rem; margin-top: .12rem; }
+  .time-off-day-position { min-width: 0; display: flex; flex-direction: column; }
+  .time-off-day-position .time-off-position-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .time-off-day-position .time-off-person-drop { display: grid; grid-template-columns: minmax(0, 1fr); flex: 1; min-height: 44px; padding: .1rem; > .time-off-chip, > .time-off-vacancy { grid-area: 1 / 1; } }
+  .time-off-position-unused { display: flex; align-items: center; justify-content: center; flex: 1; min-height: 44px; border: 1px dashed color-mix(in srgb, var(--bs-body-color) 10%, transparent); border-radius: 7px; font-size: .6rem; color: var(--bs-secondary-color); background: var(--bs-tertiary-bg); }
+  .time-off-day-position.is-empty .time-off-person-drop { background: color-mix(in srgb, var(--bs-danger) 5%, var(--bs-body-bg)); border-color: color-mix(in srgb, var(--bs-danger) 40%, var(--bs-border-color)); }
+  .time-off-day-position.is-empty .time-off-vacancy { color: var(--bs-danger-text-emphasis); font-weight: 600; }
+  .time-off-day-reserve { margin-top: 1rem; padding-top: .75rem; border-top: 1px solid var(--bs-border-color); h4 { display: flex; justify-content: space-between; align-items: center; gap: .5rem; font-size: .75rem; } }
+  &.has-selection .time-off-clear-selection { display: inline-flex !important; }
+}
+@container time-off-people (min-width: 340px) { #time-off-day.time-off-day-routes .time-off-pool-drop { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container time-off-people (min-width: 520px) { #time-off-day.time-off-day-routes .time-off-pool-drop { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 1050px) {
+  #time-off-day.time-off-day-routes .time-off-board { grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); }
+  #time-off-day.time-off-day-routes .time-off-chip-select { gap: .2rem; }
+  .time-off-board-command > div { flex-wrap: wrap; }
+}
+@media (max-width: 760px) {
+  #time-off-day.time-off-day-routes .time-off-board { grid-template-columns: 1fr; }
+  #time-off-day.time-off-day-routes {
+    .time-off-route-row { grid-template-columns: minmax(0, 1fr) 83px; }
+    .time-off-route-row > header { text-align: left; grid-column: 1; grid-row: 1; }
+    .time-off-route-row > select { grid-column: 2; grid-row: 1; }
+    .time-off-route-positions { grid-column: 1 / -1; grid-row: 2; }
+    .time-off-route-column-labels { margin-left: .3rem; margin-right: .3rem; }
+    .time-off-route-row .time-off-chip-select strong { display: -webkit-box; white-space: normal; min-height: 2.6em; }
+  }
+  .time-off-metrics.time-off-shortage-summary { grid-template-columns: 1fr; > div { padding: .5rem .75rem; } }
+}
+.time-off-routing-import { margin: 1rem 1.25rem; padding: .85rem; background: var(--bs-tertiary-bg); border-radius: 9px; border: 1px solid var(--bs-border-color);
+  form { display: flex; align-items: end; gap: .75rem; flex-wrap: wrap; > div { flex: 1 1 240px; } }
+  p { margin-top: .6rem; font-size: .75rem; } small { font-size: .65rem; color: var(--bs-secondary-color); }
+}
+.time-off-page .time-off-car-departure { display: flex; align-items: center; gap: .4rem; font-size: .67rem; font-weight: normal; margin: .15rem 0; }
+.time-off-page .time-off-plate-select { font-size: .75rem; min-height: 30px; padding-top: .2rem; padding-bottom: .2rem; }
+.time-off-car-routing { font-size: .65rem; line-height: 1.5; color: var(--bs-secondary-color); overflow-wrap: anywhere; }
+.time-off-car.is-not-scheduled { background: color-mix(in srgb, var(--bs-secondary-color) 5%, var(--bs-body-bg)); }
+.time-off-availability-board {
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)) !important;
+  .time-off-working-roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; h4 { font-size: .75rem; color: var(--bs-secondary-color); margin: .2rem 0 .5rem; } }
+  .time-off-working-roles .time-off-list { grid-template-columns: minmax(0, 1fr); }
+  .time-off-person { padding: .4rem .5rem; strong { font-size: .7rem; min-height: 0; } small { font-size: .6rem; } }
+  .time-off-person-top { gap: .25rem; flex-wrap: wrap; .time-off-muted { font-size: .6rem; } .time-off-group { font-size: .55rem; padding: .1rem .3rem; } }
+}
+#time-off-day .time-off-working-roles .time-off-list { grid-template-columns: minmax(0, 1fr) !important; }
+@media (max-width: 760px) { .time-off-availability-board { grid-template-columns: minmax(0, 1fr) !important; } }
+@media (max-width: 600px) { .time-off-availability-board .time-off-working-roles { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 400px) {
+  #time-off-day.time-off-day-routes .time-off-chip-select { flex-wrap: wrap; strong { font-size: .62rem; } small { font-size: .53rem; } > span:last-child { flex-basis: 100%; } }
+}
+@media (max-width: 600px) {
+  #time-off-day.time-off-day-routes {
+    .time-off-route-column-labels { display: none; }
+    .time-off-route-positions { grid-template-columns: minmax(0, 1fr); gap: .3rem; }
+    .time-off-day-position { display: grid; grid-template-columns: 55px minmax(0, 1fr); align-items: center; gap: .3rem; }
+    .time-off-day-position .time-off-position-label { position: static; width: auto; height: auto; overflow: visible; clip-path: none; font-size: .6rem; color: var(--bs-secondary-color); }
+    .time-off-route-row .time-off-chip-select { flex-wrap: nowrap; > span:last-child { flex-basis: auto; } }
+    .time-off-route-row .time-off-chip-select strong { display: block; white-space: nowrap; min-height: 0; font-size: .65rem; }
+  }
+}

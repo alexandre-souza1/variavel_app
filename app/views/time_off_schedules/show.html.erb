@@ -9,7 +9,7 @@
   </header>
 
   <nav class="time-off-tabs" aria-label="Seções da escala de folgas">
-    <% [['calendar', 'Calendário', 'bi-calendar3'], ['day', 'Escala do dia', 'bi-person-check'], ['coverage', 'Cobertura', 'bi-truck'], ['extras', 'Extras', 'bi-calendar-plus'], ['history', 'Histórico', 'bi-clock-history']].each do |tab, label, icon| %>
+    <% [['calendar', 'Calendário', 'bi-calendar3'], ['day', 'Escala do dia', 'bi-person-check'], ['extras', 'Extras', 'bi-calendar-plus'], ['history', 'Histórico', 'bi-clock-history']].each do |tab, label, icon| %>
       <%= link_to time_off_tab_path(tab), class: "time-off-tab #{'is-active' if @tab == tab}", aria: { current: @tab == tab ? 'page' : nil } do %>
         <i class="bi <%= icon %>" aria-hidden="true"></i>
         <span><%= label %></span>
@@ -17,28 +17,25 @@
     <% end %>
   </nav>
 
-  <%= form_with url: time_off_schedule_path, method: :get, class: 'time-off-filters' do |form| %>
-    <%= form.hidden_field :tab, value: @tab %>
-    <% if %w[calendar extras].include?(@tab) %>
-      <div><%= form.label :month, 'Mês de referência' %><%= form.month_field :month, value: @month.strftime('%Y-%m'), data: { action: 'change->time-off#syncDate' }, class: 'form-control', required: true %></div>
-      <%= form.hidden_field :date, value: @date %>
-    <% else %>
-      <div><%= form.label :date, 'Dia para acompanhar' %><%= form.date_field :date, value: @date, data: { action: 'change->time-off#syncMonth' }, class: 'form-control', required: true %></div>
-      <%= form.hidden_field :month, value: @month.strftime('%Y-%m') %>
-    <% end %>
-    <% if %w[calendar day extras].include?(@tab) %>
+  <% if %w[calendar day extras].include?(@tab) %>
+    <%= form_with url: time_off_schedule_path, method: :get, class: 'time-off-filters' do |form| %>
+      <%= form.hidden_field :tab, value: @tab %>
+      <% if %w[calendar extras].include?(@tab) %>
+        <div><%= form.label :month, 'Mês de referência' %><%= form.month_field :month, value: @month.strftime('%Y-%m'), data: { action: 'change->time-off#syncDate' }, class: 'form-control', required: true %></div>
+        <%= form.hidden_field :date, value: @date %>
+      <% else %>
+        <%= form.hidden_field :date, value: @date %>
+        <%= form.hidden_field :month, value: @month.strftime('%Y-%m') %>
+      <% end %>
       <div><%= form.label :role, 'Função' %><%= form.select :role, [['Todas as funções', ''], ['Motoristas', 'driver'], ['Ajudantes', 'helper']], { selected: @role }, class: 'form-select' %></div>
       <div><%= form.label :group, 'Grupo' %><%= form.select :group, [['Todos os grupos', '']] + TimeOffSchedule::GROUPS.map { |g| ["Grupo #{g}", g] }, { selected: @group }, class: 'form-select' %></div>
-    <% else %>
-      <%= form.hidden_field :role, value: @role %>
-      <%= form.hidden_field :group, value: @group %>
+      <% if @tab == 'calendar' %>
+        <%= form.hidden_field :calendar_period, value: @calendar_period %>
+      <% else %>
+        <% params.slice(:calendar_period, :page).permit(:calendar_period, :page).each do |key, value| %><%= form.hidden_field key, value: value %><% end %>
+      <% end %>
+      <%= form.submit 'Exibir', class: 'btn btn-primary' %>
     <% end %>
-    <% if @tab == 'calendar' %>
-      <%= form.hidden_field :calendar_period, value: @calendar_period %>
-    <% else %>
-      <% params.slice(:calendar_period, :page).permit(:calendar_period, :page).each do |key, value| %><%= form.hidden_field key, value: value %><% end %>
-    <% end %>
-    <%= form.submit 'Exibir', class: 'btn btn-primary' %>
   <% end %>
 
   <%= render @tab %>

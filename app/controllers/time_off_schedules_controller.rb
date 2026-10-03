@@ -2,11 +2,12 @@ class TimeOffSchedulesController < ApplicationController
   CALENDAR_PAGE_SIZE = 12
   before_action :authenticate_user!
   before_action :require_access!
-  before_action :require_editor!, only: %i[assign_group update_day update_rotation update_coverage create_vacation cancel_vacation]
+  before_action :require_editor!, only: %i[assign_group update_day update_rotation update_coverage preview_routing create_vacation cancel_vacation]
   before_action :set_schedule
 
   def show
-    @tab = %w[calendar day coverage extras history].include?(params[:tab]) ? params[:tab] : 'calendar'
+    return redirect_to pcd_path(date: params[:date]) if params[:tab] == 'coverage'
+    @tab = %w[calendar day extras history].include?(params[:tab]) ? params[:tab] : 'calendar'
     @settings_open = params[:settings] == '1' || params[:tab] == 'groups'
     @date = params[:date].present? ? Date.iso8601(params[:date]) : Date.current
     @month = params[:month].present? ? Date.iso8601("#{params[:month]}-01") : @date.beginning_of_month
@@ -25,9 +26,9 @@ class TimeOffSchedulesController < ApplicationController
     @visible_memberships = @memberships.select { |member| (!@role || member.role == @role) && (!@group || member.group_code == @group) }
     paginate_calendar if @tab == 'calendar'
     @daily = @visible_memberships.select { |member| @schedule.base_status(member, @date) }.group_by { |member| status_for(member, @date) == 'vacation' ? 'unavailable' : status_for(member, @date) } if @tab == 'day'
-    if @tab == 'coverage'
+    if @tab == 'day'
       @coverage = TimeOff::Coverage.new(schedule: @schedule, date: @date)
-      @board = TimeOff::Board.new(@coverage)
+      @demand = TimeOff::Demand.new(@coverage).metrics if @coverage.dimensioning
     end
     @changes = @schedule.time_off_changes.where(date: @date).includes(:user, time_off_membership: [:driver, :ajudante]).order(id: :desc).limit(30) if @tab == 'history'
     if can_edit?
@@ -91,27 +92,11 @@ class TimeOffSchedulesController < ApplicationController
   end
 
   def update_coverage
-    if params[:board].present?
-      attributes = params.require(:board).permit(:date, :reason, :expected_revision, :dimensioning_signature,
-        cars: %i[operation position helper_count driver helper1 helper2], statuses: %i[member_id status expected_revision])
-      date = Date.iso8601(attributes[:date].to_s)
-      TimeOff::UpdateBoard.call(schedule: @schedule, date: date, attributes: attributes, user: current_user)
-      render json: { message: 'Painel do dia salvo.' }
-      return
-    end
-    attributes = params.require(:coverage).permit(:date, :solo_routes, :double_helper_routes, :reason, :expected_revision,
-      :dimensioning_signature, helper_driver_ids: [], special_assignments: {
-        vespertina: { driver: [], helper: [] }, as: { driver: [] }, van: { driver: [] }
-      })
-    date = Date.iso8601(attributes[:date].to_s)
-    TimeOff::UpdateCoverage.call(schedule: @schedule, date: date, attributes: attributes, user: current_user)
-    redirect_to time_off_schedule_path(tab: 'coverage', date: date), notice: 'Composição do dia salva.'
-  rescue ActiveRecord::RecordInvalid, TimeOff::UpdateDay::InvalidChange, TimeOff::UpdateDay::Conflict, Date::Error => error
-    if params[:board].present?
-      render json: { error: error.message }, status: error.is_a?(TimeOff::UpdateDay::Conflict) ? :conflict : :unprocessable_entity
-    else
-      redirect_to time_off_schedule_path(tab: 'coverage', date: params.dig(:coverage, :date)), alert: error.message
-    end
+    render json: { error: 'A composição de equipes foi movida para o PCD. Abra o módulo DU → PCD.' }, status: :gone
+  end
+
+  def preview_routing
+    render json: { error: 'Importe a roteirização no módulo DU → PCD.' }, status: :gone
   end
 
   private
@@ -162,8 +147,19 @@ class TimeOffSchedulesController < ApplicationController
   end
   helper_method :status_for
 
+  def day_member_visible?(member)
+    member && (!@role || member.role == @role) && (!@group || member.group_code == @group)
+  end
+
+  def day_car_visible?(car)
+    return false unless car['scheduled']
+    members = TimeOff::Board::ROLES.filter_map { |role| @coverage.member(car[role]) }
+    members.empty? || members.any? { |member| day_member_visible?(member) }
+  end
+  helper_method :day_member_visible?, :day_car_visible?
+
   def settings_path
-    time_off_schedule_path(tab: %w[calendar day coverage extras history].include?(params[:tab]) ? params[:tab] : 'calendar', date: params[:date], settings: 1)
+    time_off_schedule_path(tab: %w[calendar day extras history].include?(params[:tab]) ? params[:tab] : 'calendar', date: params[:date], settings: 1)
   end
 
   def can_edit?

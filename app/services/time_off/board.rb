@@ -15,6 +15,7 @@ module TimeOff
           Array.new(quantity) do |position|
             plate = operation == 'route' ? plates[position]&.plate : special_plates[operation]&.plate
             { 'key' => "#{operation}:#{position}", 'operation' => operation, 'position' => position,
+              'plate' => plate && RoutingCsv.plate(plate.placa), 'scheduled' => true,
               'label' => plate&.placa || "#{operation == 'route' ? 'Carro' : Coverage::OPERATIONS[operation]} #{position + 1}",
               'helper_count' => %w[route vespertina].include?(operation) ? 1 : 0,
               'driver' => nil, 'helper1' => nil, 'helper2' => nil }
@@ -22,6 +23,7 @@ module TimeOff
         end
         saved = coverage.details['cars']
         saved ? restore(slots, saved) : suggest(slots)
+        slots.each { |car| car['label'] = car['plate'].presence || (coverage.details['routing_import'] ? 'Sem placa definida' : car['label']) }
         slots
       end
     end
@@ -39,8 +41,9 @@ module TimeOff
     end
 
     def state
-      { cars: cars, members: members.map { |m| {
+      { cars: cars, routing_import: coverage.details['routing_import'], members: members.map { |m| {
         id: m.id, name: m.person.nome, group: m.group_code, cargo: m.cargo_on(coverage.date),
+        membership_role: m.role,
         role: EmployeeRole::CARGOS.key(m.cargo_on(coverage.date)) || m.role_label,
         active: m.active_person?,
         status: coverage.status(m), revision: coverage.revision(m), vacation: coverage.status(m) == 'vacation'
@@ -48,14 +51,22 @@ module TimeOff
     end
 
     def metrics
-      { cars: cars.size, drivers: cars.count { |c| c['driver'] },
-        helper_gap: cars.sum { |c| (1..c['helper_count']).count { |n| !c["helper#{n}"] } } }
+      { dimensioned_cars: cars.size, cars: scheduled_cars.size, drivers: scheduled_cars.count { |c| c['driver'] }, driver_gap: scheduled_cars.count { |c| !c['driver'] },
+        helper_gap: scheduled_cars.sum { |c| (1..c['helper_count']).count { |n| !c["helper#{n}"] } } }
+    end
+
+    def scheduled_cars
+      cars.select { |car| car['scheduled'] }
     end
 
     def self.validate!(coverage, raw_cars)
       raise UpdateDay::InvalidChange, 'Envie todos os carros do painel.' unless raw_cars.is_a?(Array)
       expected = coverage.quantities.flat_map { |op, qty| Array.new(qty) { |i| [op, i] } }
       used = Set.new
+      used_plates = Set.new
+      imported_plates = Array(coverage.details.dig('routing_import', 'rows')).map { |row| row['plate'] }
+      known_plates = Plate.all.index_by { |plate| RoutingCsv.plate(plate.placa) }
+      defaults = new(coverage).cars.index_by { |car| [car['operation'], car['position']] }
       normalized = raw_cars.map do |raw|
         raise UpdateDay::InvalidChange, 'Carro inválido.' unless raw.is_a?(Hash)
         raw = raw.stringify_keys
@@ -64,9 +75,20 @@ module TimeOff
         count = Integer(raw['helper_count'].to_s, 10)
         valid_count = operation == 'route' ? (0..2).cover?(count) : count == (operation == 'vespertina' ? 1 : 0)
         raise UpdateDay::InvalidChange, 'Composição incompatível com esta operação.' unless valid_count && expected.include?([operation, position])
-        car = { 'operation' => operation, 'position' => position, 'helper_count' => count }
+        default = defaults.fetch([operation, position])
+        scheduled = raw.key?('scheduled') ? ActiveModel::Type::Boolean.new.cast(raw['scheduled']) : true
+        plate = raw.key?('plate') ? RoutingCsv.plate(raw['plate']).presence : default['plate']
+        if plate
+          known = known_plates[plate]
+          allowed = known ? known.active_on?(coverage.date) : imported_plates.include?(plate)
+          raise UpdateDay::InvalidChange, "Placa #{plate} não está disponível no cadastro ou no CSV importado." unless allowed
+          raise UpdateDay::InvalidChange, 'A mesma placa não pode ocupar duas saídas no dia.' if scheduled && used_plates.include?(plate)
+          used_plates.add(plate) if scheduled
+        end
+        car = { 'operation' => operation, 'position' => position, 'helper_count' => count, 'plate' => plate, 'scheduled' => scheduled }
         ROLES.each do |role|
           id = raw[role].presence
+          raise UpdateDay::InvalidChange, 'Retire os colaboradores antes de marcar a posição sem saída.' if id && !scheduled
           if role.start_with?('helper') && role.delete_prefix('helper').to_i > count && id
             raise UpdateDay::InvalidChange, 'Retire o ajudante antes de reduzir a composição do carro.'
           end
@@ -98,7 +120,10 @@ module TimeOff
       slots.each do |car|
         previous = by_position[[car['operation'], car['position']]]
         next unless previous
+        car['plate'] = previous['plate'] if previous.key?('plate')
+        car['scheduled'] = previous.fetch('scheduled', true)
         car['helper_count'] = previous['helper_count'] if car['operation'] == 'route'
+        next unless car['scheduled']
         ROLES.each do |role|
           m = coverage.member(previous[role])
           next unless m && !used.include?(m.person_key) && coverage.eligible?(m, operation: car['operation'], role: role == 'driver' ? 'driver' : 'helper')

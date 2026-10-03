@@ -1,0 +1,66 @@
+<section class="time-off-panel time-off-day-routes" id="time-off-day" aria-labelledby="day-heading"
+  data-controller="time-off-board" data-time-off-board-editable-value="<%= can_edit? %>"
+  data-time-off-board-state-value="<%= @board.state.to_json %>" data-time-off-board-url-value="<%= update_coverage_time_off_schedule_path %>"
+  data-time-off-board-date-value="<%= @date %>" data-time-off-board-revision-value="<%= @coverage.plan&.lock_version || -1 %>" data-time-off-board-signature-value="<%= @coverage.signature %>"
+  data-time-off-board-filter-role-value="<%= @role %>" data-time-off-board-filter-group-value="<%= @group %>">
+  <div class="time-off-panel-heading">
+    <div><span class="time-off-eyebrow">ACOMPANHAMENTO DO DIA</span><%= render 'day_navigation', heading_id: 'day-heading', title: l(@date, format: '%A, %d de %B').capitalize %><p>Cada linha é uma saída: motorista, ajudante e ajudante 2.<% if can_edit? %> Arraste os nomes e salve para confirmar.<% end %></p></div>
+    <% group = @schedule.off_group_on(@date) %><% if group %><span class="time-off-group time-off-group--<%= group %>">Folga original · Grupo <%= group %></span><% end %>
+  </div>
+  <%= render 'board_shortages' %>
+  <% if @role || @group %><div class="time-off-notice">Os filtros mostram equipes com os colaboradores selecionados e saídas sem equipe. A contagem de vagas considera todas as saídas previstas no dia.</div><% end %>
+  <% if @coverage.stale? %><div class="time-off-notice time-off-coverage-warning">O dimensionamento mudou. Revise as posições e salve novamente.</div><% end %>
+  <% if can_edit? %>
+    <div class="time-off-board-command"><p data-time-off-board-target="message" role="status" aria-live="polite">Arraste para uma vaga, para De folga ou para Indisponíveis.</p><div><button type="button" class="btn btn-sm btn-outline-secondary time-off-clear-selection" data-action="time-off-board#clearSelection">Cancelar seleção</button><button type="button" class="btn btn-sm btn-outline-secondary" data-action="time-off-board#reset">Desfazer rascunho</button><button type="button" class="btn btn-sm btn-primary" data-action="time-off-board#openSave">Salvar escala</button></div></div>
+  <% end %>
+  <div class="time-off-board time-off-day-route-layout">
+    <section class="time-off-column time-off-column--working">
+      <header><h3><i class="bi bi-person-check" aria-hidden="true"></i> Em escala</h3><span class="time-off-count"><span data-time-off-board-target="carCount"><%= @board.scheduled_cars.size %></span> equipes</span></header>
+      <p class="time-off-column-summary"><%= @coverage.plan ? 'Composição salva' : 'Sugestão pela escala' %> · <%= @coverage.dimensioning.label %></p>
+      <div class="time-off-route-column-labels" aria-hidden="true"><span>Motorista</span><span>Ajudante</span><span>Ajudante 2</span></div>
+      <div class="time-off-route-list">
+        <% @board.cars.each do |car| %>
+          <% team_label = car['operation'] == 'route' ? "Equipe #{car['position'] + 1}" : TimeOff::Coverage::OPERATIONS[car['operation']] %>
+          <article class="time-off-route-row" data-car-key="<%= car['key'] %>" <%= 'hidden' unless day_car_visible?(car) %>>
+            <header><strong title="<%= team_label %>"><%= car['operation'] == 'route' ? format('%02d', car['position'] + 1) : car['operation'] == 'vespertina' ? 'Vesp.' : team_label %></strong><span class="visually-hidden"><%= team_label %></span></header>
+            <div class="time-off-route-positions">
+              <% [['driver', 'Motorista'], ['helper1', 'Ajudante'], ['helper2', 'Ajudante 2']].each do |role, label| %>
+                <% required = role == 'driver' || role.delete_prefix('helper').to_i <= car['helper_count']; member = @coverage.member(car[role]) %>
+                <div class="time-off-car-position time-off-day-position <%= 'is-empty' if required && !member %>" data-position-role="<%= role %>">
+                  <span class="time-off-position-label"><%= label %></span>
+                  <div class="time-off-person-drop" data-time-off-board-target="drop" data-car="<%= car['key'] %>" data-role="<%= role %>" data-action="click->time-off-board#destination" role="group" aria-label="<%= label %> de <%= team_label %>" <%= 'hidden' unless required %>>
+                    <% if member && required %><%= render 'board_person', member: member, editable: can_edit?, assigned: true %><% end %>
+                    <button type="button" class="time-off-vacancy" data-action="time-off-board#destination" <%= 'disabled' unless can_edit? %>>Falta <%= role == 'driver' ? 'motorista' : 'ajudante' %></button>
+                  </div>
+                  <span class="time-off-position-unused" <%= 'hidden' if required %>>Não previsto</span>
+                </div>
+              <% end %>
+            </div>
+            <% if car['operation'] == 'route' %><%= select_tag "helpers_#{car['key']}", options_for_select([['0 ajud.', 0], ['1 ajud.', 1], ['2 ajud.', 2]], car['helper_count']), class: 'form-select form-select-sm', disabled: !can_edit?, data: { action: 'change->time-off-board#composition', car: car['key'] }, aria: { label: "Quantidade de ajudantes da #{team_label}" } %><% end %>
+          </article>
+        <% end %>
+      </div>
+      <div class="time-off-day-reserve"><h4>Disponíveis para completar vagas <span class="time-off-count" data-pool-count="working"><%= (@board.pools['working'] || []).count { |m| day_member_visible?(m) } %></span></h4>
+        <div class="time-off-person-drop time-off-pool-drop" data-time-off-board-target="drop" data-status="working" data-action="click->time-off-board#destination" role="group" aria-label="Disponíveis">
+          <% (@board.pools['working'] || []).select { |m| day_member_visible?(m) }.each do |member| %><%= render 'board_person', member: member, editable: can_edit?, assigned: false %><% end %>
+          <button type="button" class="time-off-pool-placeholder" data-action="time-off-board#destination" <%= 'disabled' unless can_edit? %>>Mover para disponíveis</button>
+        </div>
+      </div>
+    </section>
+    <% [['off', 'De folga', 'bi-cup-hot'], ['unavailable', 'Indisponíveis', 'bi-person-x'], ['pending', 'Folga a definir', 'bi-question-circle']].each do |status, label, icon| %>
+      <% members = (@board.pools[status] || []).select { |m| day_member_visible?(m) }; next if status == 'pending' && members.empty? %>
+      <section class="time-off-column time-off-column--<%= status %>">
+        <header><h3><i class="bi <%= icon %>" aria-hidden="true"></i> <%= label %></h3><span class="time-off-count" data-pool-count="<%= status %>"><%= members.size %></span></header>
+        <p class="time-off-column-summary" data-pool-summary="<%= status %>"><%= members.count { |m| m.role == 'driver' } %> motoristas · <%= members.count { |m| m.role == 'helper' } %> ajudantes</p>
+        <div class="time-off-person-drop time-off-pool-drop" data-time-off-board-target="drop" data-status="<%= status %>" data-action="click->time-off-board#destination" role="group" aria-label="<%= label %>">
+          <% members.each do |member| %><%= render 'board_person', member: member, editable: can_edit? && status != 'pending', assigned: false %><% end %>
+          <button type="button" class="time-off-pool-placeholder" data-action="time-off-board#destination" <%= 'disabled' unless can_edit? && status != 'pending' %>>Mover para <%= label.downcase %></button>
+        </div>
+      </section>
+    <% end %>
+  </div>
+  <% if can_edit? %><div class="time-off-board-save"><span class="time-off-muted" data-time-off-board-target="dirty"><%= @coverage.plan ? 'Composição salva; nenhuma alteração pendente.' : 'Sugestão inicial. Salve para confirmar a composição.' %></span><button type="button" class="btn btn-primary" data-action="time-off-board#openSave">Salvar escala do dia</button></div><% end %>
+  <%= render 'board_save_dialog' %>
+  <div class="time-off-notice">O segundo ajudante só conta como vaga ao selecionar “2 ajudantes”. Saídas definidas como “Sem ajudante”, AS e Van não geram falta de ajudante. Ao convocar alguém de folga, combine a compensação em outra data.</div>
+  <% @board.members.each do |member| %><template data-time-off-board-target="person" data-member-id="<%= member.id %>"><%= render 'board_person', member: member, editable: can_edit?, assigned: false %></template><% end %>
+</section>

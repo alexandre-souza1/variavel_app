@@ -1,4 +1,7 @@
 raise 'Somente banco de testes' unless Rails.env.test?
+PcdChange.delete_all
+PcdImport.delete_all
+PcdPlan.delete_all
 TimeOffVacation.delete_all
 TimeOffChange.delete_all
 TimeOffOverride.delete_all
@@ -24,4 +27,5 @@ end
 end
 FleetDimensioning.where(label: 'Navegador · Outubro 2026').destroy_all
 FleetDimensioning.create!(label: 'Navegador · Outubro 2026', start_date: '2026-10-01', end_date: '2026-10-31', route_quantity: 18, vespertina_quantity: 1, as_quantity: 1, van_quantity: 1)
+Plate.find_or_create_by!(placa: 'AAA1B23') { |plate| plate.assign_attributes(setor: 'ROTA', tipo: 'Caminhão') }
 puts 'Dados do navegador preparados no banco de testes.'
