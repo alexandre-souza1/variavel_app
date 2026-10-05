@@ -138,8 +138,8 @@
 
           <td class="action-plan-desktop-table__labels">
             <% task.labels.each do |label| %>
-              <span class="badge action-plan-label-badge"
-                    style="background-color:<%= label.color %>">
+              <span class="badge action-plan-label-badge task-label-badge"
+                    style="background-color:<%= label.color %>; --label-text-color:<%= label_text_color(label.color) %>">
                 <%= label.name %>
               </span>
             <% end %>
@@ -242,8 +242,8 @@
         <% if task.labels.any? %>
           <div class="action-plan-mobile-task__labels">
             <% task.labels.each do |label| %>
-              <span class="badge"
-                    style="background-color:<%= label.color %>">
+              <span class="badge action-plan-label-badge task-label-badge"
+                    style="background-color:<%= label.color %>; --label-text-color:<%= label_text_color(label.color) %>">
                 <%= label.name %>
               </span>
             <% end %>
