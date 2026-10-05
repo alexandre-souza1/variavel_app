@@ -54,22 +54,7 @@ module RoutinesHelper
   end
 
   def routine_cell_status(indicator, value, goal)
-    return nil if value.blank?
-    return nil if goal.blank?
-    return nil if indicator.manual_calculation?
-
-    comparable_value = routine_comparable_value(indicator, value)
-    comparable_goal = routine_comparable_value(indicator, goal)
-
-    return nil if comparable_value.nil? || comparable_goal.nil?
-
-    case indicator.goal_direction
-    when "greater_or_equal"
-      comparable_value >= comparable_goal ? :success : :danger
-
-    when "less_or_equal"
-      comparable_value <= comparable_goal ? :success : :danger
-    end
+    Routines::GoalEvaluation.call(indicator: indicator, value: value, goal: goal)
   end
 
   private
@@ -98,37 +83,4 @@ module RoutinesHelper
     )
   end
 
-  def routine_comparable_value(indicator, value)
-    case indicator.value_type
-    when "integer", "decimal", "percentage", "currency"
-      BigDecimal(value.to_s.tr(",", "."))
-
-    when "date"
-      Date.iso8601(value.to_s)
-
-    when "time"
-      hour, minute = value.to_s.split(":").map(&:to_i)
-      (hour * 60) + minute
-
-    when "duration"
-      match = value.to_s.tr(".", ":").match(
-        /\A(?<minutes>\d+):(?<seconds>[0-5]\d)\z/
-      )
-
-      return unless match
-
-      minutes = match[:minutes].to_i
-      seconds = match[:seconds].to_i
-
-      (minutes * 60) + seconds
-
-    when "boolean"
-      value.to_s.in?(%w[true 1]) ? 1 : 0
-
-    else
-      value.to_s
-    end
-  rescue ArgumentError
-    nil
-  end
 end

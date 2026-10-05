@@ -124,6 +124,9 @@ class TasksController < ApplicationController
   end
 
   def toggle_complete
+    if params[:view] == "gerot_actions"
+      @gerot_source = @task.bucket.action_plan.routines.find(params[:routine_id]) if params[:routine_id].present?
+    end
     new_status = !@task.completed
 
     @task.update!(
@@ -136,6 +139,13 @@ class TasksController < ApplicationController
       user: current_user,
       activity_type: new_status ? :completed : :reopened
     )
+
+    done_tasks = @task.bucket.tasks.visible_for(current_user).where(completed: true)
+    if params[:view] == "gerot_actions"
+      done_tasks = done_tasks.where.not(routine_value_id: nil)
+      done_tasks = done_tasks.joins(:routine_value).where(routine_values: { routine_id: @gerot_source.id }) if @gerot_source
+    end
+    @done_tasks_count = done_tasks.count
 
     @flash_container = new_status ? "Tarefa concluída" : "Tarefa reaberta"
 

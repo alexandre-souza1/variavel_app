@@ -5,11 +5,13 @@
       <div class="d-flex align-items-center gap-2 mb-4">
         <i class="bi bi-file-earmark-plus fs-2 text-primary"></i>
         <h2 class="fw-bold mb-0">
-          <%= routine_template.new_record? ? 'Novo Template' : 'Editar Template' %>
+          <%= routine_template.new_record? ? 'Novo modelo de GEROT' : 'Editar modelo de GEROT' %>
         </h2>
       </div>
 
-      <%= form_with model: routine_template, class: "card shadow-sm p-4" do |f| %>
+      <% plan = routine_template.action_plan %>
+      <% form_url = plan ? action_plan_gerot_template_path(plan) : (routine_template.new_record? ? routine_templates_path : routine_template_path(routine_template)) %>
+      <%= form_with model: routine_template, url: form_url, method: routine_template.new_record? ? :post : :patch, class: "card shadow-sm p-4" do |f| %>
 
         <% if routine_template.errors.any? %>
           <div class="alert alert-danger">
@@ -43,6 +45,12 @@
                           placeholder: "Descreva o propósito e uso deste template..." %>
         </div>
 
+        <% if plan %>
+          <div class="plan-gerot-context">
+            <div><i class="bi bi-diagram-3"></i><span>Plano de ação <strong><%= plan.name %></strong></span></div>
+            <p>Este é o único modelo do plano. Cada bucket será uma categoria, com o mesmo nome e a mesma posição. Cadastre os indicadores após criar o modelo.</p>
+          </div>
+        <% else %>
         <div class="mb-4">
           <%= f.label :sector, class: "form-label fw-semibold" do %>
             <i class="bi bi-diagram-3 me-1"></i> Setor do template
@@ -65,6 +73,7 @@
 
           <small class="text-muted d-block mt-2">Usuários do setor selecionado enxergam este template e suas rotinas.</small>
         </div>
+        <% end %>
 
         <div class="form-check form-switch mb-4">
           <%= f.check_box :active,
@@ -79,7 +88,7 @@
 
         <div class="d-flex gap-2">
           <%= f.submit class: "btn btn-primary btn-lg px-4" %>
-          <%= link_to "Cancelar", routine_templates_path, class: "btn btn-outline-secondary btn-lg" %>
+          <%= link_to "Cancelar", plan ? action_plan_path(plan, view: "gerots") : routine_templates_path, class: "btn btn-outline-secondary btn-lg" %>
         </div>
 
       <% end %>

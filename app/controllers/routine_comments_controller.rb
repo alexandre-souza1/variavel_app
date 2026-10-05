@@ -6,7 +6,15 @@ class RoutineCommentsController < ApplicationController
   def index
     render json: {
       comments: serialized_comments,
-      count: @routine_value.routine_comments.size
+      count: @routine_value.routine_comments.size,
+      task_generation_mode: @routine_value.routine.task_generation_mode,
+      cell_status: Routines::GoalEvaluation.call(
+        indicator: @routine_value.routine_indicator,
+        value: @routine_value.value,
+        goal: @routine_value.routine_indicator.target_for(@routine_value.reference_date)&.goal
+      ),
+      can_generate_task: @routine_value.routine.action_plan.present? && @routine_value.routine.open?,
+      generated_task_id: @routine_value.generated_task&.id
     }
   end
 
@@ -14,16 +22,22 @@ class RoutineCommentsController < ApplicationController
     comment = @routine_value.routine_comments.new(comment_params)
     comment.user = current_user
 
-    if comment.save
-      render json: {
-        comment: serialized_comment(comment),
-        count: @routine_value.routine_comments.count
-      }, status: :created
-    else
-      render json: {
-        errors: comment.errors.full_messages
-      }, status: :unprocessable_entity
+    @routine_value.with_lock do
+      comment.save!
+      @generated_task = Routines::DeviationTaskGenerator.call(
+        routine_value: @routine_value, actor: current_user, comment: comment
+      )
     end
+
+    render json: {
+      comment: serialized_comment(comment),
+      count: @routine_value.routine_comments.count,
+      generated_task_created: @generated_task&.previously_new_record? || false,
+      generated_task_id: @generated_task&.id,
+      generated_task_url: (@generated_task && action_plan_path(@routine_value.routine.action_plan, task_id: @generated_task.id))
+    }, status: :created
+  rescue ActiveRecord::RecordInvalid => error
+    render json: { errors: error.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   def destroy
@@ -41,6 +55,7 @@ class RoutineCommentsController < ApplicationController
   def set_routine_value
     @routine_value =
       RoutineValue
+        .where(routine_id: Routine.visible_to(current_user).select(:id))
         .includes(routine_comments: :user)
         .find(params[:routine_value_id])
   end

@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { showFlash } from "controllers/flash_controller"
 
 export default class extends Controller {
 
@@ -395,6 +396,10 @@ export default class extends Controller {
     this.displayTarget.textContent = data.formatted_value
 
     this.updateCellStatus(data)
+
+    if (data.generated_task_created) {
+      showFlash("Tarefa criada no plano de ação.", { url: data.generated_task_url })
+    }
 
     this.finishEdition()
 

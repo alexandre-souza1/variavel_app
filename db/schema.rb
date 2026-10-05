@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_03_100000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -862,9 +862,23 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_03_100000) do
     t.boolean "collapsed", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["routine_template_id", "name"], name: "index_routine_categories_on_routine_template_id_and_name", unique: true
+    t.bigint "bucket_id"
+    t.index ["bucket_id"], name: "index_routine_categories_on_bucket_id", unique: true
+    t.index ["routine_template_id", "name"], name: "index_routine_categories_on_routine_template_id_and_name", unique: true, where: "(bucket_id IS NULL)"
     t.index ["routine_template_id", "position"], name: "index_routine_categories_on_routine_template_id_and_position"
     t.index ["routine_template_id"], name: "index_routine_categories_on_routine_template_id"
+  end
+
+  create_table "routine_category_buckets", force: :cascade do |t|
+    t.bigint "action_plan_id", null: false
+    t.bigint "routine_category_id", null: false
+    t.bigint "bucket_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["action_plan_id", "routine_category_id"], name: "idx_unique_plan_routine_category", unique: true
+    t.index ["action_plan_id"], name: "index_routine_category_buckets_on_action_plan_id"
+    t.index ["bucket_id"], name: "index_routine_category_buckets_on_bucket_id"
+    t.index ["routine_category_id"], name: "index_routine_category_buckets_on_routine_category_id"
   end
 
   create_table "routine_comments", force: :cascade do |t|
@@ -901,8 +915,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_03_100000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "response_frequency", default: 0, null: false
+    t.bigint "source_indicator_id"
     t.index ["routine_category_id", "position"], name: "index_routine_indicators_on_routine_category_id_and_position"
+    t.index ["routine_category_id", "source_indicator_id"], name: "idx_unique_adapted_gerot_indicator", unique: true, where: "(source_indicator_id IS NOT NULL)"
     t.index ["routine_category_id"], name: "index_routine_indicators_on_routine_category_id"
+    t.index ["source_indicator_id"], name: "index_routine_indicators_on_source_indicator_id"
   end
 
   create_table "routine_templates", force: :cascade do |t|
@@ -912,6 +929,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_03_100000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "sector", default: 0, null: false
+    t.bigint "action_plan_id"
+    t.index ["action_plan_id"], name: "index_routine_templates_on_action_plan_id", unique: true
     t.index ["name"], name: "index_routine_templates_on_name", unique: true
   end
 
@@ -941,8 +960,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_03_100000) do
     t.jsonb "selected_indicator_ids", default: [], null: false
     t.integer "weekly_reference_weekday"
     t.integer "monthly_reference_day"
+    t.bigint "action_plan_id"
+    t.integer "task_generation_mode", default: 0, null: false
+    t.index ["action_plan_id", "routine_template_id", "period_start", "period_end"], name: "idx_unique_plan_routine_period", unique: true, where: "(action_plan_id IS NOT NULL)"
+    t.index ["action_plan_id"], name: "index_routines_on_action_plan_id"
     t.index ["created_by_id"], name: "index_routines_on_created_by_id"
-    t.index ["routine_template_id", "period_start", "period_end"], name: "idx_unique_routine_period", unique: true
+    t.index ["routine_template_id", "period_start", "period_end"], name: "idx_unique_legacy_routine_period", unique: true, where: "(action_plan_id IS NULL)"
     t.index ["routine_template_id"], name: "index_routines_on_routine_template_id"
   end
 
@@ -1055,10 +1078,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_03_100000) do
     t.datetime "due_notification_sent_at"
     t.boolean "clone_tasklist_on_recurrence", default: false, null: false
     t.datetime "early_due_notification_sent_at"
+    t.bigint "routine_value_id"
     t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
     t.index ["bucket_id"], name: "index_tasks_on_bucket_id"
     t.index ["creator_id"], name: "index_tasks_on_creator_id"
     t.index ["due_notification_enabled", "due_notification_sent_at", "due_at"], name: "index_tasks_on_due_notification_status"
+    t.index ["routine_value_id"], name: "index_tasks_on_routine_value_id", unique: true
   end
 
   create_table "time_off_changes", force: :cascade do |t|
@@ -1283,14 +1308,21 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_03_100000) do
   add_foreign_key "routine_activities", "routine_values"
   add_foreign_key "routine_activities", "routines"
   add_foreign_key "routine_activities", "users"
+  add_foreign_key "routine_categories", "buckets"
   add_foreign_key "routine_categories", "routine_templates"
+  add_foreign_key "routine_category_buckets", "action_plans"
+  add_foreign_key "routine_category_buckets", "buckets"
+  add_foreign_key "routine_category_buckets", "routine_categories"
   add_foreign_key "routine_comments", "routine_values"
   add_foreign_key "routine_comments", "users"
   add_foreign_key "routine_indicator_targets", "routine_indicators"
   add_foreign_key "routine_indicators", "routine_categories"
+  add_foreign_key "routine_indicators", "routine_indicators", column: "source_indicator_id", on_delete: :nullify
+  add_foreign_key "routine_templates", "action_plans"
   add_foreign_key "routine_values", "routine_indicators"
   add_foreign_key "routine_values", "routines"
   add_foreign_key "routine_values", "users", column: "updated_by_id"
+  add_foreign_key "routines", "action_plans"
   add_foreign_key "routines", "routine_templates"
   add_foreign_key "routines", "users", column: "created_by_id"
   add_foreign_key "stress_test_events", "plates"
@@ -1305,6 +1337,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_03_100000) do
   add_foreign_key "tasklist_items", "tasklists", on_delete: :cascade
   add_foreign_key "tasklists", "tasks", on_delete: :cascade
   add_foreign_key "tasks", "buckets"
+  add_foreign_key "tasks", "routine_values", on_delete: :nullify
   add_foreign_key "tasks", "users", column: "assignee_id"
   add_foreign_key "tasks", "users", column: "creator_id"
   add_foreign_key "time_off_changes", "time_off_memberships"

@@ -1,4 +1,8 @@
 module ApplicationHelper
+  def disclosure_arrow(css_class: nil, **attributes)
+    tag.i(**attributes, class: class_names("bi", "bi-arrow-right", "app-disclosure-arrow", css_class), aria: { hidden: true })
+  end
+
   # Retorna um hash com os registros paginados e informações de paginação
   def paginate_records(relation, params, per_page: 15)
     current_page = (params[:page] || 1).to_i

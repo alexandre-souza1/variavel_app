@@ -6,13 +6,16 @@ class RoutineTemplatesController < ApplicationController
     update
     destroy
   ]
+  before_action :authorize_management, only: %i[edit update destroy]
 
   def index
-    @routine_templates = RoutineTemplate.visible_to(current_user).order(:name)
+    @routine_templates = RoutineTemplate.visible_to(current_user).independent.order(:name)
   end
 
   def show
     @routine_template = RoutineTemplate.visible_to(current_user).includes(routine_categories: :routine_indicators).find(params[:id])
+    @action_plan = @routine_template.action_plan
+    @can_manage_template = @routine_template.manageable_by?(current_user)
   end
 
   def new
@@ -43,24 +46,34 @@ class RoutineTemplatesController < ApplicationController
   end
 
   def destroy
-    @routine_template.destroy
-
-    redirect_to routine_templates_path,
-                notice: "Template removido."
+    if @routine_template.action_plan
+      redirect_to action_plan_gerot_template_path(@routine_template.action_plan), alert: "O modelo pertence ao plano de ação."
+    elsif @routine_template.destroy
+      redirect_to routine_templates_path, notice: "Modelo removido."
+    else
+      redirect_to @routine_template, alert: @routine_template.errors.full_messages.to_sentence
+    end
   end
 
   private
 
   def set_routine_template
     @routine_template = RoutineTemplate.visible_to(current_user).find(params[:id])
+    @action_plan = @routine_template.action_plan
+  end
+
+  def authorize_management
+    head :forbidden unless @routine_template.manageable_by?(current_user)
   end
 
   def routine_template_params
-    params.require(:routine_template).permit(
+    attributes = params.require(:routine_template).permit(
       :name,
       :description,
       :active,
       :sector
     )
+    attributes.except!(:sector) if @routine_template&.action_plan
+    attributes
   end
 end

@@ -46,7 +46,8 @@ class RoutineCategoriesController < ApplicationController
   private
 
   def set_template
-    @template = RoutineTemplate.find(params[:routine_template_id])
+    @template = RoutineTemplate.visible_to(current_user).find(params[:routine_template_id])
+    head :forbidden if @template.action_plan || !@template.manageable_by?(current_user)
   end
 
   def set_category

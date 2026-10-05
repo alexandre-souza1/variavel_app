@@ -78,8 +78,6 @@
 .employees-disclosure__text { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: .3rem; }
 .employees-disclosure__text > strong { font-size: .87rem; font-weight: 650; }
 .employees-disclosure__text > small { font-size: .74rem; color: var(--bs-secondary-color); }
-.employees-disclosure__chevron { font-size: .8rem; color: var(--bs-secondary-color); transition: transform .15s ease; }
-.employees-disclosure[open] > summary .employees-disclosure__chevron { transform: rotate(180deg); }
 .employees-disclosure__body { border-top: 1px solid var(--bs-border-color); padding: 1.25rem; }
 .employees-closing { border: 1px solid var(--bs-border-color); border-radius: 10px; overflow: hidden; }
 .employees-closing__total { font-size: .9rem; white-space: nowrap; font-variant-numeric: tabular-nums; }

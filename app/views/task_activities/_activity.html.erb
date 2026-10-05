@@ -1,10 +1,20 @@
 <div class="text-muted small mb-1 text-center" style="font-size: 0.7rem;">
   <i class="bi bi-clock-history small" style="font-size: 0.7rem;"></i>
 
-  <strong><%= activity.user.name.split.first %></strong>
+  <strong><%= (activity.user.name.presence || activity.user.email).split.first %></strong>
 
-  <% if activity.completed? %>
+  <% if activity.created? %>
+    criou a tarefa
+
+  <% elsif activity.completed? %>
     finalizou a tarefa
+
+  <% elsif activity.routine_value_changed? %>
+    atualizou o preenchimento de origem do GEROT:
+    <strong><%= activity.old_value.presence || 'vazio' %></strong> → <strong><%= activity.new_value.presence || 'vazio' %></strong>
+    <% if activity.metadata['status'] == 'success' %>
+      <span class="text-success">(dentro da meta)</span>
+    <% end %>
 
   <% elsif activity.reopened? %>
     reabriu a tarefa

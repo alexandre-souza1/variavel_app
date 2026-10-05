@@ -1,5 +1,49 @@
 @import "../custom/breakpoints";
 
+// Navigation uses a quieter chevron, independent of content disclosures.
+@mixin nav-chevron {
+  display: inline-block;
+  flex-shrink: 0;
+  color: inherit;
+  opacity: .6;
+  font-size: .65rem;
+  line-height: 1;
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+  transform: rotate(0deg);
+  transform-origin: center;
+  transition: transform .2s ease, opacity .2s ease;
+}
+
+.app-navbar .dropdown-toggle::after,
+.app-mobile-nav-section__title[data-bs-toggle="collapse"]::after {
+  @include nav-chevron;
+  content: "\f282";
+  font-family: "bootstrap-icons";
+  font-style: normal;
+  font-weight: normal;
+  border: 0;
+  margin-left: .45rem;
+}
+
+.app-navbar .app-nav-chevron { @include nav-chevron; margin-left: .4rem; }
+.app-mobile-nav-section__title[data-bs-toggle="collapse"]::after { margin-left: auto; }
+
+.app-navbar .dropdown-toggle[aria-expanded="true"]::after,
+.app-mobile-nav-section__title[aria-expanded="true"]::after,
+.app-navbar details[open] > summary .app-nav-chevron { transform: rotate(180deg); opacity: 1; }
+
+.app-navbar .dropdown-toggle:hover::after,
+.app-navbar summary:hover .app-nav-chevron,
+.app-mobile-nav-section__title:hover::after { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .app-navbar .dropdown-toggle::after,
+  .app-navbar .app-nav-chevron,
+  .app-mobile-nav-section__title[data-bs-toggle="collapse"]::after { transition: none; }
+}
+
 // ============================================================
 // NAVBAR PRINCIPAL
 // ============================================================
@@ -52,15 +96,6 @@
       strong {
         font-weight: 600;
       }
-
-      .workstation-sector-chevron {
-        font-size: 0.65rem;
-        transition: transform 0.15s ease;
-      }
-    }
-
-    &[open] .workstation-sector-chevron {
-      transform: rotate(180deg);
     }
 
     &__menu {
@@ -203,11 +238,6 @@
     border: none;
     background: transparent;
     border-radius: 50%;
-    transition: transform 0.15s ease;
-
-    &:hover {
-      transform: scale(1.05);
-    }
 
     .avatar-placeholder {
       width: 40px;
@@ -273,6 +303,32 @@
       }
     }
   }
+}
+
+// Keep the avatar circular, independently of the rectangular navigation links.
+.app-navbar .navbar-nav .nav-link.avatar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: transparent;
+  transition: box-shadow .15s ease;
+
+  > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  &:hover, &:focus, &[aria-expanded="true"] {
+    background: transparent;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--bs-navbar-color, #fff) 25%, transparent);
+  }
+
+  &:focus-visible { outline: 2px solid var(--bs-navbar-color, #fff); outline-offset: 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-navbar .navbar-nav .nav-link.avatar-btn { transition: none; }
 }
 
 // ============================================================
@@ -348,16 +404,7 @@
 
   // Seta indicadora
   &::after {
-    content: "▼";
     margin-left: auto;
-    font-size: 0.7rem;
-    transition: transform 0.2s ease;
-    color: var(--bs-secondary-color);
-  }
-
-  // Estado expandido: seta para cima
-  &[aria-expanded="true"]::after {
-    transform: rotate(180deg);
   }
 
   &:hover {
@@ -900,15 +947,6 @@
       strong {
         font-weight: 600;
       }
-
-      .workstation-sector-chevron {
-        font-size: 0.65rem;
-        transition: transform 0.15s ease;
-      }
-    }
-
-    &[open] .workstation-sector-chevron {
-      transform: rotate(180deg);
     }
 
     .workstation-sector-picker__menu {

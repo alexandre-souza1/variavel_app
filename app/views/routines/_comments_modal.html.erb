@@ -44,6 +44,7 @@
         class="modal-footer routine-comments-form"
         data-action="submit->routine-comments#create">
 
+        <label for="routine-comment-body" class="visually-hidden">Comentário sobre o indicador</label>
         <textarea
           id="routine-comment-body"
           name="body"
@@ -52,6 +53,8 @@
           placeholder="Adicionar comentário"
           data-routine-comments-target="body"
           required></textarea>
+
+        <p class="routine-comments-form__task-hint d-none" data-routine-comments-target="taskHint" role="status"></p>
 
         <button
           type="submit"

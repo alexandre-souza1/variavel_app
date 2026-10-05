@@ -13,10 +13,10 @@
 <% end %>
 
 <%= turbo_stream.update "done-count-#{bucket.id}" do %>
-  ✔️ Tarefas concluídas (<%= bucket.done_count %>)
+  ✔️ Tarefas concluídas (<%= @done_tasks_count %>)
 <% end %>
 
-<% if @task.completed && @task.recurrence.present? %>
+<% if @task.completed && @task.recurrence.present? && params[:view] != 'gerot_actions' %>
   <% next_task = Task.find_by(
     bucket: bucket,
     title: @task.title,
@@ -49,6 +49,7 @@
         @task
       ),
       method: :patch,
+      params: { view: params[:view], routine_id: params[:routine_id] },
       data: {
         turbo_stream: true
       },

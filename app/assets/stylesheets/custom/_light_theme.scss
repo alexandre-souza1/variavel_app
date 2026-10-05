@@ -513,8 +513,8 @@ html[data-bs-theme="light"] {
         color: inherit;
       }
 
-      &:hover,
-      &:focus {
+      &:hover:not(.avatar-btn),
+      &:focus:not(.avatar-btn) {
         background: var(--app-primary);
         color: #ffffff !important;
 

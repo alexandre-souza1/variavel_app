@@ -1,6 +1,8 @@
 class Task < ApplicationRecord
   belongs_to :bucket
   belongs_to :creator, class_name: "User"
+  belongs_to :routine_value, optional: true
+  validate :routine_source_matches_plan
   acts_as_list scope: :bucket
   has_many :comments, dependent: :destroy
   has_one :tasklist, dependent: :destroy
@@ -30,6 +32,7 @@ class Task < ApplicationRecord
   before_save :reset_due_notification_sent_at, if: :should_reset_due_notification?
   after_update_commit :create_next_task_if_completed
   after_create :ensure_tasklist
+  after_create_commit :broadcast_generated_task, if: :routine_value_id?
   after_commit :notify_due_soon_if_needed, on: %i[create update]
 
 
@@ -92,6 +95,7 @@ class Task < ApplicationRecord
       target: "done-count-#{bucket_id}",
       html: "✔️ Tarefas concluídas (#{bucket.done_count})"
     )
+    broadcast_gerot_task_update
   end
 
   def ensure_tasklist
@@ -119,6 +123,37 @@ class Task < ApplicationRecord
   end
 
   private
+
+  def routine_source_matches_plan
+    return if routine_value.blank? || routine_value.routine.action_plan_id == bucket&.action_plan_id
+
+    errors.add(:bucket, "deve pertencer ao plano de ação do GEROT de origem")
+  end
+
+  def broadcast_generated_task
+    broadcast_new_task(self)
+    broadcast_gerot_task_update
+  end
+
+  def broadcast_gerot_task_update
+    return if routine_value.blank?
+
+    routine = routine_value.routine
+    [bucket.action_plan, routine].each do |source|
+      Turbo::StreamsChannel.broadcast_remove_to(source, :gerot_tasks, target: dom_id(self))
+      Turbo::StreamsChannel.broadcast_prepend_to(
+        source, :gerot_tasks,
+        target: completed? ? "done-tasks-#{bucket.id}" : "open-tasks-#{bucket.id}",
+        partial: "tasks/task", locals: { task: self }
+      )
+      done_tasks = bucket.tasks.where(completed: true).where.not(routine_value_id: nil)
+      done_tasks = done_tasks.joins(:routine_value).where(routine_values: { routine_id: routine.id }) if source == routine
+      Turbo::StreamsChannel.broadcast_update_to(
+        source, :gerot_tasks, target: "done-count-#{bucket.id}",
+        html: "✔️ Tarefas concluídas (#{done_tasks.count})"
+      )
+    end
+  end
 
   def should_reset_due_notification?
     will_save_change_to_due_at? || will_save_change_to_due_notification_enabled?

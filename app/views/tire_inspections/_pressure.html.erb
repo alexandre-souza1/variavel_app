@@ -3,7 +3,7 @@
     <div class="kpi-card"><div class="kpi-icon bg-<%= color %>-soft"><i class="bi bi-speedometer2 text-<%= color %>"></i></div><div class="kpi-info"><span class="kpi-label"><%= label %></span><span class="kpi-value"><%= @pressure_counts.fetch(status, 0) %></span></div></div>
   <% end %>
 </div>
-<details class="tire-methodology"><summary><i class="bi bi-info-circle"></i> Como acompanhamos a calibragem</summary><div>
+<details class="tire-methodology"><summary><%= disclosure_arrow %> <i class="bi bi-info-circle"></i> Como acompanhamos a calibragem</summary><div>
   Cada linha é uma aferição abaixo do limite proporcional de 100/115 da pressão recomendada (aproximadamente 86,96%). Para recomendação de 115 PSI, apenas valores abaixo de 100 PSI são divergências; 100 PSI está no limite aceitável. “Permaneceu baixa” significa que a próxima aferição disponível do mesmo pneu e vida também estava abaixo do limite proporcional daquela data; não comprova que a pressão ficou baixa durante todo o intervalo.
   <br>A comparação termina em <%= @end_date.strftime("%d/%m/%Y") %>. A última leitura baixa recebe aviso vermelho quando foi realizada no mês atual e amarelo quando é de um mês anterior, sem nova aferição neste mês nos dados consultados. Em períodos encerrados antes do mês atual, mostramos “Última leitura baixa no período”, sem concluir se houve aferição depois. Leituras sem pressão ou recomendação válida não confirmam normalização nem persistência.
   <br>Histórico de referência desde <%= @baseline_date.strftime("%d/%m/%Y") %>. <%= @report.unusable_count %> leituras sem pressão ou recomendação válida no período. Contagens por ocorrência, respeitando a busca por pneu ou placa.

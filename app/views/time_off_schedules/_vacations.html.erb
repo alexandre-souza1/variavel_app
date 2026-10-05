@@ -12,7 +12,7 @@
   <% @vacations.each do |vacation| %>
     <article class="time-off-vacation-period">
       <strong><%= vacation.time_off_membership.person.nome %></strong><p><%= l(vacation.starts_on) %> a <%= l(vacation.ends_on) %></p><p class="time-off-muted"><%= vacation.reason %></p>
-      <details><summary>Cancelar período</summary><%= form_with scope: :vacation, url: cancel_vacation_time_off_schedule_path(tab: @tab, date: @date), method: :patch do |form| %>
+      <details><summary><%= disclosure_arrow %> Cancelar período</summary><%= form_with scope: :vacation, url: cancel_vacation_time_off_schedule_path(tab: @tab, date: @date), method: :patch do |form| %>
         <%= form.hidden_field :id, value: vacation.id %><%= form.label :reason, 'Motivo do cancelamento', for: "cancel_reason_#{vacation.id}" %><%= form.text_field :reason, id: "cancel_reason_#{vacation.id}", required: true, maxlength: 500, class: 'form-control' %><%= form.submit 'Cancelar férias', class: 'btn btn-sm btn-outline-danger mt-2' %>
       <% end %></details>
     </article>

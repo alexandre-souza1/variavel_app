@@ -1,3 +1,4 @@
+<% filtered_tasks = local_assigns[:tasks] %>
 <div data-controller="action-plan-filter">
   <div class="action-plan-kanban-filter">
     <div class="action-plan-kanban-filter__content">
@@ -34,14 +35,17 @@
        data-bucket-sortable-action-plan-id-value="<%= action_plan.id %>">
 
   <% buckets.each do |bucket| %>
-    <% open_tasks = bucket.tasks
-                          .visible_for(current_user)
+    <% task_scope = bucket.tasks.visible_for(current_user) %>
+    <% task_scope = task_scope.where(id: filtered_tasks.map(&:id)) if filtered_tasks %>
+    <% open_tasks = task_scope
                           .includes(:users, :labels)
                           .where(completed: false)
                           .order(:position) %>
-    <% done_tasks_count = bucket.tasks.visible_for(current_user)
+    <% done_tasks = task_scope
                            .where(completed: true)
-                           .count %>
+                           .includes(:users, :labels)
+                           .order(:position) %>
+    <% done_tasks_count = done_tasks.count %>
 
     <div id="bucket_<%= bucket.id %>"
      class="kanban-column col-12 col-md-4 col-lg-3 action-plan-kanban-column"
@@ -70,7 +74,7 @@
               <%= open_tasks.size %>
             </span>
 
-            <% if current_user.admin? or action_plan.user == current_user %>
+            <% if !filtered_tasks && (current_user.admin? || action_plan.user == current_user) %>
               <%= link_to action_plan_bucket_path(action_plan, bucket),
                   data: {
                     turbo_method: :delete,
@@ -85,7 +89,7 @@
           </div>
         </div>
 
-        <% unless current_user.mechanical? %>
+        <% unless current_user.mechanical? || filtered_tasks %>
         <div class="card-footer action-plan-kanban-card__composer">
           <%= render "tasks/composer", action_plan: action_plan, bucket: bucket %>
         </div>
@@ -118,10 +122,12 @@
           <div class="mt-3">
 
             <div data-controller="toggle-done"
+              data-toggle-done-preloaded-value="<%= filtered_tasks.present? %>"
               data-bucket-id="<%= bucket.id %>">
 
 
-              <div class="action-plan-kanban-done-toggle"
+              <button type="button" class="action-plan-kanban-done-toggle"
+                   aria-expanded="false" aria-controls="done-tasks-<%= bucket.id %>"
                    data-action="click->toggle-done#toggle">
 
 
@@ -134,17 +140,16 @@
                 </small>
 
 
-                <span data-toggle-done-target="icon" class="action-plan-kanban-done-icon">
-                  ▼
-                </span>
+                <%= disclosure_arrow(css_class: "action-plan-kanban-done-icon", data: { toggle_done_target: "icon" }) %>
 
 
-              </div>
+              </button>
 
 
               <div id="done-tasks-<%= bucket.id %>"
                   class="d-none"
                   data-toggle-done-target="list">
+                <%= render "tasks/done_tasks", tasks: done_tasks if filtered_tasks %>
               </div>
 
 
@@ -165,7 +170,7 @@
 
 
   <!-- NOVO BUCKET -->
-  <% unless current_user.mechanical? %>
+  <% unless current_user.mechanical? || filtered_tasks %>
     <div class="col-12 col-md-4 col-lg-3 action-plan-kanban-column">
 
       <div class="h-100 d-flex align-items-start">

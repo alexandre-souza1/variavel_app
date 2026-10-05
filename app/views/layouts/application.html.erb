@@ -58,7 +58,7 @@
     <%= yield %>
     </div>
   </main>
-  <% if @action_plan&.persisted? && current_user.present? %>
+  <% if @action_plan&.persisted? && current_user.present? && !%w[routines routine_generators routine_templates action_plan_routines action_plan_routine_templates].include?(controller_name) %>
     <%= render "meeting_minutes/recorder_floating", action_plan: @action_plan %>
   <% end %>
   <div id="import-progress"

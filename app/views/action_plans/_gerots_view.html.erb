@@ -1,0 +1,83 @@
+<section class="plan-gerots" aria-label="Acompanhamentos do plano">
+  <div class="plan-gerots__summary">
+    <div class="plan-gerots__stat plan-gerots__stat--periods"><span class="plan-gerots__summary-icon"><i class="bi bi-calendar-check"></i></span><strong><%= @plan_gerots.size %></strong><span class="plan-gerots__stat-label">GEROTs em <%= @gerot_year %></span></div>
+    <%= link_to action_plan_path(@action_plan, view: "gerot_actions"), class: "plan-gerots__stat plan-gerots__stat--open" do %><span class="plan-gerots__summary-icon"><i class="bi bi-arrow-up-right-circle"></i></span><strong><%= @gerot_tasks.where(completed: false).count %></strong><span class="plan-gerots__stat-label">Ações abertas no plano</span><% end %>
+    <div class="plan-gerots__stat plan-gerots__stat--done"><span class="plan-gerots__summary-icon"><i class="bi bi-check2-circle"></i></span><strong><%= @gerot_tasks.where(completed: true).count %></strong><span class="plan-gerots__stat-label">Ações concluídas no plano</span></div>
+  </div>
+
+  <div class="plan-gerots__calendar" aria-label="GEROTs de <%= @gerot_year %>">
+    <% (1..12).each do |month| %>
+      <% month_start = Date.new(@gerot_year, month, 1) %>
+      <% month_gerots = @plan_gerots.select { |gerot| gerot.period_start <= month_start.end_of_month && gerot.period_end >= month_start } %>
+      <% current_month = month_start == Date.current.beginning_of_month %>
+      <% destination = if month_gerots.one?
+                         routine_path(month_gerots.first)
+                       elsif month_gerots.any?
+                         "#plan-gerots-list"
+                       elsif @can_manage_gerots && @available_templates.any?
+                         new_action_plan_gerot_generator_path(@action_plan, year: @gerot_year, month: month)
+                       end %>
+      <% tile = capture do %>
+        <span class="plan-gerots__month-number"><%= '%02d' % month %><% if current_month %><span>Atual</span><% end %></span>
+        <strong><%= l(month_start, format: "%b").capitalize %></strong>
+        <span class="plan-gerots__month-status"><%= month_gerots.any? ? "#{month_gerots.size} #{month_gerots.one? ? 'GEROT' : 'GEROTs'}" : 'Sem GEROT' %><i class="bi <%= month_gerots.any? ? 'bi-arrow-up-right' : 'bi-plus' %>"></i></span>
+      <% end %>
+      <% tile_class = "plan-gerots__month #{'has-gerot' if month_gerots.any?} #{'is-current' if current_month}" %>
+      <% if destination %>
+        <%= link_to tile, destination, class: tile_class, aria: { label: "#{l(month_start, format: '%B/%Y')}: #{month_gerots.any? ? 'abrir GEROT' : 'gerar GEROT'}" } %>
+      <% else %>
+        <div class="<%= tile_class %>"><%= tile %></div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="plan-gerots__list-heading" id="plan-gerots-list">
+    <h3>Acompanhamentos</h3>
+    <% if @gerot_template %>
+      <%= link_to action_plan_gerot_template_path(@action_plan), class: "plan-gerots__model-link" do %>
+        <i class="bi bi-sliders" aria-hidden="true"></i><span>Modelo do plano</span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @plan_gerots.any? %>
+    <div class="plan-gerots__records">
+      <% @plan_gerots.each do |gerot| %>
+        <%= link_to routine_path(gerot), class: "plan-gerots__record", aria: { label: "Abrir GEROT: #{gerot.title}" } do %>
+          <div class="plan-gerots__record-date"><strong><%= l(gerot.period_start, format: '%b').capitalize %></strong><span><%= gerot.period_start.year %></span></div>
+          <div class="plan-gerots__record-details">
+            <span class="plan-gerots__record-title"><%= gerot.title %></span>
+            <span class="plan-gerots__record-period"><%= l(gerot.period_start) %> a <%= l(gerot.period_end) %> · <%= gerot.routine_template.name %></span>
+          </div>
+          <span class="plan-gerots__status plan-gerots__status--<%= gerot.status %>"><%= routine_status_label(gerot) %></span>
+          <i class="bi bi-arrow-up-right plan-gerots__record-arrow" aria-hidden="true"></i>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="plan-gerots__empty">
+      <i class="bi bi-calendar2-plus"></i>
+      <h3>Comece o acompanhamento de <%= @gerot_year %></h3>
+      <% if @gerot_template %>
+        <p>Escolha um mês no calendário para gerar o primeiro GEROT.<br>As tarefas ficam neste plano, mesmo depois de encerrar o período.</p>
+      <% else %>
+        <p>Crie o modelo com as categorias dos buckets do plano e cadastre os indicadores.<br>Depois, gere o primeiro GEROT para começar os preenchimentos.</p>
+      <% end %>
+      <% if @can_manage_gerots && @gerot_template.nil? %>
+        <%= link_to new_action_plan_gerot_template_path(@action_plan), class: "plan-gerots__setup-link" do %>
+          <span>Criar modelo com os buckets do plano</span><i class="bi bi-arrow-right" aria-hidden="true"></i>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @can_manage_gerots && @unlinked_gerots.any? %>
+    <details class="plan-gerots__legacy">
+      <summary><%= disclosure_arrow %> <i class="bi bi-link-45deg"></i> Vincular um GEROT existente <span><%= @unlinked_gerots.size %> disponíveis</span></summary>
+      <p>Traga um acompanhamento mantendo seus preenchimentos e comentários. Novas tarefas seguem a regra definida nas configurações do GEROT; o vínculo não gera tarefas retroativas.</p>
+      <%= link_to "Preparar adaptação de categorias e buckets", new_action_plan_gerot_path(@action_plan), class: "btn btn-outline-primary" %>
+    </details>
+  <% end %>
+
+  <div class="plan-gerots__flow"><i class="bi bi-diagram-3"></i><span>Comentário sobre um desvio</span><i class="bi bi-arrow-right"></i><span>Tarefa no bucket da categoria</span><i class="bi bi-arrow-right"></i><span>Correção acompanhada no plano</span></div>
+</section>

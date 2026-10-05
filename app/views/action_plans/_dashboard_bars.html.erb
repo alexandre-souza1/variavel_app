@@ -1,0 +1,17 @@
+<div class="plan-dashboard__bars">
+  <% maximum = [rows.map { |row| row[:counts].values.sum }.max || 0, 1].max %>
+  <% rows.each do |row| %>
+    <% total = row[:counts].values.sum %>
+    <div class="plan-dashboard__bar-row">
+      <div class="plan-dashboard__bar-label"><%= link_to row[:name], action_plan_path(@action_plan, view: "dashboard", source: @dashboard.source, filter => row[:id], anchor: "dashboard-tasks") %><span><%= total %></span></div>
+      <div class="plan-dashboard__bar-track">
+        <% ActionPlans::Dashboard::STATUSES.each do |status, label| %>
+          <% count = row[:counts][status] %>
+          <% if count.positive? %>
+            <%= link_to action_plan_path(@action_plan, view: "dashboard", source: @dashboard.source, status: status, filter => row[:id], anchor: "dashboard-tasks"), class: "plan-dashboard__bar-segment plan-dashboard__bar-segment--#{status}", style: "width: #{count * 100.0 / maximum}%", title: "#{row[:name]}: #{count} #{label.downcase}", aria: { label: "#{row[:name]}: #{count} #{label.downcase}" } do %><span><%= count %></span><% end %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

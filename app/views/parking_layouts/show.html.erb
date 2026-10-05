@@ -36,7 +36,7 @@
         <button type="button" data-action="parking-editor#assign">Mover placa</button>
       </div>
       <p class="parking-editor-status" data-parking-editor-target="status" role="status">As alterações só ficam públicas depois de salvar.</p>
-      <details open><summary>Placas sem vaga definida</summary>
+      <details open><summary><%= disclosure_arrow %> Placas sem vaga definida</summary>
         <div class="parking-pool parking-drop" data-slot="pool">
           <% (@available_plates - @assignments.values).each do |plate| %>
             <div class="parking-vehicle" data-plate="<%= plate %>"><span class="parking-drag" aria-hidden="true"><i class="bi bi-grip-vertical"></i></span><i class="bi bi-truck parking-vehicle-icon" aria-hidden="true"></i><strong><%= plate %></strong></div>

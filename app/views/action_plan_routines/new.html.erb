@@ -1,0 +1,57 @@
+<section class="plan-gerots plan-gerot-adaptation routine-module-page">
+  <header class="plan-gerots__heading">
+    <div class="plan-gerots__intro">
+      <span class="plan-gerots__eyebrow">CONEXÃO COM O PLANO</span>
+      <h2>Adaptar um GEROT existente</h2>
+      <p><%= @action_plan.name %></p>
+    </div>
+    <%= link_to "Voltar ao plano", action_plan_path(@action_plan, view: "gerots"), class: "btn btn-outline-secondary" %>
+  </header>
+
+  <% if @error_message %><div class="alert alert-danger" role="alert"><%= @error_message %></div><% end %>
+
+  <%= form_with url: new_action_plan_gerot_path(@action_plan), method: :get, class: "plan-gerot-model-picker" do %>
+    <%= label_tag :routine_id, "GEROT independente", class: "form-label" %>
+    <div class="plan-gerots__link-form">
+      <%= select_tag :routine_id, options_from_collection_for_select(@unlinked_gerots, :id, :title, @routine&.id), include_blank: "Escolha um acompanhamento", class: "form-select", required: true %>
+      <%= submit_tag "Preparar adaptação", class: "btn btn-primary" %>
+    </div>
+  <% end %>
+
+  <% if @routine %>
+    <div class="plan-gerot-context">
+      <div><i class="bi bi-file-earmark-text"></i><span>Modelo de origem <strong><%= @routine.routine_template.name %></strong></span></div>
+      <p>Os indicadores serão copiados para o modelo único do plano. Os preenchimentos, comentários, metas e tarefas vinculadas serão preservados. O modelo independente continua disponível para os outros GEROTs.</p>
+    </div>
+
+    <%= form_with url: action_plan_gerots_path(@action_plan), class: "plan-gerot-adaptation__form" do %>
+      <%= hidden_field_tag :routine_id, @routine.id, id: nil %>
+      <%= hidden_field_tag :adaptation_reviewed, "1" %>
+      <h3 class="plan-gerot-adaptation__title">Destino das categorias</h3>
+      <p class="text-muted">Escolha um bucket para cada categoria de origem. Categorias enviadas ao mesmo bucket serão agrupadas no modelo do plano.</p>
+      <div class="plan-gerot-adaptation__categories">
+        <% @categories.each do |category| %>
+          <% selected_bucket = params.dig(:category_bucket_ids, category.id.to_s).presence || @destination_buckets.find { |bucket| bucket.name == category.name }&.id || "new" %>
+          <div class="plan-gerot-adaptation__category">
+            <div class="plan-gerot-adaptation__source">
+              <strong><i class="bi bi-folder2-open me-1"></i><%= category.name %></strong>
+              <span><%= pluralize(category.routine_indicators.size, "indicador", "indicadores") %></span>
+              <p><%= category.routine_indicators.map(&:name).join(" · ") %></p>
+            </div>
+            <i class="bi bi-arrow-right plan-gerot-adaptation__arrow" aria-hidden="true"></i>
+            <div class="plan-gerot-adaptation__destination">
+              <%= label_tag "adapt_bucket_#{category.id}", "Bucket de destino para #{category.name}", class: "form-label" %>
+              <%= select_tag "category_bucket_ids[#{category.id}]", options_for_select(@destination_buckets.map { |bucket| [bucket.name, bucket.id] } + [["Criar bucket: #{category.name}", "new"]], selected_bucket), id: "adapt_bucket_#{category.id}", class: "form-select", required: true %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <div class="plan-gerot-adaptation__actions">
+        <%= submit_tag "Adaptar e vincular ao plano", class: "btn btn-primary" %>
+        <%= link_to "Cancelar", action_plan_path(@action_plan, view: "gerots"), class: "btn btn-outline-secondary" %>
+      </div>
+    <% end %>
+  <% elsif @unlinked_gerots.empty? %>
+    <div class="plan-gerots__empty"><h3>Nenhum GEROT independente disponível neste setor</h3><p>GEROTs que já pertencem a um plano não podem ser vinculados novamente.</p></div>
+  <% end %>
+</section>

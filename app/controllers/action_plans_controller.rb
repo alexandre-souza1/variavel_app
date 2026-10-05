@@ -129,6 +129,36 @@ class ActionPlansController < ApplicationController
     @users = User.order(:name)
     @labels = @action_plan.labels.includes(:tasks).order(:name)
     @can_manage_labels = current_user.admin? || @action_plan.user_id == current_user.id
+    if params[:view] == "dashboard"
+      @dashboard = ActionPlans::Dashboard.new(action_plan: @action_plan, user: current_user, source: params[:source])
+      @dashboard_filters = params.permit(:status, :bucket_id, :member_id).to_h
+      filtered = @dashboard.filtered_tasks(**@dashboard_filters.symbolize_keys)
+      @dashboard_task_count = filtered.count
+      @dashboard_page = params[:page].to_i.clamp(1, [(@dashboard_task_count / 10.0).ceil, 1].max)
+      @dashboard_tasks = filtered.limit(10).offset((@dashboard_page - 1) * 10)
+    end
+    if params[:view] == "gerot_actions"
+      @source_gerots = @action_plan.routines.order(period_start: :desc)
+      @source_gerot = @source_gerots.find(params[:routine_id]) if params[:routine_id].present?
+      sources = @source_gerot ? @action_plan.routines.where(id: @source_gerot.id) : @source_gerots
+      @generated_tasks = Task.where(routine_value_id: sources.joins(:routine_values).select("routine_values.id"))
+        .visible_for(current_user).includes(:bucket, :users, :labels).order(created_at: :desc)
+    end
+    if params[:view] == "gerots"
+      @can_manage_gerots = @action_plan.manageable_by?(current_user)
+      @gerot_year = @action_plan.gerot_year
+      year_start = Date.new(@gerot_year, 1, 1)
+      @plan_gerots = @action_plan.routines
+        .where("period_start <= ? AND period_end >= ?", year_start.end_of_year, year_start)
+        .includes(:routine_template).order(period_start: :desc)
+      @gerot_tasks = Task.where(routine_value_id: @action_plan.routines.joins(:routine_values).select("routine_values.id"))
+        .visible_for(current_user)
+      @gerot_template = @action_plan.gerot_template
+      @available_templates = @gerot_template&.active? ? [@gerot_template] : []
+      @unlinked_gerots = Routine.visible_to(current_user).where(action_plan_id: nil)
+        .joins(:routine_template).where(routine_templates: { sector: @action_plan.sector }).order(period_start: :desc)
+      @unlinked_gerots = @unlinked_gerots.where(created_by: current_user) unless current_user.admin?
+    end
   end
 
   def export_excel
@@ -236,10 +266,12 @@ class ActionPlansController < ApplicationController
   end
 
   def destroy
-    @action_plan.destroy
-
-    redirect_to action_plans_path,
-                notice: "Plano excluído com sucesso"
+    if @action_plan.destroy
+      redirect_to action_plans_path, notice: "Plano excluído com sucesso"
+    else
+      redirect_to action_plan_path(@action_plan, view: "gerots"),
+                  alert: "Este plano possui GEROTs vinculados e não pode ser excluído."
+    end
   end
 
   def sort_buckets
@@ -252,6 +284,7 @@ class ActionPlansController < ApplicationController
                 .where(id: id)
                 .update_all(position: index)
     end
+    Routines::PlanTemplateSynchronizer.call(action_plan: @action_plan)
 
     head :ok
   end

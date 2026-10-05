@@ -26,6 +26,9 @@ module Routines
       return routine.default_selected_indicator_ids if indicator_ids.blank?
 
       selected_ids = Array(indicator_ids).map(&:to_i)
+      if (selected_ids - routine.default_selected_indicator_ids).any?
+        raise ArgumentError, "Selecione indicadores deste modelo de GEROT."
+      end
       locked_ids = locked_indicator_ids
 
       (selected_ids + locked_ids).uniq

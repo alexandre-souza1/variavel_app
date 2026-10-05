@@ -1,9 +1,13 @@
 <div
-  class="container-fluid action-plan-show dashboard-page <%= 'action-plan-show--auto-view' if params[:view].blank? %>"
+  class="container-fluid action-plan-show dashboard-page <%= 'action-plan-show--auto-view' if params[:view].blank? || params[:view] == 'gerot_actions' %>"
   data-controller="open-task"
   data-open-task-task-id-value="<%= @task_to_open&.id %>"
 >
-  <%= turbo_stream_from "tasks_action_plan_#{@action_plan.id}" %>
+  <% if params[:view] == 'gerot_actions' %>
+    <%= turbo_stream_from @source_gerot || @action_plan, :gerot_tasks %>
+  <% else %>
+    <%= turbo_stream_from "tasks_action_plan_#{@action_plan.id}" %>
+  <% end %>
 
   <div class="dashboard-header action-plan-header">
     <div class="header-content">
@@ -77,17 +81,30 @@
         <% end %>
 
         <div class="action-plan-view-tools">
-          <div class="action-plan-view-switch" role="group" aria-label="Visualização das tarefas">
+          <div class="action-plan-view-switch" role="group" aria-label="Visualização do plano">
+            <%= link_to action_plan_path(@action_plan, view: "dashboard"),
+                class: "action-plan-view-switch__link #{params[:view] == 'dashboard' ? 'active' : ''}",
+                aria: { current: params[:view] == 'dashboard' ? 'page' : nil } do %>
+              <i class="bi bi-bar-chart" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            <% end %>
             <%= link_to action_plan_path(@action_plan, view: "kanban"),
-                class: "action-plan-view-switch__link action-plan-view-switch__link--kanban #{params[:view] != 'list' && params[:view] != 'labels' ? 'active' : ''}" do %>
-              <i class="bi bi-kanban"></i>
+                class: "action-plan-view-switch__link action-plan-view-switch__link--kanban #{params[:view].blank? || params[:view] == 'kanban' ? 'active' : ''}" do %>
+              <i class="bi bi-kanban" aria-hidden="true"></i>
               <span>Kanban</span>
             <% end %>
 
             <%= link_to action_plan_path(@action_plan, view: "list"),
                 class: "action-plan-view-switch__link action-plan-view-switch__link--list #{params[:view] == 'list' ? 'active' : ''}" do %>
-              <i class="bi bi-list-check"></i>
+              <i class="bi bi-list-check" aria-hidden="true"></i>
               <span>Lista</span>
+            <% end %>
+
+            <%= link_to action_plan_path(@action_plan, view: "gerots"),
+                class: "action-plan-view-switch__link action-plan-view-switch__link--gerots #{%w[gerots gerot_actions].include?(params[:view]) ? 'active' : ''}",
+                aria: { current: %w[gerots gerot_actions].include?(params[:view]) ? 'page' : nil } do %>
+              <i class="bi bi-calendar3" aria-hidden="true"></i>
+              <span>GEROTs</span>
             <% end %>
           </div>
         </div>
@@ -98,6 +115,7 @@
   </div>
 
 
+  <% unless %w[gerots gerot_actions dashboard].include?(params[:view]) %>
   <!-- RESUMO MOBILE -->
   <div class="action-plan-mobile-summary d-md-none">
 
@@ -132,10 +150,53 @@
     </div>
 
   </div>
+  <% end %>
 
 
   <!-- CONTEÚDO DO PLANO -->
-  <% if params[:view] == "inbox" %>
+  <% if params[:view] == "dashboard" %>
+
+    <%= render "dashboard_view" %>
+
+  <% elsif params[:view] == "gerots" %>
+
+    <%= render "gerots_view" %>
+
+  <% elsif params[:view] == "gerot_actions" %>
+
+    <section class="plan-gerots">
+      <div class="plan-gerots__list-heading">
+        <div>
+          <h2>Ações dos GEROTs</h2>
+          <p class="text-muted">As pendências continuam no plano após o encerramento de cada período.</p>
+        </div>
+        <%= link_to "Ver GEROTs", action_plan_path(@action_plan, view: "gerots"), class: "btn btn-outline-primary" %>
+      </div>
+      <%= form_with url: action_plan_path(@action_plan), method: :get, class: "mb-4" do %>
+        <%= hidden_field_tag :view, "gerot_actions" %>
+        <%= label_tag :routine_id, "Período de origem", class: "form-label" %>
+        <div class="d-flex gap-2">
+          <%= select_tag :routine_id, options_from_collection_for_select(@source_gerots, :id, :title, @source_gerot&.id), include_blank: "Todos os GEROTs do plano", class: "form-select" %>
+          <%= submit_tag "Filtrar", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+      <% if @generated_tasks.any? %>
+        <div class="action-plan-auto-list">
+          <%= render "list_view", buckets: [], action_plan: @action_plan, tasks: @generated_tasks %>
+        </div>
+        <div class="action-plan-auto-kanban">
+          <div class="kanban-scroll-bottom">
+            <div class="action-plan-kanban-panel">
+              <%= render "kanban_view", buckets: @buckets, action_plan: @action_plan, tasks: @generated_tasks %>
+            </div>
+          </div>
+        </div>
+      <% else %>
+        <div class="plan-gerots__empty"><i class="bi bi-check2-circle"></i><h3>Nenhuma ação gerada neste período</h3><p>As tarefas aparecem conforme a regra de geração configurada em cada GEROT.</p></div>
+      <% end %>
+    </section>
+
+  <% elsif params[:view] == "inbox" %>
 
     <%= render "inbox_view", action_plan: @action_plan, inbox_bucket: @inbox_bucket, inbox_tasks: @inbox_tasks %>
 

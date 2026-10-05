@@ -14,7 +14,7 @@
       <% else %>
         <span class="consumption-tab__status">Ainda não temos dados suficientes para comparar sua média.</span>
       <% end %>
-      <span class="consumption-tab__toggle"><span class="consumption-tab__show">Ver detalhes</span><span class="consumption-tab__hide">Fechar detalhes</span> <i class="bi bi-chevron-down" aria-hidden="true"></i></span>
+      <span class="consumption-tab__toggle"><span class="consumption-tab__show">Ver detalhes</span><span class="consumption-tab__hide">Fechar detalhes</span> <%= disclosure_arrow %></span>
     </summary>
     <div class="az-panel-body">
       <p class="text-muted small"><%= l(report.from) %> a <%= l(report.to) %> · Abastecimentos Gasola</p>

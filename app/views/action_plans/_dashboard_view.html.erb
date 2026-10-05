@@ -1,0 +1,84 @@
+<section class="plan-dashboard" aria-label="Dashboard do plano">
+  <div class="plan-dashboard__toolbar">
+    <span class="plan-dashboard__caption">Visão geral das tarefas deste plano</span>
+    <nav class="plan-dashboard__sources" aria-label="Origem das tarefas">
+      <% { "all" => "Todas", "gerot" => "Geradas pelo GEROT", "manual" => "Outras tarefas" }.each do |source, label| %>
+        <%= link_to label, action_plan_path(@action_plan, view: "dashboard", source: source), class: "plan-dashboard__source #{'is-active' if @dashboard.source == source}", aria: { current: @dashboard.source == source ? "page" : nil } %>
+      <% end %>
+    </nav>
+  </div>
+
+  <div class="plan-dashboard__metrics">
+    <% [["Total de tarefas", @dashboard.total, "bi-list-task"], ["Concluídas", @dashboard.counts[:completed], "bi-check2-circle"], ["Atrasadas", @dashboard.counts[:overdue], "bi-clock-history"], ["Sem responsável", @dashboard.unassigned_count, "bi-person-dash"]].each do |label, value, icon| %>
+      <div class="plan-dashboard__metric"><i class="bi <%= icon %>" aria-hidden="true"></i><strong><%= value %></strong><span><%= label %></span></div>
+    <% end %>
+  </div>
+
+  <div class="plan-dashboard__charts">
+    <section class="plan-dashboard__card" aria-labelledby="plan-status-heading">
+      <div class="plan-dashboard__card-heading"><h2 id="plan-status-heading">Status das tarefas</h2><span><%= @dashboard.completion_percentage %>% concluídas</span></div>
+      <div class="plan-dashboard__status-chart">
+        <div class="plan-dashboard__donut <%= 'is-empty' if @dashboard.total.zero? %>" style="--done-angle: <%= @dashboard.total.zero? ? 0 : @dashboard.counts[:completed] * 360.0 / @dashboard.total %>deg; --late-angle: <%= @dashboard.total.zero? ? 0 : (@dashboard.counts[:completed] + @dashboard.counts[:overdue]) * 360.0 / @dashboard.total %>deg;" aria-hidden="true">
+          <div><strong><%= @dashboard.counts[:open] + @dashboard.counts[:overdue] %></strong><span>pendentes</span></div>
+        </div>
+        <div class="plan-dashboard__legend">
+          <% ActionPlans::Dashboard::STATUSES.each do |status, label| %>
+            <%= link_to action_plan_path(@action_plan, view: "dashboard", source: @dashboard.source, status: status, anchor: "dashboard-tasks"), class: "plan-dashboard__legend-item" do %>
+              <span class="plan-dashboard__dot plan-dashboard__dot--<%= status %>"></span><span><%= label %></span><strong><%= @dashboard.counts[status] %></strong>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+      <p class="plan-dashboard__note"><%= @dashboard.generated_count %> tarefas geradas pelo GEROT neste recorte.</p>
+    </section>
+
+    <section class="plan-dashboard__card" aria-labelledby="plan-buckets-heading">
+      <div class="plan-dashboard__card-heading"><h2 id="plan-buckets-heading">Por bucket</h2><span><%= @dashboard.buckets.size %> buckets</span></div>
+      <%= render "dashboard_bars", rows: @dashboard.buckets, filter: :bucket_id %>
+    </section>
+
+    <section class="plan-dashboard__card" aria-labelledby="plan-members-heading">
+      <div class="plan-dashboard__card-heading"><h2 id="plan-members-heading">Por responsável</h2></div>
+      <%= render "dashboard_bars", rows: @dashboard.members, filter: :member_id %>
+      <p class="plan-dashboard__note">Uma tarefa com vários responsáveis aparece para cada pessoa.</p>
+    </section>
+  </div>
+
+  <section class="plan-dashboard__card plan-dashboard__task-card" id="dashboard-tasks" aria-labelledby="plan-tasks-heading">
+    <div class="plan-dashboard__card-heading">
+      <div><h2 id="plan-tasks-heading">Tarefas <span>(<%= @dashboard_task_count %>)</span></h2><p>Clique nos gráficos para explorar as tarefas.</p></div>
+      <% if @dashboard_filters.values.any?(&:present?) %>
+        <%= link_to "Limpar filtros", action_plan_path(@action_plan, view: "dashboard", source: @dashboard.source, anchor: "dashboard-tasks"), class: "plan-dashboard__clear" %>
+      <% end %>
+    </div>
+    <%= form_with url: action_plan_path(@action_plan, anchor: "dashboard-tasks"), method: :get, class: "plan-dashboard__filters" do %>
+      <%= hidden_field_tag :view, "dashboard" %><%= hidden_field_tag :source, @dashboard.source %>
+      <div><%= label_tag :status, "Status" %><%= select_tag :status, options_for_select(ActionPlans::Dashboard::STATUSES.map { |key, label| [label, key] }, @dashboard_filters["status"]), include_blank: "Todos os status" %></div>
+      <div><%= label_tag :bucket_id, "Bucket" %><%= select_tag :bucket_id, options_for_select(@dashboard.buckets.map { |row| [row[:name], row[:id]] }, @dashboard_filters["bucket_id"]), include_blank: "Todos os buckets" %></div>
+      <div><%= label_tag :member_id, "Responsável" %><%= select_tag :member_id, options_for_select(@dashboard.members.map { |row| [row[:name], row[:id]] }, @dashboard_filters["member_id"]), include_blank: "Todos os responsáveis" %></div>
+      <button type="submit">Aplicar <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+    <% end %>
+    <% if @dashboard_tasks.any? %>
+      <div class="plan-dashboard__task-list">
+        <% @dashboard_tasks.each do |task| %>
+          <%= link_to action_plan_path(@action_plan, task_id: task.id), class: "plan-dashboard__task" do %>
+            <span class="plan-dashboard__dot plan-dashboard__dot--<%= @dashboard.status(task) %>" aria-hidden="true"></span>
+            <div class="plan-dashboard__task-details"><strong><%= task.title %></strong><span><%= task.bucket.name %> · <%= task.users.map { |user| user.name.presence || user.email }.join(", ").presence || "Sem responsável" %></span><% if task.routine_value %><span class="plan-dashboard__origin"><i class="bi bi-calendar3" aria-hidden="true"></i> <%= task.routine_value.routine.title %></span><% end %></div>
+            <div class="plan-dashboard__task-status"><span><%= ActionPlans::Dashboard::STATUSES[@dashboard.status(task)] %></span><small><%= task.due_at ? l(task.due_at, format: :short) : "Sem prazo" %></small></div>
+            <i class="bi bi-arrow-up-right plan-dashboard__task-arrow" aria-hidden="true"></i>
+          <% end %>
+        <% end %>
+      </div>
+      <% if @dashboard_task_count > 10 %>
+        <div class="plan-dashboard__pagination">
+          <span class="plan-dashboard__page-summary"><strong><%= (@dashboard_page - 1) * 10 + 1 %>–<%= [@dashboard_page * 10, @dashboard_task_count].min %></strong> de <%= @dashboard_task_count %> tarefas</span>
+          <%= render "shared/pagination", current_page: @dashboard_page, total_pages: (@dashboard_task_count / 10.0).ceil,
+              compact: true, window: 1, label: "Páginas de tarefas",
+              path: ->(page) { action_plan_path(@action_plan, **@dashboard_filters.symbolize_keys, view: "dashboard", source: @dashboard.source, page: page, anchor: "dashboard-tasks") } %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="plan-dashboard__empty"><i class="bi bi-check2-circle" aria-hidden="true"></i><p>Nenhuma tarefa neste recorte.</p></div>
+    <% end %>
+  </section>
+</section>

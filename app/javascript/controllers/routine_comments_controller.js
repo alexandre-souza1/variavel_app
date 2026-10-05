@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import * as bootstrap from "bootstrap"
+import { showFlash } from "controllers/flash_controller"
 
 export default class extends Controller {
   static targets = [
@@ -7,7 +8,8 @@ export default class extends Controller {
     "list",
     "empty",
     "body",
-    "submit"
+    "submit",
+    "taskHint"
   ]
 
   connect() {
@@ -25,6 +27,7 @@ export default class extends Controller {
     this.routineValueId = event.detail.routineValueId
     this.subtitleTarget.textContent = this.subtitle(event.detail)
     this.bodyTarget.value = ""
+    this.taskHintTarget.classList.add("d-none")
     this.setLoading()
 
     this.modal.show()
@@ -47,6 +50,7 @@ export default class extends Controller {
     const data = await response.json()
     this.renderComments(data.comments)
     this.broadcastCount(data.count)
+    this.updateTaskHint(data)
   }
 
   async create(event) {
@@ -83,6 +87,24 @@ export default class extends Controller {
     this.appendComment(data.comment)
     this.updateEmptyState()
     this.broadcastCount(data.count)
+    if (data.generated_task_created) {
+      showFlash("Comentário salvo e tarefa criada no plano.", { url: data.generated_task_url })
+      this.taskHintTarget.textContent = "Novos comentários desta célula serão adicionados à mesma tarefa."
+    } else if (data.generated_task_id) {
+      showFlash("Comentário adicionado à tarefa existente.", { url: data.generated_task_url })
+    }
+  }
+
+  updateTaskHint(data) {
+    if (!data.can_generate_task) return
+    if (data.generated_task_id) {
+      this.taskHintTarget.textContent = "Este comentário também será adicionado à tarefa vinculada."
+    } else if (data.cell_status === "danger" && data.task_generation_mode === "commented_deviation") {
+      this.taskHintTarget.textContent = "O indicador está fora da meta. Este comentário vai gerar uma tarefa no bucket da categoria."
+    } else {
+      this.taskHintTarget.textContent = "O comentário fica registrado no GEROT. Uma tarefa só é gerada para indicadores fora da meta."
+    }
+    this.taskHintTarget.classList.remove("d-none")
   }
 
   async destroy(event) {
@@ -145,6 +167,7 @@ export default class extends Controller {
     header.className = "routine-comment__header"
 
     const meta = document.createElement("div")
+    meta.className = "routine-comment__meta"
 
     const user = document.createElement("strong")
     user.textContent = comment.user_name

@@ -72,9 +72,13 @@ export default class extends Controller {
     const planId = this.element.dataset.planId
     const bucketId = this.element.dataset.bucketId
 
-    const response = await fetch(
-      `/action_plans/${planId}/buckets/${bucketId}/tasks/${taskId}`
-    )
+    const url = new URL(`/action_plans/${planId}/buckets/${bucketId}/tasks/${taskId}`, window.location.origin)
+    const currentParams = new URLSearchParams(window.location.search)
+    if (currentParams.get("view") === "gerot_actions") {
+      url.searchParams.set("view", "gerot_actions")
+      if (currentParams.get("routine_id")) url.searchParams.set("routine_id", currentParams.get("routine_id"))
+    }
+    const response = await fetch(url)
 
     const html = await response.text()
 

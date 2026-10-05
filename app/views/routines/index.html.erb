@@ -6,10 +6,10 @@
       <div>
         <h1>
           <i class="bi bi-calendar-check"></i>
-          <%= @show_archived ? "Rotinas arquivadas" : "Rotinas" %>
+          <%= @show_archived ? "GEROTs arquivados" : "GEROTs" %>
         </h1>
         <p class="subtitle">
-          <%= @show_archived ? "Histórico de rotinas encerradas e arquivadas" : "Rotinas abertas e encerradas" %>
+          <%= @show_archived ? "Histórico dos acompanhamentos arquivados" : "Acompanhamentos independentes e dos planos de ação" %>
         </p>
       </div>
       <div class="header-actions">
@@ -17,8 +17,11 @@
           <i class="bi bi-arrow-left me-1"></i>
           Voltar
         <% end %>
-        <%= link_to routine_templates_path, class: "btn-primary-solid" do %>
-          <i class="bi bi-pie-chart-fill"></i> Painel de Gerots
+        <%= link_to action_plans_path, class: "btn-primary-solid" do %>
+          <i class="bi bi-calendar-plus"></i> Gerar em um plano
+        <% end %>
+        <%= link_to routine_templates_path, class: "btn-outline" do %>
+          <i class="bi bi-sliders"></i> Modelos de GEROT
         <% end %>
         <% unless @show_archived %>
           <%= link_to archived_routines_path, class: "btn-outline" do %>
@@ -36,6 +39,7 @@
       <thead>
         <tr>
           <th>Título</th>
+          <th>Plano de ação</th>
           <th>Período</th>
           <th>Status</th>
           <th class="text-end">Ações</th>
@@ -45,6 +49,13 @@
         <% @routines.each do |routine| %>
           <tr>
             <td data-label="Rotina"><%= routine.title %></td>
+            <td data-label="Plano de ação">
+              <% if routine.action_plan %>
+                <%= link_to routine.action_plan.name, action_plan_path(routine.action_plan, view: "gerots", year: routine.period_start.year), class: "routine-plan-link" %>
+              <% else %>
+                <span class="text-muted">Independente</span>
+              <% end %>
+            </td>
             <td data-label="Período"><%= l(routine.period_start) %> até <%= l(routine.period_end) %></td>
             <td data-label="Status">
               <% badge_class = routine.open? ? 'active' : 'inactive' %>
@@ -89,7 +100,7 @@
       <h4>Nenhuma rotina gerada</h4>
       <p>Gere uma rotina a partir de um template disponível.</p>
       <%= link_to routine_templates_path, class: "btn-primary-solid" do %>
-        <i class="bi bi-plus-lg"></i> Gerar Nova
+        <i class="bi bi-plus-lg"></i> Gerar GEROT independente
       <% end %>
     </div>
 

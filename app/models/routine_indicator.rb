@@ -1,5 +1,6 @@
 class RoutineIndicator < ApplicationRecord
   belongs_to :routine_category
+  belongs_to :source_indicator, class_name: "RoutineIndicator", optional: true
 
   has_many :routine_indicator_targets,
            dependent: :destroy

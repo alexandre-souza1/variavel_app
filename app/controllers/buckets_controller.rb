@@ -9,7 +9,7 @@ class BucketsController < ApplicationController
     @bucket.position = @action_plan.buckets.count
 
     if @bucket.save
-      redirect_to action_plan_path(@action_plan)
+      redirect_to(params[:return_to_gerot_model] == "1" ? action_plan_gerot_template_path(@action_plan) : action_plan_path(@action_plan))
     else
       redirect_to action_plan_path(@action_plan), alert: "Erro ao criar bucket"
     end
@@ -29,9 +29,11 @@ class BucketsController < ApplicationController
     @bucket = editable_buckets.find(params[:id])
     action_plan = @bucket.action_plan
 
-    @bucket.destroy
-
-    redirect_to action_plan_path(action_plan)
+    if @bucket.destroy
+      redirect_to action_plan_path(action_plan)
+    else
+      redirect_to action_plan_path(action_plan), alert: @bucket.errors.full_messages.to_sentence
+    end
   end
 
   def done_tasks

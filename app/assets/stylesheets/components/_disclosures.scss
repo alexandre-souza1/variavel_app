@@ -1,0 +1,58 @@
+// Shared expansion indicator: right when closed, rotating through the diagonal
+// to down when open. State belongs to the native details/Bootstrap control.
+@mixin disclosure-arrow {
+  color: var(--bs-border-color) !important;
+  display: inline-block;
+  flex-shrink: 0;
+  line-height: 1;
+  opacity: .8;
+  transform: rotate(0deg);
+  transform-origin: center;
+  transition: transform .24s ease-in-out, opacity .24s ease-in-out;
+}
+
+details > summary {
+  list-style: none;
+  &::marker { content: ""; }
+  &::-webkit-details-marker { display: none; }
+}
+
+.app-disclosure-arrow {
+  @include disclosure-arrow;
+  margin-inline-end: .35rem;
+  vertical-align: middle;
+}
+
+details[open] > summary .app-disclosure-arrow,
+.app-disclosure-arrow.is-expanded,
+[aria-expanded="true"] > .app-disclosure-arrow {
+  transform: rotate(90deg);
+}
+
+:is(summary, button):hover .app-disclosure-arrow { opacity: 1; }
+
+:is(.accordion-button, .dropdown-toggle):not(.app-navbar *)::after {
+  @include disclosure-arrow;
+  background-image: none !important;
+  border: 0;
+  content: "\f138";
+  filter: none !important;
+  font-family: "bootstrap-icons" !important;
+  font-style: normal;
+  font-weight: normal;
+  height: 1em;
+  width: 1em;
+  vertical-align: middle;
+}
+
+.accordion-button:not(.collapsed)::after,
+.dropdown-toggle[aria-expanded="true"]:not(.app-navbar *)::after {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-disclosure-arrow,
+  :is(.accordion-button, .dropdown-toggle):not(.app-navbar *)::after {
+    transition: none;
+  }
+}

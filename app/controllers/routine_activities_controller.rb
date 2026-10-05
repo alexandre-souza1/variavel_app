@@ -19,6 +19,6 @@ class RoutineActivitiesController < ApplicationController
   private
 
   def set_routine
-    @routine = Routine.find(params[:routine_id])
+    @routine = Routine.visible_to(current_user).find(params[:routine_id])
   end
 end

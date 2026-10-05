@@ -1,9 +1,13 @@
-<% task_rows = buckets.flat_map do |bucket|
+<% task_rows = if local_assigns[:tasks]
+     tasks.map { |task| [task.bucket, task] }
+   else
+     buckets.flat_map do |bucket|
      bucket.tasks
            .visible_for(current_user)
            .includes(:users, :labels)
            .order(:position)
            .map { |task| [bucket, task] }
+     end
    end %>
 
 <div data-controller="action-plan-filter">

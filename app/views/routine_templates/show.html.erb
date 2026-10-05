@@ -25,19 +25,28 @@
         </div>
       </div>
       <div class="header-actions">
-        <%= link_to routine_templates_path, class: "btn-outline" do %>
+        <%= link_to(@action_plan ? action_plan_path(@action_plan, view: "gerots") : routine_templates_path, class: "btn-outline") do %>
           <i class="bi bi-arrow-left me-1"></i>
           Voltar
         <% end %>
-        <%= link_to new_routine_template_generator_path(@routine_template), class: "btn-primary-solid" do %>
-          <i class="bi bi-play-fill"></i> Gerar Rotina
+        <% if @can_manage_template %>
+        <%= link_to(@action_plan ? new_action_plan_gerot_generator_path(@action_plan) : new_routine_template_generator_path(@routine_template), class: "btn-primary-solid") do %>
+          <i class="bi bi-calendar-plus"></i> <%= @action_plan ? 'Gerar GEROT no plano' : 'Gerar GEROT independente' %>
         <% end %>
-        <%= link_to edit_routine_template_path(@routine_template), class: "btn-primary-solid" do %>
+        <%= link_to(@action_plan ? edit_action_plan_gerot_template_path(@action_plan) : edit_routine_template_path(@routine_template), class: "btn-primary-solid") do %>
           <i class="bi bi-pencil"></i> Editar
+        <% end %>
         <% end %>
       </div>
     </div>
   </header>
+
+  <% if @action_plan %>
+    <div class="plan-gerot-context">
+      <div><i class="bi bi-diagram-3"></i><span>Modelo único do plano <strong><%= @action_plan.name %></strong></span></div>
+      <p>As categorias correspondem aos buckets. Criar, renomear ou reordenar um bucket atualiza este modelo; os indicadores e as metas são configurados aqui.</p>
+    </div>
+  <% end %>
 
   <!-- ========== LISTA DE CATEGORIAS ========== -->
   <section class="categories-section">
@@ -59,14 +68,18 @@
                 </span>
               </div>
               <div class="category-actions">
+                <% if @can_manage_template %>
                 <%= link_to new_routine_template_routine_category_routine_indicator_path(@routine_template, category), class: "icon-btn", title: "Novo indicador" do %>
                   <i class="bi bi-plus-circle"></i>
                 <% end %>
+                <% unless @action_plan %>
                 <%= link_to edit_routine_template_routine_category_path(@routine_template, category), class: "icon-btn", title: "Editar categoria" do %>
                   <i class="bi bi-pencil"></i>
                 <% end %>
                 <%= button_to routine_template_routine_category_path(@routine_template, category), method: :delete, class: "icon-btn danger", form: { data: { turbo_confirm: "Tem certeza que deseja excluir esta categoria e seus indicadores?" } }, title: "Excluir" do %>
                   <i class="bi bi-trash3"></i>
+                <% end %>
+                <% end %>
                 <% end %>
               </div>
             </div>
@@ -90,6 +103,7 @@
                             @routine_template, category, indicator
                           ),
                           class: "link-action" %>
+                      <% if @can_manage_template %>
                       <%= link_to "Editar",
                           edit_routine_template_routine_category_routine_indicator_path(
                             @routine_template, category, indicator
@@ -100,6 +114,7 @@
                           class: "link-action danger",
                           form: { data: { turbo_confirm: "Tem certeza?" } } do %>
                         <i class="bi bi-trash3"></i>
+                      <% end %>
                       <% end %>
                     </div>
                   </div>
@@ -114,6 +129,9 @@
 
             <!-- Rodapé com posição (editável inline) -->
             <div class="category-footer">
+              <% if @action_plan %>
+                <span>Bucket do plano · posição <%= category.position %></span>
+              <% elsif @can_manage_template %>
               <div data-controller="inline-edit">
                 <div data-inline-edit-target="display">
                   <button type="button" data-action="click->inline-edit#edit" class="position-edit-btn">
@@ -129,12 +147,14 @@
                   <% end %>
                 </div>
               </div>
+              <% end %>
             </div>
           </div>
 
         <% end %>
 
         <!-- ===== CARD PARA ADICIONAR NOVA CATEGORIA ===== -->
+        <% if @can_manage_template && !@action_plan %>
         <div class="category-card add-category-card" data-controller="collapsible">
           <div class="add-category-trigger" data-action="click->collapsible#toggle">
             <i class="bi bi-plus-circle"></i>
@@ -158,6 +178,17 @@
             <% end %>
           </div>
         </div>
+        <% elsif @can_manage_template && @action_plan %>
+          <div class="category-card plan-gerot-new-bucket">
+            <h3><i class="bi bi-plus-circle me-1"></i>Novo bucket e categoria</h3>
+            <%= form_with model: [@action_plan, Bucket.new] do |form| %>
+              <%= hidden_field_tag :return_to_gerot_model, "1" %>
+              <%= form.label :name, "Nome do bucket", class: "form-label" %>
+              <%= form.text_field :name, class: "form-control", required: true %>
+              <%= form.submit "Criar bucket", class: "btn btn-primary mt-3" %>
+            <% end %>
+          </div>
+        <% end %>
 
       </div>
 
@@ -179,8 +210,8 @@
 
   <!-- Link voltar -->
   <div class="back-link">
-    <%= link_to routine_templates_path do %>
-      <i class="bi bi-arrow-left"></i> Voltar para Templates
+    <%= link_to(@action_plan ? action_plan_path(@action_plan, view: "gerots") : routine_templates_path) do %>
+      <i class="bi bi-arrow-left"></i> <%= @action_plan ? 'Voltar para GEROTs do plano' : 'Voltar para modelos independentes' %>
     <% end %>
   </div>
 

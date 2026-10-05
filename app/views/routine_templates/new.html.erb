@@ -1,9 +1,9 @@
 <div class="container py-4 routine-module-page routine-template-form-page">
 
   <h2 class="mb-4">
-    Novo Template
+    <%= @action_plan ? 'Modelo de GEROT do plano' : 'Modelo de GEROT independente' %>
   </h2>
 
-  <%= render "form", routine_template: @routine_template %>
+  <%= render "routine_templates/form", routine_template: @routine_template %>
 
 </div>

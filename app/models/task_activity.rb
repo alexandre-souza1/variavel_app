@@ -18,7 +18,8 @@ class TaskActivity < ApplicationRecord
     label_added: "label_added",
     label_removed: "label_removed",
     checklist_item_added: "checklist_item_added",
-    checklist_item_completed: "checklist_item_completed"
+    checklist_item_completed: "checklist_item_completed",
+    routine_value_changed: "routine_value_changed"
   }
 
   def broadcast_activity

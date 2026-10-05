@@ -1,7 +1,16 @@
-<%= render "routine_generators/form",
-           template: @template,
-           routine: nil,
-           url: routine_template_generator_path(@template),
-           method: :post,
-           submit_label: "Gerar Rotina",
-           show_period: true %>
+<% if @template.active? && (!@action_plan || @template.default_selected_indicator_ids.any?) %>
+  <%= render "routine_generators/form",
+             template: @template,
+             routine: nil,
+             url: @action_plan ? action_plan_gerot_generator_path(@action_plan) : routine_template_generator_path(@template),
+             method: :post,
+             submit_label: @action_plan ? "Gerar GEROT no plano" : "Gerar GEROT independente",
+             show_period: true %>
+<% else %>
+  <div class="plan-gerots plan-gerots__empty">
+    <h2>Configure o modelo do plano</h2>
+    <p>Cadastre os indicadores nos buckets e mantenha o modelo ativo para gerar os acompanhamentos.</p>
+    <%= link_to "Configurar modelo", action_plan_gerot_template_path(@action_plan), class: "btn btn-primary mt-3" %>
+    <%= link_to "Voltar ao plano", action_plan_path(@action_plan, view: "gerots"), class: "btn btn-outline-secondary mt-3" %>
+  </div>
+<% end %>

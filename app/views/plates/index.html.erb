@@ -174,7 +174,7 @@
       <% end %>
 
       <details class="plates-import">
-        <summary><i class="bi bi-upload" aria-hidden="true"></i> Importar placas por CSV</summary>
+        <summary><%= disclosure_arrow %> <i class="bi bi-upload" aria-hidden="true"></i> Importar placas por CSV</summary>
         <%= form_with url: import_plates_path, local: true, html: { multipart: true, class: "plates-import-form" } do |form| %>
           <div>
             <%= form.label :file, "Arquivo CSV", class: "form-label" %>

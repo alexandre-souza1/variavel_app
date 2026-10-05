@@ -11,7 +11,7 @@
           Escala ainda não disponível.
         <% end %>
       </span>
-      <span class="consumption-tab__toggle"><span class="consumption-tab__show">Ver detalhes</span><span class="consumption-tab__hide">Fechar detalhes</span> <i class="bi bi-chevron-down" aria-hidden="true"></i></span>
+      <span class="consumption-tab__toggle"><span class="consumption-tab__show">Ver detalhes</span><span class="consumption-tab__hide">Fechar detalhes</span> <%= disclosure_arrow %></span>
     </summary>
     <div class="personal-schedule__body">
       <div class="personal-schedule__heading">
@@ -33,7 +33,7 @@
         </div>
         <p class="personal-schedule__note">Folga e DSR são dias de descanso. A escala considera os ajustes do gestor e pode receber alterações.</p>
         <details class="personal-schedule__month" <%= 'open' if params[:escala_mes].present? %>>
-          <summary class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar3 me-1"></i> Minha escala do mês <i class="bi bi-chevron-down ms-1"></i></summary>
+          <summary class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar3 me-1"></i> Minha escala do mês <%= disclosure_arrow(css_class: "ms-1") %></summary>
           <div class="personal-schedule__month-content">
             <%= form_with url: consulta_path, method: :get, local: true, class: "personal-schedule__month-filter" do %>
               <% %i[matricula categoria periodo_mes periodo_ano funcao].each do |key| %>

@@ -4,10 +4,12 @@
       <div>
         <h1>
           <i class="bi <%= show_period ? 'bi-plus-circle' : 'bi-pencil-square' %> me-2"></i>
-          <%= show_period ? 'Gerar Nova Rotina' : 'Configurações' %>
+          <%= show_period ? 'Gerar GEROT' : 'Configurações do GEROT' %>
         </h1>
         <% if routine.present? %>
           <p class="subtitle"><%= routine.title %></p>
+        <% elsif @action_plan %>
+          <p class="subtitle">Plano de ação: <%= @action_plan.name %></p>
         <% end %>
       </div>
       <div class="header-actions">
@@ -16,7 +18,7 @@
             <i class="bi bi-arrow-left me-1"></i>Voltar
           <% end %>
         <% else %>
-          <%= link_to routine_templates_path, class: "btn-outline" do %>
+          <%= link_to(@action_plan ? action_plan_path(@action_plan, view: "gerots") : routine_template_path(template), class: "btn-outline") do %>
             <i class="bi bi-arrow-left me-1"></i>Voltar
           <% end %>
         <% end %>
@@ -24,12 +26,16 @@
     </div>
   </header>
 
+  <% if @error_message.present? %>
+    <div class="alert alert-danger" role="alert"><%= @error_message %></div>
+  <% end %>
+
   <div class="card mb-4">
     <div class="card-body">
       <div class="d-flex align-items-center gap-2 mb-2">
-        <i class="bi bi-file-earmark-text text-primary" style="font-size: 1.5rem;"></i>
+        <i class="bi bi-file-earmark-text text-primary plan-gerot-model-icon"></i>
         <div>
-          <strong class="d-block"><%= routine.present? ? routine.title : 'Template' %></strong>
+          <strong class="d-block"><%= routine.present? ? routine.title : 'Modelo de GEROT' %></strong>
           <span class="text-muted">
             <% if routine.present? %>
               <%= l(routine.period_start, format: "%d/%m/%Y") %> até <%= l(routine.period_end, format: "%d/%m/%Y") %>
@@ -42,70 +48,12 @@
     </div>
   </div>
 
-  <style>
-    .indicator-toggle-checkbox {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-    }
 
-    .indicator-toggle-icon {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 1.5rem;
-      height: 1.5rem;
-      transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
-    }
-
-    .indicator-toggle-icon i {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
-    }
-
-    .indicator-toggle-icon-off {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    .indicator-toggle-icon-on {
-      opacity: 0;
-      transform: scale(0.8);
-    }
-
-    .indicator-toggle-checkbox + .form-check-label:hover .indicator-toggle-icon {
-      transform: translateY(-1px);
-      filter: brightness(1.03);
-    }
-
-    .indicator-toggle-checkbox:disabled + .form-check-label {
-      cursor: not-allowed;
-      opacity: 0.9;
-    }
-
-    .indicator-toggle-checkbox:disabled + .form-check-label .indicator-toggle-icon {
-      filter: grayscale(0.2);
-    }
-
-    .indicator-toggle-checkbox:checked + .form-check-label .indicator-toggle-icon-off {
-      opacity: 0;
-      transform: scale(0.8);
-    }
-
-    .indicator-toggle-checkbox:checked + .form-check-label .indicator-toggle-icon-on {
-      opacity: 1;
-      transform: scale(1);
-    }
-  </style>
 
   <div class="card">
     <div class="card-body">
-  <%= form_with url: url, method: method, local: true do |f| %>
+      <%= form_with url: url, method: method, local: true do |f| %>
+        <%= hidden_field_tag :routine_template_id, template.id, id: nil if show_period %>
         <% if show_period %>
           <div class="mb-4">
             <h5 class="card-subtitle mb-3">
@@ -117,7 +65,7 @@
                 <div class="form-group">
                   <%= label_tag :period_start, "Data Inicial", class: "form-label" %>
                   <%= date_field_tag :period_start,
-                                     Date.current.beginning_of_month,
+                                     @period_start,
                                      class: "form-control",
                                      required: true %>
                 </div>
@@ -127,7 +75,7 @@
                 <div class="form-group">
                   <%= label_tag :period_end, "Data Final", class: "form-label" %>
                   <%= date_field_tag :period_end,
-                                     Date.current.end_of_month,
+                                     @period_end,
                                      class: "form-control",
                                      required: true %>
                 </div>
@@ -175,12 +123,30 @@
           </div>
         <% end %>
 
+        <% if @action_plan %>
+          <fieldset class="plan-gerot-task-settings mb-4">
+            <legend>Quando gerar tarefas</legend>
+            <p>Escolha o que transforma um desvio em ação neste GEROT.</p>
+            <% selected_mode = params[:task_generation_mode].presence || routine&.task_generation_mode || "commented_deviation" %>
+            <% Routine::TASK_GENERATION_LABELS.each do |mode, label| %>
+              <label class="plan-gerot-task-settings__option" for="task-generation-<%= mode %>">
+                <%= radio_button_tag :task_generation_mode, mode, selected_mode == mode, id: "task-generation-#{mode}", class: "form-check-input" %>
+                <span><strong><%= label %></strong><small><%= mode == 'commented_deviation' ? 'O comentário descreve a ação e gera a tarefa. Apenas preencher um desvio não cria tarefas.' : 'Gera a tarefa assim que o indicador fica fora da meta, mesmo sem comentário.' %></small></span>
+              </label>
+            <% end %>
+          </fieldset>
+        <% end %>
+
         <div class="mb-4">
           <h5 class="card-subtitle mb-3">
             <i class="bi bi-graph-up me-2"></i>Indicadores (KPIs)
           </h5>
 
           <% indicator_source = routine.present? ? routine.routine_template : template %>
+
+          <% if @action_plan %>
+            <p class="text-muted">As categorias são os buckets do plano. Cada tarefa gerada vai para o bucket do indicador, em todos os períodos.</p>
+          <% end %>
 
           <div class="accordion" id="indicatorAccordion">
             <% indicator_source.routine_categories.order(:position).each_with_index do |category, index| %>
@@ -191,14 +157,14 @@
                           data-bs-target="#indicator-category-body-<%= category.id %>"
                           aria-expanded="<%= index.zero? %>"
                           aria-controls="indicator-category-body-<%= category.id %>">
-                    <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                    <span class="d-flex justify-content-between align-items-center w-100 me-3">
                       <span>
                         <i class="bi bi-folder me-2"></i><%= category.name %>
                       </span>
                       <span class="badge text-bg-secondary rounded-pill">
                         <%= category.routine_indicators.count %>
                       </span>
-                    </div>
+                    </span>
                   </button>
                 </h2>
 
@@ -207,9 +173,16 @@
                      aria-labelledby="indicator-category-heading-<%= category.id %>"
                      data-bs-parent="#indicatorAccordion">
                   <div class="accordion-body bg-body-tertiary p-3">
+                    <% if @action_plan %>
+                      <div class="plan-gerot-bucket-field mb-3">
+                        <i class="bi bi-folder2-open me-1"></i> As tarefas desta categoria ficam no bucket <strong><%= category.bucket.name %></strong>.
+                      </div>
+                    <% end %>
                     <% category.routine_indicators.order(:position).each do |indicator| %>
                       <% is_checked = if routine.present?
                                         routine.selected_indicator_ids.include?(indicator.id)
+                                      elsif params[:indicator_ids].present?
+                                        Array(params[:indicator_ids]).include?(indicator.id.to_s)
                                       else
                                         true
                                       end %>
@@ -275,7 +248,7 @@
           <% if routine.present? %>
             <%= link_to "Cancelar", routine, class: "btn btn-outline-secondary" %>
           <% else %>
-            <%= link_to "Cancelar", routine_templates_path, class: "btn btn-outline-secondary" %>
+            <%= link_to "Cancelar", @action_plan ? action_plan_path(@action_plan, view: "gerots") : routine_template_path(template), class: "btn btn-outline-secondary" %>
           <% end %>
         </div>
       <% end %>

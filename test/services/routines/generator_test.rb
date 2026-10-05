@@ -3,7 +3,7 @@ require "test_helper"
 module Routines
   class GeneratorTest < ActiveSupport::TestCase
     test "creates one value per expected indicator reference date" do
-      template = RoutineTemplate.create!(name: "Routine frequency test")
+      template = RoutineTemplate.create!(name: "Routine frequency test", sector: users(:one).sector)
       category = template.routine_categories.create!(
         name: "Main",
         position: 0
@@ -41,7 +41,7 @@ module Routines
     end
 
     test "creates values only for selected indicators" do
-      template = RoutineTemplate.create!(name: "Selective indicators test")
+      template = RoutineTemplate.create!(name: "Selective indicators test", sector: users(:one).sector)
       category = template.routine_categories.create!(
         name: "Main",
         position: 0

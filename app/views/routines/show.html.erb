@@ -20,22 +20,22 @@
         </p>
       </div>
       <div class="header-actions">
-        <%= link_to routines_path, class: "btn btn-outline-secondary" do %>
+        <%= link_to(@action_plan ? action_plan_path(@action_plan, view: "gerots", year: @routine.period_start.year) : routines_path, class: "btn btn-outline-secondary") do %>
           <i class="bi bi-arrow-left me-1"></i>
           Voltar
         <% end %>
-        <% unless @routine.closed? || @routine.archived? %>
+        <% if @routine.manageable_by?(current_user) && @routine.open? %>
           <%= link_to edit_routine_generator_path(@routine), class: "btn btn-primary" do %>
             <i class="bi bi-pencil-square me-1"></i>
             Configurações
           <% end %>
         <% end %>
-        <% if @routine.open? %>
+        <% if @routine.open? && @routine.manageable_by?(current_user) %>
           <%= button_to close_routine_path(@routine), method: :patch, class: "btn btn-primary" do %>
             <i class="bi bi-check2-circle me-1"></i>
             Encerrar rotina
           <% end %>
-        <% elsif @routine.closed? %>
+        <% elsif @routine.closed? && @routine.manageable_by?(current_user) %>
           <%= button_to archive_routine_path(@routine), method: :patch, class: "btn btn-secondary" do %>
             <i class="bi bi-archive me-1"></i>
             Arquivar
@@ -59,6 +59,14 @@
       </div>
     </div>
   </header>
+
+  <% if @action_plan %>
+    <div class="plan-gerot-context">
+      <div><i class="bi bi-diagram-3"></i><span>Plano de ação <strong><%= @action_plan.name %></strong></span></div>
+      <%= link_to "Ações deste GEROT", action_plan_path(@action_plan, view: "gerot_actions", routine_id: @routine.id), class: "btn btn-outline-primary btn-sm" %>
+      <p>Gerar tarefas: <%= @routine.task_generation_label.downcase %>. As pendências continuam no plano após encerrar este GEROT.</p>
+    </div>
+  <% end %>
 
   <!-- ========== ACORDEÃO DE FREQUÊNCIAS ========== -->
   <div class="accordion" id="routineFrequencyAccordion">
@@ -150,8 +158,8 @@
     </div>
   </div>
   <div class="back-link">
-    <%= link_to routines_path do %>
-      <i class="bi bi-arrow-left"></i> Voltar para Rotinas
+    <%= link_to(@action_plan ? action_plan_path(@action_plan, view: "gerots", year: @routine.period_start.year) : routines_path) do %>
+      <i class="bi bi-arrow-left"></i> <%= @action_plan ? 'Voltar para GEROTs do plano' : 'Voltar para Rotinas' %>
     <% end %>
   </div>
 </div>

@@ -49,7 +49,7 @@
         <div class="kpi-card"><div class="kpi-icon bg-<%= color %>-soft"><i class="bi bi-clipboard-data text-<%= color %>"></i></div><div class="kpi-info"><span class="kpi-label"><%= label %></span><span class="kpi-value"><%= count %></span></div></div>
       <% end %>
     </div>
-    <details class="tire-methodology"><summary><i class="bi bi-info-circle"></i> Como as divergências são identificadas</summary><div>
+    <details class="tire-methodology"><summary><%= disclosure_arrow %> <i class="bi bi-info-circle"></i> Como as divergências são identificadas</summary><div>
       Cada divergência representa um aumento em um sulco. Até <strong>0,50 mm</strong>: divergência baixa. Acima de 0,50 até <strong>2,00 mm</strong>: média. Acima de <strong>2,00 mm</strong>: alta. Todos os aumentos aparecem por padrão. Medidas comparadas com duas casas decimais.
       <br>Referências anteriores buscadas desde <%= @baseline_date.strftime("%d/%m/%Y") %>. <%= @report.without_previous %> leituras de sulco no período ficaram sem referência anterior nessa janela e não puderam ser comparadas. A contagem de aferições é do período completo; as contagens de divergências respeitam a busca por pneu ou placa.
     </div></details>

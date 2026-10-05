@@ -5,17 +5,24 @@ class RoutineGeneratorsControllerTest < ActionDispatch::IntegrationTest
     @user = users(:one)
     sign_in @user
     @template = create_template_with_indicators
+    @plan = @user.action_plans.create!(name: "Produção 2026")
+    @category = @template.routine_categories.first
+    @template.update!(action_plan: @plan)
+    bucket = @plan.buckets.find_by!(name: "A Fazer")
+    @category.update!(bucket: bucket)
+    Routines::PlanTemplateSynchronizer.call(action_plan: @plan, template: @template)
   end
 
   test "should get new" do
-    get new_routine_template_generator_path(@template)
+    get new_action_plan_gerot_generator_path(@plan, routine_template_id: @template.id)
     assert_response :success
     assert_select "input[type=checkbox][name='indicator_ids[]']"
   end
 
   test "should create routine with all indicators by default" do
     assert_difference("Routine.count", 1) do
-      post routine_template_generator_path(@template), params: {
+      post action_plan_gerot_generator_path(@plan), params: {
+        routine_template_id: @template.id,
         period_start: "2026-07-01",
         period_end: "2026-07-31"
       }
@@ -26,11 +33,12 @@ class RoutineGeneratorsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should create routine with selected indicators only" do
-    daily_indicator = @template.routine_categories.first.routine_indicators.first
-    weekly_indicator = @template.routine_categories.first.routine_indicators.second
+    daily_indicator = @category.routine_indicators.first
+    weekly_indicator = @category.routine_indicators.second
 
     assert_difference("Routine.count", 1) do
-      post routine_template_generator_path(@template), params: {
+      post action_plan_gerot_generator_path(@plan), params: {
+        routine_template_id: @template.id,
         period_start: "2026-07-01",
         period_end: "2026-07-31",
         indicator_ids: [daily_indicator.id, weekly_indicator.id]
@@ -52,8 +60,8 @@ class RoutineGeneratorsControllerTest < ActionDispatch::IntegrationTest
     routine = create_routine_with_all_indicators
     assert_equal 36, routine.routine_values.count
 
-    daily_indicator = @template.routine_categories.first.routine_indicators.first
-    weekly_indicator = @template.routine_categories.first.routine_indicators.second
+    daily_indicator = @category.routine_indicators.first
+    weekly_indicator = @category.routine_indicators.second
 
     patch "/routines/#{routine.id}/generator", params: {
       indicator_ids: [daily_indicator.id, weekly_indicator.id]
@@ -67,7 +75,7 @@ class RoutineGeneratorsControllerTest < ActionDispatch::IntegrationTest
   private
 
   def create_template_with_indicators
-    template = RoutineTemplate.create!(name: "Test template #{Time.current.to_i}")
+    template = RoutineTemplate.create!(name: "Test template #{Time.current.to_i}", sector: @user.sector)
     category = template.routine_categories.create!(name: "Main", position: 0)
     
     category.routine_indicators.create!(
@@ -94,6 +102,7 @@ class RoutineGeneratorsControllerTest < ActionDispatch::IntegrationTest
   def create_routine_with_all_indicators
     Routine.create!(
       routine_template: @template,
+      action_plan: @plan,
       created_by: @user,
       title: "Test Routine #{Time.current.to_i}",
       period_start: Date.new(2026, 7, 1),
@@ -102,5 +111,3 @@ class RoutineGeneratorsControllerTest < ActionDispatch::IntegrationTest
     ).tap { |routine| routine.ensure_expected_values! }
   end
 end
-
-

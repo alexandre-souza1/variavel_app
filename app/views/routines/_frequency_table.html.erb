@@ -57,7 +57,7 @@
 
               <td class="text-center goal-value">
                 <%= routine_value_display(indicator, calculation[:goal]) %>
-                <% if routine.open? %>
+                <% if routine.open? && routine.routine_template.manageable_by?(current_user) %>
                   <button type="button"
                           class="routine-goal-trigger"
                           data-bs-toggle="modal"

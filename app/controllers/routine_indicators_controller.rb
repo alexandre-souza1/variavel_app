@@ -54,7 +54,8 @@ class RoutineIndicatorsController < ApplicationController
 
   def set_template
     @template =
-      RoutineTemplate.find(params[:routine_template_id])
+      RoutineTemplate.visible_to(current_user).find(params[:routine_template_id])
+    head :forbidden unless @template.manageable_by?(current_user)
   end
 
   def set_category

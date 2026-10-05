@@ -1,9 +1,10 @@
 class RoutineChannel < ApplicationCable::Channel
   def subscribed
-    @routine = Routine.find(params[:routine_id])
-    @user = User.find(params[:user_id])
-
     @editing_routine_value_ids = Set.new
+    @user = connection.env["warden"]&.user
+    return reject unless @user
+
+    @routine = Routine.visible_to(@user).find(params[:routine_id])
 
     stream_for @routine
   rescue ActiveRecord::RecordNotFound
@@ -13,6 +14,8 @@ class RoutineChannel < ApplicationCable::Channel
   def start_editing(data)
     routine_value_id =
       data["routine_value_id"].to_i
+
+    return unless @routine.routine_values.exists?(id: routine_value_id)
 
     @editing_routine_value_ids.add(
       routine_value_id
@@ -25,6 +28,7 @@ class RoutineChannel < ApplicationCable::Channel
   end
 
   def editing_heartbeat(data)
+    return unless @editing_routine_value_ids.include?(data["routine_value_id"].to_i)
     broadcast_presence(
       "editing_heartbeat",
       data["routine_value_id"]
@@ -34,6 +38,8 @@ class RoutineChannel < ApplicationCable::Channel
   def stop_editing(data)
     routine_value_id =
       data["routine_value_id"].to_i
+
+    return unless @editing_routine_value_ids.include?(routine_value_id)
 
     @editing_routine_value_ids.delete(
       routine_value_id

@@ -17,6 +17,14 @@
               placeholder: "Título da tarefa" %>
           <% end %>
           <small class="task-detail-modal__created-at"><i class="bi bi-clock-history"></i> Criada em <%= task.created_at.strftime("%d/%m/%Y %H:%M") %></small>
+          <% if task.routine_value %>
+            <div class="task-detail-modal__origin">
+              <%= link_to routine_path(task.routine_value.routine), class: "task-detail-modal__origin-link", data: { turbo: false } do %>
+                <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                <span>Origem: <%= task.routine_value.routine.title %> · <%= l(task.routine_value.reference_date) %></span>
+              <% end %>
+            </div>
+          <% end %>
         </div>
 
         <div class="d-flex gap-2 align-items-center">
@@ -47,6 +55,7 @@
                   task
                 ),
                 method: :patch,
+                params: { view: params[:view], routine_id: params[:routine_id] },
                 data: {
                   turbo_stream: true
                 },

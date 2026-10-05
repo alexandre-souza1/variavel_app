@@ -13,7 +13,7 @@ class RoutinesController < ApplicationController
 
   def index
     @routines = Routine.visible_to(current_user)
-      .includes(:routine_template, :created_by)
+      .includes(:routine_template, :created_by, :action_plan)
       .where.not(status: :archived)
       .order(period_start: :desc)
   end
@@ -21,13 +21,14 @@ class RoutinesController < ApplicationController
   def archived
     @show_archived = true
     @routines = Routine.visible_to(current_user)
-      .includes(:routine_template, :created_by)
+      .includes(:routine_template, :created_by, :action_plan)
       .where(status: :archived)
       .order(period_start: :desc)
     render :index
   end
 
   def show
+    @action_plan = @routine.action_plan
     @days = (@routine.period_start..@routine.period_end).to_a
 
     selected_indicator_ids = @routine.selected_indicator_ids
@@ -152,11 +153,11 @@ class RoutinesController < ApplicationController
   private
 
   def set_routine
-    @routine = Routine.visible_to(current_user).includes(:routine_template).find(params[:id])
+    @routine = Routine.visible_to(current_user).includes(:routine_template, :action_plan).find(params[:id])
   end
 
   def authorize_routine_management
-    return if current_user.admin? || @routine.created_by == current_user
+    return if @routine.manageable_by?(current_user)
 
     redirect_to routines_path, alert: "Você não tem permissão para gerenciar esta rotina."
   end

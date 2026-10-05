@@ -91,13 +91,13 @@
     <p class="small text-muted mb-0">¹ Por abastecimento com emissão válida, na unidade informada pela Gasola. Meta de consumo ponderada pelos litros; fica indisponível se faltar meta em qualquer abastecimento considerado.</p>
   </div></section>
 
-  <details class="app-panel mb-4"><summary class="fuel-consumptions-summary">Consumo por veículo</summary><div class="app-panel__body app-table-shell">
+  <details class="app-panel mb-4"><summary class="fuel-consumptions-summary"><%= disclosure_arrow %> Consumo por veículo</summary><div class="app-panel__body app-table-shell">
     <table class="app-table app-table--report"><thead><tr><th scope="col">Placa</th><th scope="col">Abastecimentos</th><th scope="col">Km</th><th scope="col">Litros</th><th scope="col">Média km/l</th><th scope="col">Meta km/l</th></tr></thead><tbody>
       <% @report.by_plate.each do |plate, values| %><tr><td><%= plate.presence || 'Sem placa' %></td><td><%= values[:count] %></td><td><%= fuel_metric(values[:distance], precision: 0) %></td><td><%= fuel_metric(values[:liters]) %></td><td><%= fuel_metric(values[:average]) %></td><td><%= fuel_metric(values[:goal]) %></td></tr><% end %>
     </tbody></table>
   </div></details>
 
-  <details class="app-panel mb-4" <%= 'open' if params[:page].present? %>><summary class="fuel-consumptions-summary">Abastecimentos do período · <%= @totals[:count] %> registros</summary><div class="app-panel__body">
+  <details class="app-panel mb-4" <%= 'open' if params[:page].present? %>><summary class="fuel-consumptions-summary"><%= disclosure_arrow %> Abastecimentos do período · <%= @totals[:count] %> registros</summary><div class="app-panel__body">
     <div class="app-table-shell"><table class="app-table app-table--report"><thead><tr><th scope="col">Aprovação</th><th scope="col">Motorista</th><th scope="col">Placa</th><th scope="col">Combustível</th><th scope="col">Km</th><th scope="col">Litros</th><th scope="col">CO₂¹</th></tr></thead><tbody>
       <% @supplies.each do |row| %><tr><td><%= row.concluded_at.in_time_zone.strftime('%d/%m/%Y %H:%M') %></td><td><%= @report.name(row.registration) %><small class="d-block text-muted"><%= row.registration %></small></td><td><%= row.plate %></td><td><%= fuel_label(row.fuel) %></td><td><%= fuel_metric(row.distance) %></td><td><%= fuel_metric(row.liters) %></td><td><%= fuel_metric(row.co2_emission) %></td></tr><% end %>
     </tbody></table></div>
@@ -109,7 +109,7 @@
   </div></details>
 
   <% if @legacy_consumptions.any? %>
-    <details class="app-panel mb-4"><summary class="fuel-consumptions-summary">Importações antigas de CSV</summary><div class="app-panel__body app-table-shell">
+    <details class="app-panel mb-4"><summary class="fuel-consumptions-summary"><%= disclosure_arrow %> Importações antigas de CSV</summary><div class="app-panel__body app-table-shell">
       <p class="small text-muted">Últimos 100 registros legados. Não compõem os indicadores Gasola nem os filtros acima.</p>
       <table class="app-table app-table--report"><thead><tr><th scope="col">Motorista</th><th scope="col">Período</th><th scope="col">Média km/l</th><th scope="col">Meta km/l</th></tr></thead><tbody>
       <% @legacy_consumptions.each do |row| %><tr><td><%= row.driver_name %></td><td><%= row.period %></td><td><%= fuel_metric(row.km_per_liter) %></td><td><%= fuel_metric(row.km_per_liter_goal) %></td></tr><% end %>

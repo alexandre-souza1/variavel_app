@@ -12,6 +12,7 @@ class Routine < ApplicationRecord
   }.freeze
 
   belongs_to :routine_template
+  belongs_to :action_plan, optional: true
 
   delegate :sector, to: :routine_template, allow_nil: true
 
@@ -27,7 +28,8 @@ class Routine < ApplicationRecord
   scope :visible_to, lambda { |user|
     return all if user&.admin?
 
-    joins(:routine_template).where(routine_templates: { sector: user&.sector })
+    joins(:routine_template).where(action_plan_id: nil, routine_templates: { sector: user&.sector })
+      .or(joins(:routine_template).where(action_plan_id: ActionPlan.visible_to(user).select(:id)))
   }
 
   def selected_indicator_ids
@@ -68,11 +70,29 @@ class Routine < ApplicationRecord
     archived: 2
   }
 
+  TASK_GENERATION_LABELS = {
+    "commented_deviation" => "Comentário em indicador fora da meta",
+    "deviation" => "Preenchimento fora da meta"
+  }.freeze
+
+  enum :task_generation_mode, { commented_deviation: 0, deviation: 1 }, prefix: :task_generation
+
+  def task_generation_label
+    TASK_GENERATION_LABELS.fetch(task_generation_mode)
+  end
+
   validates :period_start,
             presence: true
 
   validates :period_end,
             presence: true
+
+  validates :routine_template_id, uniqueness: {
+    scope: %i[action_plan_id period_start period_end],
+    message: "já possui um GEROT neste período e plano"
+  }
+  validate :template_matches_plan_sector
+  validate :template_belongs_to_plan
 
   validates :weekly_reference_weekday,
             inclusion: { in: 0..6 },
@@ -128,7 +148,27 @@ class Routine < ApplicationRecord
     )
   end
 
+  def manageable_by?(user)
+    user.present? && (user.admin? || created_by_id == user.id || action_plan&.manageable_by?(user))
+  end
+
+  def generated_tasks
+    Task.where(routine_value_id: routine_values.select(:id))
+  end
+
   private
+
+  def template_belongs_to_plan
+    return if routine_template&.action_plan_id == action_plan_id
+
+    errors.add(:routine_template, "deve ser o modelo exclusivo deste plano; GEROTs independentes usam modelos independentes")
+  end
+
+  def template_matches_plan_sector
+    return if action_plan.blank? || action_plan.sector == routine_template&.sector
+
+    errors.add(:routine_template, "deve ser do mesmo setor do plano de ação")
+  end
 
   def period_end_after_start
     return if period_end.blank? || period_start.blank?

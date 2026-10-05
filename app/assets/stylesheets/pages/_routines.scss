@@ -111,6 +111,25 @@
     gap: 0.5rem;
   }
 
+  .routine-plan-link {
+    color: var(--bs-body-color);
+    font-weight: 500;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+
+    &:hover {
+      color: var(--bs-primary);
+      text-decoration: underline;
+      text-underline-offset: .2em;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--bs-primary);
+      outline-offset: 3px;
+      border-radius: 2px;
+    }
+  }
+
   .btn-primary-solid.btn-sm {
     padding: 0.25rem 0.75rem;
     font-size: 0.8rem;
@@ -378,6 +397,13 @@
   .btn {
     align-self: flex-end;
   }
+
+  &__task-hint {
+    margin: .25rem 0;
+    color: var(--bs-secondary-color);
+    font-size: .8rem;
+    line-height: 1.5;
+  }
 }
 
 .routine-comment {
@@ -406,6 +432,8 @@
   color: var(--bs-secondary-color);
   font-size: .75rem;
 }
+
+.routine-comment__meta { min-width: 0; overflow-wrap: anywhere; }
 
 .routine-comment__body {
   white-space: pre-wrap;

@@ -198,6 +198,9 @@ Rails.application.routes.draw do
   resources :fleet_dimensionings, except: :show
 
   resources :action_plans do
+    resource :gerot_generator, only: %i[new create], controller: :routine_generators
+    resource :gerot_template, only: %i[new create show edit update], controller: :action_plan_routine_templates
+    resources :gerots, only: %i[new create], controller: :action_plan_routines
     get :export_excel, on: :member
     post :toggle_hidden, on: :member
     patch :inbox_preference, on: :member

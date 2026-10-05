@@ -1,12 +1,11 @@
+<% search_text = local_assigns[:search_text].presence || [task.title, task.description, task.bucket.name, task.labels.map(&:name), task.users.map(&:name)].flatten.compact.join(" ") %>
 <div id="<%= dom_id(task) %>"
     class="task-card action-plan-task-card"
     data-id="<%= task.id %>"
     data-controller="task-modal"
     data-action="click->task-modal#open"
-    <% if local_assigns[:search_text].present? %>
-      data-action-plan-filter-target="item"
-      data-search-text="<%= local_assigns[:search_text] %>"
-    <% end %>
+    data-action-plan-filter-target="item"
+    data-search-text="<%= search_text %>"
     data-plan-id="<%= task.bucket.action_plan.id %>"
     data-bucket-id="<%= task.bucket.id %>"
     data-task-id="<%= task.id %>">

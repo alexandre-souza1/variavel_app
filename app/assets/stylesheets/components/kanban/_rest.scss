@@ -1107,12 +1107,18 @@ main.app-main:has(.action-plan-show) {
 
 .action-plan-kanban-done-toggle {
   align-items: center;
+  background: transparent;
+  border: 0;
   border-top: 1px solid var(--bs-border-color);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   margin-top: 0.9rem;
   padding-top: 0.75rem;
+  padding-left: 0;
+  padding-right: 0;
+  text-align: left;
+  width: 100%;
 }
 
 .action-plan-kanban-done-count {
@@ -1701,7 +1707,7 @@ main.app-main:has(.action-plan-show) {
     color: var(--bs-primary);
   }
 
-  .action-plan-show--auto-view .action-plan-view-switch__link--list {
+  .action-plan-show--auto-view:has(.action-plan-view-switch__link--kanban.active) .action-plan-view-switch__link--list {
     background-color: var(--bs-primary);
     border-color: var(--bs-primary);
     color: #fff;

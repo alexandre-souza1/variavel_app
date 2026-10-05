@@ -9,7 +9,7 @@ class RoutineValuesController < ApplicationController
       return
     end
 
-    ActiveRecord::Base.transaction do
+    @routine_value.with_lock do
       @routine_value.assign_attributes(
         normalized_routine_value_params.merge(
           updated_by: current_user
@@ -31,6 +31,9 @@ class RoutineValuesController < ApplicationController
           activity_type: :value_changed,
           previous_value: previous_value,
           new_value: new_value
+        )
+        @generated_task = Routines::DeviationTaskGenerator.call(
+          routine_value: @routine_value, actor: current_user, previous_value: previous_value
         )
       end
     end
@@ -81,6 +84,10 @@ class RoutineValuesController < ApplicationController
           target
         ),
 
+      generated_task_id: @generated_task&.id,
+      generated_task_created: @generated_task&.previously_new_record? || false,
+      generated_task_url: (@generated_task && action_plan_path(@routine_value.routine.action_plan, task_id: @generated_task.id)),
+
       filled_days:
         calculation[:filled_days],
 
@@ -96,12 +103,14 @@ class RoutineValuesController < ApplicationController
       complete:
         calculation[:complete]
     }
+  rescue ActiveRecord::RecordInvalid => error
+    render json: { error: error.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
   end
 
   private
 
   def set_routine_value
-    @routine_value = RoutineValue.find(params[:id])
+    @routine_value = RoutineValue.where(routine_id: Routine.visible_to(current_user).select(:id)).find(params[:id])
   end
 
   def routine_value_params
