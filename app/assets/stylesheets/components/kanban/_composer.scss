@@ -51,7 +51,7 @@
   .bi { flex-shrink: 0; }
   cursor: pointer;
   transition: background .15s ease, border-color .15s ease;
-  &:hover, &[aria-expanded="true"], &.is-filled, &:has(input:checked) {
+  &:hover, &[aria-expanded="true"], &[aria-pressed="true"], &.is-filled, &:has(input:checked) {
     background: rgba(var(--bs-primary-rgb), .08);
     border-color: rgba(var(--bs-primary-rgb), .3);
     color: var(--bs-primary);
@@ -59,8 +59,10 @@
   &:focus-visible, &:focus-within { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
   input[type="checkbox"] { position: absolute; width: 1px; height: 1px; opacity: 0; }
 }
-.task-composer__reminder { position: relative; }
-.task-composer__reminder:has(input:checked)::after { content: "✓"; margin-left: auto; font-weight: 700; }
+.task-composer__labels-alert { display: grid; grid-template-columns: minmax(0, 1fr) 36px; gap: .3rem; }
+.task-composer__labels-alert > [data-panel="labels"] { font-size: .65rem; padding-inline: .3rem; gap: .2rem; }
+.task-composer__reminder { justify-content: center; }
+.task-composer__label { border-radius: 6px; font-size: .75rem; font-weight: 600; padding: .2rem .45rem; overflow-wrap: anywhere; }
 .task-composer__panel {
   margin-top: .6rem;
   padding: .55rem;

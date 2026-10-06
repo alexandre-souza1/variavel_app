@@ -1,13 +1,14 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["wrapper", "button", "buttonLabel", "title", "form", "tool", "panel", "date", "calendarMonth", "calendarDays", "assignee", "userOption", "userSearch", "userCount", "noUsers", "recurrence", "reminder", "hint", "error", "submit"]
+  static targets = ["wrapper", "button", "buttonLabel", "title", "form", "tool", "panel", "date", "calendarMonth", "calendarDays", "assignee", "userOption", "userSearch", "userCount", "noUsers", "badge", "labelOption", "labelSearch", "labelCount", "noLabels", "recurrence", "reminder", "reminderButton", "hint", "error", "submit"]
 
   connect() {
     this.open = false
     this.saving = false
     this.update()
     this.filterUsers()
+    this.filterLabels()
     this.repositionPopover = this.positionPopover.bind(this)
     window.addEventListener("resize", this.repositionPopover)
     document.addEventListener("scroll", this.repositionPopover, true)
@@ -40,7 +41,7 @@ export default class extends Controller {
   }
 
   hasDraft() {
-    return this.titleTarget.value.trim() || this.dateTarget.value || this.assigneeTargets.some(input => input.checked) || this.recurrenceTarget.value || this.reminderTarget.checked
+    return this.titleTarget.value.trim() || this.dateTarget.value || this.assigneeTargets.some(input => input.checked) || this.badgeTargets.some(input => input.checked) || this.recurrenceTarget.value || this.reminderTarget.checked
   }
 
   otherOpened(event) {
@@ -83,6 +84,11 @@ export default class extends Controller {
       this.usersPanel.showPopover()
       this.positionPopover()
       this.userSearchTarget.focus({ preventScroll: true })
+    }
+    if (name === "labels") {
+      this.panelTargets.find(panel => panel.dataset.panel === "labels").showPopover()
+      this.positionPopover()
+      this.labelSearchTarget.focus({ preventScroll: true })
     }
     if (name === "date") {
       const selected = this.dateTarget.value ? new Date(`${this.dateTarget.value}T12:00:00`) : new Date()
@@ -133,6 +139,24 @@ export default class extends Controller {
     event.preventDefault()
   }
 
+  filterLabels() {
+    const normalize = value => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR")
+    const query = normalize(this.labelSearchTarget.value.trim())
+    this.labelOptionTargets.forEach(option => { option.hidden = !normalize(option.dataset.name).includes(query) })
+    this.noLabelsTarget.hidden = this.labelOptionTargets.some(option => !option.hidden)
+    this.positionPopover()
+  }
+
+  closeLabels() {
+    this.activatePanel(null)
+    this.toolTargets.find(tool => tool.dataset.panel === "labels").focus()
+  }
+
+  toggleReminder() {
+    this.reminderTarget.checked = !this.reminderTarget.checked
+    this.update()
+  }
+
   closeUsers() {
     this.activatePanel(null)
     this.toolTargets.find(tool => tool.dataset.panel === "users").focus()
@@ -143,17 +167,24 @@ export default class extends Controller {
     const users = this.assigneeTargets.filter(input => input.checked)
     this.userCountTarget.textContent = users.length ? `${users.length} selecionado${users.length === 1 ? "" : "s"}` : "Nenhum selecionado"
     const recurrence = this.recurrenceTarget
+    const labels = this.badgeTargets.filter(input => input.checked)
+    this.labelCountTarget.textContent = labels.length ? `${labels.length} selecionada${labels.length === 1 ? "" : "s"}` : "Nenhuma selecionada"
     const summaries = {
       date: date ? date.split("-").reverse().slice(0, 2).join("/") : "Prazo",
       users: users.length ? `${users.length} ${users.length === 1 ? "responsável" : "responsáveis"}` : "Responsáveis",
-      repeat: recurrence.value ? recurrence.selectedOptions[0].textContent : "Repetição"
+      repeat: recurrence.value ? recurrence.selectedOptions[0].textContent : "Repetição",
+      labels: labels.length ? String(labels.length) : "Etiquetas"
     }
     this.toolTargets.forEach(tool => {
       tool.querySelector("[data-summary]").textContent = summaries[tool.dataset.panel]
-      tool.classList.toggle("is-filled", Boolean({ date, users: users.length, repeat: recurrence.value }[tool.dataset.panel]))
+      tool.classList.toggle("is-filled", Boolean({ date, users: users.length, repeat: recurrence.value, labels: labels.length }[tool.dataset.panel]))
+      if (tool.dataset.panel === "labels") tool.setAttribute("aria-label", `Selecionar etiquetas: ${labels.length} selecionada${labels.length === 1 ? "" : "s"}`)
     })
     this.dateTarget.required = Boolean(recurrence.value || this.reminderTarget.checked)
     this.hintTarget.hidden = !this.dateTarget.required || Boolean(date)
+    this.reminderButtonTarget.setAttribute("aria-pressed", String(this.reminderTarget.checked))
+    this.reminderButtonTarget.querySelector("i").classList.toggle("bi-bell-fill", this.reminderTarget.checked)
+    this.reminderButtonTarget.querySelector("i").classList.toggle("bi-bell", !this.reminderTarget.checked)
   }
 
   validate(event) {
@@ -226,6 +257,7 @@ export default class extends Controller {
     this.formTarget.reset()
     this.dateTarget.value = ""
     this.filterUsers()
+    this.filterLabels()
     this.activatePanel(null)
     this.update()
     this.errorTarget.hidden = true

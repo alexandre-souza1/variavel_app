@@ -25,10 +25,21 @@
               <span data-summary="<%= panel %>"><%= label %></span>
             </button>
           <% end %>
-          <label class="task-composer__tool task-composer__reminder" title="Avisar sobre o vencimento">
-            <%= f.check_box :due_notification_enabled, data: { new_task_target: "reminder" } %>
-            <i class="bi bi-bell" aria-hidden="true"></i> Alerta
-          </label>
+          <div class="task-composer__labels-alert">
+            <button type="button" class="task-composer__tool" data-new-task-target="tool"
+                    data-panel="labels" data-action="new-task#showPanel"
+                    title="Selecionar etiquetas" aria-label="Selecionar etiquetas"
+                    aria-expanded="false" aria-controls="<%= composer_id %>-labels">
+              <i class="bi bi-tags" aria-hidden="true"></i>
+              <span data-summary="labels">Etiquetas</span>
+            </button>
+            <%= f.check_box :due_notification_enabled, class: "d-none", data: { new_task_target: "reminder" }, tabindex: -1, aria: { hidden: true } %>
+            <button type="button" class="task-composer__tool task-composer__reminder"
+                    title="Avisar sobre o vencimento" aria-label="Alerta de prazo" aria-pressed="false"
+                    data-new-task-target="reminderButton" data-action="new-task#toggleReminder">
+              <i class="bi bi-bell" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
 
         <%= f.hidden_field :due_at, data: { new_task_target: "date" } %>
@@ -69,6 +80,30 @@
           <div class="task-composer__people-footer">
             <span data-new-task-target="userCount" aria-live="polite">Nenhum selecionado</span>
             <button type="button" class="btn btn-sm btn-outline-secondary" data-action="new-task#closeUsers">Pronto</button>
+          </div>
+        </div>
+        <div id="<%= composer_id %>-labels" class="task-composer__panel task-composer__people-popover"
+             popover="manual" role="dialog" aria-label="Selecionar etiquetas"
+             data-new-task-target="panel" data-panel="labels" hidden>
+          <label for="<%= composer_id %>-label-search" class="form-label">Etiquetas do plano</label>
+          <input id="<%= composer_id %>-label-search" type="search" class="form-control form-control-sm"
+                 placeholder="Buscar etiqueta..." autocomplete="off" data-new-task-target="labelSearch"
+                 data-action="input->new-task#filterLabels keydown.enter->new-task#preventSearchSubmit">
+          <%= hidden_field_tag "task[label_ids][]", "", id: nil %>
+          <div class="task-composer__people" role="group" aria-label="Etiquetas">
+            <% action_plan.labels.sort_by { |label| label.name.downcase }.each do |label| %>
+              <label class="task-composer__person" data-new-task-target="labelOption" data-name="<%= label.name %>">
+                <input type="checkbox" name="task[label_ids][]" value="<%= label.id %>" data-new-task-target="badge">
+                <span class="task-composer__label action-plan-color-badge" style="--task-label-color: <%= label.color %>"><%= label.name %></span>
+              </label>
+            <% end %>
+          </div>
+          <p class="task-composer__hint" data-new-task-target="noLabels" role="status" hidden>
+            <%= action_plan.labels.empty? ? "Este plano ainda não tem etiquetas. Adicione-as nos detalhes de uma tarefa." : "Nenhuma etiqueta encontrada." %>
+          </p>
+          <div class="task-composer__people-footer">
+            <span data-new-task-target="labelCount" aria-live="polite">Nenhuma selecionada</span>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-action="new-task#closeLabels">Pronto</button>
           </div>
         </div>
         <div id="<%= composer_id %>-repeat" class="task-composer__panel" data-new-task-target="panel" data-panel="repeat" hidden>

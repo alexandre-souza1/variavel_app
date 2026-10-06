@@ -44,6 +44,20 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "new tasks persist multiple selected badges and ignore labels from other plans" do
+    extra = @task.bucket.action_plan.labels.create!(name: "Prioridade", color: "#3616b6")
+    assert_difference -> { Task.count }, 1 do
+      post action_plan_bucket_tasks_url(@task.bucket.action_plan, @task.bucket),
+        params: { task: { title: "Nova tarefa com etiquetas", due_notification_enabled: "0",
+          label_ids: ["", labels(:one).id, extra.id, labels(:two).id] } }, as: :turbo_stream
+    end
+    assert_response :success
+    created = Task.order(:id).last
+    assert_equal [labels(:one).id, extra.id].sort, created.label_ids.sort
+    assert_not created.due_notification_enabled?
+    assert_select "#task_#{created.id} .task-label-badge", count: 2
+  end
+
   test "explicit label updates filter labels from other plans and allow clearing" do
     patch action_plan_bucket_task_url(@task.bucket.action_plan, @task.bucket, @task),
           params: { task: { label_ids: ["", labels(:one).id.to_s, labels(:two).id.to_s] } },
