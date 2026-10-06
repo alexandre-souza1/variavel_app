@@ -49,9 +49,8 @@
              data-labels-cloud-target="item"
              data-label-name="<%= label.name %>"
              data-usage-count="<%= tasks_count %>">
-          <span class="action-plan-label-cloud__badge"
-                data-color="<%= label.color %>"
-                style="background-color: <%= label.color %>;">
+          <span class="action-plan-label-cloud__badge action-plan-color-badge"
+                style="--task-label-color: <%= label.color %>;">
             <%= label.name %>
           </span>
           <small><%= tasks_count %> <%= tasks_count == 1 ? "tarefa" : "tarefas" %></small>

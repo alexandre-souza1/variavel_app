@@ -536,17 +536,22 @@
   // TOKENS DA GRADE
   // ==========================================================
   // Medidas compartilhadas pela grade. Alterar aqui mantém as colunas alinhadas.
-  --routine-day-width: var(--app-routine-day-width, 68px);
+  --routine-day-width: var(--app-routine-day-width, 96px);
   --routine-cell-min-height: var(--app-routine-cell-min-height, 64px);
   --routine-label-width: var(--app-routine-label-width, 280px);
   --routine-summary-width: var(--app-routine-summary-width, 120px);
 
   // A tabela cresce com a quantidade de dias e ativa o scroll horizontal
   // somente quando seu conteúdo ultrapassa o espaço disponível.
-  width: max-content;
-  min-width: 100%;
+  table-layout: fixed;
+  width: calc(var(--routine-label-width) + 2 * var(--routine-summary-width) + var(--routine-day-count) * var(--routine-day-width));
+  min-width: 0;
   border-collapse: collapse;
   font-size: 0.9rem;
+
+  col.routine-column--indicator { width: var(--routine-label-width); }
+  col.routine-column--summary { width: var(--routine-summary-width); }
+  col.routine-column--day { width: var(--routine-day-width); }
 
   th.routine-day,
   td.routine-cell,
@@ -717,17 +722,17 @@
       align-items: center;
       justify-content: center;
       width: 100%;
-      min-width: 64px;
+      min-width: 0;
       min-height: var(--routine-cell-min-height);
       height: 100%;
       padding: 0.25rem 0.15rem;
-      font-weight: 500;
+      font-weight: 600;
       color: var(--bs-body-color);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: normal;
       word-break: normal;
-      overflow-wrap: break-word;
+      overflow-wrap: anywhere;
       line-height: 1.2;
       text-align: center;
     }

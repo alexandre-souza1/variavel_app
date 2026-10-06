@@ -1,0 +1,42 @@
+// Shared label colors for the board, list, label cloud and task editor.
+.action-plan-color-badge {
+  --label-fill: color-mix(in srgb, var(--task-label-color, var(--bs-primary)) 30%, var(--bs-body-bg));
+  --label-ink: color-mix(in srgb, var(--task-label-color, var(--bs-primary)) 30%, #172033);
+  --label-outline: color-mix(in srgb, var(--task-label-color, var(--bs-primary)) 50%, transparent);
+}
+
+.action-plan-color-badge,
+.task-detail-modal .labels-field .ts-control .action-plan-color-badge {
+  background: var(--label-fill);
+  color: var(--label-ink) !important;
+  border: 1px solid var(--label-outline);
+  text-shadow: none;
+}
+
+[data-bs-theme="dark"] .action-plan-color-badge {
+  --label-fill: color-mix(in srgb, var(--task-label-color, var(--bs-primary)) 35%, var(--app-dark-surface));
+  --label-ink: color-mix(in srgb, var(--task-label-color, var(--bs-primary)) 35%, #fff);
+  --label-outline: color-mix(in srgb, var(--task-label-color, var(--bs-primary)) 60%, transparent);
+}
+
+.task-detail-modal .labels-field {
+  .ts-control .action-plan-color-badge,
+  .ts-dropdown .action-plan-color-badge {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--bs-body-font-family);
+    font-size: .72rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: .01em;
+    padding: .2rem .45rem;
+    border-radius: 6px;
+  }
+
+  .ts-control .action-plan-color-badge .remove {
+    color: inherit;
+    border-left: 1px solid var(--label-outline);
+    margin-left: .4rem;
+    padding-left: .4rem;
+  }
+}

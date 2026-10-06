@@ -1260,8 +1260,17 @@ main.app-main:has(.action-plan-show) {
   vertical-align: middle;
 }
 
-.task-label-badge {
-  color: var(--label-text-color, #fff) !important;
+.action-plan-show .badge.task-label-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--bs-body-font-family);
+  font-size: .72rem;
+  font-weight: 600;
+  font-style: normal;
+  line-height: 1.3;
+  letter-spacing: .01em;
+  padding: .2rem .45rem;
+  border-radius: 6px;
   text-shadow: none;
 }
 
@@ -1295,7 +1304,6 @@ main.app-main:has(.action-plan-show) {
 }
 
 .action-plan-label-badge {
-  color: var(--label-text-color, #fff) !important;
   margin: 0.12rem 0.15rem 0.12rem 0;
   max-width: 8rem;
   text-shadow: none;
@@ -1455,7 +1463,6 @@ main.app-main:has(.action-plan-show) {
 }
 
 .action-plan-mobile-task__labels .badge {
-  color: var(--label-text-color, #fff) !important;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1923,12 +1930,6 @@ main.app-main:has(.action-plan-show) {
 [data-bs-theme="dark"] .action-plan-user-badge {
   background: var(--app-dark-input);
   border-color: var(--app-dark-border);
-}
-
-[data-bs-theme="dark"] .action-plan-label-badge,
-[data-bs-theme="dark"] .action-plan-mobile-task__labels .badge {
-  color: var(--label-text-color, #fff) !important;
-  text-shadow: none;
 }
 
 [data-bs-theme="dark"] .action-plan-kanban-card {

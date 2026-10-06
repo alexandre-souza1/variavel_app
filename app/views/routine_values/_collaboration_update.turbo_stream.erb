@@ -7,16 +7,7 @@
 
 <%= turbo_stream.replace "routine-value-display-#{routine_value.id}" do %>
 
-  <span
-    id="routine-value-display-<%= routine_value.id %>"
-    data-routine-cell-target="display">
-
-    <%= routine_value_display(
-          indicator,
-          routine_value.value
-        ) %>
-
-  </span>
+  <%= render "routines/value_display", routine_value: routine_value, indicator: indicator %>
 
 <% end %>
 
@@ -24,7 +15,7 @@
 
   <td
     id="routine-result-<%= indicator.id %>"
-    class="text-center"
+    class="text-center result-value"
     data-routine-result-indicator-id="<%= indicator.id %>">
 
     <%= render "routines/result_status",

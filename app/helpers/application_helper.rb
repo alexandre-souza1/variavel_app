@@ -1,19 +1,4 @@
 module ApplicationHelper
-  def label_text_color(color)
-    hex = color.to_s.delete_prefix("#")
-    hex = hex.chars.map { |character| character * 2 }.join if hex.match?(/\A[0-9a-f]{3}\z/i)
-    return "#ffffff" unless hex.match?(/\A[0-9a-f]{6}\z/i)
-
-    channels = hex.scan(/../).map do |channel|
-      value = channel.to_i(16) / 255.0
-      value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055)**2.4
-    end
-    luminance = channels.zip([0.2126, 0.7152, 0.0722]).sum { |channel, weight| channel * weight }
-    white_contrast = 1.05 / (luminance + 0.05)
-    black_contrast = (luminance + 0.05) / 0.05
-    white_contrast >= black_contrast ? "#ffffff" : "#000000"
-  end
-
   def disclosure_arrow(css_class: nil, **attributes)
     tag.i(**attributes, class: class_names("bi", "bi-arrow-right", "app-disclosure-arrow", css_class), aria: { hidden: true })
   end

@@ -18,14 +18,10 @@ export default class extends Controller {
     this.items.forEach((item, index) => {
       const count = Number(item.dataset.usageCount) || 0
       const scale = 0.9 + (Math.sqrt(count) / Math.sqrt(maxCount)) * 0.58
-      const badge = item.querySelector(".action-plan-label-cloud__badge")
 
       item.style.setProperty("--label-scale", scale.toFixed(2))
       item.style.setProperty("--cloud-offset", `${offsets[index % offsets.length]}rem`)
 
-      if (badge) {
-        badge.style.color = this.contrastColor(badge.dataset.color)
-      }
     })
   }
 
@@ -51,16 +47,4 @@ export default class extends Controller {
     this.filter()
   }
 
-  contrastColor(color) {
-    const hex = color.replace("#", "")
-    if (!/^[0-9a-f]{6}$/i.test(hex)) return "#111827"
-
-    const channels = [0, 2, 4].map(index => parseInt(hex.slice(index, index + 2), 16) / 255)
-    const luminance = channels.reduce((total, channel, index) => {
-      const linear = channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
-      return total + linear * [0.2126, 0.7152, 0.0722][index]
-    }, 0)
-
-    return luminance > 0.48 ? "#111827" : "#ffffff"
-  }
 }

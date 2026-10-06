@@ -15,7 +15,14 @@
      data-routine-grid-target="viewport"
      data-drag-scroll-native-mobile-touch-value="true"
      data-drag-scroll-handle-value=".category-row">
-    <table class="table table-routine align-middle mb-0">
+    <table class="table table-routine align-middle mb-0" style="--routine-day-count: <%= days.size %>">
+      <colgroup>
+        <col class="routine-column--indicator">
+        <col class="routine-column--summary" span="2">
+        <% days.each do |_day| %>
+          <col class="routine-column--day">
+        <% end %>
+      </colgroup>
       <thead>
         <tr>
           <th class="col-indicator">Indicador</th>
@@ -99,12 +106,7 @@
                     data-indicator-id="<%= indicator.id %>"
                     data-row="<%= row_index[indicator.id] %>"
                     data-column="<%= column_index %>">
-                    <span
-                      class="routine-cell__display"
-                      id="routine-value-display-<%= value.id %>"
-                      data-routine-cell-target="display">
-                      <%= routine_value_display(indicator, value.value) %>
-                    </span>
+                    <%= render "routines/value_display", routine_value: value, indicator: indicator %>
                     <span
                       class="routine-cell__presence d-none"
                       data-routine-presence-badge

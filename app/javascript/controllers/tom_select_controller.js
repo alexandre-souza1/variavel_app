@@ -15,18 +15,11 @@ export default class extends Controller {
       labelField: "text",
       searchField: "text",
       plugins: ['remove_button'], // 🔥 aqui
-
-      onInitialize: function() {
-        const select = this.input
-
-        select.querySelectorAll("option").forEach(option => {
-          this.addOption({
-            value: option.value,
-            text: option.text,
-            color: option.dataset.color
-          })
-        })
-      },
+      options: Array.from(this.element.options, option => ({
+        value: option.value,
+        text: option.text.trim(),
+        color: option.dataset.color
+      })),
 
       render: {
         option_create: (data, escape) => {
@@ -40,27 +33,14 @@ export default class extends Controller {
         option: (data, escape) => {
           return `
             <div class="d-flex align-items-center gap-2">
-              <span style="
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-                background: ${data.color || '#ccc'};
-                display: inline-block;
-              "></span>
-              <span>${escape(data.text)}</span>
+              <span class="action-plan-color-badge" style="--task-label-color: ${escape(this.badgeColor(data.color))}">${escape(data.text)}</span>
             </div>
           `
         },
 
         item: (data, escape) => {
           return `
-            <div style="
-              background: ${data.color || '#ccc'};
-              color: white;
-              padding: 2px 8px;
-              border-radius: 12px;
-              font-size: 12px;
-            ">
+            <div class="action-plan-color-badge" style="--task-label-color: ${escape(this.badgeColor(data.color))}">
               ${escape(data.text)}
             </div>
           `
@@ -103,5 +83,9 @@ export default class extends Controller {
   randomColor() {
     const colors = ["#ef4444", "#22c55e", "#3b82f6", "#eab308", "#a855f7"]
     return colors[Math.floor(Math.random() * colors.length)]
+  }
+
+  badgeColor(color) {
+    return /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(color || "") ? color : "#6b7280"
   }
 }
