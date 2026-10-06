@@ -182,9 +182,15 @@
 
                   <td data-label="Status" class="text-center fleet-availability-table__status">
                     <% if availability.locked? %>
-                      <span class="badge text-bg-secondary">Enviada</span>
+                      <span class="fleet-availability-status fleet-availability-status--sent">
+                        <i class="bi bi-check-circle" aria-hidden="true"></i>
+                        Enviada
+                      </span>
                     <% else %>
-                      <span class="badge text-bg-light border text-muted">Aberta</span>
+                      <span class="fleet-availability-status fleet-availability-status--open">
+                        <i class="bi bi-unlock" aria-hidden="true"></i>
+                        Aberta
+                      </span>
                     <% end %>
                   </td>
 

@@ -1,10 +1,14 @@
 <%# app/views/fleet_dimensionings/new.html.erb %>
-<div class="fleet-dimensioning-page px-4 py-4">
-  <div class="mb-4">
-    <h2 class="fw-bold mb-1">Novo Dimensionamento</h2>
-    <p class="text-body-secondary mb-0">
-      Cadastre a quinzena e as quantidades que devem rodar no período.
-    </p>
+<div class="fleet-dimensioning-page">
+  <div class="fleet-dimensioning-page__header">
+    <div>
+      <p class="app-page-eyebrow">Configurações · Frota</p>
+      <h1>Novo dimensionamento</h1>
+      <p class="fleet-dimensioning-page__subtitle">Defina a quinzena, as quantidades e as placas da operação.</p>
+    </div>
+    <%= link_to fleet_dimensionings_path, class: "btn btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar
+    <% end %>
   </div>
 
   <%= render "form" %>

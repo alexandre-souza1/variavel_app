@@ -620,23 +620,33 @@ export default class extends Controller {
 
     if (!confirmed) return
 
-    const response = await fetch(
-      `/fleet_availabilities/${this.element.dataset.availabilityId}/restore_standard_layout`,
-      {
-        method: "PATCH",
-        headers: {
-          "X-CSRF-Token": document.querySelector("[name='csrf-token']").content,
-          "Accept": "application/json"
+    const button = event.currentTarget
+    button.disabled = true
+
+    try {
+      const response = await fetch(
+        `/fleet_availabilities/${this.element.dataset.availabilityId}/restore_standard_layout`,
+        {
+          method: "PATCH",
+          headers: {
+            "X-CSRF-Token": document.querySelector("[name='csrf-token']").content,
+            "Accept": "application/json"
+          }
         }
+      )
+
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}))
+        alert(result.error || "Erro ao restaurar o layout.")
+        return
       }
-    )
 
-    if (!response.ok) {
-      alert("Erro ao restaurar o layout.")
-      return
+      Turbo.visit(window.location.href)
+    } catch (error) {
+      alert("Não foi possível restaurar o padrão. Verifique sua conexão e tente novamente.")
+    } finally {
+      button.disabled = false
     }
-
-    Turbo.visit(window.location.href)
   }
 
 

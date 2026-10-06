@@ -195,7 +195,9 @@ Rails.application.routes.draw do
     resources :fleet_availability_items,
               only: [:update]
   end
-  resources :fleet_dimensionings, except: :show
+  resources :fleet_dimensionings, except: :show do
+    get :copy_previous_month, on: :collection
+  end
 
   resources :action_plans do
     resource :gerot_generator, only: %i[new create], controller: :routine_generators

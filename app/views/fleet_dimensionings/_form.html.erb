@@ -1,6 +1,10 @@
 <%# app/views/fleet_dimensionings/_form.html.erb %>
 <%= form_with model: @fleet_dimensioning,
-              data: { controller: "fleet-dimensioning-form" },
+              class: "fleet-dimensioning-form",
+              data: {
+                controller: "fleet-dimensioning-form",
+                fleet_dimensioning_form_copy_url_value: copy_previous_month_fleet_dimensionings_path
+              },
               html: { novalidate: true } do |f| %>
   <% if @fleet_dimensioning.errors.any? %>
     <div class="alert alert-danger">
@@ -13,12 +17,31 @@
     </div>
   <% end %>
 
+  <% if @fleet_dimensioning.new_record? %>
+    <div class="fleet-dimensioning-copy-status <%= 'd-none' if @copied_dimensioning_label.blank? %>"
+         data-fleet-dimensioning-form-target="copyStatus"
+         role="status"
+         aria-live="polite">
+      <% if @copied_dimensioning_label.present? %>
+        Placas e quantidades carregadas de <%= @copied_dimensioning_label %>. Revise antes de salvar.
+      <% end %>
+    </div>
+  <% end %>
+
   <%# Seção: dados básicos %>
-  <div class="bg-light rounded border p-4 mb-4">
-    <h5 class="mb-3">Informações da quinzena</h5>
+  <div class="fleet-dimensioning-form__overview">
+  <section class="fleet-dimensioning-section" aria-labelledby="dimensioning-period-title">
+    <div class="fleet-dimensioning-section__header">
+      <span class="fleet-dimensioning-section__step" aria-hidden="true">01</span>
+      <div>
+        <h2 id="dimensioning-period-title">Quinzena</h2>
+        <p>Escolha o período da disponibilidade.</p>
+      </div>
+    </div>
+    <div class="fleet-dimensioning-section__body">
     <% if @fleet_dimensioning.new_record? %>
-      <div class="row g-3">
-        <div class="col-12 col-md-4">
+      <div class="fleet-dimensioning-period-fields">
+        <div>
           <%= label_tag "fleet_dimensioning_period_year", "Ano", class: "form-label" %>
           <%= select_tag "fleet_dimensioning[period_year]",
                          options_for_select((Date.current.year - 1..Date.current.year + 2).to_a, @period_year),
@@ -26,7 +49,7 @@
                          class: "form-select",
                          required: true %>
         </div>
-        <div class="col-12 col-md-4">
+        <div>
           <%= label_tag "fleet_dimensioning_period_month", "Mês", class: "form-label" %>
           <%= select_tag "fleet_dimensioning[period_month]",
                          options_for_select((1..12).map { |month| [I18n.t("date.month_names")[month].capitalize, month] }, @period_month),
@@ -34,7 +57,7 @@
                          class: "form-select",
                          required: true %>
         </div>
-        <div class="col-12 col-md-4">
+        <div>
           <%= label_tag "fleet_dimensioning_period_half", "Quinzena", class: "form-label" %>
           <%= select_tag "fleet_dimensioning[period_half]",
                          options_for_select([["Q1 · dias 01 a 15", "q1"], ["Q2 · dia 16 ao fim do mês", "q2"]], @period_half),
@@ -44,7 +67,8 @@
         </div>
       </div>
       <div class="form-text mt-3">
-        O nome e as datas serão gerados automaticamente, por exemplo: <strong>Q1 SETEMBRO 26 · 01/09/2026 a 15/09/2026</strong>.
+        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+        O nome e as datas são preenchidos automaticamente a partir da quinzena.
       </div>
     <% else %>
       <div class="row g-3">
@@ -69,13 +93,20 @@
         <%= f.hidden_field :end_date %>
       </div>
     <% end %>
-  </div>
+    </div>
+  </section>
 
   <%# Seção: quantidades %>
-  <div class="bg-light rounded border p-4 mb-4">
-    <h5 class="mb-3">Frota</h5>
-    <div class="row g-3">
-      <div class="col-sm-6 col-md-3">
+  <section class="fleet-dimensioning-section" aria-labelledby="dimensioning-quantities-title">
+    <div class="fleet-dimensioning-section__header">
+      <span class="fleet-dimensioning-section__step" aria-hidden="true">02</span>
+      <div>
+        <h2 id="dimensioning-quantities-title">Quantidades da frota</h2>
+        <p>Veículos que devem rodar no período.</p>
+      </div>
+    </div>
+    <div class="fleet-dimensioning-section__body fleet-dimensioning-quantities">
+      <div class="fleet-dimensioning-quantities__field">
         <%= f.label :route_quantity, "Carros", class: "form-label" %>
         <%= f.number_field :route_quantity,
                            class: "form-control",
@@ -86,39 +117,65 @@
                            },
                            required: true %>
       </div>
-      <div class="col-sm-6 col-md-3">
+      <div class="fleet-dimensioning-quantities__field">
         <%= f.label :van_quantity, "Vans", class: "form-label" %>
         <%= f.number_field :van_quantity,
                            class: "form-control",
                            min: 0,
+                           data: {
+                             fleet_dimensioning_form_target: "specialRouteQuantity",
+                             special_route_quantity: "van",
+                             action: "input->fleet-dimensioning-form#syncSlots"
+                           },
                            required: true %>
       </div>
-      <div class="col-sm-6 col-md-3">
+      <div class="fleet-dimensioning-quantities__field">
         <%= f.label :vespertina_quantity, "Vespertinas", class: "form-label" %>
         <%= f.number_field :vespertina_quantity,
                            class: "form-control",
                            min: 0,
+                           data: {
+                             fleet_dimensioning_form_target: "specialRouteQuantity",
+                             special_route_quantity: "vespertina",
+                             action: "input->fleet-dimensioning-form#syncSlots"
+                           },
                            required: true %>
       </div>
-      <div class="col-sm-6 col-md-3">
+      <div class="fleet-dimensioning-quantities__field">
         <%= f.label :as_quantity, "AS", class: "form-label" %>
         <%= f.number_field :as_quantity,
                            class: "form-control",
                            min: 0,
+                           data: {
+                             fleet_dimensioning_form_target: "specialRouteQuantity",
+                             special_route_quantity: "as",
+                             action: "input->fleet-dimensioning-form#syncSlots"
+                           },
                            required: true %>
       </div>
     </div>
+  </section>
   </div>
 
   <%# Seção: placas padrão %>
-  <div class="bg-light rounded border p-4 mb-4">
-    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-      <div>
-        <h5 class="mb-1">Placas padrão</h5>
-        <small class="text-body-secondary">
+  <section class="fleet-dimensioning-section fleet-dimensioning-section--plates" aria-labelledby="dimensioning-plates-title">
+    <div class="fleet-dimensioning-section__header">
+      <span class="fleet-dimensioning-section__step" aria-hidden="true">03</span>
+      <div class="fleet-dimensioning-section__description">
+        <h2 id="dimensioning-plates-title">Placas padrão</h2>
+        <p>
           Arraste uma placa para cada posição. Para remover, devolva a placa para a lista.
-        </small>
+        </p>
       </div>
+      <% if @fleet_dimensioning.new_record? %>
+        <button type="button"
+                class="btn btn-outline-primary btn-sm fleet-dimensioning-copy-button"
+                title="Carregar placas e quantidades da mesma quinzena do mês anterior"
+                data-action="fleet-dimensioning-form#copyPreviousMonth">
+          <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>
+          Puxar mês anterior
+        </button>
+      <% end %>
     </div>
 
     <% selected_plate_ids =
@@ -132,14 +189,18 @@
     <% rota_plates = Plate.active.where(setor: "ROTA").ordered %>
     <% position_standard_plates = @fleet_dimensioning.fleet_dimensioning_standard_plates.select { |sp| sp.special_route.blank? } %>
 
+    <div class="fleet-dimensioning-section__body">
     <div class="fleet-dimensioning-board">
       <%# Lista de placas disponíveis %>
-      <section class="mb-3">
-        <h6 class="mb-2">Todas as placas</h6>
-        <div class="fleet-dimensioning-plate-list d-flex flex-wrap gap-2"
+      <section class="fleet-dimensioning-board__column">
+        <div class="fleet-dimensioning-board__heading">
+          <h3>Placas disponíveis</h3>
+          <span>Escolha as placas da operação</span>
+        </div>
+        <div class="fleet-dimensioning-plate-list"
              data-fleet-dimensioning-form-target="sourceList">
           <% rota_plates.reject { |plate| selected_plate_ids.include?(plate.id) }.each do |plate| %>
-            <div class="fleet-dimensioning-plate bg-body-secondary border rounded p-2"
+            <div class="fleet-dimensioning-plate"
                  data-plate-id="<%= plate.id %>"
                  data-plate-label="<%= plate.placa %>">
               <strong><%= plate.placa %></strong>
@@ -150,19 +211,26 @@
       </section>
 
       <%# Slots das posições %>
-      <section>
-        <h6 class="mb-2">Posições padrão</h6>
-        <div class="fleet-dimensioning-slots"
-             style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
+      <section class="fleet-dimensioning-board__column">
+        <div class="fleet-dimensioning-board__heading">
+          <h3>Posições padrão</h3>
+          <span>Uma placa por posição</span>
+        </div>
+        <div class="fleet-dimensioning-slots">
+          <div class="fleet-dimensioning-board__empty">
+            <i class="bi bi-grid" aria-hidden="true"></i>
+            <strong>Informe a quantidade de carros</strong>
+            <span>As posições para as placas serão exibidas aqui.</span>
+          </div>
           <%= f.fields_for :fleet_dimensioning_standard_plates, position_standard_plates do |standard_plate_form| %>
             <% position = standard_plate_form.object.position.to_i %>
             <% standard_plate = selected_by_position[position] %>
             <% plate = standard_plate&.plate %>
 
-            <div class="fleet-dimensioning-slot border rounded bg-body"
+            <div class="fleet-dimensioning-slot <%= 'd-none' if position >= @fleet_dimensioning.route_quantity.to_i %>"
                  data-fleet-dimensioning-form-target="slot"
                  data-position="<%= position %>">
-              <div class="fleet-dimensioning-slot__header px-2 py-1 bg-secondary bg-opacity-10 fw-semibold small">
+              <div class="fleet-dimensioning-slot__header">
                 Posição <%= position + 1 %>
               </div>
 
@@ -178,17 +246,17 @@
                                                      fleet_dimensioning_form_target: "destroyInput"
                                                    } %>
 
-              <div class="fleet-dimensioning-slot__body p-2"
+              <div class="fleet-dimensioning-slot__body"
                    data-fleet-dimensioning-form-target="slotList">
                 <% if plate.present? %>
-                  <div class="fleet-dimensioning-plate bg-body-secondary border rounded p-2"
+                  <div class="fleet-dimensioning-plate"
                        data-plate-id="<%= plate.id %>"
                        data-plate-label="<%= plate.placa %>">
                     <strong><%= plate.placa %></strong>
                     <small class="d-block text-body-secondary"><%= plate.perfil.presence || plate.tipo.presence || "Ativa" %></small>
                   </div>
                 <% else %>
-                  <div class="fleet-dimensioning-placeholder text-body-secondary p-2 text-center">
+                  <div class="fleet-dimensioning-placeholder">
                     Arraste uma placa
                   </div>
                 <% end %>
@@ -199,25 +267,28 @@
       </section>
     </div>
 
-    <div class="mt-4 pt-4 border-top">
-      <h6 class="mb-1">Placas padrão das rotas especiais</h6>
+    <% special_route_standard_plates = @fleet_dimensioning.fleet_dimensioning_standard_plates.select { |sp| sp.special_route.present? }.index_by(&:special_route) %>
+    <div class="fleet-dimensioning-special-routes <%= 'd-none' if @fleet_dimensioning.special_routes.empty? %>"
+         data-fleet-dimensioning-form-target="specialRoutes">
+      <h3>Rotas especiais</h3>
       <small class="text-body-secondary d-block mb-3">
         Defina uma placa padrão para cada rota especial dimensionada.
       </small>
 
-      <% special_route_standard_plates = @fleet_dimensioning.fleet_dimensioning_standard_plates.select { |sp| sp.special_route.present? } %>
       <div class="row g-3">
-        <% special_route_standard_plates.each do |special_standard_plate| %>
-          <% route = special_standard_plate.special_route %>
-          <% route_label = FleetAvailability::SPECIAL_ROUTES[route] || route.humanize %>
+        <% FleetAvailability::SPECIAL_ROUTES.each do |route, route_label| %>
+          <% special_standard_plate = special_route_standard_plates[route] || FleetDimensioningStandardPlate.new(special_route: route) %>
+          <% route_active = @fleet_dimensioning.public_send("#{route}_quantity").to_i.positive? %>
           <%= f.fields_for :fleet_dimensioning_standard_plates,
                            special_standard_plate,
                            child_index: "special_#{route}" do |special_plate_form| %>
-            <div class="col-sm-6 col-lg-4">
-              <div class="fleet-dimensioning-slot border rounded bg-body h-100"
+            <div class="col-sm-6 col-lg-4 <%= 'd-none' unless route_active %>"
+                 data-fleet-dimensioning-form-target="specialRoute"
+                 data-route-key="<%= route %>">
+              <div class="fleet-dimensioning-slot h-100"
                    data-fleet-dimensioning-form-target="slot"
                    data-special-route="<%= route %>">
-                <div class="fleet-dimensioning-slot__header px-2 py-1 bg-secondary bg-opacity-10 fw-semibold small">
+                <div class="fleet-dimensioning-slot__header">
                   Rota <%= route_label %>
                 </div>
                 <%= special_plate_form.hidden_field :special_route %>
@@ -228,22 +299,22 @@
                                                        fleet_dimensioning_form_target: "plateInput"
                                                      } %>
                 <%= special_plate_form.hidden_field :_destroy,
-                                                     value: special_standard_plate.plate_id.present? ? "0" : "1",
+                                                     value: route_active && special_standard_plate.plate_id.present? ? "0" : "1",
                                                      data: {
                                                        fleet_dimensioning_form_target: "destroyInput"
                                                      } %>
 
-                <div class="fleet-dimensioning-slot__body p-2"
+                <div class="fleet-dimensioning-slot__body"
                      data-fleet-dimensioning-form-target="slotList">
                   <% if special_standard_plate.plate.present? %>
-                    <div class="fleet-dimensioning-plate bg-body-secondary border rounded p-2"
+                    <div class="fleet-dimensioning-plate"
                          data-plate-id="<%= special_standard_plate.plate.id %>"
                          data-plate-label="<%= special_standard_plate.plate.placa %>">
                       <strong><%= special_standard_plate.plate.placa %></strong>
                       <small class="d-block text-body-secondary"><%= special_standard_plate.plate.perfil.presence || special_standard_plate.plate.tipo.presence || "Ativa" %></small>
                     </div>
                   <% else %>
-                    <div class="fleet-dimensioning-placeholder text-body-secondary p-2 text-center">
+                    <div class="fleet-dimensioning-placeholder">
                       Arraste uma placa
                     </div>
                   <% end %>
@@ -254,13 +325,14 @@
         <% end %>
       </div>
     </div>
-  </div>
+    </div>
+  </section>
 
-  <div class="d-flex justify-content-end gap-2">
+  <div class="fleet-dimensioning-form__actions">
     <%= link_to fleet_dimensionings_path,
                 class: "btn btn-outline-secondary" do %>
-      <i class="bi bi-arrow-left"></i> Voltar
+      Cancelar
     <% end %>
-    <%= f.submit "Salvar", class: "btn btn-primary" %>
+    <%= f.submit "Salvar dimensionamento", class: "btn btn-primary" %>
   </div>
 <% end %>

@@ -4,12 +4,18 @@ import Sortable from "sortablejs"
 export default class extends Controller {
   static targets = [
     "routeQuantity",
+    "specialRouteQuantity",
+    "specialRoutes",
+    "specialRoute",
     "sourceList",
     "slot",
     "slotList",
     "plateInput",
-    "destroyInput"
+    "destroyInput",
+    "copyStatus"
   ]
+
+  static values = { copyUrl: String }
 
   connect() {
     this.sortables = []
@@ -19,6 +25,47 @@ export default class extends Controller {
 
   syncSlots() {
     this.refreshSlots()
+  }
+
+  async copyPreviousMonth(event) {
+    const button = event.currentTarget
+    button.disabled = true
+    this.showCopyStatus("Buscando o dimensionamento do mês anterior…")
+
+    try {
+      const url = new URL(this.copyUrlValue, window.location.origin)
+      const form = new FormData(this.element)
+      for (const field of ["period_year", "period_month", "period_half"]) {
+        const name = `fleet_dimensioning[${field}]`
+        url.searchParams.set(name, form.get(name) || "")
+      }
+
+      const response = await fetch(url, {
+        headers: { Accept: "text/html" },
+        credentials: "same-origin"
+      })
+      if (!response.ok) {
+        const error = await response.json()
+        this.showCopyStatus(error.error || "Não foi possível carregar o dimensionamento anterior.", true)
+        return
+      }
+
+      const template = document.createElement("template")
+      template.innerHTML = await response.text()
+      const newForm = template.content.querySelector(".fleet-dimensioning-form")
+      if (!newForm) throw new Error("Formulário não encontrado")
+      this.element.replaceWith(newForm)
+    } catch (_error) {
+      this.showCopyStatus("Não foi possível carregar o dimensionamento anterior. Tente novamente.", true)
+    } finally {
+      button.disabled = false
+    }
+  }
+
+  showCopyStatus(message, error = false) {
+    this.copyStatusTarget.textContent = message
+    this.copyStatusTarget.classList.remove("d-none")
+    this.copyStatusTarget.classList.toggle("fleet-dimensioning-copy-status--error", error)
   }
 
   disconnect() {
@@ -61,11 +108,23 @@ export default class extends Controller {
 
   refreshSlots() {
     const activeSlotCount = this.activeSlotCount()
+    const activeSpecialRoutes = new Set(
+      this.specialRouteQuantityTargets
+        .filter(input => Number(input.value) > 0)
+        .map(input => input.dataset.specialRouteQuantity)
+    )
+
+    this.specialRoutesTarget.classList.toggle("d-none", activeSpecialRoutes.size === 0)
+    this.specialRouteTargets.forEach(route => {
+      route.classList.toggle("d-none", !activeSpecialRoutes.has(route.dataset.routeKey))
+    })
 
     this.slotTargets.forEach((slot) => {
       const position = Number(slot.dataset.position)
       const isSpecialRouteSlot = Boolean(slot.dataset.specialRoute)
-      const slotIsActive = isSpecialRouteSlot || position < activeSlotCount
+      const slotIsActive = isSpecialRouteSlot
+        ? activeSpecialRoutes.has(slot.dataset.specialRoute)
+        : position < activeSlotCount
       const slotList = slot.querySelector(
         "[data-fleet-dimensioning-form-target='slotList']"
       )

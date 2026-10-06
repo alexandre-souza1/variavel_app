@@ -166,6 +166,11 @@ class FleetAvailabilitiesController < ApplicationController
     FleetAvailability::RestoreStandardLayout.call(@fleet_availability)
 
     head :ok
+  rescue FleetAvailability::RestoreStandardLayout::Error => error
+    render json: { error: error.message }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordInvalid => error
+    render json: { error: "Não foi possível restaurar o padrão: #{error.record.errors.full_messages.to_sentence}." },
+           status: :unprocessable_entity
   end
 
   private
@@ -189,6 +194,12 @@ class FleetAvailabilitiesController < ApplicationController
 
   def require_creator_edit_access!
     return if @fleet_availability.editable_by?(current_user)
+
+    if action_name == "restore_standard_layout"
+      render json: { error: "A disponibilidade está travada ou você não tem permissão para ajustá-la." },
+             status: :forbidden
+      return
+    end
 
     redirect_to @fleet_availability,
                 alert: "Apenas quem iniciou a disponibilidade pode travá-la enquanto ela estiver aberta."

@@ -83,6 +83,7 @@ class FleetDimensioning < ApplicationRecord
   def standard_plate_by_position
     fleet_dimensioning_standard_plates
       .includes(:plate)
+      .where(special_route: nil)
       .index_by(&:position)
   end
 

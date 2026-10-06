@@ -286,15 +286,22 @@ html[data-bs-theme="light"] {
   }
 
   .app-table {
-    background-color: var(--bs-tertiary-bg);
+    --bs-table-bg: var(--app-surface);
+    --bs-table-striped-bg: var(--app-surface);
+    background-color: var(--bs-table-bg);
 
     > :not(caption) > * > * {
-      background-color: var(--bs-tertiary-bg) !important;
+      background-color: var(--bs-table-bg) !important;
     }
 
     thead th {
+      --bs-table-bg: var(--bs-secondary-bg);
       background-color: var(--bs-secondary-bg) !important;
     }
+  }
+
+  .fleet-dimensionings-index .fleet-dimensioning-table tbody tr {
+    background-color: var(--app-surface);
   }
 
   // Tabelas legadas e específicas de páginas também ganham uma superfície.
