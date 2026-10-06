@@ -63,17 +63,19 @@
               </td>
 
               <td class="text-center goal-value">
-                <%= routine_value_display(indicator, calculation[:goal]) %>
-                <% if routine.open? && routine.routine_template.manageable_by?(current_user) %>
-                  <button type="button"
-                          class="routine-goal-trigger"
-                          data-bs-toggle="modal"
-                          data-bs-target="#routineGoalModal-<%= indicator.id %>"
-                          title="<%= routine_target ? 'Alterar meta do período' : 'Cadastrar meta para o período' %>"
-                          aria-label="<%= routine_target ? 'Alterar meta' : 'Cadastrar meta' %> para <%= indicator.name %>">
-                    <i class="bi <%= routine_target ? 'bi-pencil' : 'bi-plus-lg' %>"></i>
-                  </button>
-                <% end %>
+                <div class="routine-goal-value">
+                  <span class="routine-goal-value__number"><%= routine_value_display(indicator, calculation[:goal]) %></span>
+                  <% if routine.open? && routine.routine_template.manageable_by?(current_user) %>
+                    <button type="button"
+                            class="routine-goal-trigger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#routineGoalModal-<%= indicator.id %>"
+                            title="<%= routine_target ? 'Alterar meta do período' : 'Cadastrar meta para o período' %>"
+                            aria-label="<%= routine_target ? 'Alterar meta' : 'Cadastrar meta' %> para <%= indicator.name %>">
+                      <i class="bi <%= routine_target ? 'bi-pencil' : 'bi-plus-lg' %>"></i>
+                    </button>
+                  <% end %>
+                </div>
               </td>
 
               <td

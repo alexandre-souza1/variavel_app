@@ -536,7 +536,7 @@
   // TOKENS DA GRADE
   // ==========================================================
   // Medidas compartilhadas pela grade. Alterar aqui mantém as colunas alinhadas.
-  --routine-day-width: var(--app-routine-day-width, 96px);
+  --routine-day-width: var(--app-routine-day-width, 80px);
   --routine-cell-min-height: var(--app-routine-cell-min-height, 64px);
   --routine-label-width: var(--app-routine-label-width, 280px);
   --routine-summary-width: var(--app-routine-summary-width, 120px);
@@ -661,9 +661,19 @@
       .result-value {
         font-weight: 500;
         color: var(--bs-body-color);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        padding: .5rem .35rem;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+
+      .routine-goal-value {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .25rem;
+
+        &__number { min-width: 0; }
+        .routine-goal-trigger { flex-shrink: 0; margin: 0; }
       }
 
       .empty-cell {

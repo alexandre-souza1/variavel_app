@@ -30,21 +30,75 @@
 .action-plan-labels-search__clear { background: transparent; border: 0; border-radius: 7px; color: var(--bs-secondary-color); padding: .25rem; }
 .action-plan-labels-search__clear:hover { color: var(--bs-primary); }
 .action-plan-labels-result-count { color: var(--bs-secondary-color); font-size: .75rem; white-space: nowrap; }
-.action-plan-label-cloud { align-items: center; background: var(--bs-body-bg); border: 1px dashed var(--bs-border-color); border-radius: 14px; display: flex; flex-wrap: wrap; gap: .55rem 1rem; justify-content: center; margin: 0 auto; max-width: 820px; min-height: 12rem; overflow: visible; padding: 1.5rem 2rem; }
-.action-plan-label-cloud__item { align-items: center; background: transparent; border: 1px solid transparent; border-radius: 10px; display: inline-flex; flex: 0 0 auto; gap: .45rem; margin-top: var(--cloud-offset, 0); padding: .4rem .45rem; position: relative; transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
-.action-plan-label-cloud__item.is-hidden { display: none; }
-.action-plan-label-cloud__item:hover { background: transparent; border-color: transparent; box-shadow: none; }
-.action-plan-label-cloud__badge { border-radius: 7px; font-size: calc(.82rem * var(--label-scale, 1)); font-weight: 750; letter-spacing: .015em; line-height: 1.2; padding: .35rem .65rem; transition: filter .2s ease, transform .2s ease, box-shadow .2s ease; white-space: nowrap; word-break: keep-all; -webkit-font-smoothing: antialiased; }
-.action-plan-label-cloud__item:hover .action-plan-label-cloud__badge { box-shadow: 0 .2rem .45rem rgba(var(--bs-primary-rgb), .16); filter: saturate(1.12) brightness(1.03); transform: translateY(-1px); }
+.action-plan-labels-toolbar__tools { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.action-plan-labels-manage { background: transparent; border: 0; border-radius: 6px; color: var(--bs-body-color); font-size: .8rem; padding: .4rem; }
+.action-plan-labels-manage:hover,
+.action-plan-labels-manage[aria-pressed="true"] { color: var(--bs-primary); background: rgba(var(--bs-primary-rgb), .08); }
+// The cloud uses text rather than badges; task badges retain their shared palette.
+.action-plan-label-cloud {
+  background: transparent;
+  border: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+  margin: 0 auto;
+  max-width: 1100px;
+  min-height: 18rem;
+  padding: 20px;
+  position: relative;
+}
+.action-plan-label-cloud__item {
+  display: inline-flex;
+  position: relative;
+  max-width: 100%;
+  &:hover, &:focus-within { z-index: 5; }
+  &.is-hidden { display: none; }
+}
+.action-plan-label-cloud__word {
+  color: color-mix(in srgb, var(--task-label-color) 70%, #172033);
+  display: block;
+  font-family: var(--bs-body-font-family);
+  font-size: var(--word-size, 24px);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1.05;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  transition: opacity .15s ease;
+  &:hover { color: color-mix(in srgb, var(--task-label-color) 70%, #172033); opacity: .75; }
+  &:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 3px; border-radius: 3px; }
+}
+[data-bs-theme="dark"] .action-plan-label-cloud {
+  .action-plan-label-cloud__word { color: color-mix(in srgb, var(--task-label-color) 55%, white); }
+}
+.action-plan-label-cloud.is-positioned {
+  display: block;
+  .action-plan-label-cloud__item { position: absolute; max-width: none; }
+  .action-plan-label-cloud__word {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    white-space: nowrap;
+    transform: translate(-50%, -50%) rotate(var(--word-angle, 0deg));
+  }
+}
 .action-plan-label-cloud__item small,
-.action-plan-label-cloud__delete { opacity: 0; pointer-events: none; position: absolute; transition: opacity .2s ease; }
-.action-plan-label-cloud__item small { background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color); border-radius: 6px; color: var(--bs-secondary-color); font-size: .7rem; left: 50%; padding: .15rem .35rem; top: calc(100% - .1rem); transform: translateX(-50%); white-space: nowrap; z-index: 3; }
+.action-plan-label-cloud__delete { opacity: 0; pointer-events: none; position: absolute; transition: opacity .15s ease; }
+.action-plan-label-cloud__item small { background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color); border-radius: 6px; color: var(--bs-secondary-color); font-size: .7rem; left: 50%; padding: .15rem .35rem; top: 100%; transform: translateX(-50%); white-space: nowrap; z-index: 3; }
 .action-plan-label-cloud__delete { align-items: center; background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color); border-radius: 50%; color: var(--bs-secondary-color); display: inline-flex; height: 1.55rem; justify-content: center; padding: 0; right: -.35rem; top: -.35rem; width: 1.55rem; z-index: 4; }
 .action-plan-label-cloud__item:hover small,
 .action-plan-label-cloud__item:hover .action-plan-label-cloud__delete,
 .action-plan-label-cloud__item:focus-within small,
 .action-plan-label-cloud__item:focus-within .action-plan-label-cloud__delete { opacity: 1; pointer-events: auto; }
+.action-plan-label-cloud.is-managing .action-plan-label-cloud__delete { opacity: 1; pointer-events: auto; }
 .action-plan-label-cloud__delete:hover { background: rgba(var(--bs-danger-rgb), .12); color: var(--bs-danger); }
+@media (prefers-reduced-motion: reduce) {
+  .action-plan-label-cloud__word,
+  .action-plan-label-cloud__delete,
+  .action-plan-label-cloud__item small { transition: none; }
+}
 .action-plan-labels-empty { color: var(--bs-secondary-color); padding: 2rem; text-align: center; }
 .action-plan-labels-empty i { display: block; font-size: 2rem; margin-bottom: .5rem; }
 

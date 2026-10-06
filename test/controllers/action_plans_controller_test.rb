@@ -1,6 +1,19 @@
 require "test_helper"
 
 class ActionPlansControllerTest < ActionDispatch::IntegrationTest
+  test "label cloud links to the task search and preserves label management" do
+    plan = users(:one).action_plans.create!(name: "Etiquetas")
+    label = plan.labels.create!(name: "Manutenção & revisão", color: "#3616b6")
+    get action_plan_path(plan, view: "labels")
+    assert_response :success
+    assert_select ".action-plan-label-cloud__word[href=?]",
+      action_plan_path(plan, view: "list", label_query: label.name), text: label.name
+    assert_select ".action-plan-label-cloud__delete[aria-label=?]", "Excluir label #{label.name}"
+    get action_plan_path(plan, view: "list", label_query: label.name)
+    assert_response :success
+    assert_select "input[data-action-plan-filter-target=query][value=?]", label.name
+  end
+
   test "new renders the plan form without the meeting recorder" do
     get new_action_plan_url
 

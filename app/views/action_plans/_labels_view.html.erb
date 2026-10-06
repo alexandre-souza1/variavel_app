@@ -2,7 +2,7 @@
   <div class="action-plan-labels-page__header">
     <div>
       <h2><i class="bi bi-tags me-2"></i>Labels do plano</h2>
-      <p>Gerencie as labels usadas nas tarefas deste plano.</p>
+      <p>As labels mais usadas ganham destaque. Clique em uma para ver as tarefas.</p>
     </div>
     <%= link_to action_plan_path(action_plan, view: "kanban"), class: "btn-outline" do %>
       <i class="bi bi-arrow-left me-1"></i> Voltar para tarefas
@@ -34,7 +34,15 @@
           <i class="bi bi-x-circle" aria-hidden="true"></i>
         </button>
       </div>
-      <span class="action-plan-labels-result-count" data-labels-cloud-target="resultCount"></span>
+      <div class="action-plan-labels-toolbar__tools">
+        <span class="action-plan-labels-result-count" data-labels-cloud-target="resultCount" aria-live="polite"></span>
+        <% if can_manage_labels %>
+          <button type="button" class="action-plan-labels-manage"
+                  aria-pressed="false" data-action="click->labels-cloud#manage">
+            <i class="bi bi-sliders" aria-hidden="true"></i> <span>Gerenciar</span>
+          </button>
+        <% end %>
+      </div>
     </div>
 
     <div class="action-plan-label-cloud" aria-label="Labels do plano" data-labels-cloud-target="cloud">
@@ -49,10 +57,12 @@
              data-labels-cloud-target="item"
              data-label-name="<%= label.name %>"
              data-usage-count="<%= tasks_count %>">
-          <span class="action-plan-label-cloud__badge action-plan-color-badge"
-                style="--task-label-color: <%= label.color %>;">
+          <%= link_to action_plan_path(action_plan, view: "list", label_query: label.name),
+                class: "action-plan-label-cloud__word",
+                style: "--task-label-color: #{label.color};",
+                aria: { label: "#{label.name}: #{tasks_count} #{tasks_count == 1 ? 'tarefa' : 'tarefas'}. Ver tarefas." } do %>
             <%= label.name %>
-          </span>
+          <% end %>
           <small><%= tasks_count %> <%= tasks_count == 1 ? "tarefa" : "tarefas" %></small>
 
           <% if can_manage_labels %>
