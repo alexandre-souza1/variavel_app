@@ -1,0 +1,104 @@
+// Task editor controls share the compact surfaces used by the task composer.
+.task-detail-modal {
+  .ts-wrapper { border: 0 !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; }
+  .ts-wrapper .ts-control,
+  .labels-field .ts-wrapper.multi .ts-control {
+    background: var(--bs-tertiary-bg) !important;
+    border: 1px solid var(--bs-border-color) !important;
+    border-radius: 8px !important;
+    min-height: 40px !important;
+    padding: .4rem .55rem !important;
+    color: var(--bs-body-color);
+    box-shadow: none;
+    gap: .3rem;
+    align-items: center;
+  }
+  .ts-wrapper.focus .ts-control,
+  .labels-field .ts-wrapper.multi.focus .ts-control {
+    border-color: var(--bs-primary) !important;
+    box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), .12) !important;
+  }
+  .ts-control input { color: var(--bs-body-color); font-size: .8rem; }
+  .ts-control input::placeholder { color: var(--bs-secondary-color); }
+  .ts-wrapper.single .ts-control { padding-right: 1.75rem !important; cursor: pointer; }
+  .ts-wrapper.single .ts-control::after {
+    content: "\f282";
+    font-family: "bootstrap-icons";
+    border: 0;
+    position: absolute;
+    right: .6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: .75rem;
+    color: var(--bs-secondary-color);
+  }
+  .ts-wrapper.single .item { color: var(--bs-body-color); line-height: 1.4; overflow-wrap: anywhere; }
+  .ts-dropdown {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 12px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, .18);
+    color: var(--bs-body-color);
+    margin-top: .4rem;
+    padding: .35rem;
+    font-size: .8rem;
+    overflow: hidden;
+  }
+  .ts-dropdown-content { max-height: 220px; padding: 0; scrollbar-width: thin; overscroll-behavior: contain; }
+  .ts-dropdown .option,
+  .ts-dropdown .create { padding: .55rem .5rem; border-radius: 7px; color: var(--bs-body-color); overflow-wrap: anywhere; }
+  .ts-dropdown .active,
+  .ts-dropdown .option.selected { background: rgba(var(--bs-primary-rgb), .08); color: var(--bs-primary); }
+  .task-select-option { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+  .task-select-option i { flex-shrink: 0; opacity: 0; }
+  .task-select-option.selected i { opacity: 1; }
+  .users-field .ts-control .item { border-radius: 6px; }
+  .users-field .ts-dropdown .avatar-circle-sm { background: rgba(var(--bs-primary-rgb), .12); color: var(--bs-primary); }
+  .labels-field .ts-wrapper.multi .ts-control { min-height: 40px; }
+}
+
+.task-datetime__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  width: 100%;
+  min-height: 40px;
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 8px;
+  padding: .4rem .55rem;
+  text-align: left;
+  font-size: .8rem;
+  span { min-width: 0; overflow-wrap: anywhere; }
+  i { flex-shrink: 0; color: var(--bs-secondary-color); }
+  &:hover, &[aria-expanded="true"] { background: rgba(var(--bs-primary-rgb), .08); border-color: rgba(var(--bs-primary-rgb), .3); }
+  &:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
+}
+.task-datetime__panel {
+  animation: none;
+  .task-composer__calendar-days button { min-height: 32px; }
+}
+.task-datetime__time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  border-top: 1px solid var(--bs-border-color);
+  margin-top: .65rem;
+  padding-top: .6rem;
+  label { color: var(--bs-secondary-color); font-size: .7rem; }
+  input { display: block; width: 3.5rem; margin-top: .2rem; padding: .35rem; text-align: center; border-radius: 6px; border: 1px solid var(--bs-border-color); background: var(--bs-tertiary-bg); color: var(--bs-body-color); font-size: 16px; }
+}
+.task-datetime__footer {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  border-top: 1px solid var(--bs-border-color);
+  margin-top: .65rem;
+  padding-top: .5rem;
+  button { border: 0; border-radius: 6px; padding: .4rem .6rem; background: transparent; color: var(--bs-secondary-color); font-size: .75rem; }
+  button:hover { background: rgba(var(--bs-primary-rgb), .08); color: var(--bs-primary); }
+  .task-datetime__apply { margin-left: auto; color: var(--bs-primary); background: rgba(var(--bs-primary-rgb), .1); font-weight: 600; }
+}

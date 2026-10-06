@@ -10,6 +10,7 @@ export default class extends Controller {
     this.select = new TomSelect(this.element, {
       plugins: ['remove_button'],
       maxItems: null,
+      placeholder: "Buscar responsável...",
 
       render: {
         option: function(data, escape) {
@@ -34,5 +35,8 @@ export default class extends Controller {
         }
       }
     })
+    for (const name of ["input", "change"]) this.select.control_input?.addEventListener(name, event => event.stopPropagation())
   }
+
+  disconnect() { this.select?.destroy() }
 }

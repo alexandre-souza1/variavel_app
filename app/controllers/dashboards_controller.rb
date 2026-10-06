@@ -233,34 +233,7 @@ class DashboardsController < ApplicationController
   end
 
   def dias_rodados_por_placa(mes, ano)
-    mapas_do_periodo = Mapa
-      .where.not(plate: [nil, ""])
-      .pluck(:plate, :data)
-      .select do |_, data|
-        numeros = data.to_s.gsub(/\D/, "")
-        case numeros.length
-        when 8
-          m = numeros[2,2].to_i
-          a = numeros[4,4].to_i
-        when 7
-          m = numeros[1,2].to_i
-          a = numeros[3,4].to_i
-        else
-          next false
-        end
-        m == mes && a == ano
-      end
-
-    dias_rodados = Hash.new { |h, k| h[k] = [] }
-    mapas_do_periodo.each do |placa, data_str|
-      dia = extrair_dia(data_str)
-      next if dia.nil?
-      PlateUtils.equivalentes(placa).each do |placa_equivalente|
-        dias_rodados[placa_equivalente] << dia
-      end
-    end
-    dias_rodados.transform_values!(&:uniq)
-    dias_rodados
+    Mapa.dias_rodados_por_placa(mes, ano)
   end
 
   def vehicles_not_used_in_month(mes, ano, setor = nil)
@@ -281,17 +254,6 @@ class DashboardsController < ApplicationController
     end
   rescue
     []
-  end
-
-  def extrair_dia(data_str)
-    return nil if data_str.blank?
-    data = data_str.to_s.gsub(/\D/, "")
-    case data.length
-    when 8 then data[0,2].to_i
-    when 7 then data[0,1].to_i
-    when 6 then data[0,1].to_i
-    else nil
-    end
   end
 
   def periodo_dashboard_mapas(tipo, mes, ano)

@@ -41,6 +41,15 @@
           <%= link_to plate_path(plate), data: { plate_profile_link: true }, title: "Consulte informações da placa", aria: { label: "Abrir perfil da placa #{plate.placa}" } do %>
             <%= plate.placa %> <i class="bi bi-box-arrow-up-right fleet-vehicle-card__plate-link-icon" aria-hidden="true"></i>
           <% end %>
+          <% if @plate_ids_without_monthly_departure&.include?(plate.id) %>
+            <span class="fleet-vehicle-card__departure-alert"
+                  data-fleet-departure-alert
+                  tabindex="0"
+                  title="Carro sem saída no 2ART"
+                  aria-label="Carro sem saída no 2ART">
+              <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+            </span>
+          <% end %>
         </strong>
 
         <div class="fleet-vehicle-card__profile">

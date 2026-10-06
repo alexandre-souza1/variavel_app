@@ -110,6 +110,7 @@ class FleetAvailabilitiesController < ApplicationController
 
     respond_to do |format|
       format.html do
+        load_plates_without_monthly_departure
         @tread_depth_by_plate = Prolog::TiresClient.new.tread_depth_by_plate
       end
       format.pdf do
@@ -168,6 +169,15 @@ class FleetAvailabilitiesController < ApplicationController
   end
 
   private
+
+  def load_plates_without_monthly_departure
+    date = @fleet_availability.date
+    days_driven_by_plate = Mapa.dias_rodados_por_placa(date.month, date.year)
+
+    @plate_ids_without_monthly_departure = @items.reject do |item|
+      PlateUtils.equivalentes(item.plate.placa).any? { |placa| days_driven_by_plate.key?(placa) }
+    end.map(&:plate_id).to_set
+  end
 
   def set_fleet_availability
     @fleet_availability = FleetAvailability.find(params[:id])

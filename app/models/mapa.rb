@@ -6,6 +6,29 @@ class Mapa < ApplicationRecord
   belongs_to :cargo_override_user, class_name: 'User', optional: true
   has_many :mapa_cargo_overrides, dependent: :restrict_with_exception
 
+  def self.dias_rodados_por_placa(mes, ano)
+    dias_rodados = Hash.new { |hash, placa| hash[placa] = [] }
+
+    where.not(plate: [nil, ""]).pluck(:plate, :data).each do |placa, data|
+      numeros = data.to_s.gsub(/\D/, "")
+      case numeros.length
+      when 8
+        dia, mes_mapa, ano_mapa = numeros[0, 2].to_i, numeros[2, 2].to_i, numeros[4, 4].to_i
+      when 7
+        dia, mes_mapa, ano_mapa = numeros[0, 1].to_i, numeros[1, 2].to_i, numeros[3, 4].to_i
+      else
+        next
+      end
+      next unless mes_mapa == mes && ano_mapa == ano
+
+      PlateUtils.equivalentes(placa).each do |equivalente|
+        dias_rodados[equivalente] << dia
+      end
+    end
+
+    dias_rodados.transform_values(&:uniq)
+  end
+
   validate :ajudantes_diferentes
   validates :cargo_override, inclusion: { in: CARGOS }, allow_blank: true
 

@@ -48,6 +48,22 @@
   }
   .fleet-vehicle-card__plate-link-icon { font-size: .58em; vertical-align: .15em; opacity: .7; }
 
+  .fleet-vehicle-card__departure-alert {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.15rem;
+    color: var(--bs-warning-text-emphasis);
+    font-size: 0.75rem;
+    vertical-align: 0.05em;
+    cursor: help;
+
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+      border-radius: 50%;
+    }
+  }
+
   .fleet-vehicle-card__profile {
     margin-top: 0.05rem;
     color: var(--bs-secondary-color);

@@ -91,8 +91,10 @@
 
               <!-- RÓTULOS -->
               <div class="mb-3 labels-field">
-                <label>Rótulos</label>
+                <label for="task-labels-<%= task.id %>">Rótulos</label>
+                <%= hidden_field_tag "task[label_ids][]", "", id: nil %>
                 <select name="task[label_ids][]"
+                        id="task-labels-<%= task.id %>"
                         multiple
                         class="form-control form-control-sm"
                         data-controller="tom-select"
@@ -127,20 +129,20 @@
                   <div class="col-md-6">
                     <%= f.label :start_at, class: "d-none" %>
                     <p class="text-muted small mb-1">Data e hora de início</p>
-                    <%= f.datetime_local_field :start_at, class: "form-control" %>
+                    <%= render "tasks/datetime_picker", f: f, field: :start_at, label: "Data e hora de início" %>
                   </div>
 
                   <div class="col-md-6">
                     <%= f.label :due_at, class: "d-none" %>
                     <p class="text-muted small mb-1">Data e hora de Conclusão</p>
-                    <%= f.datetime_local_field :due_at, class: "form-control" %>
+                    <%= render "tasks/datetime_picker", f: f, field: :due_at, label: "Data e hora de conclusão" %>
                   </div>
                 </div>
 
                 <!-- LINHA 2: RECORRÊNCIA -->
                 <div class="row mt-3">
                   <div class="col-md-6">
-                    <label>Repetir tarefa</label>
+                    <%= f.label :recurrence, "Repetir tarefa" %>
 
                     <%= f.select :recurrence,
                       options_for_select([
@@ -151,11 +153,11 @@
                         ["Bimestralmente", "bimonthly"]
                       ], task.recurrence),
                       {},
-                      class: "form-control" %>
+                      class: "form-control", data: { controller: "task-select", task_select_search_value: false } %>
                   </div>
                   <div class="col-md-6">
-                    <label>Bucket</label>
-                    <%= f.select :bucket_id, options_from_collection_for_select(task.bucket.action_plan.buckets, :id, :name, task.bucket_id), {}, class: "form-control" %>
+                    <%= f.label :bucket_id, "Bucket" %>
+                    <%= f.select :bucket_id, options_from_collection_for_select(task.bucket.action_plan.buckets, :id, :name, task.bucket_id), {}, class: "form-control", data: { controller: "task-select", task_select_placeholder_value: "Buscar bucket..." } %>
                   </div>
                 </div>
 
@@ -163,13 +165,15 @@
 
               <div class="mb-3 users-field">
                 <div class="task-detail-modal__field-heading">
-                  <label><i class="bi bi-people me-1"></i> Responsáveis</label>
+                  <label for="task-users-<%= task.id %>"><i class="bi bi-people me-1"></i> Responsáveis</label>
                   <small>Quem deve executar esta tarefa</small>
                 </div>
 
+                <%= hidden_field_tag "task[user_ids][]", "", id: nil %>
                 <%= select_tag "task[user_ids][]",
                   options_from_collection_for_select(User.all, :id, :name, task.users.pluck(:id)),
                   multiple: true,
+                  id: "task-users-#{task.id}",
                   class: "form-control",
                   data: { controller: "tom-select-users" } %>
               </div>

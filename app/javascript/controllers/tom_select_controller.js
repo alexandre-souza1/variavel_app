@@ -78,7 +78,10 @@ export default class extends Controller {
           })
       }
     })
+    for (const name of ["input", "change"]) this.tom.control_input?.addEventListener(name, event => event.stopPropagation())
   }
+
+  disconnect() { this.tom?.destroy() }
 
   randomColor() {
     const colors = ["#ef4444", "#22c55e", "#3b82f6", "#eab308", "#a855f7"]

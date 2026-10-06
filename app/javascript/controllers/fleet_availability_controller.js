@@ -10,6 +10,10 @@ export default class extends Controller {
     this.selectedMobileItem = null
     this.modalConfirmed = false
     this.editable = this.element.dataset.editable === "true"
+    this.departureTooltips = Array.from(
+      this.element.querySelectorAll("[data-fleet-departure-alert]"),
+      (element) => new bootstrap.Tooltip(element, { container: "body", trigger: "hover focus" })
+    )
 
     if (!this.editable) return
 
@@ -41,7 +45,7 @@ export default class extends Controller {
 
         fallbackTolerance: 3,
 
-        filter: "[data-observation-edit]",
+        filter: "[data-observation-edit], [data-fleet-departure-alert]",
 
         preventOnFilter: false,
 
@@ -79,6 +83,7 @@ export default class extends Controller {
     if (!this.mobileMode()) return
     if (event.target.closest("[data-plate-profile-link]")) return
     if (event.target.closest("[data-observation-edit]")) return
+    if (event.target.closest("[data-fleet-departure-alert]")) return
 
     const item = event.currentTarget
 
@@ -1377,6 +1382,8 @@ export default class extends Controller {
 
 
   disconnect() {
+
+    this.departureTooltips.forEach(tooltip => tooltip.dispose())
 
     this.sortables.forEach(sortable => {
 

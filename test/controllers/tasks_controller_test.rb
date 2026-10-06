@@ -74,6 +74,23 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
     assert_empty @task.reload.label_ids
   end
 
+  test "modal date picker updates local date and time and can clear it" do
+    get action_plan_bucket_task_url(@task.bucket.action_plan, @task.bucket, @task)
+    assert_response :success
+    assert_select "input[type=hidden][name='task[due_at]']"
+    assert_select "select[data-controller=task-select]", count: 2
+    assert_select ".task-datetime__trigger", count: 2
+    patch action_plan_bucket_task_url(@task.bucket.action_plan, @task.bucket, @task),
+      params: { task: { due_at: "2026-11-05T14:35" } }, as: :turbo_stream
+    assert_response :success
+    assert_equal Time.zone.local(2026, 11, 5, 14, 35), @task.reload.due_at
+    assert_equal [labels(:one).id], @task.label_ids
+    patch action_plan_bucket_task_url(@task.bucket.action_plan, @task.bucket, @task),
+      params: { task: { due_at: "" } }, as: :turbo_stream
+    assert_response :success
+    assert_nil @task.reload.due_at
+  end
+
   test "completing a bimonthly task renders the next occurrence" do
     @task.update!(due_at: Time.zone.local(2026, 12, 31, 10), completed: false)
 
