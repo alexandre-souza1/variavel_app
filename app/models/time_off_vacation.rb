@@ -23,17 +23,11 @@ class TimeOffVacation < ApplicationRecord
     return if cancelled_at
     return unless starts_on && ends_on && time_off_membership && time_off_schedule
     errors.add(:ends_on, 'deve ser igual ou posterior ao início') if ends_on < starts_on
-    unless time_off_membership.time_off_schedule_id == time_off_schedule_id && time_off_schedule.covers?(starts_on) && time_off_schedule.covers?(ends_on)
-      errors.add(:base, 'Período fora da vigência da escala')
+    # Vacations belong to the person and may extend beyond the schedule or
+    # group assignment. Availability applies them only to days in the scale.
+    unless time_off_membership.time_off_schedule_id == time_off_schedule_id
+      errors.add(:base, 'Colaborador deve pertencer à escala selecionada')
     end
-    members = time_off_schedule.time_off_memberships.during(starts_on, ends_on).includes(:driver, :ajudante).select { |m| m.person_key == person_key }
-    cursor = starts_on
-    members.sort_by(&:starts_on).each do |member|
-      next if member.ends_on && member.ends_on < cursor
-      break if member.starts_on > cursor
-      cursor = [cursor, (member.ends_on || ends_on) + 1].max
-    end
-    errors.add(:base, 'Colaborador deve pertencer à escala durante todo o período de férias') if cursor <= ends_on
   end
 
   def no_overlap

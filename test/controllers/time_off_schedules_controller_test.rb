@@ -265,6 +265,23 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#time-off-settings', 0
   end
 
+  test 'turbo vacation submission accepts full periods crossing the schedule start for drivers and helpers' do
+    helper = @schedule.time_off_memberships.create!(ajudante: ajudantes(:one), group_code: 'A', starts_on: @schedule.starts_on)
+    [@member, helper].each do |member|
+      assert_difference(['TimeOffVacation.count', 'TimeOffChange.count'], 1) do
+        post create_vacation_time_off_schedule_path(tab: 'calendar', date: '2026-10-07'),
+          params: { vacation: { membership_id: member.id, starts_on: '2026-09-09', ends_on: '2026-10-08', reason: 'Férias' } },
+          headers: { 'Accept' => 'text/vnd.turbo-stream.html' }
+      end
+      assert_redirected_to time_off_schedule_path(tab: 'calendar', date: '2026-10-07', settings: 1)
+      assert_nil flash[:alert]
+    end
+    get time_off_schedule_path(date: '2026-10-07', calendar_period: 'month', settings: 1)
+    assert_response :success
+    assert_select '.time-off-cell--vacation', 16
+    assert_select '.time-off-vacation-period', 2
+  end
+
   test 'retired drivers and helpers disappear from lists and selectors while their history remains' do
     helper = @schedule.time_off_memberships.create!(ajudante: ajudantes(:one), group_code: 'A', starts_on: @schedule.starts_on)
     TimeOff::UpdateDay.call(schedule: @schedule, membership_id: @member.id, date: Date.new(2026, 10, 2), status: 'working', reason: 'Convocação anterior', expected_revision: -1, user: users(:one))

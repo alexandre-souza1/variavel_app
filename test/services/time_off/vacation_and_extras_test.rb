@@ -46,12 +46,49 @@ class TimeOffVacationAndExtrasTest < ActiveSupport::TestCase
   test 'invalid periods and empty reasons roll back vacation and audit' do
     assert_no_difference(['TimeOffVacation.count', 'TimeOffChange.count']) do
       assert_raises(ActiveRecord::RecordInvalid) { create_vacation(@date, @date - 1) }
-      assert_raises(ActiveRecord::RecordInvalid) { create_vacation(@date - 2, @date) }
       assert_raises(ActiveRecord::RecordInvalid) { TimeOff::UpdateVacation.create(schedule: @schedule, membership_id: @member.id, starts_on: @date, ends_on: @date, reason: '', user: users(:one)) }
     end
     vacation = create_vacation(@date, @date + 2)
     assert_raises(TimeOff::UpdateDay::InvalidChange) { TimeOff::UpdateVacation.cancel(schedule: @schedule, id: vacation.id, reason: '', user: users(:one)) }
     assert_nil vacation.reload.cancelled_at
+  end
+
+  test 'full vacation starting before the schedule and group is recorded and applied from their start' do
+    vacation = create_vacation(Date.new(2026, 9, 9), Date.new(2026, 10, 8))
+    assert_equal Date.new(2026, 9, 9), vacation.starts_on
+    assert_nil availability.status(@member, Date.new(2026, 9, 30))
+    assert_equal 'vacation', availability.status(@member, Date.new(2026, 10, 1))
+    assert_equal 'vacation', availability.status(@member, Date.new(2026, 10, 8))
+    assert_equal @schedule.base_status(@member, Date.new(2026, 10, 9)), availability.status(@member, Date.new(2026, 10, 9))
+    assert_equal '2026-09-09', @schedule.time_off_changes.last.details['starts_on']
+  end
+
+  test 'vacations can span months and years beyond a nonrecurring schedule' do
+    @schedule.update!(recurring: false)
+    @member.update!(ends_on: Date.new(2026, 10, 31))
+    vacation = create_vacation(Date.new(2026, 10, 25), Date.new(2027, 1, 5))
+    assert_equal Date.new(2027, 1, 5), vacation.ends_on
+    assert_equal 'vacation', availability.status(@member, Date.new(2026, 10, 31))
+    assert_nil availability.status(@member, Date.new(2026, 11, 1))
+  end
+
+  test 'vacations remain active across a month boundary and a dated group change' do
+    next_member = TimeOff::AssignGroup.call(schedule: @schedule, person: drivers(:one), group_code: 'A', starts_on: Date.new(2026, 11, 1), user: users(:one))
+    create_vacation(Date.new(2026, 10, 25), Date.new(2026, 11, 23), next_member)
+    november = TimeOff::Availability.new(schedule: @schedule, first: Date.new(2026, 11, 1), last: Date.new(2026, 11, 30))
+    assert_equal 'vacation', availability.status(@member.reload, Date.new(2026, 10, 31))
+    assert_equal 'vacation', november.status(next_member, Date.new(2026, 11, 1))
+    assert_equal 'vacation', november.status(next_member, Date.new(2026, 11, 23))
+    assert_no_difference(['TimeOffVacation.count', 'TimeOffChange.count']) do
+      assert_raises(ActiveRecord::RecordInvalid) { create_vacation(Date.new(2026, 11, 10), Date.new(2026, 12, 9), next_member) }
+    end
+  end
+
+  test 'membership from another schedule cannot be used for a vacation' do
+    other = TimeOffSchedule.create!(name: 'Outra', starts_on: '2026-10-01', ends_on: '2026-10-31', rotation_anchor: '2026-09-28')
+    vacation = other.time_off_vacations.build(time_off_membership: @member, starts_on: @date, ends_on: @date + 1, reason: 'Férias')
+    assert_not vacation.valid?
+    assert_includes vacation.errors[:base], 'Colaborador deve pertencer à escala selecionada'
   end
 
   test 'extras count each final worked rest day once and reflect restoration absence and dated groups' do
