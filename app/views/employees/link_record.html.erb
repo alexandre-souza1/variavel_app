@@ -1,5 +1,5 @@
 <div class="app-page employees-page">
-  <%= link_to employee_path(@employee), class: 'employees-back' do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar ao cadastro<% end %>
+  <%= link_to employee_path(@employee, employee_navigation), class: 'employees-back' do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar ao cadastro<% end %>
   <header class="app-page-header">
     <div>
       <p class="app-page-eyebrow">Revisão de identidade · RH</p>
@@ -14,7 +14,7 @@
   </div>
 
   <div class="d-flex justify-content-end mb-3">
-    <%= link_to link_record_employee_path(@employee, source_employee_id: @requested_record.id, invert_positions: !@invert_positions), class: 'btn btn-outline-secondary' do %>
+    <%= link_to link_record_employee_path(@employee, **employee_navigation, source_employee_id: @requested_record.id, invert_positions: !@invert_positions), class: 'btn btn-outline-secondary' do %>
       <i class="bi bi-arrow-left-right me-1" aria-hidden="true"></i> Inverter posições
     <% end %>
   </div>
@@ -75,14 +75,14 @@
       <i class="bi bi-link-45deg employees-panel-icon" aria-hidden="true"></i>
     </div>
     <div class="app-panel__body">
-      <%= form_with url: link_record_employee_path(@employee), class: 'employees-form' do |f| %>
+      <%= form_with url: link_record_employee_path(@employee, employee_navigation), class: 'employees-form' do |f| %>
         <%= hidden_field_tag :source_employee_id, @requested_record.id %>
         <%= hidden_field_tag :invert_positions, @invert_positions ? '1' : '0' %>
         <div class="employees-fields">
           <div class="employees-field"><%= f.label :starts_on, 'Data efetiva da progressão', for: 'link_starts_on' %><%= f.date_field :starts_on, id: 'link_starts_on', required: true, class: 'form-control' %></div>
           <div class="employees-field employees-field--full"><%= f.label :reason, 'Motivo do vínculo', for: 'link_reason' %><%= f.text_area :reason, id: 'link_reason', rows: 3, required: true, class: 'form-control', placeholder: 'Informe a promoção, a conferência do cadastro ou a origem da correção' %></div>
         </div>
-        <div class="employees-form-actions"><%= link_to 'Cancelar', employee_path(@employee), class: 'btn btn-outline-secondary' %><%= f.submit 'Confirmar vínculo e mesclar histórico', class: 'btn btn-primary', data: { turbo_confirm: "Confirmar a mesclagem de #{@source.nome} no cadastro principal de #{@destination.nome}?" } %></div>
+        <div class="employees-form-actions"><%= link_to 'Cancelar', employee_path(@employee, employee_navigation), class: 'btn btn-outline-secondary' %><%= f.submit 'Confirmar vínculo e mesclar histórico', class: 'btn btn-primary', data: { turbo_confirm: "Confirmar a mesclagem de #{@source.nome} no cadastro principal de #{@destination.nome}?" } %></div>
       <% end %>
     </div>
   </section>

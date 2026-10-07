@@ -1,7 +1,9 @@
 require "csv"
 
 class AzAjudantesController < ApplicationController
+  include EmployeeSectorNavigation
   before_action :authenticate_user!
+  before_action -> { head :forbidden unless current_user.employee_sectors.include?('az') }
   before_action :set_az_ajudante, only: %i[show edit update destroy]
   before_action :only_admin, only: :destroy_all
   before_action :admin_or_supervisor, only: %i[new create edit update destroy import_csv]
@@ -51,7 +53,7 @@ class AzAjudantesController < ApplicationController
   end
 
   def show
-    return redirect_to employee_path(@az_ajudante.employee) if @az_ajudante.employee
+    return redirect_to employee_path(@az_ajudante.employee, employee_sector_navigation('az')) if @az_ajudante.employee
   end
 
   def new
@@ -59,7 +61,7 @@ class AzAjudantesController < ApplicationController
   end
 
   def edit
-    return redirect_to edit_employee_path(@az_ajudante.employee) if @az_ajudante.employee
+    return redirect_to edit_employee_path(@az_ajudante.employee, employee_sector_navigation('az')) if @az_ajudante.employee
   end
 
   def create

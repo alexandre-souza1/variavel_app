@@ -77,6 +77,16 @@ class User < ApplicationRecord
     !mechanical? && (admin? || supervisor? || sector_hr?)
   end
 
+  def employee_sectors
+    return ['du'] if sector_du?
+    return ['az'] if sector_warehouse?
+    %w[du az]
+  end
+
+  def can_manage_time_off?
+    !mechanical? && !sector_warehouse? && (admin? || supervisor? || sector_du? || sector_hr? || sector_planning?)
+  end
+
   def can_view_employees?
     !mechanical? && (can_manage_employees? || sector_du? || sector_warehouse? || sector_safety? || sector_planning?)
   end

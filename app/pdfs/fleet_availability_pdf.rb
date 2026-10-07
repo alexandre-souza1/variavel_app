@@ -98,13 +98,21 @@ class FleetAvailabilityPdf < Prawn::Document
   end
 
   def summary
+    available_count = items.count(&:available?)
+    coverage_percentage =
+      if fleet_availability.agreed_quantity.zero?
+        0
+      else
+        ((available_count.to_f / fleet_availability.agreed_quantity) * 100).round
+      end
+
     data = [
       ["Dimensionamento", fleet_availability.agreed_quantity.to_s],
-      ["Disponíveis", fleet_availability.available_count.to_s],
+      ["Disponíveis", available_count.to_s],
       ["Rotas especiais", items.select(&:special_route?).size.to_s],
-      ["Indisponíveis", fleet_availability.unavailable_count.to_s],
-      ["Disponíveis para Troca", fleet_availability.deposit_count.to_s],
-      ["Cobertura", "#{fleet_availability.coverage_percentage}%"]
+      ["Indisponíveis", items.count(&:unavailable?).to_s],
+      ["Disponíveis para Troca", items.count(&:exchange?).to_s],
+      ["Cobertura", "#{coverage_percentage}%"]
     ]
 
     table(data.each_slice(3).map(&:flatten),

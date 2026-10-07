@@ -13,7 +13,7 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'turbo-frame#time-off-calendar-content[data-turbo-action="advance"]', 1
     assert_select '.time-off-day-link[data-turbo-frame="_top"]', 7
     assert_select '.time-off-board', 0
-    assert_select 'dialog', 0
+    assert_select 'dialog.time-off-dialog', 0
     assert_select '.time-off-tabs a', 4
     assert_select '.time-off-tabs a', text: 'Grupos', count: 0
     assert_select '.time-off-group-legend .time-off-group-summary', 7
@@ -26,7 +26,7 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#time-off-groups', 0
     assert_select '.time-off-history', 0
     assert_select '.time-off-column--off .time-off-person', 1
-    assert_select 'dialog', 1
+    assert_select 'dialog.time-off-dialog', 1
     assert_select '.time-off-tabs a[aria-current="page"]', text: 'Escala do dia'
     assert_select '.time-off-tabs a[href=?]', time_off_schedule_path(tab: 'history', date: '2026-10-02', group: 'E')
     get time_off_schedule_path(tab: 'day', date: '2026-10-02', role: 'helper')
@@ -211,7 +211,7 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     users(:one).update!(role: :user, sector: :fleet)
     get time_off_schedule_path(tab: 'day', date: '2026-10-02')
     assert_response :success
-    assert_select 'dialog', 0
+    assert_select 'dialog.time-off-dialog', 0
     patch update_day_time_off_schedule_path, params: { change: { membership_id: @member.id } }, as: :json
     assert_response :forbidden
     post assign_group_time_off_schedule_path, params: { membership: { person: "driver:#{drivers(:two).id}", group_code: 'A', starts_on: '2026-10-01' } }

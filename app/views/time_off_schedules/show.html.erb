@@ -1,4 +1,4 @@
-<div class="time-off-page" data-controller="time-off" data-time-off-settings-open-value="<%= @settings_open %>" data-time-off-editable-value="<%= @tab == 'day' && can_edit? && @schedule.covers?(@date) && !@date.sunday? %>">
+<div class="time-off-page" data-controller="time-off group-dialog" data-action="turbo:before-cache@document->group-dialog#reset" data-time-off-settings-open-value="<%= @settings_open %>" data-time-off-editable-value="<%= @tab == 'day' && can_edit? && @schedule.covers?(@date) && !@date.sunday? %>">
   <header class="time-off-heading">
     <div>
       <span class="time-off-eyebrow">OPERAÇÃO · PILOTO 5×2</span>
@@ -7,6 +7,26 @@
     </div>
     <% if can_edit? %><button type="button" class="btn btn-outline-primary" data-action="time-off#openSettings" aria-controls="time-off-settings" aria-label="Configuração"><i class="bi bi-gear" aria-hidden="true"></i> Configuração</button><% end %>
   </header>
+
+  <% if @unassigned_people.any? %>
+    <details class="time-off-unassigned app-panel">
+      <summary><i class="bi bi-exclamation-circle" aria-hidden="true"></i> <strong><%= @unassigned_people.size %> <%= @unassigned_people.one? ? 'colaborador DU sem grupo definido' : 'colaboradores DU sem grupo definido' %></strong><span> em <%= l(@date) %></span><%= disclosure_arrow %></summary>
+      <div class="app-panel__body">
+        <p>Esses colaboradores ainda não aparecem na escala desta data. A lista considera toda a equipe DU, independentemente dos filtros de função e grupo.</p>
+        <ul class="time-off-unassigned-list">
+          <% @unassigned_people.each do |person| %>
+            <li data-person-key="<%= TimeOff::GroupRoster.key(person) %>">
+              <div><strong><%= person.nome %></strong><small><%= person.is_a?(Employee) ? person.role_on(@date).label : person.is_a?(Driver) ? 'Motorista' : 'Ajudante' %> · Matrícula <%= person.matricula %></small></div>
+              <% if can_edit? %>
+                <% dialog_id = "group-dialog-#{TimeOff::GroupRoster.key(person).tr(':', '-')}" %>
+                <button type="button" class="employees-group-trigger" data-action="group-dialog#open" data-group-dialog-id="<%= dialog_id %>" aria-haspopup="dialog" aria-controls="<%= dialog_id %>" aria-label="Definir grupo de <%= person.nome %>">Definir grupo <i class="bi bi-pencil" aria-hidden="true"></i></button>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </details>
+  <% end %>
 
   <nav class="time-off-tabs" aria-label="Seções da escala de folgas">
     <% [['calendar', 'Calendário', 'bi-calendar3'], ['day', 'Escala do dia', 'bi-person-check'], ['extras', 'Extras', 'bi-calendar-plus'], ['history', 'Histórico', 'bi-clock-history']].each do |tab, label, icon| %>
@@ -41,4 +61,9 @@
   <%= render @tab %>
   <%= render 'settings' %>
   <%= render 'change_dialog' if @tab == 'day' %>
+  <% if can_edit? %>
+    <% @unassigned_people.each do |person| %>
+      <%= render 'group_dialog', person: person, membership: nil, schedule: @schedule, date: @date, url: assign_group_time_off_schedule_path(origin: 'unassigned', date: @date, tab: @tab, role: @role, group: @group, calendar_period: @calendar_period, page: @page) %>
+    <% end %>
+  <% end %>
 </div>

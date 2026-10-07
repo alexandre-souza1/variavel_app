@@ -1,18 +1,20 @@
 <% field_prefix = local_assigns.fetch(:prefix, 'career') %>
 <% current_role = local_assigns[:current_role] %>
 <% selected_sector = params.dig(:employee_role, :sector).presence || current_role&.sector || params[:employee_sector].presence || 'du' %>
+<% sector_options = EmployeeRole::SECTORS.select { |_, sector| current_user.employee_sectors.include?(sector) } %>
+<% selected_sector = sector_options.values.first unless sector_options.value?(selected_sector) %>
 <% selected_cargo = params.dig(:employee_role, :cargo).presence || params[:employee_cargo].presence || (current_role&.az? ? current_role.cargo : nil) %>
 <% allowed = local_assigns.fetch(:allowed_cargos, EmployeeRole::CARGOS.values) %>
 <% options = EmployeeRole::CARGOS.filter_map do |label, value|
      sectors = []
-     sectors << 'du' if EmployeeRole::DU_CARGOS.value?(value) && (current_role&.sector != 'du' || allowed.include?(value))
-     sectors << 'az' if EmployeeRole::AZ_CARGOS.value?(value)
+    sectors << 'du' if current_user.employee_sectors.include?('du') && EmployeeRole::DU_CARGOS.value?(value) && (current_role&.sector != 'du' || allowed.include?(value))
+    sectors << 'az' if current_user.employee_sectors.include?('az') && EmployeeRole::AZ_CARGOS.value?(value)
      next if sectors.empty?
      [label, value, { 'data-sectors' => sectors.join(' ') }]
    end %>
 <%= fields_for :employee_role do |f| %>
   <div class="employees-fields" data-controller="employee-role">
-    <div class="employees-field"><%= f.label :sector, 'Setor', for: "#{field_prefix}_sector" %><%= f.select :sector, EmployeeRole::SECTORS, { selected: selected_sector }, id: "#{field_prefix}_sector", class: 'form-select', data: { employee_role_target: 'sector', action: 'change->employee-role#update' } %></div>
+    <div class="employees-field"><%= f.label :sector, 'Setor', for: "#{field_prefix}_sector" %><%= f.select :sector, sector_options, { selected: selected_sector }, id: "#{field_prefix}_sector", class: 'form-select', data: { employee_role_target: 'sector', action: 'change->employee-role#update' } %></div>
     <div class="employees-field"><%= f.label :cargo, 'Cargo', for: "#{field_prefix}_cargo" %><%= f.select :cargo, options, { selected: selected_cargo }, id: "#{field_prefix}_cargo", class: 'form-select', data: { employee_role_target: 'cargo' } %></div>
     <div class="employees-field" data-employee-role-target="du"><%= f.label :promax, 'Código Promax', for: "#{field_prefix}_promax" %><%= f.text_field :promax, value: params.dig(:employee_role, :promax), id: "#{field_prefix}_promax", class: 'form-control', placeholder: 'Código vigente na DU' %></div>
     <div class="employees-field" data-employee-role-target="az"><%= f.label :turno, 'Turno', for: "#{field_prefix}_turno" %><%= f.select :turno, EmployeeRole::TURNOS, { selected: params.dig(:employee_role, :turno) || current_role&.turno, include_blank: 'Selecione o turno' }, id: "#{field_prefix}_turno", class: 'form-select' %></div>

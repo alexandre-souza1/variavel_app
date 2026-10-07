@@ -1,6 +1,8 @@
 class OperatorsController < ApplicationController
+  include EmployeeSectorNavigation
   before_action :set_operator, only: %i[ show edit update destroy ]
   before_action :authenticate_user!
+  before_action -> { head :forbidden unless current_user.employee_sectors.include?('az') }
   before_action :only_admin, only: [:destroy_all]
   before_action :admin_or_supervisor, only: [:edit, :create, :update, :destroy, :import_csv]
   before_action :everyone_can_access, only: [:index, :show, :import]
@@ -62,7 +64,7 @@ class OperatorsController < ApplicationController
 
   # GET /operators/1 or /operators/1.json
   def show
-    return redirect_to employee_path(@operator.employee) if @operator.employee
+    return redirect_to employee_path(@operator.employee, employee_sector_navigation('az')) if @operator.employee
   end
 
   # GET /operators/new
@@ -72,7 +74,7 @@ class OperatorsController < ApplicationController
 
   # GET /operators/1/edit
   def edit
-    return redirect_to edit_employee_path(@operator.employee) if @operator.employee
+    return redirect_to edit_employee_path(@operator.employee, employee_sector_navigation('az')) if @operator.employee
   end
 
   # POST /operators or /operators.json

@@ -52,7 +52,7 @@ class UnifiedEmployeesControllerTest < ActionDispatch::IntegrationTest
 
   test 'legacy ficha URLs redirect to the central identity and central new form' do
     get az_ajudante_path(@person.az_ajudantes.first)
-    assert_redirected_to employee_path(@person)
+    assert_redirected_to employee_path(@person, employee_sector: 'az')
     get new_az_ajudante_path
     assert_redirected_to new_employee_path(employee_sector: 'az', employee_cargo: 'ajudante')
   end

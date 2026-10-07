@@ -10,13 +10,13 @@
       <div class="employees-duplicate-candidate">
         <div>
           <strong><%= candidate.nome %></strong>
-          <p class="employees-muted">Cadastro #<%= candidate.id %> · Matrícula <%= candidate.matricula %> · <%= candidate.employee_roles.map { |role| "#{role.label} / Promax #{role.promax}" }.uniq.join(', ') %></p>
+          <p class="employees-muted">Cadastro #<%= candidate.id %> · Matrícula <%= candidate.matricula %> · <%= candidate.employee_roles.select { |role| current_user.employee_sectors.include?(role.sector) }.map { |role| "#{role.label} / Promax #{role.promax}" }.uniq.join(', ') %></p>
           <small><%= compatible ? 'CPF coincidente · cadastro disponível para vínculo.' : 'Revise o CPF e o histórico: este cadastro ainda não atende aos requisitos de vínculo.' %></small>
         </div>
         <div class="employees-duplicate-actions">
-          <%= link_to 'Ver cadastro', employee_path(candidate), class: 'btn btn-outline-secondary' %>
+          <%= link_to 'Ver cadastro', employee_path(candidate, employee_navigation), class: 'btn btn-outline-secondary' %>
           <% if compatible && current_user.can_manage_employees? %>
-            <%= link_to 'Revisar e vincular', link_record_employee_path(employee, source_employee_id: candidate.id), class: 'btn btn-outline-primary' %>
+            <%= link_to 'Revisar e vincular', link_record_employee_path(employee, **employee_navigation, source_employee_id: candidate.id), class: 'btn btn-outline-primary' %>
           <% end %>
         </div>
       </div>

@@ -73,7 +73,9 @@ class EmployeesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 20, context.dig(:data, :monthly, '2026-09', :total)
     get dashboard_mapas_path, params: { mes: 9, ano: 2026 }
     assert_response :success
-    assert_includes response.body, 'Colaborador RH (Motorista de van)'
+    assert_select '.mapas-ranking-name', text: /Colaborador RH/
+    assert_select '.mapas-ranking-name .mapas-role-label', text: 'Van'
+    assert_not_includes response.body, 'Colaborador RH (Motorista de van)'
   end
 
   test 'consultation switch filters the whole report and offers all cargos' do

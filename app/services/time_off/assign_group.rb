@@ -17,8 +17,13 @@ module TimeOff
       end
       schedule.with_lock do
         key = person.is_a?(Driver) ? :driver_id : :ajudante_id
-        memberships = schedule.time_off_memberships.where(key => person.id).order(:starts_on)
-        memberships = schedule.time_off_memberships.where(employee_id: employee.id).order(:starts_on) if employee
+        memberships = schedule.time_off_memberships.where(key => person.id)
+        if employee
+          memberships = memberships.or(schedule.time_off_memberships.where(employee_id: employee.id))
+            .or(schedule.time_off_memberships.where(driver_id: Driver.where(employee_id: employee.id).select(:id)))
+            .or(schedule.time_off_memberships.where(ajudante_id: Ajudante.where(employee_id: employee.id).select(:id)))
+        end
+        memberships = memberships.order(:starts_on)
         current = memberships.on(starts_on).first
         if memberships.where('starts_on > ?', starts_on).exists? || (current && current.starts_on == starts_on)
           raise UpdateDay::InvalidChange, 'Já existe uma vigência nessa data ou depois dela. Escolha uma data posterior para preservar o histórico.'

@@ -1,4 +1,4 @@
-<div class="app-page employees-page">
+<div class="app-page employees-page" data-controller="group-dialog" data-action="turbo:before-cache@document->group-dialog#reset">
   <header class="app-page-header">
     <div>
       <p class="app-page-eyebrow">Gestão de pessoas · RH</p>
@@ -7,9 +7,9 @@
     </div>
     <div class="app-page-actions">
       <% if @archived_view %>
-        <%= link_to employees_path, class: 'btn btn-outline-secondary' do %><i class="bi bi-people me-1" aria-hidden="true"></i> Ativos<% end %>
+        <%= link_to employees_path(employee_navigation.except(:status)), class: 'btn btn-outline-secondary' do %><i class="bi bi-people me-1" aria-hidden="true"></i> Ativos<% end %>
       <% elsif @archived_count.positive? %>
-        <%= link_to employees_path(status: 'archived'), class: 'btn btn-outline-secondary' do %><i class="bi bi-archive me-1" aria-hidden="true"></i> Arquivados (<%= @archived_count %>)<% end %>
+        <%= link_to employees_path(employee_navigation.merge(status: 'archived')), class: 'btn btn-outline-secondary' do %><i class="bi bi-archive me-1" aria-hidden="true"></i> Arquivados (<%= @archived_count %>)<% end %>
       <% end %>
       <% if current_user.can_manage_employees? %><%= link_to new_employee_path(employee_sector: @sector_filter), class: 'btn btn-primary' do %><i class="bi bi-plus-lg" aria-hidden="true"></i> Novo colaborador<% end %><% end %>
     </div>
@@ -21,36 +21,46 @@
       <span class="employees-badge"><%= @employees.size %> exibidos</span>
     </div>
     <div class="app-panel__body">
-      <%= form_with url: employees_path, method: :get, class: 'employees-search' do |f| %>
+      <%= form_with url: employees_path(employee_navigation.except(:status)), method: :get, class: 'employees-search' do |f| %>
         <%= hidden_field_tag :status, 'archived' if @archived_view %>
         <div class="employees-field">
           <%= f.label :q, 'Buscar por nome ou matrícula' %>
           <div class="employees-search__input"><i class="bi bi-search" aria-hidden="true"></i><%= f.search_field :q, value: params[:q], placeholder: 'Digite o nome ou a matrícula', class: 'form-control' %></div>
         </div>
-        <div class="employees-field"><%= f.label :employee_sector, 'Setor' %><%= f.select :employee_sector, [['Todos', '']] + EmployeeRole::SECTORS.to_a, { selected: @sector_filter }, class: 'form-select' %></div>
-        <div class="employees-field"><%= f.label :cargo, 'Cargo' %><%= f.select :cargo, [['Todos', '']] + EmployeeRole::CARGOS.to_a, { selected: params[:cargo] }, class: 'form-select' %></div>
-        <div class="employees-field"><%= f.label :turno, 'Turno AZ' %><%= f.select :turno, [['Todos', '']] + EmployeeRole::TURNOS.to_a, { selected: params[:turno] }, class: 'form-select' %></div>
+        <% sectors = EmployeeRole::SECTORS.select { |_, sector| current_user.employee_sectors.include?(sector) }.to_a %>
+        <div class="employees-field"><%= f.label :employee_sector, 'Setor' %><%= f.select :employee_sector, (sectors.size > 1 ? [['Todos', '']] : []) + sectors, { selected: @sector_filter }, class: 'form-select' %></div>
+        <% cargos = @sector_filter ? EmployeeRole.cargos_for(@sector_filter) : EmployeeRole::CARGOS %>
+        <div class="employees-field"><%= f.label :cargo, 'Cargo' %><%= f.select :cargo, [['Todos', '']] + cargos.to_a, { selected: params[:cargo] }, class: 'form-select' %></div>
+        <% if current_user.employee_sectors.include?('az') && @sector_filter != 'du' %><div class="employees-field"><%= f.label :turno, 'Turno AZ' %><%= f.select :turno, [['Todos', '']] + EmployeeRole::TURNOS.to_a, { selected: params[:turno] }, class: 'form-select' %></div><% end %>
         <%= f.submit 'Buscar' , class: 'btn btn-primary' %>
-        <% if params[:q].present? %><%= link_to 'Limpar', employees_path(status: (@archived_view ? 'archived' : nil)), class: 'btn btn-outline-secondary' %><% end %>
+        <% if params[:q].present? %><%= link_to 'Limpar', employees_path(employee_navigation.except(:q, :cargo, :turno)), class: 'btn btn-outline-secondary' %><% end %>
       <% end %>
     </div>
     <% if @employees.any? %>
       <div class="app-table-shell">
         <table class="table app-table app-table--data employees-table">
-          <thead><tr><th>Colaborador</th><th>Matrícula</th><th>Setor</th><th>Cargo atual</th><th>Turno</th><th>Situação</th><th aria-label="Acessar cadastro"></th></tr></thead>
+          <thead><tr><th>Colaborador</th><th>Matrícula</th><th>Setor</th><th>Cargo atual</th><th>Turno</th><th>Grupo</th><th>Situação</th><th aria-label="Acessar cadastro"></th></tr></thead>
           <tbody>
             <% @employees.each do |employee| %>
               <% role = employee.role_on(Date.current) %>
               <tr>
-                <td><%= link_to employee, class: 'employees-person' do %><span class="employees-avatar" aria-hidden="true"><%= employee.nome.split.first(2).map(&:first).join %></span><span><strong><%= employee.nome %></strong><small>Ver cadastro e histórico</small></span><% end %></td>
+                <td><%= link_to employee_path(employee, employee_navigation), class: 'employees-person' do %><span class="employees-avatar" aria-hidden="true"><%= employee.nome.split.first(2).map(&:first).join %></span><span><strong><%= employee.nome %></strong><small>Ver cadastro e histórico</small></span><% end %></td>
                 <td><span class="employees-code"><%= employee.matricula %></span>
                   <% if @duplicate_counts.key?(employee.matricula) %>
-                    <%= link_to employee_path(employee, anchor: 'cadastros-duplicados'), class: 'employees-duplicate-link' do %><i class="bi bi-intersect" aria-hidden="true"></i> Matrícula repetida · revisar vínculo<% end %>
+                    <%= link_to employee_path(employee, **employee_navigation, anchor: 'cadastros-duplicados'), class: 'employees-duplicate-link' do %><i class="bi bi-intersect" aria-hidden="true"></i> Matrícula repetida · revisar vínculo<% end %>
                   <% end %>
                 </td>
                 <td><%= role&.sector_label || '—' %></td><td><span class="employees-badge"><%= role&.label || 'Sem vigência' %></span></td><td><%= role&.az? ? role.shift_label : '—' %></td>
+                <td class="employees-group-cell" data-employee-id="<%= employee.id %>">
+                  <% if role&.du? && employee.active? %>
+                    <% membership = @group_memberships["employee:#{employee.id}"] %>
+                    <% if @schedule && current_user.can_manage_time_off? %>
+                      <button type="button" class="employees-group-trigger" data-action="group-dialog#open" data-group-dialog-id="group-dialog-employee-<%= employee.id %>" aria-haspopup="dialog" aria-controls="group-dialog-employee-<%= employee.id %>" aria-label="<%= membership ? 'Alterar' : 'Definir' %> grupo de <%= employee.nome %>"><span class="employees-group-value"><%= membership&.group_code %></span><i class="bi bi-pencil" aria-hidden="true"></i></button>
+                    <% else %><span class="employees-group-value"><%= membership&.group_code %></span><% end %>
+                  <% end %>
+                </td>
                 <td><span class="employees-status <%= 'employees-status--active' if employee.active? %>"><%= employee.active? ? 'Ativo' : 'Inativo' %></span></td>
-                <td><%= link_to employee, class: 'icon-btn', aria: { label: "Abrir cadastro de #{employee.nome}" } do %><i class="bi bi-arrow-up-right" aria-hidden="true"></i><% end %></td>
+                <td><%= link_to employee_path(employee, employee_navigation), class: 'icon-btn', aria: { label: "Abrir cadastro de #{employee.nome}" } do %><i class="bi bi-arrow-up-right" aria-hidden="true"></i><% end %></td>
               </tr>
             <% end %>
           </tbody>
@@ -61,4 +71,10 @@
     <% end %>
   </section>
   <div class="employees-note"><i class="bi bi-info-circle" aria-hidden="true"></i><p>Cadastros antigos podem ter início de cargo desconhecido. Revise o histórico antes de registrar um fechamento.</p></div>
+  <% if @schedule && current_user.can_manage_time_off? %>
+    <% @employees.each do |employee| %>
+      <% next unless employee.active? && employee.role_on(Date.current)&.du? %>
+      <%= render 'time_off_schedules/group_dialog', person: employee, membership: @group_memberships["employee:#{employee.id}"], schedule: @schedule, date: Date.current, url: assign_group_employee_path(employee, employee_navigation) %>
+    <% end %>
+  <% end %>
 </div>

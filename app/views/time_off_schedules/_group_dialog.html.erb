@@ -1,0 +1,12 @@
+<% dialog_id = "group-dialog-#{TimeOff::GroupRoster.key(person).tr(':', '-')}" %>
+<dialog id="<%= dialog_id %>" class="group-assignment-dialog" aria-labelledby="<%= dialog_id %>-title" aria-describedby="<%= dialog_id %>-person" data-action="click->group-dialog#dismiss close->group-dialog#closed">
+  <header class="group-assignment-dialog__header">
+    <div>
+      <span class="group-assignment-dialog__eyebrow">ESCALA DE FOLGAS · DU</span>
+      <h2 id="<%= dialog_id %>-title"><%= membership ? 'Alterar grupo' : 'Definir grupo' %></h2>
+      <p id="<%= dialog_id %>-person"><%= person.nome %> <span>· Matrícula <%= person.matricula %></span></p>
+    </div>
+    <button type="button" class="btn-close" aria-label="Fechar edição de grupo" data-action="group-dialog#close"></button>
+  </header>
+  <%= render 'time_off_schedules/group_assignment', person: person, membership: membership, schedule: schedule, date: date, url: url, in_dialog: true %>
+</dialog>

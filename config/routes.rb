@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   end
   resources :employees, path: 'rh/colaboradores', only: %i[index new create show edit update] do
     member do
+      post :assign_group
       delete :delete_role
       post :revise_role
       post :change_role

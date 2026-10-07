@@ -25,6 +25,15 @@ class Employee < ApplicationRecord
     where(id: EmployeeRole.where(sector: sector).on(date).select(:employee_id))
   end
 
+  # Retired people keep the sector of their last started career period.
+  # Future transfers must not change access before their effective date.
+  def self.in_current_or_last_sector(sectors, date: Date.current)
+    latest = EmployeeRole.where('starts_on IS NULL OR starts_on <= ?', date)
+      .select('DISTINCT ON (employee_id) employee_id, sector')
+      .order(Arel.sql('employee_id, starts_on DESC NULLS LAST, id DESC'))
+    where("employees.id IN (SELECT employee_id FROM (#{latest.to_sql}) AS latest_roles WHERE sector IN (?))", Array(sectors))
+  end
+
   def eligible_for?(feature, date: Date.current)
     return false unless active?
     role = role_on(date)

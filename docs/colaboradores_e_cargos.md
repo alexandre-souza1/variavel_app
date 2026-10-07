@@ -54,6 +54,10 @@ A seção de devolução é um indicador operacional dos mapas do período selec
 
 ## Cadastros antigos e importações
 
+Na gestão de colaboradores, usuários do setor DU consultam apenas DU e usuários do Armazém apenas AZ, inclusive supervisores/administradores desses setores. A restrição vale no servidor, nas fichas, nas listas arquivadas e nos endereços antigos compartilhados. RH e os demais perfis autorizados mantêm a visão dos dois setores. O acesso usa o último vínculo iniciado, preservando o setor atual até a data efetiva de uma transferência futura; fichas restritas exibem apenas históricos e fechamentos do setor permitido. Links de retorno, edição e salvamento conservam os filtros conhecidos, sem aceitar um endereço de retorno arbitrário.
+
+A coluna **Grupo** lê a vigência atual de `TimeOffMembership`; não há um segundo cadastro de grupos. O lápis abre a edição em um modal, mantendo a altura da linha; as pendências da escala usam o mesmo modal. Cancelar ou fechar descarta os campos ainda não salvos. Colaboradores DU sem grupo aparecem com o campo vazio e podem receber uma definição pela lista ou pelo aviso da escala. AZ não recebe grupos 5×2. Cada alteração informa a data efetiva, conserva vigências anteriores e registra auditoria pelo mesmo serviço da escala. Grupo Fixo mantém a folga/operação já cadastradas no formulário de edição. O aviso de pendências considera toda a equipe DU ativa na data consultada, sem esconder pessoas pelos filtros de grupo/função; cadastros operacionais ainda sem identidade central também aparecem uma vez.
+
 As tabelas `drivers`, `ajudantes`, `operators` e `az_ajudantes` continuam como adaptadores para associações históricas de mapas, WMS, autonomias e outros módulos. `Employees::Registry` centraliza sua sincronização. Sua remoção exige outra migração dos consumidores históricos.
 
 No CSV de cadastro, informe `inicio_cargo` como `AAAA-MM-DD`. Motoristas aceitam `cargo` igual a `motorista` ou `van`; AZ exige turno A/B/C. Os arquivos são transacionais: um erro reverte o cadastro daquele arquivo. Atualizações de código/turno em cadastros vinculados devem ser registradas como movimentações no RH.

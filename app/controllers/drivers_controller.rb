@@ -1,6 +1,8 @@
 class DriversController < ApplicationController
+  include EmployeeSectorNavigation
   before_action :set_driver, only: %i[show edit update destroy]
   before_action :authenticate_user!
+  before_action -> { head :forbidden unless current_user.employee_sectors.include?('du') }
   before_action :only_admin, only: [:destroy_all]
   before_action :admin_or_supervisor, only: [:edit, :create, :update, :destroy, :import_csv]
   before_action :everyone_can_access, only: [:index, :show, :import]
@@ -61,7 +63,7 @@ class DriversController < ApplicationController
   end
 
   def show
-    return redirect_to employee_path(@driver.employee) if @driver.employee
+    return redirect_to employee_path(@driver.employee, employee_sector_navigation('du')) if @driver.employee
   end
 
   def new
@@ -82,7 +84,7 @@ class DriversController < ApplicationController
   end
 
   def edit
-    return redirect_to edit_employee_path(@driver.employee) if @driver.employee
+    return redirect_to edit_employee_path(@driver.employee, employee_sector_navigation('du')) if @driver.employee
   end
 
   def update

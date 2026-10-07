@@ -38,7 +38,7 @@ class FleetAvailability < ApplicationRecord
   end
 
   def exchange_count
-    fleet_availability_items.exchange.count
+    fleet_availability_items.exchange.joins(:plate).merge(Plate.active).count
   end
 
   def deposit_count

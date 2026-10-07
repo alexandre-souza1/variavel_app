@@ -1,9 +1,9 @@
 <% current_role = @employee.role_on(Date.current) %>
 <div class="app-page employees-page">
-  <%= link_to employees_path, class: 'employees-back' do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Colaboradores<% end %>
+  <%= link_to employees_path(employee_navigation), class: 'employees-back' do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Colaboradores<% end %>
   <header class="app-page-header">
     <div><p class="app-page-eyebrow">Gestão de pessoas · RH</p><h1><%= @employee.nome %></h1><p>Matrícula <%= @employee.matricula %> <span aria-hidden="true">·</span> Cadastro #<%= @employee.id %></p></div>
-    <div class="app-page-actions"><% if current_user.can_manage_employees? %><%= link_to "Editar dados", edit_employee_path(@employee), class: "btn btn-outline-primary" %><%= button_to(@employee.active? ? "Inativar" : "Reativar", @employee.active? ? retire_employee_path(@employee) : reactivate_employee_path(@employee), method: :patch, class: "btn btn-outline-secondary", data: { turbo_confirm: "Confirmar a alteração de situação deste colaborador?" }) %><% end %><%= link_to consulta_path(matricula: @employee.matricula, categoria: 'colaborador', employee_sector: current_role&.sector), class: 'btn btn-primary' do %><i class="bi bi-bar-chart" aria-hidden="true"></i> Consultar variável<% end %></div>
+    <div class="app-page-actions"><% if current_user.can_manage_employees? %><%= link_to "Editar dados", edit_employee_path(@employee, employee_navigation), class: "btn btn-outline-primary" %><%= button_to(@employee.active? ? "Inativar" : "Reativar", @employee.active? ? retire_employee_path(@employee, employee_navigation) : reactivate_employee_path(@employee, employee_navigation), method: :patch, class: "btn btn-outline-secondary", data: { turbo_confirm: "Confirmar a alteração de situação deste colaborador?" }) %><% end %><%= link_to consulta_path(matricula: @employee.matricula, categoria: 'colaborador', employee_sector: current_role&.sector), class: 'btn btn-primary' do %><i class="bi bi-bar-chart" aria-hidden="true"></i> Consultar variável<% end %></div>
   </header>
   <% if @duplicate_employees.any? && @roles.any? %>
     <%= render 'duplicate_registrations', employee: @employee, duplicate_employees: @duplicate_employees %>
@@ -30,7 +30,7 @@
                 <small><i class="bi bi-person" aria-hidden="true"></i> <%= role.created_by&.email || 'Migração do cadastro' %></small>
                 <% if current_user.admin? && role.created_by_id == current_user.id && role == @roles.first && @roles.size > 1 %>
                   <div class="employees-role-actions">
-                    <%= button_to delete_role_employee_path(@employee, role_id: role.id), method: :delete, class: 'btn btn-outline-danger', data: { turbo_confirm: 'Excluir esta movimentação e restaurar o cargo anterior? Os fechamentos salvos serão preservados.' } do %><i class="bi bi-trash" aria-hidden="true"></i> Excluir movimentação<% end %>
+                    <%= button_to delete_role_employee_path(@employee, **employee_navigation, role_id: role.id), method: :delete, class: 'btn btn-outline-danger', data: { turbo_confirm: 'Excluir esta movimentação e restaurar o cargo anterior? Os fechamentos salvos serão preservados.' } do %><i class="bi bi-trash" aria-hidden="true"></i> Excluir movimentação<% end %>
                   </div>
                 <% end %>
               </li>
@@ -43,13 +43,13 @@
     <section class="app-panel">
       <div class="app-panel__header"><div><span class="app-panel__kicker">Movimentação</span><h2 class="app-panel__title">Alterar setor, cargo ou turno</h2><p class="app-panel__subtitle">O vínculo anterior termina na véspera da nova vigência.</p></div><i class="bi bi-arrow-left-right employees-panel-icon" aria-hidden="true"></i></div>
       <div class="app-panel__body">
-        <%= form_with url: change_role_employee_path(@employee), class: 'employees-form' do |f| %>
+        <%= form_with url: change_role_employee_path(@employee, employee_navigation), class: 'employees-form' do |f| %>
           <%= render 'role_fields', prefix: 'promotion', allowed_cargos: @next_cargos, current_role: @roles.first %>
           <div class="employees-form-actions"><%= f.submit 'Registrar movimentação', class: 'btn btn-primary' %></div>
         <% end %>
         <% if @roles.first&.du? %>
           <details class="mt-3"><summary>Alterar somente o código Promax</summary>
-            <%= form_with url: change_role_employee_path(@employee), class: 'employees-form mt-3' do |f| %>
+            <%= form_with url: change_role_employee_path(@employee, employee_navigation), class: 'employees-form mt-3' do |f| %>
               <%= fields_for :employee_role do |career| %>
                 <%= career.hidden_field :sector, value: 'du' %>
                 <%= career.hidden_field :cargo, value: @roles.first.cargo %>
@@ -79,7 +79,8 @@
     <div class="app-panel__header"><div><span class="app-panel__kicker">Remuneração variável</span><h2 class="app-panel__title">Variáveis registradas</h2><p class="app-panel__subtitle">DU: 21 a 20 · AZ: 19 a 18 · Histórico preservado por setor.</p></div><i class="bi bi-journal-check employees-panel-icon" aria-hidden="true"></i></div>
     <div class="app-panel__body">
       <% if @closing_cargos.any? %>
-        <%= form_with url: employee_path(@employee), method: :get, local: true, class: 'd-flex align-items-end gap-2 mt-3' do |f| %>
+        <%= form_with url: employee_path(@employee, employee_navigation), method: :get, local: true, class: 'd-flex align-items-end gap-2 mt-3' do |f| %>
+          <% employee_navigation.except(:cargo).each do |key, value| %><%= hidden_field_tag key, value %><% end %>
           <div class="employees-field"><%= f.label :cargo, 'Exibir variável por cargo' %><%= f.select :cargo, [['Todos os cargos', '']] + @closing_cargos.filter_map { |cargo| [EmployeeRole::CARGOS.key(cargo), cargo] }, { selected: @cargo_filter }, class: 'form-select', onchange: 'this.form.submit()' %></div>
         <% end %>
       <% end %>
@@ -103,7 +104,7 @@
               </tbody></table></div>
               <% if current_user.can_manage_employees? %>
               <div class="mt-3">
-                <%= form_with url: recalculate_closing_employee_path(@employee), class: 'employees-form' do |f| %>
+                <%= form_with url: recalculate_closing_employee_path(@employee, employee_navigation), class: 'employees-form' do |f| %>
                   <%= hidden_field_tag :closing_id, closing.id %>
                   <%= hidden_field_tag :reason, 'Recalculado após correção do histórico de cargos' %>
                   <div class="employees-form-actions"><%= f.submit 'Recalcular pelo histórico atual', class: 'btn btn-outline-primary', data: { turbo_confirm: 'Criar uma nova revisão deste período usando o histórico atual de cargos?' } %></div>
@@ -114,7 +115,7 @@
                   <summary class="btn btn-sm btn-outline-primary"><%= disclosure_arrow %> Revisar cargo desta variável</summary>
                   <div class="border rounded p-3 mt-2">
                     <p class="employees-muted">Crie uma nova revisão sem alterar este registro. Os mapas e totais serão recalculados com o cargo corrigido.</p>
-                    <%= form_with url: revise_closing_employee_path(@employee), class: 'employees-form' do |f| %>
+                    <%= form_with url: revise_closing_employee_path(@employee, employee_navigation), class: 'employees-form' do |f| %>
                       <%= hidden_field_tag :closing_id, closing.id %>
                       <div class="employees-fields">
                         <div class="employees-field"><%= f.label :from_cargo, 'Cargo atual no fechamento' %><%= f.select :from_cargo, closing_groups.keys.filter_map { |cargo| [EmployeeRole::CARGOS.key(cargo), cargo] if EmployeeRole::CARGOS.value?(cargo) }, {}, class: 'form-select' %></div>
@@ -140,7 +141,7 @@
       <summary><span class="employees-disclosure__icon"><i class="bi bi-pencil-square" aria-hidden="true"></i></span><span class="employees-disclosure__text"><strong>Corrigir uma vigência</strong><small>Ajuste uma informação registrada no histórico.</small></span><%= disclosure_arrow(css_class: "employees-disclosure__chevron") %></summary>
       <div class="employees-disclosure__body">
         <p class="employees-muted">A correção fica registrada. Para alterar um fechamento salvo, registre também uma revisão do período.</p>
-        <%= form_with url: revise_role_employee_path(@employee), class: 'employees-form' do |f| %>
+        <%= form_with url: revise_role_employee_path(@employee, employee_navigation), class: 'employees-form' do |f| %>
           <div class="employees-field"><%= f.label :role_id, 'Vigência a corrigir' %><%= f.select :role_id, @roles.map { |role| ["#{role.label} · #{role.starts_on ? l(role.starts_on) : 'Legado'}", role.id] }, {}, class: 'form-select' %></div>
           <%= render 'role_fields', prefix: 'correction', allowed_cargos: EmployeeRole::CARGOS.values %>
           <div class="employees-form-actions"><%= f.submit 'Registrar correção', class: 'btn btn-outline-primary' %></div>
@@ -152,7 +153,8 @@
       <div class="employees-disclosure__body">
         <p class="employees-muted">Informe o número do outro cadastro para abrir uma página de conferência. Os CPFs devem coincidir; nada será mesclado antes da sua confirmação.</p>
         <% if @suggested_source %><p class="employees-note">Cadastro sugerido: <strong><%= @suggested_source.nome %> (#<%= @suggested_source.id %>)</strong>. Confirme a data e o motivo antes de vincular.</p><% end %>
-        <%= form_with url: link_record_employee_path(@employee), method: :get, class: 'employees-form' do |f| %>
+        <%= form_with url: link_record_employee_path(@employee, employee_navigation), method: :get, class: 'employees-form' do |f| %>
+          <% employee_navigation.each do |key, value| %><%= hidden_field_tag key, value %><% end %>
           <div class="employees-fields">
             <div class="employees-field"><%= f.label :source_employee_id, 'Número do cadastro de origem' %><%= f.number_field :source_employee_id, value: @suggested_source&.id, required: true, min: 1, class: 'form-control' %></div>
           </div>

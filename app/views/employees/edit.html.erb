@@ -1,7 +1,7 @@
 <div class="app-page employees-page employees-page--form">
-  <%= link_to 'Voltar ao colaborador', @employee, class: 'employees-back' %>
+  <%= link_to 'Voltar ao colaborador', employee_path(@employee, employee_navigation), class: 'employees-back' %>
   <header class="app-page-header"><h1>Editar dados de <%= @employee.nome %></h1></header>
-  <%= form_with model: @employee, class: 'employees-form' do |f| %>
+  <%= form_with model: @employee, url: employee_path(@employee, employee_navigation), class: 'employees-form' do |f| %>
     <% if @employee.errors.any? %><div class="alert alert-danger"><%= @employee.errors.full_messages.to_sentence %></div><% end %>
     <section class="app-panel"><div class="app-panel__body employees-fields">
       <% { nome: 'Nome completo', matricula: 'Matrícula', cpf: 'CPF' }.each do |field, label| %>

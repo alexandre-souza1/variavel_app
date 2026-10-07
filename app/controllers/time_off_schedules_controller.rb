@@ -13,6 +13,7 @@ class TimeOffSchedulesController < ApplicationController
     @month = params[:month].present? ? Date.iso8601("#{params[:month]}-01") : @date.beginning_of_month
     @date = @month if @date.beginning_of_month != @month
     @month_days = (@month..@month.end_of_month).to_a
+    @unassigned_people = TimeOff::GroupRoster.new(schedule: @schedule, date: @date).unassigned
     @days = @month_days
     prepare_calendar_days if @tab == 'calendar'
     first, last = @month, @month.end_of_month
@@ -53,9 +54,9 @@ class TimeOffSchedulesController < ApplicationController
     raise TimeOff::UpdateDay::InvalidChange, 'Selecione um motorista ou ajudante.' unless klass
     date = Date.iso8601(attributes[:starts_on].to_s)
     TimeOff::AssignGroup.call(schedule: @schedule, person: klass.find(id), group_code: attributes[:group_code], starts_on: date, user: current_user, fixed_weekday: attributes[:fixed_weekday].presence&.to_i, pilot_key: attributes[:pilot_key], standard_operation: attributes[:standard_operation])
-    redirect_to time_off_schedule_path(tab: 'calendar', date: date, settings: 1), notice: 'Grupo salvo. As vigências anteriores foram preservadas.'
+    redirect_to group_assignment_path(date: date), notice: 'Grupo salvo. As vigências anteriores foram preservadas.'
   rescue ActiveRecord::RecordInvalid, TimeOff::UpdateDay::InvalidChange, Date::Error => error
-    redirect_to time_off_schedule_path(tab: 'calendar', date: params[:date], settings: 1), alert: error.message
+    redirect_to group_assignment_path(date: params[:date]), alert: error.message
   end
 
   def update_day
@@ -104,6 +105,15 @@ class TimeOffSchedulesController < ApplicationController
   end
 
   private
+
+  def group_assignment_path(date:)
+    if params[:origin] == 'unassigned'
+      context = params.permit(:tab, :role, :group, :month, :calendar_period, :page).to_h
+      time_off_schedule_path(context.merge(date: params[:date].presence || date))
+    else
+      time_off_schedule_path(tab: 'calendar', date: date, settings: 1)
+    end
+  end
 
   def set_schedule
     @schedule = TimeOffSchedule.order(:id).first!
@@ -167,7 +177,7 @@ class TimeOffSchedulesController < ApplicationController
   end
 
   def can_edit?
-    current_user && !current_user.mechanical? && (current_user.admin? || current_user.supervisor? || current_user.sector_du? || current_user.sector_hr? || current_user.sector_planning?)
+    current_user&.can_manage_time_off?
   end
   helper_method :can_edit?
 
