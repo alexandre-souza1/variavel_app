@@ -22,9 +22,9 @@
         </div>
       </div>
       <div class="az-report-actions">
-        <%= link_to invoices_path, class: "az-report-back-link" do %><i class="bi bi-arrow-left"></i> Voltar para lançamentos<% end %>
+        <%= link_to invoice_return_path, class: "az-report-back-link" do %><i class="bi bi-arrow-left"></i> <%= invoice_return_path.start_with?(dashboard_invoices_path) ? "Voltar ao dashboard" : "Voltar para lançamentos" %><% end %>
         <%= link_to invoice_path(@invoice, format: :pdf), target: "_blank", class: "az-report-btn", data: { turbo: false } do %><i class="bi bi-file-earmark-pdf"></i> Gerar comprovante<% end %>
-        <%= link_to edit_invoice_path(@invoice), class: "az-report-btn az-report-btn--primary" do %><i class="bi bi-pencil-square"></i> Editar lançamento<% end %>
+        <%= link_to edit_invoice_path(@invoice, return_to: invoice_return_path), class: "az-report-btn az-report-btn--primary" do %><i class="bi bi-pencil-square"></i> Editar lançamento<% end %>
         <%= button_to @invoice, method: :delete, data: { turbo_confirm: "Tem certeza que deseja excluir este lançamento?" }, class: "az-report-btn invoice-delete-btn", form_class: "d-inline" do %><i class="bi bi-trash"></i> Excluir<% end %>
       </div>
     </div>
@@ -99,7 +99,7 @@
       <div class="az-panel-header"><div><h2 class="az-report-section-title"><i class="bi bi-clock-history"></i> Outros lançamentos do fornecedor</h2><p>Histórico recente para facilitar conferência e comparação.</p></div><%= link_to invoices_path(supplier_name: supplier.name), class: "az-report-btn" do %>Ver todos<% end %></div>
       <% if @supplier_invoices.any? %>
         <div class="az-report-table-wrap"><table class="az-report-table"><thead><tr><th>Código</th><th>Emissão</th><th>Categoria</th><th class="text-end">Total</th></tr></thead><tbody>
-          <% @supplier_invoices.each do |invoice| %><tr><td data-label="Código"><%= link_to(invoice.code.presence || "##{invoice.id}", invoice_path(invoice), class: "invoice-history-link") %></td><td data-label="Emissão"><%= l(invoice.date_issued) %></td><td data-label="Categoria"><%= invoice.budget_category&.name&.titleize || "—" %></td><td data-label="Total" class="text-end az-table-total"><%= number_to_currency(invoice.total, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr><% end %>
+          <% @supplier_invoices.each do |invoice| %><tr><td data-label="Código"><%= link_to(invoice.code.presence || "##{invoice.id}", invoice_path(invoice, return_to: invoice_return_path), class: "invoice-history-link") %></td><td data-label="Emissão"><%= l(invoice.date_issued) %></td><td data-label="Categoria"><%= invoice.budget_category&.name&.titleize || "—" %></td><td data-label="Total" class="text-end az-table-total"><%= number_to_currency(invoice.total, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr><% end %>
         </tbody></table></div>
       <% else %><p class="az-report-empty">Este é o primeiro lançamento localizado para este fornecedor.</p><% end %>
     </article>

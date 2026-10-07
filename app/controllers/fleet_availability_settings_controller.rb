@@ -10,7 +10,8 @@ class FleetAvailabilitySettingsController < ApplicationController
     @fleet_availability_setting = FleetAvailabilitySetting.current
 
     if @fleet_availability_setting.update(fleet_availability_setting_params)
-      redirect_to fleet_availabilities_path,
+      redirect_to fleet_availabilities_path(params.permit(:dimensioning_id).to_h),
+                  status: :see_other,
                   notice: "Configuração da disponibilidade salva com sucesso."
     else
       render :edit, status: :unprocessable_entity

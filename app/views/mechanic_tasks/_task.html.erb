@@ -1,0 +1,70 @@
+<% overdue = task.due_at.present? && task.due_at < Time.current && !task.completed %>
+<% items = task.tasklist&.tasklist_items || [] %>
+<% done_items = items.count(&:completed?) %>
+<article id="mechanic-task-<%= task.id %>" class="mechanic-task <%= 'is-completed' if task.completed %> <%= 'is-overdue' if overdue %>" style="--mechanic-list-order: <%= @task_positions&.fetch(task.id, 0) || 0 %>">
+  <div class="mechanic-task__topline">
+    <span class="mechanic-task__status <%= task.completed ? 'is-done' : (overdue ? 'is-overdue' : '') %>">
+      <i class="bi <%= task.completed ? 'bi-check-circle-fill' : (overdue ? 'bi-exclamation-circle' : 'bi-circle') %>" aria-hidden="true"></i>
+      <%= task.completed ? "Concluída" : (overdue ? "Atrasada" : "Pendente") %>
+    </span>
+    <span class="mechanic-task__number">OS #<%= task.id %></span>
+  </div>
+  <h3><%= task.title %></h3>
+  <p class="mechanic-task__location"><i class="bi bi-kanban" aria-hidden="true"></i> <%= task.bucket.action_plan.name %> <span>· <%= task.bucket.name %></span></p>
+  <% if task.labels.any? %>
+    <div class="mechanic-task__labels" aria-label="Badges da OS">
+      <% task.labels.each do |label| %><span style="--label-color: <%= mechanic_label_color(label) %>"><%= label.name %></span><% end %>
+    </div>
+  <% end %>
+  <div class="mechanic-task__date <%= 'is-overdue' if overdue %>">
+    <i class="bi bi-calendar-event" aria-hidden="true"></i>
+    <span><%= task.due_at.present? ? "Prazo: #{l(task.due_at, format: :short)}" : "Sem prazo definido" %></span>
+  </div>
+  <% if task.description.present? %>
+    <details class="mechanic-task__description"><summary><%= disclosure_arrow %> Descrição da OS</summary><p><%= task.description %></p></details>
+  <% end %>
+  <% if task.tasklist %>
+    <details class="mechanic-task__checklist">
+      <summary><span><%= disclosure_arrow %><i class="bi bi-list-check" aria-hidden="true"></i> Checklist / compras</span><span class="mechanic-task__detail-count"><%= done_items %>/<%= items.size %></span></summary>
+      <% if items.any? %><progress max="<%= items.size %>" value="<%= done_items %>" aria-label="Progresso do checklist"></progress><% end %>
+      <ul>
+        <% items.each do |item| %>
+          <li class="mechanic-task__checklist-item <%= 'is-done' if item.completed %>" id="tasklist-item-<%= item.id %>">
+            <%= form_with scope: :tasklist_item, url: action_plan_bucket_task_tasklist_item_path(task.bucket.action_plan, task.bucket, task, item), method: :patch, data: { turbo: false } do |item_form| %>
+              <%= mechanic_task_return_fields %>
+              <%= item_form.check_box :completed, { checked: item.completed, id: "mechanic-item-completed-#{item.id}", class: "form-check-input", aria: { label: "Concluir item #{item.content}" } }, "true", "false" %>
+              <%= item_form.text_field :content, value: item.content, id: "mechanic-item-content-#{item.id}", class: "form-control", aria: { label: "Item da checklist" } %>
+              <%= item_form.submit "Salvar", class: "btn btn-outline-primary" %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+      <%= form_with scope: :tasklist_item, url: action_plan_bucket_task_tasklist_items_path(task.bucket.action_plan, task.bucket, task), method: :post, data: { turbo: false }, class: "mechanic-task__new-item" do |item_form| %>
+        <%= mechanic_task_return_fields %>
+        <%= item_form.text_field :content, id: "mechanic-new-item-#{task.id}", class: "form-control", placeholder: "Adicionar item...", required: true, aria: { label: "Novo item da checklist" } %>
+        <%= item_form.submit "Adicionar", class: "btn btn-outline-primary" %>
+      <% end %>
+    </details>
+  <% end %>
+  <details class="mechanic-task__comments">
+    <summary><span><%= disclosure_arrow %><i class="bi bi-chat-left-text" aria-hidden="true"></i> Comentários</span><span class="mechanic-task__detail-count"><%= task.comments.size %></span></summary>
+    <div class="mechanic-task__comments-list">
+      <% task.comments.last(3).each do |comment| %>
+        <div class="mechanic-task__comment">
+          <div><strong><%= comment.user&.name.to_s.split.first.presence || "Usuário" %></strong><time datetime="<%= comment.created_at.iso8601 %>"><%= l(comment.created_at, format: :short) %></time></div>
+          <p><%= comment.content %></p>
+        </div>
+      <% end %>
+    </div>
+    <%= form_with model: [task.bucket.action_plan, task.bucket, task, Comment.new], data: { turbo: false }, class: "mechanic-task__comment-form" do |comment_form| %>
+      <%= mechanic_task_return_fields %>
+      <%= comment_form.text_area :content, id: "mechanic-comment-#{task.id}", rows: 2, required: true, placeholder: "Registrar andamento...", class: "form-control", aria: { label: "Novo comentário da OS" } %>
+      <%= comment_form.submit "Comentar", class: "btn btn-outline-primary" %>
+    <% end %>
+  </details>
+  <div class="mechanic-task__footer">
+    <%= button_to toggle_complete_action_plan_bucket_task_path(task.bucket.action_plan, task.bucket, task), method: :patch, params: { mechanic_filters: @filter_params }, form: { data: { turbo: false } }, class: "mechanic-task__complete #{'is-done' if task.completed}" do %>
+      <i class="bi <%= task.completed ? 'bi-arrow-counterclockwise' : 'bi-check-lg' %>" aria-hidden="true"></i> <%= task.completed ? "Reabrir OS" : "Concluir OS" %>
+    <% end %>
+  </div>
+</article>

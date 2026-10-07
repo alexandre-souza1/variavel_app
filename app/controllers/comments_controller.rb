@@ -1,4 +1,5 @@
 class CommentsController < ApplicationController
+  include MechanicTaskNavigation
   before_action :authenticate_user!
 
   def create
@@ -11,7 +12,7 @@ class CommentsController < ApplicationController
       respond_to do |format|
         format.turbo_stream { head :ok }
         format.html do
-          destination = current_user.mechanical? ? mechanic_tasks_path : action_plan_path(@task.bucket.action_plan)
+          destination = current_user.mechanical? ? mechanic_tasks_return_path : action_plan_path(@task.bucket.action_plan)
           redirect_to destination, notice: "Comentário adicionado."
         end
       end

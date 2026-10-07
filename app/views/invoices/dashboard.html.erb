@@ -372,7 +372,7 @@
                   R$ <%= number_to_currency(invoice.total, unit: "", separator: ",", delimiter: ".") %>
                 </td>
                 <td data-label="Ações" class="text-end">
-                  <%= link_to invoice_path(invoice), class: "icon-btn", title: "Ver detalhes" do %>
+                  <%= link_to invoice_path(invoice, return_to: request.fullpath), class: "icon-btn", title: "Ver detalhes" do %>
                     <i class="fas fa-eye"></i>
                   <% end %>
                 </td>
@@ -386,7 +386,7 @@
 
   <!-- ========== BOTÃO VOLTAR ========== -->
   <div class="mt-4">
-    <%= link_to "Voltar", root_path, class: "btn-outline w-100 text-center" %>
+    <%= link_to "Voltar ao início", variaveis_path, class: "btn-outline w-100 text-center" %>
   </div>
 
 </div>

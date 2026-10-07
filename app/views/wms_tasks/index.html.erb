@@ -7,7 +7,7 @@
     </div>
     <div class="app-page-actions">
       <%= link_to az_consultas_import_path, class: "btn btn-primary" do %><i class="bi bi-upload me-1"></i> Nova importação<% end %>
-      <%= link_to "Voltar", root_path, class: "btn btn-outline-secondary" %>
+      <%= link_to "Voltar ao início", variaveis_path, class: "btn btn-outline-secondary" %>
     </div>
   </div>
 
@@ -78,7 +78,7 @@
           <%= hidden_field_tag :page, params[:page] %>
           <%= hidden_field_tag :per_page, params[:per_page] %>
         <% end %>
-        <%= link_to "Voltar", root_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
+        <%= link_to "Voltar ao início", variaveis_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
       </div>
     </div>
   </div>

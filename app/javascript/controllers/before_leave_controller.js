@@ -7,29 +7,11 @@ export default class extends Controller {
     this.hasChanges = false
     this.isSubmitting = false
 
-    this.element.addEventListener(
-      "change",
-      () => {
-        this.hasChanges = true
-      }
-    )
-
-    this.element.addEventListener(
-      "input",
-      () => {
-        this.hasChanges = true
-      }
-    )
-
-    this.element.addEventListener(
-      "submit",
-      (event) => {
-        if (event.defaultPrevented) return
-
-        this.isSubmitting = true
-        this.hasChanges = false
-      }
-    )
+    this.element.addEventListener("change", this.markAsChanged)
+    this.element.addEventListener("input", this.markAsChanged)
+    this.element.addEventListener("submit", this.beforeSubmit)
+    this.element.addEventListener("allow-leave", this.allowLeave)
+    document.addEventListener("turbo:before-visit", this.beforeVisit)
 
     window.addEventListener(
       "beforeunload",
@@ -39,11 +21,43 @@ export default class extends Controller {
 
   disconnect() {
 
+    this.element.removeEventListener("change", this.markAsChanged)
+    this.element.removeEventListener("input", this.markAsChanged)
+    this.element.removeEventListener("submit", this.beforeSubmit)
+    this.element.removeEventListener("allow-leave", this.allowLeave)
+    document.removeEventListener("turbo:before-visit", this.beforeVisit)
+
     window.removeEventListener(
       "beforeunload",
       this.beforeUnload
     )
 
+  }
+
+  markAsChanged = () => {
+    this.hasChanges = true
+  }
+
+  beforeSubmit = (event) => {
+    if (event.defaultPrevented) return
+
+    this.isSubmitting = true
+    this.hasChanges = false
+  }
+
+  allowLeave = () => {
+    this.hasChanges = false
+  }
+
+  beforeVisit = (event) => {
+    if (event.defaultPrevented || this.isSubmitting || !this.hasChanges) return
+
+    if (!window.confirm("Há alterações neste checklist que ainda não foram salvas. Deseja sair?")) {
+      event.preventDefault()
+      return
+    }
+
+    this.allowLeave()
   }
 
   beforeUnload = (event) => {

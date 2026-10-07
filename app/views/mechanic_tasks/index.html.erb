@@ -1,372 +1,157 @@
-<div class="mechanic-tasks-page">
+<div class="mechanic-tasks-page" data-controller="mechanic-filters">
   <header class="mechanic-tasks-header">
-    <div class="mechanic-tasks-header__icon" aria-hidden="true">
-      <i class="bi bi-wrench-adjustable-circle"></i>
+    <div class="mechanic-tasks-header__intro">
+      <div class="mechanic-tasks-header__icon" aria-hidden="true"><i class="bi bi-wrench-adjustable"></i></div>
+      <div class="mechanic-tasks-header__content">
+        <p class="mechanic-tasks-eyebrow">Área do mecânico</p>
+        <h1>Minhas tarefas</h1>
+        <p>Suas ordens de serviço, organizadas para o dia a dia.</p>
+      </div>
     </div>
-
-    <div class="mechanic-tasks-header__content">
-      <p class="mechanic-tasks-eyebrow">
-        <i class="bi bi-wrench-adjustable-circle me-1"></i>
-        Área do mecânico
-      </p>
-
-      <h1>Minhas tarefas</h1>
-
-      <p>
-        Acompanhe suas atividades e registre cada manutenção concluída.
-      </p>
-    </div>
+    <div class="mechanic-tasks-header__scope"><i class="bi bi-person-check" aria-hidden="true"></i> Atribuídas a você</div>
   </header>
 
-  <div class="mechanic-tasks-summary" aria-label="Resumo das tarefas">
+  <div class="mechanic-tasks-summary" aria-label="Resumo das tarefas nos filtros selecionados">
     <div class="mechanic-task-stat is-primary">
-      <strong><%= @open_count %></strong>
-      <span>abertas</span>
+      <i class="bi bi-tools" aria-hidden="true"></i>
+      <div><strong><%= @open_count %></strong><span>OS abertas</span></div>
     </div>
-
-    <div class="mechanic-task-stat">
-      <strong><%= @completed_count %></strong>
-      <span>concluídas</span>
+    <div class="mechanic-task-stat is-overdue">
+      <i class="bi bi-clock-history" aria-hidden="true"></i>
+      <div><strong><%= @overdue_count %></strong><span>Em atraso</span></div>
     </div>
-
+    <div class="mechanic-task-stat is-success">
+      <i class="bi bi-check2-circle" aria-hidden="true"></i>
+      <div><strong><%= @completed_count %></strong><span>Concluídas</span></div>
+    </div>
     <div class="mechanic-task-stat">
-      <strong><%= @total_count %></strong>
-      <span>no total</span>
+      <i class="bi bi-collection" aria-hidden="true"></i>
+      <div><strong><%= @total_count %></strong><span>Total de OS</span></div>
     </div>
   </div>
 
-  <section class="mechanic-tasks-toolbar">
-    <div>
-      <p class="mechanic-tasks-toolbar__eyebrow">
-        <i class="bi bi-list-check me-1"></i>
-        Tarefas atribuídas
-      </p>
-
-      <h2>O que precisa ser feito</h2>
-    </div>
-
-    <div class="mechanic-tasks-toolbar__filters">
-
-      <div class="mechanic-tasks-filter-group">
-
-        <%= form_with url: mechanic_tasks_path,
-            method: :get,
-            local: true,
-            class: "mechanic-tasks-plan-filter" do %>
-
-          <%= hidden_field_tag :status, @status %>
-
-          <div class="mechanic-tasks-plan-filter__field">
-            <label for="action_plan_id">
-              <i class="bi bi-kanban"></i>
-              Plano de ação
-            </label>
-
-            <%= select_tag :action_plan_id,
-              options_from_collection_for_select(
-                @action_plans,
-                :id,
-                :name,
-                params[:action_plan_id]
-              ),
-              include_blank: "Todos os planos",
-              class: "form-select",
-              id: "action_plan_id" %>
-          </div>
-
-          <%= submit_tag "Filtrar",
-              class: "btn btn-primary" %>
-
-          <% if params[:action_plan_id].present? %>
-            <%= link_to "Limpar",
-                mechanic_tasks_path(status: @status),
-                class: "btn btn-outline-secondary" %>
-          <% end %>
-
-        <% end %>
-
-      </div>
-
-      <nav
-        class="mechanic-tasks-filters"
-        aria-label="Filtrar tarefas"
-      >
-        <%= link_to "Abertas",
-            mechanic_tasks_path(
-              status: "open",
-              action_plan_id: params[:action_plan_id]
-            ),
-            class: ("is-active" if @status == "open") %>
-
-        <%= link_to "Concluídas",
-            mechanic_tasks_path(
-              status: "completed",
-              action_plan_id: params[:action_plan_id]
-            ),
-            class: ("is-active" if @status == "completed") %>
-
-        <%= link_to "Todas",
-            mechanic_tasks_path(
-              status: "all",
-              action_plan_id: params[:action_plan_id]
-            ),
-            class: ("is-active" if @status == "all") %>
-      </nav>
-
-    </div>
-  </section>
-
-  <main class="mechanic-tasks-list">
-    <% if @tasks.any? %>
-
-      <% @tasks.each do |task| %>
-
-        <% overdue = task.due_at.present? &&
-                     task.due_at < Time.current &&
-                     !task.completed %>
-
-        <article class="mechanic-task <%= 'is-completed' if task.completed %>">
-
-          <div class="mechanic-task__topline">
-
-            <span class="mechanic-task__status <%= task.completed ? 'is-done' : (overdue ? 'is-overdue' : '') %>">
-              <i class="bi <%= task.completed ? 'bi-check-circle-fill' : (overdue ? 'bi-exclamation-circle-fill' : 'bi-circle') %>"></i>
-
-              <%= task.completed ? "Concluída" : (overdue ? "Atrasada" : "Pendente") %>
-            </span>
-
-            <% if task.due_at.present? %>
-              <span class="mechanic-task__date <%= 'is-overdue' if overdue %>">
-                <i class="bi bi-calendar-event me-1"></i>
-                <%= l(task.due_at, format: :short) %>
-              </span>
-            <% end %>
-
-          </div>
-
-          <h2>
-            <%= task.title %>
-          </h2>
-
-          <p class="mechanic-task__location">
-            <i class="bi bi-kanban me-1"></i>
-            <%= task.bucket.action_plan.name %>
-            ·
-            <%= task.bucket.name %>
-          </p>
-
-          <% if task.description.present? %>
-            <p class="mechanic-task__description">
-              <%= task.description %>
-            </p>
-          <% end %>
-
-          <% if task.tasklist %>
-
-            <details class="mechanic-task__checklist">
-
-              <summary><%= disclosure_arrow %>
-                <i class="bi bi-list-check me-1"></i>
-                Lista de compras / checklist
-                (<%= task.tasklist.tasklist_items.size %>)
-              </summary>
-
-              <ul>
-                <% task.tasklist.tasklist_items.each do |item| %>
-
-                  <li
-                    class="mechanic-task__checklist-item <%= 'is-done' if item.completed %>"
-                    id="tasklist-item-<%= item.id %>"
-                  >
-
-                    <%= form_with(
-                      url: action_plan_bucket_task_tasklist_item_path(
-                        task.bucket.action_plan,
-                        task.bucket,
-                        task,
-                        item
-                      ),
-                      method: :patch,
-                      data: { turbo: false }
-                    ) do |item_form| %>
-
-                      <%= item_form.check_box(
-                        :completed,
-                        {
-                          checked: item.completed,
-                          class: "form-check-input"
-                        },
-                        "true",
-                        "false"
-                      ) %>
-
-                      <%= item_form.text_field(
-                        :content,
-                        value: item.content,
-                        class: "form-control form-control-sm",
-                        aria: { label: "Item da checklist" }
-                      ) %>
-
-                      <%= item_form.submit(
-                        "Salvar",
-                        class: "btn btn-sm btn-link"
-                      ) %>
-
-                    <% end %>
-
-                  </li>
-
-                <% end %>
-              </ul>
-
-              <%= form_with(
-                url: action_plan_bucket_task_tasklist_items_path(
-                  task.bucket.action_plan,
-                  task.bucket,
-                  task
-                ),
-                method: :post,
-                data: { turbo: false },
-                class: "mechanic-task__new-item"
-              ) do |item_form| %>
-
-                <%= item_form.text_field(
-                  :content,
-                  class: "form-control form-control-sm",
-                  placeholder: "Adicionar item...",
-                  required: true
-                ) %>
-
-                <%= item_form.submit(
-                  "Adicionar",
-                  class: "btn btn-sm btn-outline-primary"
-                ) %>
-
-              <% end %>
-
-            </details>
-
-          <% end %>
-
-          <details class="mechanic-task__comments">
-
-            <summary><%= disclosure_arrow %>
-              <i class="bi bi-chat-left-text me-1"></i>
-              Comentários (<%= task.comments.size %>)
-            </summary>
-
-            <div class="mechanic-task__comments-list">
-
-              <% task.comments.last(3).each do |comment| %>
-
-                <div class="mechanic-task__comment">
-
-                  <strong>
-                    <%= comment.user&.name.to_s.split.first.presence || "Usuário" %>
-                  </strong>
-
-                  <span>
-                    <%= l(comment.created_at, format: :short) %>
-                  </span>
-
-                  <p>
-                    <%= comment.content %>
-                  </p>
-
-                </div>
-
-              <% end %>
-
-            </div>
-
-            <%= form_with(
-              model: [
-                task.bucket.action_plan,
-                task.bucket,
-                task,
-                Comment.new
-              ],
-              data: { turbo: false },
-              class: "mechanic-task__comment-form"
-            ) do |comment_form| %>
-
-              <%= comment_form.text_area(
-                :content,
-                rows: 2,
-                required: true,
-                placeholder: "Adicionar comentário...",
-                class: "form-control form-control-sm"
-              ) %>
-
-              <%= comment_form.submit(
-                "Comentar",
-                class: "btn btn-sm btn-outline-primary"
-              ) %>
-
-            <% end %>
-
-          </details>
-
-          <div class="mechanic-task__footer">
-
-            <% if task.labels.any? %>
-
-              <div class="mechanic-task__labels">
-
-                <% task.labels.each do |label| %>
-
-                  <span style="--label-color: <%= label.color %>">
-                    <%= label.name %>
-                  </span>
-
-                <% end %>
-
-              </div>
-
-            <% end %>
-
-            <%= button_to(
-              toggle_complete_action_plan_bucket_task_path(
-                task.bucket.action_plan,
-                task.bucket,
-                task
-              ),
-              method: :patch,
-              data: { turbo: false },
-              class: "mechanic-task__complete #{'is-done' if task.completed}"
-            ) do %>
-
-              <i class="bi <%= task.completed ? 'bi-arrow-counterclockwise' : 'bi-check-lg' %> me-1"></i>
-
-              <%= task.completed ? "Reabrir" : "Concluir tarefa" %>
-
-            <% end %>
-
-          </div>
-
-        </article>
-
+  <details class="mechanic-tasks-filter-panel" open data-mechanic-filters-target="panel">
+    <summary class="mechanic-tasks-filter-panel__heading">
+      <h2 id="mechanic-filter-heading"><i class="bi bi-sliders2" aria-hidden="true"></i> Filtrar ordens de serviço</h2>
+      <div class="mechanic-tasks-filter-panel__actions">
+        <% if @filters_active %><span><%= @label_ids.size + (@query.present? ? 1 : 0) + (params[:action_plan_id].present? ? 1 : 0) %> ativos</span><% end %>
+      <% if @filters_active %>
+        <%= link_to "Limpar filtros", mechanic_tasks_path(status: @status, view: @view), class: "mechanic-tasks-clear" %>
       <% end %>
-
-    <% else %>
-
-      <div class="mechanic-tasks-empty">
-
-        <i class="bi bi-check2-circle"></i>
-
-        <h2>Nenhuma tarefa aqui</h2>
-
-        <p>
-          <% if params[:action_plan_id].present? %>
-            Não há tarefas deste plano de ação para o filtro selecionado.
-          <% else %>
-            Quando novas tarefas forem atribuídas a você,
-            elas aparecerão nesta lista.
-          <% end %>
-        </p>
-
+        <i class="bi bi-chevron-down mechanic-tasks-filter-panel__arrow" aria-hidden="true"></i>
       </div>
-
+    </summary>
+    <%= form_with url: mechanic_tasks_path, method: :get, local: true, class: "mechanic-tasks-filter-form" do %>
+      <%= hidden_field_tag :status, @status %>
+      <%= hidden_field_tag :view, @view %>
+      <div class="mechanic-tasks-field mechanic-tasks-field--search">
+        <label for="mechanic-title-search">Título da OS</label>
+        <div class="mechanic-tasks-search">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <%= search_field_tag :q, @query, id: "mechanic-title-search", class: "form-control", placeholder: "Buscar pelo título..." %>
+        </div>
+      </div>
+      <div class="mechanic-tasks-field">
+        <label for="mechanic-action-plan">Plano de ação</label>
+        <%= select_tag :action_plan_id, options_from_collection_for_select(@action_plans, :id, :name, params[:action_plan_id]), include_blank: "Todos os planos", class: "form-select", id: "mechanic-action-plan" %>
+      </div>
+      <div class="mechanic-tasks-field mechanic-tasks-field--badges">
+        <label id="mechanic-badges-label">Badges</label>
+        <details class="mechanic-badge-picker" data-mechanic-filters-target="picker" data-action="keydown.esc->mechanic-filters#close click@window->mechanic-filters#closeOutside">
+          <summary aria-labelledby="mechanic-badges-label mechanic-badges-count"><span id="mechanic-badges-count" data-mechanic-filters-target="count"><%= @label_ids.any? ? "#{@label_ids.size} selecionados" : "Todos os badges" %></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+          <div class="mechanic-badge-picker__menu">
+            <div class="mechanic-badge-picker__search">
+              <input type="search" class="form-control" placeholder="Buscar badge..." aria-label="Buscar badge" data-mechanic-filters-target="search" data-action="input->mechanic-filters#search keydown.enter->mechanic-filters#preventSubmit">
+            </div>
+            <p class="mechanic-badge-picker__hint">Selecione um ou mais. A OS pode ter qualquer um deles.</p>
+            <div class="mechanic-badge-picker__options">
+              <% @labels.each do |label| %>
+                <label class="mechanic-badge-picker__option" data-mechanic-filters-target="option" data-search-text="<%= "#{label.name} #{label.action_plan.name}" %>">
+                  <%= check_box_tag "label_ids[]", label.id, @label_ids.include?(label.id.to_s), id: "mechanic-label-#{label.id}", class: "form-check-input", data: { mechanic_filters_target: "checkbox", action: "change->mechanic-filters#updateCount" } %>
+                  <span class="mechanic-badge-picker__dot" style="--label-color: <%= mechanic_label_color(label) %>" aria-hidden="true"></span>
+                  <span><strong><%= label.name %></strong><small><%= label.action_plan.name %></small></span>
+                </label>
+              <% end %>
+              <% if @labels.empty? %><p class="mechanic-badge-picker__hint">Suas OS ainda não têm badges.</p><% end %>
+              <p class="mechanic-badge-picker__hint" data-mechanic-filters-target="empty" hidden>Nenhum badge encontrado.</p>
+            </div>
+            <button type="button" class="mechanic-badge-picker__done" data-action="mechanic-filters#close">Confirmar seleção <i class="bi bi-check-lg" aria-hidden="true"></i></button>
+          </div>
+        </details>
+      </div>
+      <button type="submit" class="btn btn-primary mechanic-tasks-apply"><i class="bi bi-funnel" aria-hidden="true"></i> Filtrar</button>
     <% end %>
-  </main>
+    <% if @filters_active %>
+      <div class="mechanic-tasks-active-filters" aria-label="Filtros aplicados">
+        <span>Filtrando por:</span>
+        <% if @query.present? %>
+          <%= link_to mechanic_tasks_path(@filter_params.except(:q)), class: "mechanic-filter-chip", aria: { label: "Remover busca por #{@query}" } do %>
+            <i class="bi bi-search" aria-hidden="true"></i> <%= @query %> <i class="bi bi-x" aria-hidden="true"></i>
+          <% end %>
+        <% end %>
+        <% if params[:action_plan_id].present? %>
+          <%= link_to mechanic_tasks_path(@filter_params.except(:action_plan_id)), class: "mechanic-filter-chip", aria: { label: "Remover filtro de plano de ação" } do %>
+            <i class="bi bi-kanban" aria-hidden="true"></i> <%= @action_plans.find { |plan| plan.id.to_s == params[:action_plan_id] }&.name || "Plano selecionado" %> <i class="bi bi-x" aria-hidden="true"></i>
+          <% end %>
+        <% end %>
+        <% @label_ids.each do |label_id| %>
+          <% label = @labels.find { |item| item.id.to_s == label_id } %>
+          <%= link_to mechanic_tasks_path(@filter_params.merge(label_ids: @label_ids - [label_id])), class: "mechanic-filter-chip", title: label&.action_plan&.name, aria: { label: "Remover badge #{label&.name || label_id}" } do %>
+            <i class="bi bi-tag" aria-hidden="true"></i> <%= label&.name || "Badge selecionado" %> <i class="bi bi-x" aria-hidden="true"></i>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </details>
+
+  <section class="mechanic-tasks-workspace" aria-labelledby="mechanic-workspace-heading">
+    <div class="mechanic-tasks-toolbar">
+      <div class="mechanic-tasks-toolbar__heading">
+        <h2 id="mechanic-workspace-heading">Suas ordens de serviço <span><%= @tasks.size %></span></h2>
+        <p><%= @filters_active ? "Resultados dos filtros selecionados" : "Acompanhe os prazos e registre o andamento" %></p>
+      </div>
+      <div class="mechanic-tasks-toolbar__controls">
+        <nav class="mechanic-tasks-filters" aria-label="Status das ordens de serviço">
+          <% [["open", "Abertas", @open_count], ["completed", "Concluídas", @completed_count], ["all", "Todas", @total_count]].each do |status, label, count| %>
+            <%= link_to mechanic_tasks_path(@filter_params.merge(status: status)), class: ("is-active" if @status == status), aria: { current: (@status == status ? "page" : nil) } do %>
+              <%= label %> <span><%= count %></span>
+            <% end %>
+          <% end %>
+        </nav>
+        <nav class="mechanic-tasks-view-switch" aria-label="Visualização das ordens de serviço">
+          <% [["kanban", "Kanban", "bi-kanban"], ["list", "Lista", "bi-list-ul"]].each do |view, label, icon| %>
+            <%= link_to mechanic_tasks_path(@filter_params.merge(view: view)), class: ("is-active" if @view == view), aria: { current: (@view == view ? "page" : nil) } do %>
+              <i class="bi <%= icon %>" aria-hidden="true"></i> <%= label %>
+            <% end %>
+          <% end %>
+        </nav>
+      </div>
+    </div>
+
+    <% if @tasks.any? %>
+      <% if @view == "kanban" %>
+        <p class="mechanic-tasks-board-hint"><i class="bi bi-layout-three-columns" aria-hidden="true"></i> OS agrupadas pelas etapas de cada plano de ação. <span>Role para os lados para ver mais etapas.</span></p>
+        <div class="mechanic-tasks-board" tabindex="0" role="region" aria-label="Ordens de serviço atribuídas a você">
+          <% @tasks_by_bucket.each do |bucket, tasks| %>
+            <div class="mechanic-tasks-column">
+              <header class="mechanic-tasks-column__header">
+                <p><%= bucket.action_plan.name %></p>
+                <div><h3 id="mechanic-column-<%= bucket.id %>"><%= bucket.name %></h3><span><%= tasks.size %></span></div>
+              </header>
+              <div class="mechanic-tasks-column__cards"><%= render partial: "task", collection: tasks, as: :task %></div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="mechanic-tasks-list"><%= render partial: "task", collection: @tasks, as: :task %></div>
+      <% end %>
+    <% else %>
+      <div class="mechanic-tasks-empty">
+        <div><i class="bi <%= @filters_active ? 'bi-search' : 'bi-check2-circle' %>" aria-hidden="true"></i></div>
+        <h3><%= @filters_active ? "Nenhuma OS encontrada" : "Nenhuma OS por aqui" %></h3>
+        <p><%= @filters_active ? "Experimente outro título, plano de ação ou badge." : "As OS atribuídas a você aparecerão aqui. Você também pode consultar outro status." %></p>
+        <% if @filters_active %><%= link_to "Limpar filtros", mechanic_tasks_path(status: @status, view: @view), class: "btn btn-outline-primary" %><% end %>
+      </div>
+    <% end %>
+  </section>
 </div>

@@ -25,7 +25,7 @@
       </div>
 
       <div class="az-report-actions">
-        <%= link_to consultas_new_path, class: "az-report-back-link" do %>
+        <%= link_to consultation_return_path, class: "az-report-back-link" do %>
           <i class="bi bi-arrow-left"></i> Voltar
         <% end %>
 
@@ -34,6 +34,7 @@
                         class: "az-period-filter",
                         data: { controller: "autosubmit", autosubmit_target: "form" } do %>
             <%= hidden_field_tag :matricula, @matricula %>
+            <%= hidden_field_tag :return_to, consultation_return_path %>
             <%= hidden_field_tag :categoria, @categoria %>
             <%= hidden_field_tag :employee_sector, 'du' if @employee %>
             <%= hidden_field_tag :funcao, params[:funcao] if params[:funcao].present? %>
@@ -62,10 +63,10 @@
           <% if @parameter_profiles&.many? %>
             <div class="az-function-switch" aria-label="Selecionar função do período" data-controller="function-switch">
               <div class="az-function-switch__options" role="tablist" aria-label="Funções disponíveis">
-                <%= link_to 'Todos', consulta_path(matricula: @matricula, categoria: @categoria, employee_sector: @employee ? 'du' : nil, periodo_mes: params[:periodo_mes], periodo_ano: params[:periodo_ano], funcao: 'todos'), class: "az-function-switch__option #{'is-active' if @selected_function.blank?}", aria: { selected: @selected_function.blank? }, data: { action: 'click->function-switch#change' } %>
+                <%= link_to 'Todos', consulta_path(matricula: @matricula, categoria: @categoria, employee_sector: @employee ? 'du' : nil, periodo_mes: params[:periodo_mes], periodo_ano: params[:periodo_ano], funcao: 'todos', return_to: consultation_return_path), class: "az-function-switch__option #{'is-active' if @selected_function.blank?}", aria: { selected: @selected_function.blank? }, data: { action: 'click->function-switch#change' } %>
                 <% @parameter_profiles.each do |profile| %>
                   <% switch_label = profile[:cargo] == 'van' ? 'Van' : profile[:cargo].capitalize %>
-                  <%= link_to switch_label, consulta_path(matricula: @matricula, categoria: @categoria, employee_sector: @employee ? 'du' : nil, periodo_mes: params[:periodo_mes], periodo_ano: params[:periodo_ano], funcao: profile[:cargo]), class: "az-function-switch__option #{'is-active' if @selected_function == profile[:cargo]}", aria: { selected: @selected_function == profile[:cargo] }, title: profile[:label], data: { action: 'click->function-switch#change' } %>
+                  <%= link_to switch_label, consulta_path(matricula: @matricula, categoria: @categoria, employee_sector: @employee ? 'du' : nil, periodo_mes: params[:periodo_mes], periodo_ano: params[:periodo_ano], funcao: profile[:cargo], return_to: consultation_return_path), class: "az-function-switch__option #{'is-active' if @selected_function == profile[:cargo]}", aria: { selected: @selected_function == profile[:cargo] }, title: profile[:label], data: { action: 'click->function-switch#change' } %>
                 <% end %>
               </div>
             </div>

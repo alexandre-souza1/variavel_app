@@ -1,4 +1,6 @@
 class InvoicesController < ApplicationController
+  include NavigationReturn
+  helper_method :invoice_return_path, :invoice_cancel_path
   before_action :authenticate_user!
   before_action :set_invoice, only: %i[ show edit update destroy download_document ]
   before_action :set_purchasers, only: [:new, :edit, :create, :update]
@@ -390,7 +392,7 @@ class InvoicesController < ApplicationController
     respond_to do |format|
       if @invoice.save
 
-        files = params[:invoice][:documents].reject(&:blank?)
+        files = Array(params[:invoice][:documents]).reject(&:blank?)
         types = params[:document_types] || []
 
         files.each_with_index do |file, index|
@@ -403,7 +405,7 @@ class InvoicesController < ApplicationController
           )
         end
 
-        format.html { redirect_to @invoice, notice: "Invoice criada com sucesso." }
+        format.html { redirect_to invoice_path(@invoice, return_to: invoice_return_path), notice: "Lançamento criado com sucesso.", status: :see_other }
       else
         format.html { render :new, status: :unprocessable_entity }
       end
@@ -414,7 +416,7 @@ class InvoicesController < ApplicationController
   def update
     respond_to do |format|
       if @invoice.update(invoice_params)
-        format.html { redirect_to @invoice, notice: "Invoice was successfully updated.", status: :see_other }
+        format.html { redirect_to invoice_path(@invoice, return_to: invoice_return_path), notice: "Lançamento atualizado com sucesso.", status: :see_other }
         format.json { render :show, status: :ok, location: @invoice }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -428,7 +430,7 @@ class InvoicesController < ApplicationController
     @invoice.destroy!
 
     respond_to do |format|
-      format.html { redirect_to invoices_path, notice: "Invoice was successfully destroyed.", status: :see_other }
+      format.html { redirect_to invoice_return_path, notice: "Lançamento excluído com sucesso.", status: :see_other }
       format.json { head :no_content }
     end
   end
@@ -440,6 +442,15 @@ class InvoicesController < ApplicationController
   end
 
   private
+
+  def invoice_return_path
+    safe_navigation_return_path(params[:return_to], fallback: invoices_path,
+      allowed_paths: [invoices_path, dashboard_invoices_path])
+  end
+
+  def invoice_cancel_path
+    @invoice.persisted? ? invoice_path(@invoice, return_to: invoice_return_path) : invoice_return_path
+  end
 
   def set_purchasers
     category_id = params.dig(:invoice, :budget_category_id).presence || @invoice&.budget_category_id

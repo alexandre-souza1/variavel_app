@@ -1,4 +1,5 @@
 class TasksController < ApplicationController
+  include MechanicTaskNavigation
   before_action :authenticate_user!
   before_action :set_task, only: [:show, :update, :move, :toggle_complete]
   before_action :block_mechanical!, only: [:create]
@@ -94,7 +95,7 @@ class TasksController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to(current_user.mechanical? ? mechanic_tasks_path : action_plan_path(@task.bucket.action_plan)) }
+      format.html { redirect_to(current_user.mechanical? ? mechanic_tasks_return_path : action_plan_path(@task.bucket.action_plan)) }
     end
   end
 
@@ -151,7 +152,7 @@ class TasksController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to(current_user.mechanical? ? mechanic_tasks_path : action_plan_path(@task.bucket.action_plan)) }
+      format.html { redirect_to(current_user.mechanical? ? mechanic_tasks_return_path : action_plan_path(@task.bucket.action_plan)) }
     end
   end
 

@@ -1,4 +1,5 @@
 class ConsultasController < ApplicationController
+  include ConsultationNavigation
 
   def index
   end
@@ -23,7 +24,7 @@ class ConsultasController < ApplicationController
       sector = params[:employee_sector].presence
       sector ||= person.role_on(Date.current)&.sector
       if sector == 'az'
-        return redirect_to az_consulta_path(params.permit(:matricula, :periodo_mes, :periodo_ano).to_h)
+        return redirect_to az_consulta_path(params.permit(:matricula, :periodo_mes, :periodo_ano).to_h.merge(return_to: consultation_return_path))
       end
       return show_employee(person)
     end

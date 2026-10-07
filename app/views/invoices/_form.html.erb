@@ -7,8 +7,8 @@
         <p class="subtitle"><%= invoice.persisted? ? "Atualize os dados da invoice e suas notas fiscais" : "Cadastre a invoice e suas notas fiscais com revisão automática dos dados" %></p>
       </div>
       <div class="header-actions">
-        <%= link_to invoices_path, class: "az-report-btn" do %>
-          <i class="bi bi-arrow-left me-1"></i>Voltar para invoices
+        <%= link_to invoice_cancel_path, class: "az-report-btn" do %>
+          <i class="bi bi-arrow-left me-1"></i><%= invoice.persisted? ? "Voltar ao lançamento" : "Voltar para lançamentos" %>
         <% end %>
       </div>
     </div>
@@ -33,6 +33,7 @@
 
       <div class="card-body">
         <%= form_with(model: invoice, local: true) do |f| %>
+          <%= hidden_field_tag :return_to, invoice_return_path %>
           <div class="row">
             <div class="col-md-6 mb-3">
               <%= f.label :code, "Código da NF", class: "form-label fw-bold" %>
@@ -169,10 +170,10 @@
           </div>
 
           <div class="d-flex justify-content-between">
-            <%= link_to "Cancelar", invoices_path, class: "btn btn-outline-secondary" %>
+            <%= link_to "Cancelar", invoice_cancel_path, class: "btn btn-outline-secondary" %>
             <div>
               <% if invoice.persisted? %>
-                <%= link_to "Ver Nota Fiscal", invoice, class: "btn btn-outline-primary me-2" %>
+                <%= link_to "Ver Nota Fiscal", invoice_path(invoice, return_to: invoice_return_path), class: "btn btn-outline-primary me-2" %>
               <% end %>
               <%= f.submit invoice.persisted? ? "Atualizar NF" : "Salvar NF", class: "btn btn-primary" %>
             </div>
@@ -182,10 +183,8 @@
     </div>
 
     <% if invoice.persisted? %>
-      <div class="d-flex justify-content-between mt-4">
-        <%= link_to "Voltar para Notas Fiscais", invoices_path, class: "btn btn-primary shadow-sm p-3" %>
-        <%= link_to "Voltar para Dashboard", dashboard_invoices_path, class: "btn btn-primary shadow-sm p-3" %>
-        <%= button_to "Excluir esta Nota Fiscal", invoice, method: :delete,
+      <div class="d-flex justify-content-end mt-4">
+        <%= button_to "Excluir esta Nota Fiscal", invoice_path(invoice, return_to: invoice_return_path), method: :delete,
               data: { turbo_confirm: "Tem certeza que deseja excluir esta nota fiscal?" },
               class: "btn btn-danger shadow-sm p-3" %>
       </div>

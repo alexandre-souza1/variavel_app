@@ -236,7 +236,7 @@
                   <td class="text-end fleet-availability-table__actions">
 
                     <div class="fleet-availability-row-actions btn-group btn-group-sm" role="group">
-                      <%= link_to availability,
+                      <%= link_to fleet_availability_path(availability, fleet_navigation),
                                   class: "icon-btn",
                                   title: "Abrir disponibilidade",
                                   aria: { label: "Abrir disponibilidade" } do %>
@@ -245,7 +245,7 @@
                       <% end %>
 
                       <% if current_user.admin? %>
-                        <%= button_to availability,
+                        <%= button_to fleet_availability_path(availability, fleet_navigation),
                                       method: :delete,
                                       class: "icon-btn danger",
                                       title: "Apagar disponibilidade",
@@ -288,7 +288,7 @@
             Clique em <strong>Nova Disponibilidade</strong> para criar o primeiro registro.
           </p>
 
-          <%= link_to new_fleet_availability_path,
+          <%= link_to new_fleet_availability_path(fleet_navigation),
                       class: "btn btn-primary" do %>
 
             <i class="bi bi-plus-circle"></i>
@@ -343,7 +343,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <%= form_with model: @fleet_availability_setting,
-                      url: fleet_availability_setting_path,
+                      url: fleet_availability_setting_path(fleet_navigation),
                       method: :patch do |f| %>
           <div class="modal-header">
             <h5 class="modal-title" id="fleetAvailabilitySettingsModalLabel">Configurações da disponibilidade</h5>

@@ -1,6 +1,7 @@
 require "securerandom"
 
 class AzConsultasController < ApplicationController
+  include ConsultationNavigation
   before_action :authorize_import_management!, only: :destroy_import
 
   def index

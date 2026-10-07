@@ -19,7 +19,7 @@
       </div>
 
       <div class="az-report-actions">
-        <%= link_to az_consultas_new_path, class: "az-report-back-link" do %>
+        <%= link_to consultation_return_path, class: "az-report-back-link" do %>
           <i class="bi bi-arrow-left"></i> Voltar
         <% end %>
 
@@ -27,6 +27,7 @@
                       class: "az-period-filter",
                       data: { controller: "autosubmit", autosubmit_target: "form" } do %>
           <%= hidden_field_tag :matricula, @matricula %>
+          <%= hidden_field_tag :return_to, consultation_return_path %>
           <%= hidden_field_tag :turno, @turno %>
 
           <div class="az-period-field">

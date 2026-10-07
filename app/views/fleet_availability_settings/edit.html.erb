@@ -8,12 +8,12 @@
     </div>
 
     <%= link_to "Voltar",
-                fleet_availabilities_path,
+                fleet_availabilities_path(params.permit(:dimensioning_id).to_h),
                 class: "btn btn-outline-secondary" %>
   </div>
 
   <%= form_with model: @fleet_availability_setting,
-                url: fleet_availability_setting_path,
+                url: fleet_availability_setting_path(params.permit(:dimensioning_id).to_h),
                 method: :patch do |f| %>
 
     <% if @fleet_availability_setting.errors.any? %>

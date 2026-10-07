@@ -5,8 +5,8 @@
     <i class="bi bi-pencil-square me-2"></i> Editar Plano de Ação
     </h2>
 
-    <%= link_to action_plans_path, class: "btn btn-outline-secondary" do %>
-      <i class="fas fa-arrow-left me-1"></i> Voltar
+    <%= link_to action_plan_path(@action_plan), class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left me-1"></i> Voltar ao plano
     <% end %>
   </div>
 
@@ -75,7 +75,7 @@
 
         <!-- Ações -->
       <div class="d-flex justify-content-end gap-2 action-plan-form-actions">
-          <%= link_to "Cancelar", action_plans_path, class: "btn btn-outline-secondary" %>
+          <%= link_to "Cancelar", action_plan_path(@action_plan), class: "btn btn-outline-secondary" %>
           <%= f.submit "Salvar alterações", class: "btn btn-success" %>
         </div>
 

@@ -3,6 +3,7 @@
               class: "card shadow-sm border-0 #{'fleet-availability-modal-form' if modal}" do |f| %>
 
   <%= hidden_field_tag :modal, "1" if modal %>
+  <%= hidden_field_tag :dimensioning_id, fleet_navigation[:dimensioning_id] %>
 
   <div class="card-header bg-primary text-white">
     <h5 class="mb-0">
@@ -69,7 +70,7 @@
         Cancelar
       </button>
     <% else %>
-      <%= link_to fleet_availabilities_path,
+      <%= link_to fleet_return_path,
                   class: "btn btn-outline-secondary" do %>
         <i class="bi bi-arrow-left"></i>
         Voltar

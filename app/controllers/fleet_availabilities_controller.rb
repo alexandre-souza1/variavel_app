@@ -1,4 +1,5 @@
 class FleetAvailabilitiesController < ApplicationController
+  helper_method :fleet_navigation, :fleet_return_path
   before_action :authenticate_user!
   before_action :auto_lock_expired_fleet_availabilities, except: :lock
   before_action :set_fleet_availability, only: %i[show destroy lock unlock restore_standard_layout]
@@ -56,8 +57,8 @@ class FleetAvailabilitiesController < ApplicationController
       )
     )
 
-    redirect_to @fleet_availability,
-                notice: "Disponibilidade criada com sucesso."
+    redirect_to fleet_availability_path(@fleet_availability, fleet_navigation),
+                notice: "Disponibilidade criada com sucesso.", status: :see_other
   rescue ActiveRecord::RecordInvalid => e
     @fleet_availability = FleetAvailability.new(fleet_availability_params)
     @dimensioning_period = FleetAvailability.dimensioning_period_for(
@@ -125,15 +126,16 @@ class FleetAvailabilitiesController < ApplicationController
   end
 
   def destroy
+    return_path = fleet_return_path
     @fleet_availability.destroy_without_lock_version!
 
-    redirect_to fleet_availabilities_path,
-                notice: "Disponibilidade removida com sucesso."
+    redirect_to return_path,
+                notice: "Disponibilidade removida com sucesso.", status: :see_other
   end
 
   def lock
     unless FleetAvailability.locking_enabled?
-      redirect_to @fleet_availability,
+      redirect_to fleet_availability_path(@fleet_availability, fleet_navigation),
                   alert: "A migration de trava ainda precisa ser aplicada."
       return
     end
@@ -145,21 +147,21 @@ class FleetAvailabilitiesController < ApplicationController
     )
     email_sent = deliver_locked_availability_email
 
-    redirect_to @fleet_availability,
-                notice: lock_notice(email_sent)
+    redirect_to fleet_availability_path(@fleet_availability, fleet_navigation),
+                notice: lock_notice(email_sent), status: :see_other
   end
 
   def unlock
     unless FleetAvailability.locking_enabled?
-      redirect_to @fleet_availability,
+      redirect_to fleet_availability_path(@fleet_availability, fleet_navigation),
                   alert: "A migration de trava ainda precisa ser aplicada."
       return
     end
 
     @fleet_availability.unlock_availability!
 
-    redirect_to @fleet_availability,
-                notice: "Disponibilidade destravada com sucesso."
+    redirect_to fleet_availability_path(@fleet_availability, fleet_navigation),
+                notice: "Disponibilidade destravada com sucesso.", status: :see_other
   end
 
   def restore_standard_layout
@@ -174,6 +176,16 @@ class FleetAvailabilitiesController < ApplicationController
   end
 
   private
+
+  def fleet_navigation
+    dimensioning_id = params[:dimensioning_id].presence || @selected_dimensioning&.id
+    dimensioning_id ||= FleetAvailability.dimensioning_period_for(@fleet_availability.date)&.id if @fleet_availability&.persisted?
+    dimensioning_id.present? ? { dimensioning_id: dimensioning_id } : {}
+  end
+
+  def fleet_return_path
+    fleet_availabilities_path(fleet_navigation)
+  end
 
   def load_plates_without_monthly_departure
     date = @fleet_availability.date
@@ -201,7 +213,7 @@ class FleetAvailabilitiesController < ApplicationController
       return
     end
 
-    redirect_to @fleet_availability,
+    redirect_to fleet_availability_path(@fleet_availability, fleet_navigation),
                 alert: "Apenas quem iniciou a disponibilidade pode travá-la enquanto ela estiver aberta."
   end
 

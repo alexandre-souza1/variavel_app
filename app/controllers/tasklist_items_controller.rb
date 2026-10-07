@@ -1,4 +1,5 @@
 class TasklistItemsController < ApplicationController
+  include MechanicTaskNavigation
   before_action :authenticate_user!
   before_action :set_task
   before_action :set_item, only: :update
@@ -20,7 +21,7 @@ class TasklistItemsController < ApplicationController
           )
         end
         format.html do
-          destination = current_user.mechanical? ? mechanic_tasks_path : action_plan_path(@task.bucket.action_plan)
+          destination = current_user.mechanical? ? mechanic_tasks_return_path : action_plan_path(@task.bucket.action_plan)
           redirect_to destination, notice: "Item adicionado à lista."
         end
         format.json { render json: { id: @item.id }, status: :created }
@@ -42,7 +43,7 @@ class TasklistItemsController < ApplicationController
           )
         end
         format.html do
-          destination = current_user.mechanical? ? mechanic_tasks_path : action_plan_path(@task.bucket.action_plan)
+          destination = current_user.mechanical? ? mechanic_tasks_return_path : action_plan_path(@task.bucket.action_plan)
           redirect_to destination, notice: "Item atualizado."
         end
       end
