@@ -1,0 +1,4 @@
+<% before = details.fetch('before'); after = details.fetch('after') %>
+Vigência corrigida: Grupo <%= before['group_code'] %>, início <%= l(Date.iso8601(before['starts_on'])) %> → Grupo <%= after['group_code'] %>, início <%= l(Date.iso8601(after['starts_on'])) %>
+<% if after['standard_operation'] %> · Titular <%= TimeOffMembership::STANDARD_OPERATIONS.key(after['standard_operation']) %><% end %>
+<% if details['archived_adjustments'].present? %> · <%= pluralize(details['archived_adjustments'].size, 'ajuste arquivado', 'ajustes arquivados') %><% end %>

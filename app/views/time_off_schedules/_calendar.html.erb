@@ -1,16 +1,30 @@
-<% context = { tab: 'calendar', month: @month.strftime('%Y-%m'), date: @date, role: @role, group: @group } %>
+<% context = { tab: 'calendar', month: @month.strftime('%Y-%m'), date: @date, role: @role, group: @group, name: @name_query, per_page: @per_page } %>
 <section class="time-off-panel" id="time-off-calendar" aria-labelledby="calendar-heading">
     <div class="time-off-panel-heading"><div><h2 id="calendar-heading"><i class="bi bi-calendar3" aria-hidden="true"></i> <%= l(@month, format: '%B de %Y').capitalize %></h2><p>Selecione um dia para ajustar a escala. Cores identificam os grupos; • indica ajuste individual.</p></div>
-      <nav aria-label="Navegação do calendário" class="d-flex gap-2">
-        <%= link_to '← Mês anterior', calendar_month_path(-1), class: 'btn btn-sm btn-outline-secondary' %>
-        <%= link_to 'Próximo mês →', calendar_month_path(1), class: 'btn btn-sm btn-outline-secondary' %>
+      <nav aria-label="Navegação do calendário" class="time-off-month-navigation">
+        <%= link_to calendar_month_path(-1), class: 'time-off-month-arrow', rel: 'prev', aria: { label: 'Mês anterior' }, title: 'Mês anterior' do %><i class="bi bi-chevron-left" aria-hidden="true"></i><% end %>
+        <%= link_to calendar_month_path(1), class: 'time-off-month-arrow', rel: 'next', aria: { label: 'Próximo mês' }, title: 'Próximo mês' do %><i class="bi bi-chevron-right" aria-hidden="true"></i><% end %>
       </nav>
     </div>
+    <%= form_with url: time_off_schedule_path, method: :get, class: 'time-off-calendar-filters', aria: { label: 'Filtros de colaboradores' }, data: { turbo_frame: 'time-off-calendar-content' } do |form| %>
+      <% context.except(:name).merge(calendar_period: @calendar_period).each do |key, value| %><%= hidden_field_tag key, value, id: nil %><% end %>
+      <div class="time-off-search">
+        <%= form.label :name, 'Buscar por nome', for: 'calendar-name', class: 'visually-hidden' %>
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <%= form.search_field :name, value: @name_query, id: 'calendar-name', placeholder: 'Buscar colaborador…', autocomplete: 'off', data: { action: 'input->time-off#searchCalendar keydown.enter->time-off#submitCalendarSearch' } %>
+        <button type="button" class="time-off-search-clear" aria-label="Limpar busca" data-action="time-off#clearCalendarSearch" <%= 'hidden' if @name_query.blank? %>><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+      </div>
+      <div class="time-off-segmented time-off-role-picker" role="group" aria-label="Função">
+        <% [['', 'Todos'], ['driver', 'Motoristas'], ['helper', 'Ajudantes']].each do |role, label| %>
+          <%= button_tag label, type: 'button', class: 'time-off-segment', aria: { pressed: @role.to_s == role }, data: { action: 'time-off#filterCalendarRole', role: role } %>
+        <% end %>
+      </div>
+    <% end %>
     <div class="time-off-legend">
       <span><b>T</b> Em escala</span><span><b>F</b> Folga</span><span><b>D</b> DSR</span><span><b>I</b> Indisponível</span><span><b>V</b> Férias</span><span><b>?</b> Folga fixa a definir</span><span>— Fora da vigência</span>
     </div>
-    <%= render 'group_legend' %>
     <%= turbo_frame_tag 'time-off-calendar-content', data: { turbo_action: 'advance', action: 'turbo:frame-load->time-off#syncCalendarContext' } do %>
+    <%= render 'group_legend', context: context %>
     <div class="time-off-calendar-controls">
       <%= form_with url: time_off_schedule_path, method: :get, class: 'time-off-period-picker', role: 'group', aria: { label: 'Período do calendário' } do %>
         <% context.merge(page: @page).each do |key, value| %><%= hidden_field_tag key, value, id: nil %><% end %>
@@ -42,17 +56,28 @@
               </td>
             <% end %>
           </tr><% end %>
-          <% if @calendar_memberships.empty? %><tr><td colspan="<%= @days.size + 1 %>" class="time-off-empty">Nenhum colaborador neste filtro. Cadastre os participantes em Configuração para preencher o calendário.</td></tr><% end %>
+          <% if @calendar_memberships.empty? %><tr><td colspan="<%= @days.size + 1 %>" class="time-off-empty">Nenhum colaborador encontrado para os filtros selecionados.</td></tr><% end %>
         </tbody>
       </table>
     </div>
     <div class="time-off-calendar-pagination">
-      <p><%= @total_rows.zero? ? 0 : (@page - 1) * @per_page + 1 %>–<%= [@page * @per_page, @total_rows].min %> de <%= @total_rows %> colaboradores</p>
+      <div class="time-off-calendar-count">
+        <p aria-live="polite"><%= @total_rows.zero? ? 0 : (@page - 1) * @per_page + 1 %>–<%= [@page * @per_page, @total_rows].min %> de <%= @total_rows %> colaboradores</p>
+        <%= form_with url: time_off_schedule_path, method: :get, class: 'time-off-row-picker', aria: { label: 'Linhas por página' } do %>
+          <% context.except(:per_page).merge(calendar_period: @calendar_period).each do |key, value| %><%= hidden_field_tag key, value, id: nil %><% end %>
+          <span>Linhas</span>
+          <div class="time-off-segmented" role="group" aria-label="Quantidade de linhas">
+            <% TimeOffSchedulesController::CALENDAR_PAGE_SIZES.each do |size| %>
+              <%= button_tag size.to_s, name: 'per_page', value: size, class: 'time-off-segment', aria: { pressed: @per_page == size, label: "#{size} linhas por página" } %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
       <%= form_with url: time_off_schedule_path, method: :get, class: 'time-off-calendar-actions', aria: { label: 'Paginação de colaboradores' } do %>
         <% context.merge(calendar_period: @calendar_period).each do |key, value| %><%= hidden_field_tag key, value, id: nil %><% end %>
-        <%= button_tag 'Anterior', name: 'page', value: @page - 1, disabled: @page == 1, class: 'btn btn-sm btn-outline-secondary time-off-calendar-button' %>
+        <%= button_tag 'Anterior', name: 'page', value: @page - 1, disabled: @page == 1, class: 'time-off-pagination-button time-off-calendar-button' %>
         <span aria-live="polite" aria-label="Página <%= @page %> de <%= @total_pages %>"><%= @page %> / <%= @total_pages %></span>
-        <%= button_tag 'Próxima', name: 'page', value: @page + 1, disabled: @page == @total_pages, class: 'btn btn-sm btn-outline-secondary time-off-calendar-button' %>
+        <%= button_tag 'Próxima', name: 'page', value: @page + 1, disabled: @page == @total_pages, class: 'time-off-pagination-button time-off-calendar-button' %>
       <% end %>
     </div>
     <% end %>

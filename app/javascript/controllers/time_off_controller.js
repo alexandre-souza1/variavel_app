@@ -10,6 +10,7 @@ export default class extends Controller {
   connect() {
     this.sortables = []
     this.saving = false
+    this.fillMembershipCorrection()
     if (this.hasSettingsTarget) {
       this.settings = Offcanvas.getOrCreateInstance(this.settingsTarget)
       if (this.settingsOpenValue) this.settings.show()
@@ -41,16 +42,96 @@ export default class extends Controller {
   closeSettings() { this.settings?.hide() }
 
   syncCalendarContext(event) {
-    const calendarPeriod = event.target.querySelector('.time-off-period-picker button[aria-pressed="true"]').value
-    const calendarPage = event.target.querySelector('.time-off-period-picker input[name="page"]').value
-    const periodInput = this.element.querySelector('.time-off-filters input[name="calendar_period"]')
-    if (periodInput) periodInput.value = calendarPeriod
-    this.element.querySelectorAll('.time-off-tabs a, .time-off-group-legend a').forEach(link => {
-      const url = new URL(link.href)
-      url.searchParams.set("calendar_period", calendarPeriod)
-      url.searchParams.set("page", calendarPage)
-      link.href = url.href
+    const periodPicker = event.target.querySelector('.time-off-period-picker')
+    if (!periodPicker) return
+    const calendarPeriod = periodPicker.querySelector('button[aria-pressed="true"]').value
+    const calendarPage = periodPicker.elements.namedItem("page").value
+    const group = periodPicker.elements.namedItem("group").value
+    const name = periodPicker.elements.namedItem("name").value
+    const perPage = periodPicker.elements.namedItem("per_page").value
+    const role = periodPicker.elements.namedItem("role").value
+    const filters = this.element.querySelector('.time-off-calendar-filters')
+    if (filters) {
+      filters.elements.namedItem("calendar_period").value = calendarPeriod
+      filters.elements.namedItem("group").value = group
+      filters.elements.namedItem("per_page").value = perPage
+      filters.elements.namedItem("role").value = role
+      const nameInput = filters.elements.namedItem("name")
+      if (document.activeElement !== nameInput && !this.searchTimer) nameInput.value = name
+      filters.querySelectorAll('.time-off-role-picker button').forEach(button => {
+        button.setAttribute('aria-pressed', String(button.dataset.role === role))
+      })
+      this.updateSearchClear(filters)
+    }
+    this.element.querySelectorAll('.time-off-tabs a, #time-off-calendar .time-off-panel-heading a, .group-assignment-dialog form, .time-off-correction-form').forEach(link => {
+      const isForm = link.tagName === "FORM"
+      const url = new URL(isForm ? link.action : link.href)
+      if (!link.closest('.time-off-panel-heading')) {
+        url.searchParams.set("calendar_period", calendarPeriod)
+        url.searchParams.set("page", calendarPage)
+      }
+      url.searchParams.set("group", group)
+      url.searchParams.set("name", name)
+      url.searchParams.set("per_page", perPage)
+      url.searchParams.set("role", role)
+      if (isForm) link.action = url.href
+      else link.href = url.href
     })
+  }
+
+  searchCalendar(event) {
+    this.updateSearchClear(event.target.form)
+    if (event.isComposing) return
+    clearTimeout(this.searchTimer)
+    this.searchTimer = setTimeout(() => {
+      this.searchTimer = null
+      if (event.target.form?.isConnected) event.target.form.requestSubmit()
+    }, 350)
+  }
+
+  submitCalendarSearch(event) {
+    event.preventDefault()
+    if (event.isComposing) return
+    clearTimeout(this.searchTimer)
+    this.searchTimer = null
+    event.currentTarget.form.requestSubmit()
+  }
+
+  clearCalendarSearch(event) {
+    const form = event.currentTarget.form
+    form.elements.namedItem('name').value = ''
+    this.updateSearchClear(form)
+    this.submitCalendarSearch(event)
+    form.elements.namedItem('name').focus()
+  }
+
+  filterCalendarRole(event) {
+    const form = event.currentTarget.form
+    form.elements.namedItem('role').value = event.currentTarget.dataset.role
+    this.submitCalendarSearch(event)
+  }
+
+  updateSearchClear(form) {
+    const button = form.querySelector('.time-off-search-clear')
+    if (button) button.hidden = !form.elements.namedItem('name').value
+  }
+
+  fillMembershipCorrection() {
+    const form = this.element.querySelector('.time-off-correction-form')
+    if (!form) return
+    const option = form.elements.namedItem('membership[id]').selectedOptions[0]
+    const values = {
+      starts_on: option?.dataset.startsOn || '',
+      group_code: option?.dataset.groupCode || '',
+      fixed_weekday: option?.dataset.fixedWeekday || '',
+      standard_operation: option?.dataset.standardOperation || '',
+      expected_updated_at: option?.dataset.updatedAt || ''
+    }
+    Object.entries(values).forEach(([field, value]) => { form.elements.namedItem(`membership[${field}]`).value = value })
+    const dateInput = form.elements.namedItem('membership[starts_on]')
+    if (option?.dataset.endsOn) dateInput.max = option.dataset.endsOn
+    else dateInput.max = dateInput.dataset.scheduleEnd || ''
+    form.elements.namedItem('membership[group_code]').dispatchEvent(new Event('change', { bubbles: true }))
   }
 
   syncMonth(event) {
@@ -62,6 +143,7 @@ export default class extends Controller {
   }
 
   disconnect() {
+    clearTimeout(this.searchTimer)
     document.removeEventListener("turbo:before-cache", this.beforeCache)
     this.settings?.hide()
 

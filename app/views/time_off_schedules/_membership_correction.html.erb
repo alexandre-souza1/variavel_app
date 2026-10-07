@@ -1,0 +1,23 @@
+<details class="time-off-settings time-off-membership-correction" <%= 'open' if params[:correction] == '1' %>>
+  <summary><%= disclosure_arrow %> <i class="bi bi-pencil-square" aria-hidden="true"></i> Corrigir vigência</summary>
+  <p class="time-off-muted mt-3">Use esta opção para corrigir um lançamento errado. Selecione a vigência cadastrada, inclusive futura, e informe os dados corretos.</p>
+  <% if @correction_memberships.empty? %>
+    <p class="time-off-muted mt-3">Nenhuma vigência cadastrada para colaboradores ativos.</p>
+  <% else %>
+    <%= form_with scope: :membership, url: revise_membership_time_off_schedule_path(tab: @tab, date: @date, month: @month.strftime('%Y-%m'), role: @role, group: @group, name: @name_query, per_page: @per_page, calendar_period: @calendar_period, page: @page), method: :patch, class: 'time-off-correction-form', data: { controller: 'group-assignment' } do |form| %>
+      <% choices = @correction_memberships.map do |member|
+        label = "#{member.person.nome} · Grupo #{member.group_code} · #{l(member.starts_on)}#{member.ends_on ? " a #{l(member.ends_on)}" : ' em diante'}"
+        [label, member.id, { data: { starts_on: member.starts_on.iso8601, ends_on: member.ends_on&.iso8601, group_code: member.group_code, fixed_weekday: member.fixed_weekday, standard_operation: member.standard_operation, updated_at: member.updated_at.iso8601(6) } }]
+      end %>
+      <div><%= form.label :id, 'Vigência do colaborador', for: 'correction-membership' %><%= form.select :id, choices, { prompt: 'Selecione a vigência que deseja corrigir', selected: params[:membership_id] }, id: 'correction-membership', required: true, class: 'form-select', data: { action: 'change->time-off#fillMembershipCorrection' } %></div>
+      <%= form.hidden_field :expected_updated_at, value: '', id: 'correction-updated-at' %>
+      <div><%= form.label :starts_on, 'Início correto da vigência', for: 'correction-start' %><%= form.date_field :starts_on, id: 'correction-start', required: true, min: @schedule.starts_on, max: @schedule.recurring? ? nil : @schedule.ends_on, class: 'form-control', data: { schedule_end: @schedule.recurring? ? nil : @schedule.ends_on.iso8601 } %></div>
+      <div><%= form.label :group_code, 'Grupo correto', for: 'correction-group' %><%= form.select :group_code, TimeOffSchedule::GROUPS.map { |group| [group == 'FIXO' ? 'Fixo' : "Grupo #{group}", group] }, { include_blank: true }, id: 'correction-group', required: true, class: 'form-select', data: { group_assignment_target: 'group', action: 'change->group-assignment#update' } %></div>
+      <div data-group-assignment-target="fixed"><%= form.label :fixed_weekday, 'Folga do grupo Fixo', for: 'correction-weekday' %><%= form.select :fixed_weekday, TimeOffSchedule::WEEKDAYS, { include_blank: 'A definir' }, id: 'correction-weekday', class: 'form-select' %></div>
+      <div data-group-assignment-target="fixed"><%= form.label :standard_operation, 'Operação fixa', for: 'correction-operation' %><%= form.select :standard_operation, TimeOffMembership::STANDARD_OPERATIONS, { include_blank: 'Sem operação fixa' }, id: 'correction-operation', class: 'form-select' %></div>
+      <div><%= form.label :reason, 'Motivo da correção', for: 'correction-reason' %><%= form.text_area :reason, id: 'correction-reason', required: true, maxlength: 500, rows: 2, class: 'form-control' %></div>
+      <p class="time-off-muted">Dias retirados desta vigência voltam ao grupo anterior, quando houver. Sem grupo anterior, ficam sem escala; os ajustes desses dias são arquivados no histórico. As férias são preservadas.</p>
+      <%= form.submit 'Salvar correção', class: 'btn btn-primary' %>
+    <% end %>
+  <% end %>
+</details>

@@ -1,8 +1,9 @@
 class TimeOffSchedulesController < ApplicationController
   CALENDAR_PAGE_SIZE = 12
+  CALENDAR_PAGE_SIZES = [12, 24, 48].freeze
   before_action :authenticate_user!
   before_action :require_access!
-  before_action :require_editor!, only: %i[assign_group update_day update_rotation update_coverage preview_routing create_vacation cancel_vacation]
+  before_action :require_editor!, only: %i[assign_group revise_membership update_day update_rotation update_coverage preview_routing create_vacation cancel_vacation]
   before_action :set_schedule
 
   def show
@@ -24,7 +25,13 @@ class TimeOffSchedulesController < ApplicationController
     @extras = TimeOff::Extras.new(schedule: @schedule, month: @month, members: monthly_members, availability: @availability)
     @role = %w[driver helper].include?(params[:role]) ? params[:role] : nil
     @group = TimeOffSchedule::GROUPS.include?(params[:group]) ? params[:group] : nil
-    @visible_memberships = @memberships.select { |member| (!@role || member.role(@date) == @role) && (!@group || member.group_code == @group) }
+    @name_query = params[:name].to_s.squish
+    @per_page = CALENDAR_PAGE_SIZES.map(&:to_s).include?(params[:per_page]) ? params[:per_page].to_i : CALENDAR_PAGE_SIZE
+    normalized_query = normalize_name(@name_query)
+    @visible_memberships = @memberships.select do |member|
+      (!@role || member.role(@date) == @role) && (!@group || member.group_code == @group) &&
+        (normalized_query.empty? || normalize_name(member.person.nome).include?(normalized_query))
+    end
     paginate_calendar if @tab == 'calendar'
     @daily = @visible_memberships.select { |member| @schedule.base_status(member, @date) }.group_by { |member| status_for(member, @date) == 'vacation' ? 'unavailable' : status_for(member, @date) } if @tab == 'day'
     if @tab == 'day'
@@ -33,6 +40,7 @@ class TimeOffSchedulesController < ApplicationController
     end
     @changes = @schedule.time_off_changes.where(date: @date).includes(:user, time_off_membership: [:driver, :ajudante]).order(id: :desc).limit(30) if @tab == 'history'
     if can_edit?
+      @correction_memberships = @schedule.time_off_memberships.with_active_people.includes(:employee, driver: :employee, ajudante: :employee).sort_by { |m| [m.person.nome.to_s, m.starts_on, m.id] }
       @pilot_pending = TimeOff::PilotSetup.pending(@schedule)
       @vacations = @schedule.time_off_vacations.active.during(@month, @month.end_of_month).includes(time_off_membership: [{ driver: :employee }, { ajudante: :employee }]).order(:starts_on).select { |v| v.time_off_membership.active_person? }
       @vacation_people = @schedule.time_off_memberships.with_active_people.on(@date).includes(:driver, :ajudante).sort_by { |m| m.person.nome }
@@ -74,6 +82,17 @@ class TimeOffSchedulesController < ApplicationController
     render_error(error.message, :unprocessable_entity)
   end
 
+  def revise_membership
+    attributes = params.require(:membership).permit(:id, :starts_on, :group_code, :fixed_weekday, :standard_operation, :reason, :expected_updated_at)
+    member = TimeOff::ReviseMembership.call(schedule: @schedule, membership_id: attributes[:id],
+      starts_on: Date.iso8601(attributes[:starts_on].to_s), group_code: attributes[:group_code],
+      fixed_weekday: attributes[:fixed_weekday].presence&.to_i, standard_operation: attributes[:standard_operation],
+      reason: attributes[:reason], expected_updated_at: attributes[:expected_updated_at], user: current_user)
+    redirect_to settings_path(correction: 1, membership_id: member.id), notice: 'Vigência corrigida. A correção foi registrada no histórico.'
+  rescue ActiveRecord::RecordInvalid, TimeOff::UpdateDay::InvalidChange, TimeOff::UpdateDay::Conflict, Date::Error => error
+    redirect_to settings_path(correction: 1, membership_id: attributes[:id]), alert: error.message
+  end
+
   def update_rotation
     @schedule.with_lock { @schedule.update!(recurring: params.require(:schedule).permit(:recurring)[:recurring]) }
     redirect_to time_off_schedule_path(tab: 'calendar', date: params[:date], settings: 1), notice: @schedule.recurring? ? 'Rodízio de 6 semanas habilitado após outubro.' : 'Piloto limitado a outubro de 2026.'
@@ -108,7 +127,7 @@ class TimeOffSchedulesController < ApplicationController
 
   def group_assignment_path(date:)
     if params[:origin] == 'unassigned'
-      context = params.permit(:tab, :role, :group, :month, :calendar_period, :page).to_h
+      context = params.permit(:tab, :role, :group, :month, :calendar_period, :page, :name, :per_page).to_h
       time_off_schedule_path(context.merge(date: params[:date].presence || date))
     else
       time_off_schedule_path(tab: 'calendar', date: date, settings: 1)
@@ -120,7 +139,7 @@ class TimeOffSchedulesController < ApplicationController
   end
 
   def time_off_tab_path(tab, **options)
-    context = params.slice(:calendar_period, :page).permit(:calendar_period, :page).to_h.symbolize_keys
+    context = params.slice(:calendar_period, :page, :name, :per_page).permit(:calendar_period, :page, :name, :per_page).to_h.symbolize_keys
     time_off_schedule_path(context.merge(tab: tab, date: @date, role: @role, group: @group).merge(options))
   end
   helper_method :time_off_tab_path
@@ -138,11 +157,14 @@ class TimeOffSchedulesController < ApplicationController
   end
 
   def paginate_calendar
-    @per_page = CALENDAR_PAGE_SIZE
     @total_rows = @visible_memberships.size
     @total_pages = [(@total_rows.to_f / @per_page).ceil, 1].max
     @page = [[params[:page].to_i, 1].max, @total_pages].min
     @calendar_memberships = @visible_memberships.slice((@page - 1) * @per_page, @per_page) || []
+  end
+
+  def normalize_name(name)
+    I18n.transliterate(name.to_s).downcase.squish
   end
 
   def calendar_path(**options)
@@ -172,8 +194,9 @@ class TimeOffSchedulesController < ApplicationController
   end
   helper_method :day_member_visible?, :day_car_visible?
 
-  def settings_path
-    time_off_schedule_path(tab: %w[calendar day extras history].include?(params[:tab]) ? params[:tab] : 'calendar', date: params[:date], settings: 1)
+  def settings_path(**options)
+    context = params.slice(:role, :group, :month, :calendar_period, :page, :name, :per_page).permit(:role, :group, :month, :calendar_period, :page, :name, :per_page).to_h
+    time_off_schedule_path(context.merge(tab: %w[calendar day extras history].include?(params[:tab]) ? params[:tab] : 'calendar', date: params[:date], settings: 1).merge(options))
   end
 
   def can_edit?

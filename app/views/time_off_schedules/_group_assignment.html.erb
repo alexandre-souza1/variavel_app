@@ -6,6 +6,7 @@
   <div data-group-assignment-target="fixed"><%= form.label :fixed_weekday, 'Folga do grupo Fixo', for: "#{prefix}_weekday" %><%= form.select :fixed_weekday, TimeOffSchedule::WEEKDAYS, { include_blank: 'A definir', selected: membership&.fixed_weekday }, id: "#{prefix}_weekday", class: 'form-select' %></div>
   <div data-group-assignment-target="fixed"><%= form.label :standard_operation, 'Operação fixa', for: "#{prefix}_operation" %><%= form.select :standard_operation, TimeOffMembership::STANDARD_OPERATIONS, { include_blank: 'Sem operação fixa', selected: membership&.standard_operation }, id: "#{prefix}_operation", class: 'form-select' %></div>
   <small>Folga e operação se aplicam ao grupo Fixo. As vigências anteriores ficam preservadas.</small>
+  <small><%= link_to 'Corrigir vigência já cadastrada', time_off_schedule_path(tab: 'calendar', date: date, settings: 1, correction: 1, membership_id: membership&.id) %></small>
   <div class="group-assignment-form__actions">
     <% if local_assigns[:in_dialog] %><button type="button" class="btn btn-outline-secondary" data-action="group-dialog#close">Cancelar</button><% end %>
     <%= form.submit 'Salvar grupo', class: 'btn btn-primary btn-sm' %>

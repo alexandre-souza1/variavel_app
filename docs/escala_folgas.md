@@ -36,13 +36,14 @@ O módulo está dividido em quatro abas, cada uma com seu conteúdo:
 - **Extras:** total mensal e datas de trabalho nas folgas originais, por colaborador.
 - **Histórico:** alterações da data selecionada, com responsável e motivo.
 
-A data e os filtros são mantidos ao trocar de aba. Calendário e Extras oferecem o filtro por mês. Na Escala do dia e Histórico, as setas ao lado da data no cabeçalho permitem voltar ou avançar um dia. As setas preservam função, grupo e contexto do calendário e atravessam meses e anos; não há seletor de data nessas abas. O botão **Configuração** abre um painel lateral para férias, composição do piloto, vagas, alterações de grupo e continuação do rodízio. A legenda do calendário mostra os grupos e suas folgas originais.
+A data e os filtros são mantidos ao trocar de aba. No Calendário, navegue entre meses pelos chevrons do cabeçalho; Extras oferece o filtro por mês. Na Escala do dia e Histórico, as setas ao lado da data no cabeçalho permitem voltar ou avançar um dia. As setas preservam função, grupo e contexto do calendário e atravessam meses e anos; não há seletor de data nessas abas. O botão **Configuração** abre um painel lateral para férias, composição do piloto, vagas, alterações de grupo e continuação do rodízio. A legenda do calendário mostra os grupos e suas folgas originais.
 
 - O calendário mostra colaborador por linha e dia por coluna. As cores identificam os grupos. `T` = em escala, `F` = folga, `D` = DSR, `I` = indisponível, `V` = férias. O ponto indica ajuste individual diferente do rodízio. Dias anteriores ao piloto ou fora da vigência ficam com traço.
-- Os botões de período seguem o protótipo: **01–07**, **08–14**, **15–21**, **22–28**, **29–31** e **Mês inteiro**. O primeiro bloco é selecionado inicialmente; o último termina no último dia do mês (fevereiro, por exemplo, pode ter apenas quatro blocos). Um clique troca o período e preserva a página atual. A paginação mostra **12 colaboradores** por página, com **Anterior**, **1 / N** e **Próxima**, preservando função, grupo e período. As trocas atualizam somente o calendário e mantêm a posição da tela. Alterar os filtros reinicia a paginação. As setas do cabeçalho navegam entre meses. A legenda dos grupos e a contagem de extras continuam considerando o mês inteiro.
+- Os botões de período seguem o protótipo: **01–07**, **08–14**, **15–21**, **22–28**, **29–31** e **Mês inteiro**. O primeiro bloco é selecionado inicialmente; o último termina no último dia do mês (fevereiro, por exemplo, pode ter apenas quatro blocos). Um clique troca o período e preserva a página atual. No rodapé, ao lado da contagem de colaboradores, os botões de linhas permitem escolher **12, 24 ou 48 colaboradores** por página (12 inicialmente), com **Anterior**, **1 / N** e **Próxima**, preservando função, grupo, nome e período. Clique no badge de um grupo para filtrá-lo; clique novamente no grupo selecionado para mostrar todos. A busca por nome aceita parte do nome e ignora maiúsculas e acentos; aplica automaticamente após uma breve pausa ao digitar, mantendo o foco no campo. Enter aplica imediatamente, e o botão de limpar remove a busca. Os botões **Todos**, **Motoristas** e **Ajudantes**, ao lado da busca, filtram a função. Trocar a quantidade de linhas aplica o filtro automaticamente. Essas trocas atualizam somente o calendário e mantêm a posição da tela. Alterar os filtros reinicia a paginação. Os chevrons do cabeçalho navegam entre meses. A legenda dos grupos e a contagem de extras continuam considerando o mês inteiro.
 - Selecione um dia, função ou grupo. Arraste um nome para Em escala, De folga ou Indisponíveis e informe o motivo. Um motorista só entra na lista de motoristas; um ajudante entra na lista de ajudantes. Quem está de férias não pode ser movido. As composições, vagas de ajudantes e placas são responsabilidade do módulo **DU → PCD**.
 - Convocar alguém de folga altera somente a data selecionada. A compensação deve ser registrada separadamente na data combinada. **Restaurar rodízio original** recupera a situação prevista para o dia, preservando o histórico.
 - Mudanças de grupo têm uma data efetiva posterior ao início da vigência atual. Datas anteriores mantêm o grupo antigo; ajustes individuais futuros são preservados no novo vínculo.
+- Para corrigir um lançamento errado, abra **Configuração → Corrigir vigência**, selecione a vigência do colaborador (inclusive futura), ajuste **Início correto da vigência** e/ou **Grupo correto**, informe o motivo e use **Salvar correção**. Exemplo: início lançado em 08/10, mas o colaborador começa após 13/10 → corrigir para **14/10/2026**. A correção altera o vínculo existente e registra os dados anteriores e corrigidos no Histórico da nova data inicial. Se a mudança havia encerrado um grupo anterior na véspera, o fim desse grupo acompanha a correção; ajustes individuais são transferidos ao período que cobre cada data. Dias retirados sem outro grupo ficam sem escala, e seus ajustes são arquivados no Histórico, com data, situação e motivo. Férias e registros anteriores permanecem preservados. A correção não pode cruzar outras vigências e rejeita páginas desatualizadas. O diálogo de grupo na lista de colaboradores também oferece o atalho **Corrigir vigência já cadastrada**.
 - A configuração de continuação permite limitar a consulta a outubro ou manter o rodízio após o mês.
 
 Administradores, supervisores e usuários de DU, RH ou Planejamento podem editar. Outros usuários autenticados podem consultar; mecânicos permanecem no fluxo próprio. Cada alteração diária registra responsável, situação anterior, situação nova, motivo e horário. Se outra pessoa já alterou o mesmo colaborador e dia, a edição retorna conflito e pede atualização da página.
@@ -78,7 +79,7 @@ A IA do chat público recebe a escala da pessoa identificada pela matrícula e n
 ## Validação
 
 ```sh
-PARALLEL_WORKERS=1 bin/rails test test/services/time_off test/controllers/time_off_schedules_controller_test.rb test/controllers/time_off_daily_routes_test.rb
+PARALLEL_WORKERS=1 bin/rails test test/services/time_off test/controllers/time_off_schedules_controller_test.rb test/controllers/time_off_daily_routes_test.rb test/controllers/time_off_membership_corrections_test.rb
 ```
 
 O teste de navegador usa somente o banco de testes. Prepare os cadastros e inicie um servidor de teste antes de executá-lo:
@@ -88,6 +89,9 @@ RAILS_ENV=test bin/rails runner test/browser/time_off_setup.rb
 PIDFILE=tmp/pids/time_off_test.pid RAILS_ENV=test bin/rails server -p 4318 -P tmp/pids/time_off_test.pid
 # Em outro terminal:
 BASE_URL=http://127.0.0.1:4318 node test/browser/time_off_test.cjs
+# Após esse teste, valide a correção do início futuro de 08/10 para 14/10:
+RAILS_ENV=test bin/rails runner test/browser/time_off_membership_correction_setup.rb
+BASE_URL=http://127.0.0.1:4318 node test/browser/time_off_membership_correction_test.cjs
 # Reprepare os dados antes de testar a importação:
 RAILS_ENV=test bin/rails runner test/browser/time_off_setup.rb
 BASE_URL=http://127.0.0.1:4318 node test/browser/time_off_routing_test.cjs

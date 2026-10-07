@@ -17,6 +17,10 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.time-off-tabs a', 4
     assert_select '.time-off-tabs a', text: 'Grupos', count: 0
     assert_select '.time-off-group-legend .time-off-group-summary', 7
+    assert_select '.time-off-filters', 0
+    assert_select '#time-off-calendar input[type="month"], #time-off-calendar select[name="group"], #time-off-calendar select[name="role"]', 0
+    assert_select '.time-off-calendar-filters[data-turbo-frame="time-off-calendar-content"] input[data-action*="input->time-off#searchCalendar"]', 1
+    assert_select '.time-off-role-picker button', 3
     assert_select '#time-off-settings .time-off-membership-form', 1
     assert_select '.time-off-tabs a[aria-current="page"]', text: 'Calendário'
     assert_select 'a.time-off-day-link[href=?]', time_off_schedule_path(tab: 'day', date: '2026-10-02')
@@ -76,7 +80,7 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
       assert_empty events
       assert_select '.time-off-tabs a[href=?]', time_off_schedule_path(tab: 'day', date: '2026-10-02',
         calendar_period: '2026-10-08', page: '1', role: 'driver', group: 'E')
-      assert_select '.time-off-filters input[name="calendar_period"][value="2026-10-08"]'
+      assert_select '.time-off-calendar-filters input[name="calendar_period"][value="2026-10-08"]'
 
       get time_off_schedule_path(date: '2026-10-02', tab: 'day', calendar_period: '2026-10-08', page: 1)
       assert_response :success
@@ -108,7 +112,7 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.time-off-day-link strong', text: '31'
     assert_select '.time-off-cell--vacation', 2
     assert_select '.time-off-calendar-pagination', text: /1–1 de 1 colaboradores/
-    assert_select '.time-off-panel-heading a[href=?]', time_off_schedule_path(tab: 'calendar', date: '2026-11-01', month: '2026-11', calendar_period: '2026-11-01', page: 1), text: 'Próximo mês →'
+    assert_select '.time-off-panel-heading a[aria-label="Próximo mês"][href=?]', time_off_schedule_path(tab: 'calendar', date: '2026-11-01', month: '2026-11', calendar_period: '2026-11-01', page: 1)
     assert_select '.time-off-day-link[href=?]', time_off_schedule_path(tab: 'day', date: '2026-10-31', calendar_period: '2026-10-29')
     get time_off_schedule_path(month: '2026-10', date: '2026-10-02', calendar_period: 'month')
     assert_select '.time-off-day-link', 31
@@ -126,7 +130,7 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     get time_off_schedule_path(date: '2026-10-02', calendar_period: '2026-10-01', role: 'driver', group: 'E')
     assert_select '.time-off-calendar tbody tr', 12
     assert_select '.time-off-calendar-pagination', text: /1–12 de 18 colaboradores/
-    assert_select '.time-off-group-summary', text: /Grupo E19 no dia/
+    assert_select '.time-off-group-summary', text: /Grupo E\s*19 no dia/
     assert_select '.time-off-calendar-actions button[disabled="disabled"]', text: 'Anterior'
     assert_select '.time-off-calendar-actions button[name="page"][value="2"]:not([disabled])', text: 'Próxima'
     assert_select '.time-off-calendar-actions input[name="role"][value="driver"]', 1
@@ -153,9 +157,73 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.time-off-calendar tbody tr', 1
     assert_select '.time-off-calendar-pagination', text: /1–1 de 1 colaboradores/
     assert_select '.time-off-calendar-actions button[disabled="disabled"]', 2
-    assert_select 'select[name="per_page"]', 0
+    assert_select '.time-off-calendar-pagination .time-off-row-picker button[aria-pressed="true"][value="12"]', 1
     get time_off_schedule_path(tab: 'day', date: '2026-10-02', group: 'E', page: 2)
     assert_select '.time-off-person', 19
+  end
+
+  test 'group badges toggle the group while retaining calendar filters and resetting pagination' do
+    @schedule.time_off_memberships.create!(ajudante: ajudantes(:one), group_code: 'A', starts_on: @schedule.starts_on)
+    get time_off_schedule_path(date: '2026-10-02', calendar_period: '2026-10-08', group: 'E', role: 'driver', name: drivers(:one).nome, per_page: 24, page: 9)
+    assert_response :success
+    assert_select '#time-off-calendar-content .time-off-group-filter', 7
+    assert_select '.time-off-group-filter button[aria-pressed="true"][value=""]', text: 'Grupo E'
+    assert_select '.time-off-group-filter button[aria-pressed="false"][value="A"]', text: 'Grupo A'
+    assert_select '.time-off-group-filter input[name="page"]', 0
+    assert_select '.time-off-group-filter input[name="calendar_period"][value="2026-10-08"]', 7
+    assert_select '.time-off-group-filter input[name="role"][value="driver"]', 7
+    assert_select '.time-off-group-filter input[name="name"][value=?]', drivers(:one).nome, count: 7
+    assert_select '.time-off-group-filter input[name="per_page"][value="24"]', 7
+    assert_select '.time-off-calendar tbody th strong', text: drivers(:one).nome, count: 1
+    get time_off_schedule_path(date: '2026-10-02', group: 'A')
+    assert_select '.time-off-calendar tbody th strong', text: ajudantes(:one).nome, count: 1
+    get time_off_schedule_path(date: '2026-10-02', group: '')
+    assert_select '.time-off-calendar tbody th', 2
+    assert_select '.time-off-group-filter button[aria-pressed="true"]', 0
+  end
+
+  test 'name search ignores case accents and surrounding whitespace and combines with role and group' do
+    drivers(:one).update!(nome: 'JOÃO DA SILVA')
+    ajudantes(:one).update!(nome: 'Joana da Silva')
+    @schedule.time_off_memberships.create!(ajudante: ajudantes(:one), group_code: 'A', starts_on: @schedule.starts_on)
+    get time_off_schedule_path(date: '2026-10-02', name: '  joao  da  ')
+    assert_response :success
+    assert_select '.time-off-calendar tbody th strong', text: 'JOÃO DA SILVA', count: 1
+    assert_select '.time-off-calendar-actions input[name="name"][value="joao da"]', 1
+    get time_off_schedule_path(date: '2026-10-02', name: 'silva', role: 'helper', group: 'A')
+    assert_select '.time-off-calendar tbody th strong', text: 'Joana da Silva', count: 1
+    get time_off_schedule_path(date: '2026-10-02', name: 'silva', group: 'F')
+    assert_select '.time-off-calendar tbody th', 0
+    assert_select '.time-off-calendar-pagination', text: /0–0 de 0 colaboradores/
+  end
+
+  test 'calendar supports 12 24 and 48 rows and preserves the choice across navigation' do
+    48.times do |i|
+      employee = Employee.create!(nome: "Busca #{i.to_s.rjust(2, '0')}", matricula: "calendar-size-#{i}")
+      driver = Driver.create!(employee: employee, nome: employee.nome, matricula: employee.matricula, promax: "size-#{i}")
+      @schedule.time_off_memberships.create!(driver: driver, group_code: 'E', starts_on: @schedule.starts_on)
+    end
+    [12, 24, 48].each do |size|
+      get time_off_schedule_path(date: '2026-10-02', per_page: size)
+      assert_response :success
+      assert_select '.time-off-calendar tbody th', size
+      assert_select '.time-off-calendar-pagination .time-off-row-picker button[aria-pressed="true"][value=?]', size.to_s, count: 1
+      assert_select '.time-off-calendar-actions input[name="per_page"][value=?]', size.to_s, count: 1
+      assert_select '.time-off-calendar-filters input[name="page"]', 0
+    end
+    get time_off_schedule_path(date: '2026-10-02', per_page: 24, page: 2, name: 'Busca', group: 'E', calendar_period: 'month')
+    assert_select '.time-off-calendar tbody th', 24
+    assert_select '.time-off-calendar-pagination', text: /25–48 de 48 colaboradores/
+    assert_select '.time-off-period-picker input[name="per_page"][value="24"]', 1
+    link = css_select('.time-off-tabs a').find { |node| node.text.include?('Escala do dia') }
+    get link['href']
+    assert_response :success
+    assert_select '.time-off-person', 48
+    assert_select '.time-off-filters input[type="search"][name="name"][value="Busca"]', 1
+    assert_select '.time-off-filters input[name="per_page"][value="24"]', 1
+    link = css_select('.time-off-tabs a').find { |node| node.text.include?('Calendário') }
+    get link['href']
+    assert_select '.time-off-calendar-pagination', text: /25–48 de 48 colaboradores/
   end
 
   test 'periods respect month lengths and keep the monthly roster when switching periods' do

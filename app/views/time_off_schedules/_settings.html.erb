@@ -2,6 +2,7 @@
   <div class="offcanvas offcanvas-end time-off-config" tabindex="-1" id="time-off-settings" aria-labelledby="settings-heading" data-time-off-target="settings">
     <div class="offcanvas-header"><h2 id="settings-heading">Configuração da escala</h2><button type="button" class="btn-close" aria-label="Fechar configuração" data-action="time-off#closeSettings"></button></div>
     <div class="offcanvas-body">
+      <%= render 'membership_correction' %>
       <%= render 'vacations' %>
     <% if @pilot_pending.any? %><div class="time-off-notice"><strong>Composição do piloto a completar</strong><ul class="mt-2 mb-0"><% @pilot_pending.each do |entry| %><li>Grupo <%= entry['group'] %> · <%= entry['name'] %> · <%= entry['role'] == 'driver' ? 'Motorista' : 'Ajudante' %><%= entry['vacancy'] ? ' — vaga a preencher' : ' — vincule ao cadastro correspondente' %></li><% end %></ul></div><% end %>
     <% if can_edit? %>
@@ -14,7 +15,7 @@
           <div><%= form.label :standard_operation, 'Titular de operação fixa' %><%= form.select :standard_operation, TimeOffMembership::STANDARD_OPERATIONS, { prompt: 'Sem operação fixa' }, class: 'form-select' %></div>
           <div><%= form.label :starts_on, 'Válido a partir de' %><%= form.date_field :starts_on, value: @memberships.empty? ? @schedule.starts_on : @date, required: true, min: @schedule.starts_on, class: 'form-control' %></div>
           <%= form.submit 'Salvar grupo', class: 'btn btn-primary' %>
-        <% end %><p class="time-off-muted">Vespertina e AS exigem grupo Fixo com folga no sábado. A Van usa o cargo Motorista de van vigente no perfil do colaborador. Para alterar grupo ou operação, escolha uma data posterior ao início da vigência atual.</p>
+        <% end %><p class="time-off-muted">Vespertina e AS exigem grupo Fixo com folga no sábado. A Van usa o cargo Motorista de van vigente no perfil do colaborador. Para uma nova mudança de grupo ou operação, escolha uma data posterior ao início da vigência atual. Para corrigir um lançamento errado, use Corrigir vigência.</p>
       </details>
       <details class="time-off-settings"><summary><%= disclosure_arrow %> <i class="bi bi-arrow-repeat"></i> Continuação após outubro</summary>
         <%= form_with scope: :schedule, url: update_rotation_time_off_schedule_path(date: @date), method: :patch do |form| %>

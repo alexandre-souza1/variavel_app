@@ -1,7 +1,12 @@
 <div class="time-off-group-legend" aria-label="Grupos do piloto e folgas originais">
   <% TimeOffSchedule::GROUPS.each do |group| %>
-    <div class="time-off-group-summary"><span class="time-off-group time-off-group--<%= group %>">Grupo <%= group %></span><small><%= @memberships.count { |m| m.group_code == group && m.covers?(@date) } %> no dia</small>
-      <div class="time-off-group-dates"><% @month_days.select { |day| group == 'FIXO' ? @schedule.covers?(day) && @memberships.any? { |m| m.group_code == 'FIXO' && m.covers?(day) && m.fixed_weekday == day.cwday } : @schedule.off_group_on(day) == group }.each do |day| %><%= link_to day.strftime('%d/%m'), time_off_tab_path('day', date: day, group: group), title: l(day, format: '%A') %><% end %></div>
+    <div class="time-off-group-summary">
+      <%= form_with url: time_off_schedule_path, method: :get, class: 'time-off-group-filter' do %>
+        <% context.except(:group).merge(calendar_period: @calendar_period).each do |key, value| %><%= hidden_field_tag key, value, id: nil %><% end %>
+        <%= button_tag "Grupo #{group}", name: 'group', value: @group == group ? '' : group, class: "time-off-group time-off-group--#{group} time-off-group-button", aria: { pressed: @group == group }, title: @group == group ? 'Mostrar todos os grupos' : "Filtrar grupo #{group}" %>
+      <% end %>
+      <small><%= @memberships.count { |m| m.group_code == group && m.covers?(@date) } %> no dia</small>
+      <div class="time-off-group-dates"><% @month_days.select { |day| group == 'FIXO' ? @schedule.covers?(day) && @memberships.any? { |m| m.group_code == 'FIXO' && m.covers?(day) && m.fixed_weekday == day.cwday } : @schedule.off_group_on(day) == group }.each do |day| %><%= link_to day.strftime('%d/%m'), time_off_tab_path('day', date: day, group: group), title: l(day, format: '%A'), data: { turbo_frame: '_top' } %><% end %></div>
     </div>
   <% end %>
 </div>

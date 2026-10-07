@@ -37,10 +37,10 @@
     <% end %>
   </nav>
 
-  <% if %w[calendar day extras].include?(@tab) %>
+  <% if %w[day extras].include?(@tab) %>
     <%= form_with url: time_off_schedule_path, method: :get, class: 'time-off-filters' do |form| %>
       <%= form.hidden_field :tab, value: @tab %>
-      <% if %w[calendar extras].include?(@tab) %>
+      <% if @tab == 'extras' %>
         <div><%= form.label :month, 'Mês de referência' %><%= form.month_field :month, value: @month.strftime('%Y-%m'), data: { action: 'change->time-off#syncDate' }, class: 'form-control', required: true %></div>
         <%= form.hidden_field :date, value: @date %>
       <% else %>
@@ -49,11 +49,9 @@
       <% end %>
       <div><%= form.label :role, 'Função' %><%= form.select :role, [['Todas as funções', ''], ['Motoristas', 'driver'], ['Ajudantes', 'helper']], { selected: @role }, class: 'form-select' %></div>
       <div><%= form.label :group, 'Grupo' %><%= form.select :group, [['Todos os grupos', '']] + TimeOffSchedule::GROUPS.map { |g| ["Grupo #{g}", g] }, { selected: @group }, class: 'form-select' %></div>
-      <% if @tab == 'calendar' %>
-        <%= form.hidden_field :calendar_period, value: @calendar_period %>
-      <% else %>
-        <% params.slice(:calendar_period, :page).permit(:calendar_period, :page).each do |key, value| %><%= form.hidden_field key, value: value %><% end %>
-      <% end %>
+      <div><%= form.label :name, 'Nome do colaborador' %><%= form.search_field :name, value: @name_query, placeholder: 'Buscar por nome', class: 'form-control' %></div>
+      <%= form.hidden_field :per_page, value: @per_page %>
+      <% params.slice(:calendar_period, :page).permit(:calendar_period, :page).each do |key, value| %><%= form.hidden_field key, value: value %><% end %>
       <%= form.submit 'Exibir', class: 'btn btn-primary' %>
     <% end %>
   <% end %>
@@ -63,7 +61,7 @@
   <%= render 'change_dialog' if @tab == 'day' %>
   <% if can_edit? %>
     <% @unassigned_people.each do |person| %>
-      <%= render 'group_dialog', person: person, membership: nil, schedule: @schedule, date: @date, url: assign_group_time_off_schedule_path(origin: 'unassigned', date: @date, tab: @tab, role: @role, group: @group, calendar_period: @calendar_period, page: @page) %>
+      <%= render 'group_dialog', person: person, membership: nil, schedule: @schedule, date: @date, url: assign_group_time_off_schedule_path(origin: 'unassigned', date: @date, tab: @tab, role: @role, group: @group, calendar_period: @calendar_period, page: @page, name: @name_query, per_page: @per_page) %>
     <% end %>
   <% end %>
 </div>

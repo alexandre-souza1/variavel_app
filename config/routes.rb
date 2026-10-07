@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     patch :update_coverage
     post :preview_routing, path: 'cobertura/importar'
     post :assign_group, path: 'grupos'
+    patch :revise_membership, path: 'grupos/corrigir-vigencia'
     patch :update_day, path: 'dia'
     patch :update_rotation, path: 'rodizio'
     post :create_vacation, path: 'ferias'
