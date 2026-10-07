@@ -7,17 +7,17 @@ class AzAjudantesControllerTest < ActionDispatch::IntegrationTest
 
   test "should get index" do
     get az_ajudantes_url
-    assert_response :success
+    assert_redirected_to employees_path(employee_sector: 'az', cargo: 'ajudante')
   end
 
   test "should get new" do
     get new_az_ajudante_url
-    assert_response :success
+    assert_redirected_to new_employee_path(employee_sector: 'az', employee_cargo: 'ajudante')
   end
 
   test "should create az_ajudante" do
     assert_difference("AzAjudante.count") do
-      post az_ajudantes_url, params: { az_ajudante: { cpf: "999999", data_nascimento: @az_ajudante.data_nascimento, matricula: 999, nome: "Novo ajudante", turno: @az_ajudante.turno } }
+      post az_ajudantes_url, params: { az_ajudante: { career_starts_on: '2026-01-01', cpf: "999999", data_nascimento: @az_ajudante.data_nascimento, matricula: 999, nome: "Novo ajudante", turno: @az_ajudante.turno } }
     end
 
     assert_redirected_to az_ajudante_url(AzAjudante.last)

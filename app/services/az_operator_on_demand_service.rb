@@ -3,8 +3,9 @@ class AzOperatorOnDemandService
 
   attr_reader :activities
 
-  def initialize(employee_name:, start_date:, end_date:)
-    @activities = AzRvOnDemandActivity.for_employee(employee_name).between(start_date, end_date)
+  def initialize(employee_name: nil, person: nil, start_date:, end_date:)
+    scope = person ? AzRvOnDemandActivity.for_person(person) : AzRvOnDemandActivity.for_employee(employee_name)
+    @activities = scope.between(start_date, end_date)
       .order(:created_at_source).select { |activity| activity.rv_category == :ondemand_operacional }
   end
 

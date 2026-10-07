@@ -143,7 +143,11 @@ module Pcd
       people = code.present? ? @board.members.select { |m| m['role'] == 'driver' && TimeOff::RoutingCsv.driver_code(m['code']) == code } : []
       if people.one? && @board.schedule
         type, id = people.first['id'].split(':')
-        fixed = @board.schedule.time_off_memberships.on(@board.date).find_by(driver_id: id)&.standard_operation if type == 'driver'
+        memberships = @board.schedule.time_off_memberships.on(@board.date)
+        fixed = case type
+                when 'employee' then memberships.find_by(employee_id: id)&.standard_operation
+                when 'driver' then memberships.find_by(driver_id: id)&.standard_operation
+                end
         return fixed if fixed.present?
       end
       return 'van' if normalize(row['veiculo']) == 'van' || raw == 'van' || (people.one? && people.first['cargo'] == 'van')

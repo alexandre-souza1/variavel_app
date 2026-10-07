@@ -17,7 +17,7 @@
         <% members = (@daily[status] || []) + (status == 'off' ? (@daily['dsr'] || []) : []) %>
         <section class="time-off-column time-off-column--<%= status %>">
           <header><h3><i class="bi <%= icon %>"></i> <%= label %></h3><span class="time-off-count"><%= members.size %></span></header>
-          <p class="time-off-column-summary"><%= members.count { |m| m.role == 'driver' } %> motoristas · <%= members.count { |m| m.role == 'helper' } %> ajudantes</p>
+          <p class="time-off-column-summary"><%= members.count { |m| m.role(@date) == 'driver' } %> motoristas · <%= members.count { |m| m.role(@date) == 'helper' } %> ajudantes</p>
           <% if status == 'working' %>
             <div class="time-off-working-roles">
               <% [['driver', 'Motoristas'], ['helper', 'Ajudantes']].each do |role, role_label| %>

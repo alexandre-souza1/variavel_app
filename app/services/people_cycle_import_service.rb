@@ -20,7 +20,7 @@ class PeopleCycleImportService
 
     people = PublicVariableIdentity::PROFILES.flat_map do |profile, model|
       scope = model.where(active: true)
-      scope = scope.where(employee_id: nil) if [Driver, Ajudante].include?(model)
+      scope = scope.where(employee_id: nil) unless model == Employee
       scope.pluck(:id, :nome).map { |id, name| [PeopleCycleFeedback.normalize(name), profile, id] }
     end.group_by(&:first)
     rows = []

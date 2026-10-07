@@ -4,7 +4,7 @@
   <div class="time-off-table-scroll"><table class="time-off-extras-table">
     <thead><tr><th scope="col">Colaborador</th><th scope="col">Extras</th><th scope="col">Dias trabalhados na folga</th></tr></thead>
     <tbody><% rows.each do |row| %><% member = row[:member] %><tr>
-      <th scope="row"><span class="time-off-group time-off-group--<%= member.group_code %>"><%= member.group_code %></span> <%= member.person.nome %><small><%= member.role_label %></small></th>
+      <th scope="row"><span class="time-off-group time-off-group--<%= member.group_code %>"><%= member.group_code %></span> <%= member.person.nome %><small><%= member.role_label(@date) %></small></th>
       <td><strong><%= row[:dates].size %></strong></td>
       <td><div class="time-off-group-dates"><% row[:dates].each do |date| %><%= link_to l(date, format: '%d/%m'), time_off_tab_path('day', date: date), title: "Acompanhar #{l(date)}" %><% end %><%= '—' if row[:dates].empty? %></div></td>
     </tr><% end %><% if rows.empty? %><tr><td colspan="3" class="time-off-empty">Nenhum colaborador neste filtro.</td></tr><% end %></tbody>

@@ -10,9 +10,13 @@
     </div>
   <% end %>
 
+  <% if operator.new_record? %>
+    <div class="mb-3"><%= form.label :career_starts_on, 'Data efetiva do cargo inicial' %><%= form.date_field :career_starts_on, required: true, class: 'form-control' %></div>
+  <% end %>
+
   <div class="mb-3">
     <%= form.label :matricula, "Matrícula", class: "form-label" %>
-    <%= form.number_field :matricula, class: "form-control" %>
+    <%= form.text_field :matricula, class: "form-control" %>
   </div>
 
   <div class="mb-3">

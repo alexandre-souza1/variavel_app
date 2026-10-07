@@ -32,7 +32,7 @@
         </tr></thead>
         <tbody>
           <% @calendar_memberships.each_with_index do |member, index| %><tr class="<%= 'time-off-calendar-group-start' if index.positive? && @calendar_memberships[index - 1].group_code != member.group_code %>">
-            <th scope="row" class="time-off-person-cell"><div class="time-off-person-name"><span class="time-off-group time-off-group--<%= member.group_code %>"><%= member.group_code %></span><span><strong title="<%= member.person.nome %>"><%= member.person.nome %></strong><small><%= member.role_label %> · <%= member.person.promax %> · <%= pluralize(@extras.dates(member).size, 'extra', 'extras') %><% if member.ends_on %> · até <%= l(member.ends_on) %><% end %></small></span></div></th>
+            <th scope="row" class="time-off-person-cell"><div class="time-off-person-name"><span class="time-off-group time-off-group--<%= member.group_code %>"><%= member.group_code %></span><span><strong title="<%= member.person.nome %>"><%= member.person.nome %></strong><small><%= member.role_label(@date) %> · <%= member.code_on(@date) %> · <%= pluralize(@extras.dates(member).size, 'extra', 'extras') %><% if member.ends_on %> · até <%= l(member.ends_on) %><% end %></small></span></div></th>
             <% @days.each do |day| %>
               <% base = @schedule.base_status(member, day); override = base ? @availability.override(member, day) : nil; status = base && status_for(member, day); vacation = base && @availability.vacation(member, day) %>
               <td class="<%= 'is-selected' if day == @date %> <%= 'is-sunday' if day.sunday? %>">

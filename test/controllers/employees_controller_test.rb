@@ -114,9 +114,15 @@ class EmployeesControllerTest < ActionDispatch::IntegrationTest
   test 'initial HR registration renders and creates employee' do
     get new_employee_path
     assert_response :success
-    post employees_path, params: { employee: { nome: 'Novo RH', matricula: 'RH-CREATE' }, employee_role: { cargo: 'ajudante', promax: 'RH-CREATE', starts_on: '2026-09-01', reason: 'Admissão' } }
+    assert_select 'textarea[name="employee_role[reason]"]', count: 0
+    post employees_path, params: { employee: { nome: 'Novo RH', matricula: 'RH-CREATE' }, employee_role: { cargo: 'ajudante', promax: 'RH-CREATE', starts_on: '2026-09-01' } }
     assert_response :redirect
-    assert_equal 'ajudante', Employee.find_by!(matricula: 'RH-CREATE').role_on(Date.new(2026, 9, 1)).cargo
+    person = Employee.find_by!(matricula: 'RH-CREATE')
+    initial_role = person.role_on(Date.new(2026, 9, 1))
+    assert_equal 'ajudante', initial_role.cargo
+    assert_equal 'Cadastro inicial', initial_role.reason
+    get employee_path(person)
+    assert_select '#promotion_reason[required]', count: 1
   end
 
   test 'linking a legacy registration preserves original closings and records promotion' do

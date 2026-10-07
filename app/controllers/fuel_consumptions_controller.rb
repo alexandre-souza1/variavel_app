@@ -1,5 +1,6 @@
 class FuelConsumptionsController < ApplicationController
   before_action :authenticate_user! # se você usa Devise
+  before_action { head :forbidden unless current_user.can_view_du_operations? }
 
   def index
     closing = Date.current.day <= 20 ? Date.current : Date.current.next_month

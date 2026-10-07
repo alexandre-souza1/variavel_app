@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_07_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -90,7 +90,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
   end
 
   create_table "az_ajudantes", force: :cascade do |t|
-    t.integer "matricula"
+    t.string "matricula"
     t.string "nome"
     t.string "cpf"
     t.date "data_nascimento"
@@ -99,7 +99,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.datetime "updated_at", null: false
     t.boolean "active", default: true, null: false
     t.date "retired_at"
+    t.bigint "employee_id"
     t.index ["active"], name: "index_az_ajudantes_on_active"
+    t.index ["employee_id"], name: "index_az_ajudantes_on_employee_id"
   end
 
   create_table "az_mapas", force: :cascade do |t|
@@ -149,7 +151,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.string "transport_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "employee_id"
     t.index ["az_rv_import_id"], name: "index_az_rv_on_demand_activities_on_az_rv_import_id"
+    t.index ["employee_id"], name: "index_az_rv_on_demand_activities_on_employee_id"
     t.index ["employee_key", "created_at_source"], name: "index_az_rv_ondemand_on_employee_and_date"
     t.index ["source_key"], name: "index_az_rv_on_demand_activities_on_source_key", unique: true
   end
@@ -165,7 +169,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.decimal "reported_value", precision: 16, scale: 2, default: "0.0", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "employee_id"
     t.index ["az_rv_import_id"], name: "index_az_rv_points_on_az_rv_import_id"
+    t.index ["employee_id"], name: "index_az_rv_points_on_employee_id"
     t.index ["employee_key", "reference_date"], name: "index_az_rv_points_on_employee_key_and_reference_date", unique: true
   end
 
@@ -192,7 +198,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.string "completed_task"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "employee_id"
     t.index ["az_rv_import_id"], name: "index_az_rv_tasks_on_az_rv_import_id"
+    t.index ["employee_id"], name: "index_az_rv_tasks_on_employee_id"
     t.index ["employee_key", "created_at_source"], name: "index_az_rv_tasks_on_employee_key_and_created_at_source"
     t.index ["source_key"], name: "index_az_rv_tasks_on_source_key", unique: true
   end
@@ -353,10 +361,21 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.index ["user_id"], name: "index_employee_career_events_on_user_id"
   end
 
+  create_table "employee_names", force: :cascade do |t|
+    t.bigint "employee_id", null: false
+    t.string "name", null: false
+    t.string "normalized_name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_id", "normalized_name"], name: "index_employee_names_on_employee_id_and_normalized_name", unique: true
+    t.index ["employee_id"], name: "index_employee_names_on_employee_id"
+    t.index ["normalized_name"], name: "index_employee_names_on_normalized_name"
+  end
+
   create_table "employee_roles", force: :cascade do |t|
     t.bigint "employee_id", null: false
     t.string "cargo", null: false
-    t.string "promax", null: false
+    t.string "promax"
     t.date "starts_on"
     t.date "ends_on"
     t.boolean "legacy", default: false, null: false
@@ -364,10 +383,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.bigint "created_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "sector", default: "du", null: false
+    t.integer "turno"
     t.index ["created_by_id"], name: "index_employee_roles_on_created_by_id"
     t.index ["employee_id"], name: "index_employee_roles_on_employee_id"
     t.index ["promax", "cargo"], name: "index_employee_roles_on_promax_and_cargo"
-    t.check_constraint "cargo::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[])", name: "employee_role_valid_cargo"
+    t.index ["sector", "cargo", "starts_on", "ends_on"], name: "index_employee_roles_profile_period"
+    t.check_constraint "sector::text = 'du'::text AND (cargo::text = ANY (ARRAY['motorista'::character varying::text, 'van'::character varying::text, 'ajudante'::character varying::text])) AND promax IS NOT NULL OR sector::text = 'az'::text AND (cargo::text = ANY (ARRAY['operador'::character varying::text, 'ajudante'::character varying::text])) AND (turno IS NOT NULL AND turno >= 0 AND turno <= 2 OR legacy = true AND turno IS NULL)", name: "employee_role_valid_profile"
     t.check_constraint "starts_on IS NOT NULL OR legacy = true", name: "employee_role_start_required"
     t.check_constraint "starts_on IS NULL OR ends_on IS NULL OR ends_on >= starts_on", name: "employee_role_valid_dates"
   end
@@ -380,7 +402,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.date "retired_at"
+    t.jsonb "registration_aliases", default: [], null: false
     t.index ["matricula"], name: "index_employees_on_matricula"
+    t.index ["registration_aliases"], name: "index_employees_on_registration_aliases", using: :gin
   end
 
   create_table "fleet_availabilities", force: :cascade do |t|
@@ -625,8 +650,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.datetime "updated_at", null: false
     t.index ["mapa_id"], name: "index_mapa_cargo_overrides_on_mapa_id"
     t.index ["user_id"], name: "index_mapa_cargo_overrides_on_user_id"
-    t.check_constraint "cargo IS NULL OR (cargo::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[]))", name: "mapa_override_valid_cargo"
-    t.check_constraint "previous_cargo IS NULL OR (previous_cargo::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[]))", name: "mapa_override_valid_previous_cargo"
+    t.check_constraint "cargo IS NULL OR (cargo::text = ANY (ARRAY['motorista'::character varying::text, 'van'::character varying::text, 'ajudante'::character varying::text]))", name: "mapa_override_valid_cargo"
+    t.check_constraint "previous_cargo IS NULL OR (previous_cargo::text = ANY (ARRAY['motorista'::character varying::text, 'van'::character varying::text, 'ajudante'::character varying::text]))", name: "mapa_override_valid_previous_cargo"
   end
 
   create_table "mapas", force: :cascade do |t|
@@ -655,7 +680,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.index ["matric_ajudante"], name: "index_mapas_on_matric_ajudante"
     t.index ["matric_ajudante_2"], name: "index_mapas_on_matric_ajudante_2"
     t.index ["matric_motorista"], name: "index_mapas_on_matric_motorista"
-    t.check_constraint "cargo_override IS NULL OR (cargo_override::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[]))", name: "mapa_valid_cargo_override"
+    t.check_constraint "cargo_override IS NULL OR (cargo_override::text = ANY (ARRAY['motorista'::character varying::text, 'van'::character varying::text, 'ajudante'::character varying::text]))", name: "mapa_valid_cargo_override"
   end
 
   create_table "meeting_minute_edits", force: :cascade do |t|
@@ -714,7 +739,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
   end
 
   create_table "operators", force: :cascade do |t|
-    t.integer "matricula"
+    t.string "matricula"
     t.string "nome"
     t.string "cpf"
     t.date "data_nascimento"
@@ -724,7 +749,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.boolean "autonomy", default: false, null: false
     t.boolean "active", default: true, null: false
     t.date "retired_at"
+    t.bigint "employee_id"
     t.index ["active"], name: "index_operators_on_active"
+    t.index ["employee_id"], name: "index_operators_on_employee_id"
   end
 
   create_table "parametro_calculos", force: :cascade do |t|
@@ -1124,8 +1151,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.integer "fixed_weekday"
     t.string "pilot_key"
     t.string "standard_operation"
+    t.bigint "employee_id"
     t.index ["ajudante_id"], name: "index_time_off_memberships_on_ajudante_id"
     t.index ["driver_id"], name: "index_time_off_memberships_on_driver_id"
+    t.index ["employee_id"], name: "index_time_off_memberships_on_employee_id"
     t.index ["time_off_schedule_id", "ajudante_id"], name: "time_off_current_helper", unique: true, where: "((ends_on IS NULL) AND (ajudante_id IS NOT NULL))"
     t.index ["time_off_schedule_id", "driver_id"], name: "time_off_current_driver", unique: true, where: "((ends_on IS NULL) AND (driver_id IS NOT NULL))"
     t.index ["time_off_schedule_id", "pilot_key"], name: "time_off_pilot_slot", unique: true, where: "(pilot_key IS NOT NULL)"
@@ -1133,7 +1162,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.check_constraint "(driver_id IS NOT NULL) <> (ajudante_id IS NOT NULL)", name: "time_off_exactly_one_person"
     t.check_constraint "ends_on IS NULL OR ends_on >= starts_on", name: "time_off_valid_membership_dates"
     t.check_constraint "fixed_weekday IS NULL OR fixed_weekday >= 1 AND fixed_weekday <= 6", name: "time_off_valid_fixed_weekday"
-    t.check_constraint "group_code::text = ANY (ARRAY['A'::character varying, 'B'::character varying, 'C'::character varying, 'D'::character varying, 'E'::character varying, 'F'::character varying, 'FIXO'::character varying]::text[])", name: "time_off_valid_group"
+    t.check_constraint "group_code::text = ANY (ARRAY['A'::character varying::text, 'B'::character varying::text, 'C'::character varying::text, 'D'::character varying::text, 'E'::character varying::text, 'F'::character varying::text, 'FIXO'::character varying::text])", name: "time_off_valid_group"
     t.check_constraint "standard_operation IS NULL OR group_code::text = 'FIXO'::text AND fixed_weekday = 6 AND (standard_operation::text = 'vespertina'::text OR standard_operation::text = 'as'::text AND driver_id IS NOT NULL)", name: "time_off_valid_standard_operation"
   end
 
@@ -1147,7 +1176,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.datetime "updated_at", null: false
     t.index ["time_off_membership_id", "date"], name: "time_off_one_override_per_day", unique: true
     t.index ["time_off_membership_id"], name: "index_time_off_overrides_on_time_off_membership_id"
-    t.check_constraint "status::text = ANY (ARRAY['working'::character varying, 'off'::character varying, 'unavailable'::character varying]::text[])", name: "time_off_valid_status"
+    t.check_constraint "status::text = ANY (ARRAY['working'::character varying::text, 'off'::character varying::text, 'unavailable'::character varying::text])", name: "time_off_valid_status"
   end
 
   create_table "time_off_schedules", force: :cascade do |t|
@@ -1204,9 +1233,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "legacy_baseline", default: false, null: false
-    t.index ["employee_id", "year", "month", "revision"], name: "index_variable_closings_revision", unique: true
+    t.string "sector", default: "du", null: false
+    t.index ["employee_id", "sector", "year", "month", "revision"], name: "index_variable_closings_revision", unique: true
     t.index ["employee_id"], name: "index_variable_closings_on_employee_id"
+    t.index ["sector", "year", "month", "employee_id", "revision"], name: "index_variable_closings_history"
     t.index ["user_id"], name: "index_variable_closings_on_user_id"
+    t.check_constraint "sector::text = ANY (ARRAY['du'::character varying::text, 'az'::character varying::text])", name: "variable_closing_valid_sector"
   end
 
   create_table "vehicle_remunerations", force: :cascade do |t|
@@ -1233,7 +1265,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
     t.datetime "updated_at", null: false
     t.string "source_key"
     t.bigint "az_rv_import_id"
+    t.bigint "employee_id"
     t.index ["az_rv_import_id"], name: "index_wms_tasks_on_az_rv_import_id"
+    t.index ["employee_id"], name: "index_wms_tasks_on_employee_id"
     t.index ["operator_id"], name: "index_wms_tasks_on_operator_id"
     t.index ["source_key"], name: "index_wms_tasks_on_source_key", unique: true, where: "(source_key IS NOT NULL)"
     t.index ["started_at"], name: "index_wms_tasks_on_started_at"
@@ -1244,10 +1278,14 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "ajudantes", "employees"
+  add_foreign_key "az_ajudantes", "employees"
   add_foreign_key "az_rv_imports", "users"
   add_foreign_key "az_rv_on_demand_activities", "az_rv_imports"
+  add_foreign_key "az_rv_on_demand_activities", "employees"
   add_foreign_key "az_rv_points", "az_rv_imports"
+  add_foreign_key "az_rv_points", "employees"
   add_foreign_key "az_rv_tasks", "az_rv_imports"
+  add_foreign_key "az_rv_tasks", "employees"
   add_foreign_key "buckets", "action_plans"
   add_foreign_key "checklist_defects", "checklists"
   add_foreign_key "checklist_items", "checklist_templates"
@@ -1262,6 +1300,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
   add_foreign_key "drivers", "employees"
   add_foreign_key "employee_career_events", "employees"
   add_foreign_key "employee_career_events", "users"
+  add_foreign_key "employee_names", "employees"
   add_foreign_key "employee_roles", "employees"
   add_foreign_key "employee_roles", "users", column: "created_by_id"
   add_foreign_key "fleet_availabilities", "users"
@@ -1296,6 +1335,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
   add_foreign_key "meeting_minutes", "users", column: "creator_id"
   add_foreign_key "notifications", "users"
   add_foreign_key "notifications", "users", column: "actor_id"
+  add_foreign_key "operators", "employees"
   add_foreign_key "parking_layouts", "users", column: "updated_by_id"
   add_foreign_key "pcd_changes", "pcd_plans"
   add_foreign_key "pcd_changes", "users", on_delete: :nullify
@@ -1346,6 +1386,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
   add_foreign_key "time_off_daily_plans", "time_off_schedules"
   add_foreign_key "time_off_memberships", "ajudantes"
   add_foreign_key "time_off_memberships", "drivers"
+  add_foreign_key "time_off_memberships", "employees"
   add_foreign_key "time_off_memberships", "time_off_schedules"
   add_foreign_key "time_off_overrides", "time_off_memberships"
   add_foreign_key "time_off_vacations", "time_off_memberships"
@@ -1354,5 +1395,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_05_150000) do
   add_foreign_key "variable_closings", "users"
   add_foreign_key "vehicle_remunerations", "remuneration_periods"
   add_foreign_key "wms_tasks", "az_rv_imports"
+  add_foreign_key "wms_tasks", "employees"
   add_foreign_key "wms_tasks", "operators"
 end

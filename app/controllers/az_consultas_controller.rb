@@ -60,151 +60,108 @@ class AzConsultasController < ApplicationController
 
   def show
     @default_period_date = period_anchor_date
-
     @matricula = params[:matricula].to_s.strip
-    selected_turno = params[:turno].presence&.to_i
-    if selected_turno && [0, 1, 2].include?(selected_turno) && turno_mismatch?(@matricula, selected_turno)
+    @periodo_mes = params[:periodo_mes].presence || @default_period_date.month
+    @periodo_ano = params[:periodo_ano].presence || @default_period_date.year
+    @start_date, @end_date = consultation_period(@periodo_ano, @periodo_mes)
+    people = Employee.with_career_history.where(matricula: @matricula).limit(2).to_a
+    if people.size > 1
+      flash.now[:alert] = 'Matrícula ambígua. Solicite ao RH a revisão dos vínculos.'
+      return render :new, status: :unprocessable_entity
+    end
+    person = people.first
+    if person
+      @report = AzVariableReport.for_period(person: person, from: @start_date, to: @end_date)
+      role = @report.role_on(@end_date)
+      role = @report.role_on(@report.daily.last[:date]) if !role&.az? && @report.daily.any?
+      role = person.employee_roles.az.during(@start_date, @end_date).order(Arel.sql('starts_on DESC NULLS LAST')).first unless role&.az?
+    end
+    if person && !role&.az?
+      flash.now[:alert] = 'Não há vínculo AZ neste período.'
+      return render :new, status: :unprocessable_entity
+    end
+    unless person
+      person = if params[:perfil] == 'ajudante'
+                 AzAjudante.find_by(matricula: @matricula)
+               else
+                 Operator.find_by(matricula: @matricula) || AzAjudante.find_by(matricula: @matricula)
+               end
+    end
+    unless person
+      flash.now[:alert] = 'Matrícula não encontrada'
       return render :new
     end
-
-    return show_ajudante if params[:perfil] == "ajudante"
-
-    # Os cartões de turno são usados no fluxo antigo de operadores. Se a
-    # matrícula existir apenas no cadastro de ajudantes, encaminha para a
-    # consulta de RV do ajudante e usa o turno cadastrado automaticamente.
-    if params[:matricula].present? && AzAjudante.exists?(matricula: params[:matricula]) && !Operator.exists?(matricula: params[:matricula])
-      return show_ajudante
+    @turno = role ? role.turno : person.turno
+    if params[:turno].present? && params[:turno].to_i != @turno
+      flash.now[:alert] = "A matrícula #{@matricula} pertence ao turno #{turno_label_for(@turno)} neste período."
+      return render :new
     end
-
-    @matricula = params[:matricula]
-    @turno = params[:turno].to_i
-    @periodo_mes = params[:periodo_mes]
-
-    if [0, 1, 2].include?(@turno)
-      @operator = Operator.find_by(matricula: @matricula)
-
-      if @operator
-        # Carrega os parâmetros
-        @valor_tma_operator = ParametroCalculo.valor_para(categoria: "operador", nome: "valor_tma") || 0
-        @valor_efc_operator = ParametroCalculo.valor_para(categoria: "operador", nome: "valor_efc") || 0
-        @valor_efd_operator = ParametroCalculo.valor_para(categoria: "operador", nome: "valor_efd") || 0
-        @valor_wms_operator = ParametroCalculo.valor_para(categoria: "operador", nome: "tarefa_wms") || 0
-
-        # Filtra por turno E pelo mês selecionado
-        @azmapas = AzMapa.where("? = ANY(turno)", @operator.turno)
-        @total_wms = 0
-        @total_valor_tma = 0
-        @total_valor_efc = 0
-        @total_operator_variable = 0
-        @ondemand_quantity = BigDecimal("0")
-        @ondemand_value = BigDecimal("0")
-        @ondemand_daily = []
-
-        # Filtra por mês se existir
-        if params[:periodo_mes].present?
-          mes = params[:periodo_mes].to_i
-          ano = params[:periodo_ano].to_i
-          start_date = Date.new(ano, mes, 1).prev_month.change(day: 19)
-          end_date = Date.new(ano, mes, 18)
-
-          @azmapas = @azmapas.where(data: start_date..end_date)
-          ondemand = AzOperatorOnDemandService.new(employee_name: @operator.nome, start_date: start_date, end_date: end_date)
-          @ondemand_quantity = ondemand.quantity
-          @ondemand_value = ondemand.total
-          @ondemand_daily = ondemand.daily
-          # Paginação manual
-          all_tasks = WmsTask.where(operator_id: @operator.id)
-                            .where(started_at: start_date..end_date)
-                            .order(started_at: :desc)
-
-          # Calcula o total de valor WMS **antes da paginação**
-          @total_wms = all_tasks.sum { |t| (t.duration.to_f * 60) >= 10 ? @valor_wms_operator : 0 }
-
-          pagination = helpers.paginate_records(all_tasks, params, per_page: 15)
-
-          @wms_tasks = pagination[:records]
-          @current_page = pagination[:current_page]
-          @total_pages = pagination[:total_pages]
-
-          definir_datas_periodo(@azmapas)
-        else
-          @wms_tasks = WmsTask.none # Retorna uma relação vazia
-          @total_wms = 0
-        end
-        # Calcula o total de valor WMS (ajuste conforme sua regra de negócio)
-        @total_valor_wms = @wms_tasks.sum(:duration) * @valor_wms_operator / 60.0
-
-        @total_valor_tma = @azmapas.sum do |mapa|
-          mapa.tipo == "tempo_atendimento" && mapa.atingiu_meta ? @valor_tma_operator : 0
-        end
-        @total_valor_efc = @azmapas.sum do |mapa|
-          eficiencia_tipo = [0, 2].include?(@turno) ? "eficiencia_carregamento" : "eficiencia_descarga"
-          mapa.tipo == eficiencia_tipo && mapa.meta_remunerada? ? @valor_efc_operator : 0
-        end
-        @total_operator_variable = @total_valor_tma + @total_valor_efc + @total_wms + @ondemand_value
-
-      else
-        flash.now[:alert] = "Matrícula não encontrada"
-        render :new
-      end
-    else
-      flash.now[:alert] = "Turno inválido"
-      render :new
-    end
+    @report ||= AzVariableReport.for_period(person: person, from: @start_date, to: @end_date)
+    @closing = person.is_a?(Employee) ? person.variable_closings.where(sector: 'az', year: @periodo_ano, month: @periodo_mes).order(revision: :desc).first : nil
+    @report_issues = @report.issues
+    @data_inicio, @data_fim = @start_date, @end_date
+    @dias_periodo = @period_days = (@end_date - @start_date).to_i + 1
+    helper = role ? role.cargo == 'ajudante' : person.is_a?(AzAjudante)
+    helper ? prepare_helper_report(person) : prepare_operator_report(person)
+    render helper ? :show_ajudante : :show
+  rescue Date::Error, EmployeeRole::HistoryError => error
+    flash.now[:alert] = error.message
+    render :new, status: :unprocessable_entity
   end
 
   private
 
-  def show_ajudante
-    @matricula = params[:matricula].to_s.strip
-    @helper = AzAjudante.find_by(matricula: @matricula)
-
-    unless @helper&.nome.present?
-      flash.now[:alert] = "Matrícula de ajudante não encontrada."
-      return render :new
+  def prepare_operator_report(person)
+    @operator = person
+    @valor_tma_operator = @report.rate('valor_tma')
+    @valor_efc_operator = @report.rate('valor_efc')
+    @valor_wms_operator = @report.rate('tarefa_wms')
+    @azmapas = @report.maps.select do |mapa|
+      role = @report.role_on(mapa.data)
+      role&.az? && role.cargo == 'operador' && mapa.turno.include?(role.turno)
     end
-
-    @employee_name = @helper.nome.strip
-    @employee_key = normalize_employee_key(@employee_name)
-    @turno = @helper.turno
-    @turno_label = { 0 => "A", 1 => "B", 2 => "C" }.fetch(@turno.to_i, "não informado")
-
-    default_period = period_anchor_date
-    @periodo_mes = params[:periodo_mes].presence || default_period.month
-    @periodo_ano = params[:periodo_ano].presence || default_period.year
-    @start_date, @end_date = consultation_period(@periodo_ano, @periodo_mes)
-
-    @points = AzRvPoint.for_employee(@employee_name).between(@start_date, @end_date).order(:reference_date)
-    @refugo_tasks = AzRvTask.for_employee(@employee_name).between(@start_date, @end_date)
-                             .where(task_type: "Blitz Refugo")
-                             .order(associated_at: :desc)
-    @ondemand_activities = AzRvOnDemandActivity.for_employee(@employee_name).between(@start_date, @end_date).order(created_at_source: :desc)
-
-    @point_total = @points.sum(:total_points)
-    @point_value = @points.sum(&:montagem_value)
-    @reported_point_value = @points.sum(:reported_value)
-    @refugo_count = @refugo_tasks.size
-    @refugo_value = @refugo_count * BigDecimal("1.10")
-    @ondemand_quantity = @ondemand_activities.sum(&:rv_quantity)
-    @activities_by_type = @ondemand_activities.select { |activity| activity.rv_category.present? }
-      .group_by(&:activity).map { |activity, records| [activity, records.sum(&:rv_quantity)] }
-      .sort_by { |activity, quantity| [-quantity, activity.to_s] }
-    @ondemand_value = @ondemand_activities.sum(&:rv_total_amount)
-    @ondemand_by_category = @ondemand_activities.group_by(&:rv_category).reject { |category, _| category.nil? }.sort_by { |category, _| category.to_s }.map do |category, activities|
-      [category, { count: activities.sum(&:rv_quantity), value: activities.sum(&:rv_amount) }]
+    @total_valor_tma = @report.component(:tma)
+    @total_valor_efc = @report.component(:efficiency)
+    @total_wms = @report.component(:wms)
+    @total_operator_variable = @report.total
+    @ondemand_value = @report.component(:ondemand)
+    @ondemand_quantity = @report.quantity(:ondemand_quantity)
+    @ondemand_daily = @report.operator_daily.filter_map do |day|
+      { date: day[:date], quantity: day[:ondemand_quantity], value: day[:ondemand] } if day[:ondemand_quantity].positive?
     end
-    @efc_daily_values = AzHelperEfcService.new(start_date: @start_date, end_date: @end_date).daily_values
-    @efc_value = @efc_daily_values.values.sum(BigDecimal("0"))
-    @suprimento_daily_values = @turno.to_i == 0 ? AzHelperSuprimentoService.new(start_date: @start_date, end_date: @end_date).daily_values : {}
-    @suprimento_value = @suprimento_daily_values.values.sum(BigDecimal("0"))
-    @remonte_daily_values = @turno.to_i == 1 ? AzHelperRemonteService.new(start_date: @start_date, end_date: @end_date).daily_values : {}
-    @remonte_value = @remonte_daily_values.values.sum(BigDecimal("0"))
-    @daily_summary = build_daily_summary(@points, @refugo_tasks, @ondemand_activities, @efc_daily_values, @suprimento_daily_values, @remonte_daily_values)
+    @current_page = [params[:page].to_i, 1].max
+    @total_pages = [(@report.tasks.size / 15.0).ceil, 1].max
+    @current_page = [@current_page, @total_pages].min
+    @wms_tasks = @report.tasks.reverse.slice((@current_page - 1) * 15, 15) || []
+  end
+
+  def prepare_helper_report(person)
+    @helper = person
+    @employee_name = person.nome
+    @employee_key = EmployeeName.normalize(@employee_name)
+    @turno_label = turno_label_for(@turno)
+    @points, @refugo_tasks, @ondemand_activities = @report.points, @report.refugo_tasks, @report.activities
+    @point_total = @report.quantity(:points)
+    @point_value = @report.component(:point_value)
+    @reported_point_value = @points.sum(&:reported_value)
+    @refugo_count = @report.quantity(:refugo_count)
+    @refugo_value = @report.component(:refugo)
+    @ondemand_quantity = @report.quantity(:ondemand_quantity)
+    @ondemand_value = @report.component(:ondemand)
+    @activities_by_type = @ondemand_activities.select { |a| a.rv_category.present? }.group_by(&:activity)
+      .map { |activity, records| [activity, records.sum(&:rv_quantity)] }.sort_by { |activity, quantity| [-quantity, activity.to_s] }
+    @ondemand_by_category = @ondemand_activities.group_by(&:rv_category).reject { |category, _| category.nil? }
+      .sort_by { |category, _| category.to_s }.map { |category, rows| [category, { count: rows.sum(&:rv_quantity), value: rows.sum { |activity| @report.activity_value(activity) } }] }
+    @efc_value, @suprimento_value, @remonte_value = %i[efc suprimento remonte].map { |key| @report.component(key) }
+    @efc_daily_values, @suprimento_daily_values, @remonte_daily_values = %i[efc suprimento remonte].map do |key|
+      @report.helper_daily.select { |day| day[key].positive? }.to_h { |day| [day[:date], day[key]] }
+    end
+    @daily_summary = @report.helper_daily.select { |day| day[:total_value].positive? || day[:points].nonzero? }.map do |day|
+      day.merge(refugo: day[:refugo_count], refugo_value: day[:refugo], ondemand: day[:ondemand_quantity],
+        ondemand_value: day[:ondemand], efc_value: day[:efc], suprimento_value: day[:suprimento], remonte_value: day[:remonte])
+    end
     @total_activities = @refugo_count + @ondemand_quantity
-    @total_variable = @point_value + @refugo_value + @ondemand_value + @efc_value + @suprimento_value + @remonte_value
-    @period_days = (@end_date - @start_date).to_i + 1
-
-    render :show_ajudante
+    @total_variable = @report.total
   end
 
   def period_anchor_date
@@ -218,79 +175,8 @@ class AzConsultasController < ApplicationController
     [Date.current.prev_month.change(day: 19), Date.current.change(day: 18)]
   end
 
-  def normalize_employee_key(value)
-    value.to_s.unicode_normalize(:nfkd).encode("ASCII", invalid: :replace, undef: :replace, replace: "")
-        .downcase.gsub(/[^a-z0-9]+/, " ").strip
-  end
-
-  def turno_mismatch?(matricula, selected_turno)
-    operator = Operator.find_by(matricula: matricula)
-    person = operator || AzAjudante.find_by(matricula: matricula)
-    return false unless person
-    return false if person.turno.to_i == selected_turno
-
-    registered_label = turno_label_for(person.turno)
-    selected_label = turno_label_for(selected_turno)
-    flash.now[:alert] = "A matrícula #{matricula} pertence ao turno #{registered_label}. Selecione o turno #{registered_label} para consultar."
-    Rails.logger.info("Consulta AZ bloqueada: matrícula #{matricula} cadastrada no turno #{registered_label}, turno selecionado #{selected_label}.")
-    true
-  end
-
   def turno_label_for(turno)
-    { 0 => "A", 1 => "B", 2 => "C" }.fetch(turno.to_i, "não informado")
-  end
-
-  def build_daily_summary(points, refugo_tasks, ondemand_activities, efc_daily_values, suprimento_daily_values, remonte_daily_values)
-    summary = Hash.new do |hash, date|
-      hash[date] = {
-        points: BigDecimal("0"),
-        point_value: BigDecimal("0"),
-        refugo: 0,
-        refugo_value: BigDecimal("0"),
-        ondemand: 0,
-        ondemand_value: BigDecimal("0"),
-        efc_value: BigDecimal("0"),
-        suprimento_value: BigDecimal("0"),
-        remonte_value: BigDecimal("0")
-      }
-    end
-
-    points.each do |point|
-      next if point.reference_date.blank?
-
-      daily = summary[point.reference_date]
-      daily[:points] += point.total_points.to_d
-      daily[:point_value] += point.montagem_value
-    end
-
-    refugo_tasks.each do |task|
-      date = task.associated_at&.to_date
-      next if date.blank?
-
-      daily = summary[date]
-      daily[:refugo] += 1
-      daily[:refugo_value] += BigDecimal("1.10")
-    end
-
-    ondemand_activities.each do |activity|
-      date = activity.created_at_source&.to_date
-      next if date.blank?
-
-      daily = summary[date]
-      daily[:ondemand] += activity.rv_quantity
-      daily[:ondemand_value] += activity.rv_total_amount
-    end
-
-    efc_daily_values.each { |date, value| summary[date][:efc_value] = value }
-    suprimento_daily_values.each { |date, value| summary[date][:suprimento_value] = value }
-    remonte_daily_values.each { |date, value| summary[date][:remonte_value] = value }
-
-    summary.sort_by { |date, _| date }.map do |date, daily|
-      daily.merge(
-        date: date,
-        total_value: daily[:point_value] + daily[:refugo_value] + daily[:ondemand_value] + daily[:efc_value] + daily[:suprimento_value] + daily[:remonte_value]
-      )
-    end
+    { 0 => "A", 1 => "B", 2 => "C" }.fetch(turno, "não informado")
   end
 
   def authorize_import_management!

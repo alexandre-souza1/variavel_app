@@ -57,36 +57,9 @@ class AutonomiesController < ApplicationController
   end
 
   def check_registration
-    registration = params[:registration]
-
-    # Verifica primeiro em Driver
-    driver = Driver.find_by(matricula: registration)
-    if driver
-      render json: {
-        valid: driver.autonomy,
-        user_type: 'Driver',
-        has_autonomy: driver.autonomy
-      }
-      return
-    end
-
-    # Se não encontrou em Driver, verifica em Operator
-    operator = Operator.find_by(matricula: registration)
-    if operator
-      render json: {
-        valid: operator.autonomy,
-        user_type: 'Operator',
-        has_autonomy: operator.autonomy
-      }
-      return
-    end
-
-    # Se não encontrou em nenhum dos dois
-    render json: {
-      valid: false,
-      user_type: nil,
-      has_autonomy: false
-    }
+    person = Employees::Registry.autonomy_record(params[:registration])
+    render json: { valid: person&.autonomy || false, user_type: person&.class&.name,
+      has_autonomy: person&.autonomy || false }
   end
 
   def plates
@@ -182,15 +155,6 @@ class AutonomiesController < ApplicationController
   end
 
   def set_user_for_autonomy
-    registration = params[:autonomy][:registration]
-    user = Driver.find_by(matricula: registration) || Operator.find_by(matricula: registration)
-
-    if user
-      @autonomy.user = user
-      @autonomy.user_type = user.class.name
-    else
-      flash.now[:alert] = "Matrícula não encontrada em Driver ou Operator"
-      render :new and return
-    end
+    @autonomy.user = Employees::Registry.autonomy_record(@autonomy.registration)
   end
 end

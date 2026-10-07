@@ -17,13 +17,13 @@ class TimeOffSchedulesController < ApplicationController
     prepare_calendar_days if @tab == 'calendar'
     first, last = @month, @month.end_of_month
     @memberships = @schedule.time_off_memberships.with_active_people.during(first, last).includes(driver: { employee: :employee_roles }, ajudante: { employee: :employee_roles }).to_a
-      .sort_by { |member| [member.group_code, member.role, member.person.nome.to_s, member.id] }
+      .sort_by { |member| [member.group_code, member.role(@date), member.person.nome.to_s, member.id] }
     @availability = TimeOff::Availability.new(schedule: @schedule, first: first, last: last)
     monthly_members = @memberships.select { |m| m.starts_on <= @month.end_of_month && (!m.ends_on || m.ends_on >= @month) }
     @extras = TimeOff::Extras.new(schedule: @schedule, month: @month, members: monthly_members, availability: @availability)
     @role = %w[driver helper].include?(params[:role]) ? params[:role] : nil
     @group = TimeOffSchedule::GROUPS.include?(params[:group]) ? params[:group] : nil
-    @visible_memberships = @memberships.select { |member| (!@role || member.role == @role) && (!@group || member.group_code == @group) }
+    @visible_memberships = @memberships.select { |member| (!@role || member.role(@date) == @role) && (!@group || member.group_code == @group) }
     paginate_calendar if @tab == 'calendar'
     @daily = @visible_memberships.select { |member| @schedule.base_status(member, @date) }.group_by { |member| status_for(member, @date) == 'vacation' ? 'unavailable' : status_for(member, @date) } if @tab == 'day'
     if @tab == 'day'
@@ -35,8 +35,12 @@ class TimeOffSchedulesController < ApplicationController
       @pilot_pending = TimeOff::PilotSetup.pending(@schedule)
       @vacations = @schedule.time_off_vacations.active.during(@month, @month.end_of_month).includes(time_off_membership: [{ driver: :employee }, { ajudante: :employee }]).order(:starts_on).select { |v| v.time_off_membership.active_person? }
       @vacation_people = @schedule.time_off_memberships.with_active_people.on(@date).includes(:driver, :ajudante).sort_by { |m| m.person.nome }
-      @people_options = TimeOff::People.active_records(Driver).order(:nome).map { |person| ["Motorista · #{person.nome} · #{person.promax}", "driver:#{person.id}"] } +
-        TimeOff::People.active_records(Ajudante).order(:nome).map { |person| ["Ajudante · #{person.nome} · #{person.promax}", "helper:#{person.id}"] }
+      @people_options = Employee.active.in_sector('du', date: @date).includes(:employee_roles).order(:nome).map do |person|
+        role = person.role_on(@date)
+        ["#{role.label} · #{person.nome} · #{role.promax}", "employee:#{person.id}"]
+      end
+      @people_options += TimeOff::People.active_records(Driver, date: @date).where(employee_id: nil).order(:nome).map { |p| ["Motorista · #{p.nome} · #{p.promax}", "driver:#{p.id}"] }
+      @people_options += TimeOff::People.active_records(Ajudante, date: @date).where(employee_id: nil).order(:nome).map { |p| ["Ajudante · #{p.nome} · #{p.promax}", "helper:#{p.id}"] }
     end
   rescue Date::Error
     redirect_to time_off_schedule_path, alert: 'Data inválida.'
@@ -45,7 +49,7 @@ class TimeOffSchedulesController < ApplicationController
   def assign_group
     attributes = params.require(:membership).permit(:person, :group_code, :starts_on, :fixed_weekday, :pilot_key, :standard_operation)
     type, id = attributes[:person].to_s.split(':', 2)
-    klass = { 'driver' => Driver, 'helper' => Ajudante }[type]
+    klass = { 'employee' => Employee, 'driver' => Driver, 'helper' => Ajudante }[type]
     raise TimeOff::UpdateDay::InvalidChange, 'Selecione um motorista ou ajudante.' unless klass
     date = Date.iso8601(attributes[:starts_on].to_s)
     TimeOff::AssignGroup.call(schedule: @schedule, person: klass.find(id), group_code: attributes[:group_code], starts_on: date, user: current_user, fixed_weekday: attributes[:fixed_weekday].presence&.to_i, pilot_key: attributes[:pilot_key], standard_operation: attributes[:standard_operation])
@@ -148,7 +152,7 @@ class TimeOffSchedulesController < ApplicationController
   helper_method :status_for
 
   def day_member_visible?(member)
-    member && (!@role || member.role == @role) && (!@group || member.group_code == @group)
+    member && (!@role || member.role(@date) == @role) && (!@group || member.group_code == @group)
   end
 
   def day_car_visible?(car)
@@ -168,7 +172,7 @@ class TimeOffSchedulesController < ApplicationController
   helper_method :can_edit?
 
   def require_access!
-    head :forbidden if current_user.mechanical?
+    head :forbidden unless current_user.can_view_du_operations?
   end
 
   def require_editor!

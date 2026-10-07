@@ -9,8 +9,7 @@ class AzAjudantesController < ApplicationController
   include AzAjudantesHelper
 
   def index
-    scope = params[:status] == "inactive" ? AzAjudante.inactive : AzAjudante.active
-    @az_ajudantes = scope.order(:nome)
+    redirect_to employees_path(employee_sector: 'az', cargo: 'ajudante', status: params[:status] == 'inactive' ? 'archived' : nil)
   end
 
   def import
@@ -27,21 +26,24 @@ class AzAjudantesController < ApplicationController
     imported = 0
 
     begin
-      CSV.parse(csv_content(file), headers: true, col_sep: ";", liberal_parsing: true).each do |row|
-        matricula = csv_value(row, "matricula", "matrícula")
-        next if matricula.blank?
+      AzAjudante.transaction do
+        CSV.parse(csv_content(file), headers: true, col_sep: ";", liberal_parsing: true).each do |row|
+          matricula = csv_value(row, "matricula", "matrícula")
+          next if matricula.blank?
 
-        ajudante = AzAjudante.find_or_initialize_by(matricula: matricula.to_i)
-        ajudante.assign_attributes(
-          nome: csv_value(row, "nome"),
-          cpf: csv_value(row, "cpf"),
-          data_nascimento: parse_date(csv_value(row, "data_nascimento", "data nascimento")),
-          turno: parse_turno(csv_value(row, "turno"))
-        )
-        ajudante.save!
-        imported += 1
+          ajudante = AzAjudante.find_or_initialize_by(matricula: matricula)
+          ajudante.assign_attributes(
+            nome: csv_value(row, "nome"),
+            cpf: csv_value(row, "cpf"),
+            data_nascimento: parse_date(csv_value(row, "data_nascimento", "data nascimento")),
+            turno: parse_turno(csv_value(row, "turno"))
+          )
+          ajudante.career_starts_on = csv_value(row, "inicio_cargo")
+          ajudante.career_recorded_by = current_user
+          ajudante.save!
+          imported += 1
+        end
       end
-
       redirect_to az_ajudantes_path, notice: "#{imported} ajudantes importados com sucesso."
     rescue StandardError => e
       redirect_to import_az_ajudantes_path, alert: "Erro ao importar: #{e.message}"
@@ -49,17 +51,20 @@ class AzAjudantesController < ApplicationController
   end
 
   def show
+    return redirect_to employee_path(@az_ajudante.employee) if @az_ajudante.employee
   end
 
   def new
-    @az_ajudante = AzAjudante.new
+    redirect_to new_employee_path(employee_sector: 'az', employee_cargo: 'ajudante')
   end
 
   def edit
+    return redirect_to edit_employee_path(@az_ajudante.employee) if @az_ajudante.employee
   end
 
   def create
     @az_ajudante = AzAjudante.new(az_ajudante_params)
+    @az_ajudante.career_recorded_by = current_user
 
     respond_to do |format|
       if @az_ajudante.save
@@ -73,6 +78,7 @@ class AzAjudantesController < ApplicationController
   end
 
   def update
+    @az_ajudante.career_recorded_by = current_user
     respond_to do |format|
       if @az_ajudante.update(az_ajudante_params)
         format.html { redirect_to @az_ajudante, notice: "Ajudante do Armazém atualizado com sucesso." }
@@ -86,7 +92,7 @@ class AzAjudantesController < ApplicationController
 
   def destroy
     respond_to do |format|
-      if @az_ajudante.retire!
+      if @az_ajudante.retire!(user: current_user)
         format.html { redirect_to az_ajudantes_path, status: :see_other, notice: "Ajudante inativado com sucesso. O histórico foi preservado." }
         format.json { head :no_content }
       else
@@ -97,8 +103,12 @@ class AzAjudantesController < ApplicationController
   end
 
   def destroy_all
-    count = AzAjudante.update_all(active: false, retired_at: Date.current, updated_at: Time.current)
-    redirect_to az_ajudantes_path, notice: "#{count} ajudantes foram inativados."
+    AzAjudante.transaction do
+      people = Employee.active.where(id: EmployeeRole.where(sector: 'az', cargo: ['ajudante']).on(Date.current).select(:employee_id))
+      people.find_each { |person| person.retire!(user: current_user, reason: 'Inativação em lote') }
+      AzAjudante.where(employee_id: nil).update_all(active: false, retired_at: Date.current, updated_at: Time.current)
+    end
+    redirect_to az_ajudantes_path, notice: 'Colaboradores inativados. O histórico foi preservado.'
   end
 
   private
@@ -108,7 +118,7 @@ class AzAjudantesController < ApplicationController
   end
 
   def az_ajudante_params
-    params.require(:az_ajudante).permit(:matricula, :nome, :cpf, :data_nascimento, :turno)
+    params.require(:az_ajudante).permit(:career_starts_on, :matricula, :nome, :cpf, :data_nascimento, :turno)
   end
 
   def only_admin

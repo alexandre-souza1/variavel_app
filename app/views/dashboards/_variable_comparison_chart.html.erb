@@ -1,0 +1,29 @@
+<% summary = report.summary(profile)
+   average = summary[:average].nil? ? 'Sem dados' : number_to_currency(summary[:average], unit: 'R$ ', separator: ',', delimiter: '.')
+   slides = [
+     { title: "#{label} × média", description: "Média: #{average} · #{summary[:below]} abaixo.", data: report.comparison_chart_data(profile, position: :below) },
+     { title: "#{label} × média", description: "Média: #{average} · #{summary[:above]} acima.", data: report.comparison_chart_data(profile, position: :above) }
+   ] %>
+<div class="card h-100 mapas-chart-card mapas-variable-comparison"
+     data-controller="chart-carousel" data-chart-carousel-chart-id-value="<%= chart_id %>"
+     data-chart-carousel-slides-value="<%= slides.to_json %>" data-chart-carousel-compact-labels-value="true">
+  <div class="mapas-card-header app-panel__header">
+    <div class="dashboard-panel-heading">
+      <span class="dashboard-panel-kicker"><i class="bi bi-bar-chart-fill me-1"></i> Variável · <%= label %></span>
+      <h2 data-chart-carousel-target="title" aria-live="polite"><%= slides.first[:title] %></h2>
+      <small data-chart-carousel-target="description"><%= slides.first[:description] %></small>
+    </div>
+  </div>
+  <div class="card-body">
+    <%= bar_chart slides.first[:data], id: chart_id, height: '250px', prefix: 'R$ ', thousands: '.', decimal: ',', round: 2, empty: summary[:average].nil? ? 'Sem fechamentos históricos nesta janela.' : 'Nenhum colaborador nesta faixa.' %>
+    <div class="mapas-chart-footer mapas-chart-switch" role="group" aria-label="Comparar <%= label.downcase %> com a média"
+         data-action="keydown.left->chart-carousel#previous:prevent keydown.right->chart-carousel#next:prevent">
+      <% ['Abaixo', 'Acima'].each_with_index do |name, index| %>
+        <button type="button" class="mapas-chart-toggle" aria-label="Mostrar <%= label.downcase %> <%= name.downcase %> da média"
+                aria-pressed="<%= index.zero? %>" aria-controls="<%= chart_id %>"
+                data-chart-carousel-target="dot" data-chart-carousel-index-param="<%= index %>"
+                data-action="chart-carousel#select"><%= name %></button>
+      <% end %>
+    </div>
+  </div>
+</div>

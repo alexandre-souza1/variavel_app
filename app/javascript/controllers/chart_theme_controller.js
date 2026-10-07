@@ -72,6 +72,8 @@ export default class extends Controller {
         dataset.pointBorderColor = seriesColor
       })
 
+      // Interrompe a animação anterior para ela não repintar a paleta antiga.
+      chart.stop()
       chart.update("none")
     })
   }

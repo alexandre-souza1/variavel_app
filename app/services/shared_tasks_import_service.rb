@@ -24,10 +24,7 @@ class SharedTasksImportService
     skipped_rows = 0
     skipped_operators = []
     failed_rows = []
-
-    operators_by_key = Operator.all.each_with_object({}) do |operator, hash|
-      hash[normalize_key(operator.nome)] = operator.id
-    end
+    operator_ids = {}
 
     rows.each_with_index do |row, index|
       report_progress(index + 1, total_rows)
@@ -40,7 +37,11 @@ class SharedTasksImportService
 
       task_type = text(row, "Tipo")
       source_key = row_source_key(row)
-      operator_id = operators_by_key[normalize_key(name)]
+      date = parse_datetime(text(row, 'Data Última Associação', 'Data Ultima Associacao'))&.in_time_zone&.to_date
+      identity_key = [normalize_key(name), date]
+      operator_id = operator_ids.fetch(identity_key) do
+        operator_ids[identity_key] = Employees::Registry.operator_for_name(name, date: date)&.id
+      end
       row_processed = false
 
       if operator_id

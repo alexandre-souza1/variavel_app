@@ -15,7 +15,7 @@ class PublicVariableChatController < ApplicationController
     unless identity
       session[:public_variable_chat_open] = true if reopen_widget_after_return?
       redirect_to chat_return_path,
-        alert: "Não encontramos esse cadastro. Confira o perfil, a matrícula e a data de nascimento."
+        alert: "Não encontramos esse cadastro. Confira a matrícula e a data de nascimento. Se houver duplicidade, solicite revisão ao RH."
       return
     end
 

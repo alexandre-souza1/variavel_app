@@ -1,0 +1,10 @@
+<details class="employees-disclosure employees-closing">
+  <summary><span class="employees-disclosure__text"><strong><%= I18n.t('date.month_names')[closing.month].capitalize %> / <%= closing.year %> · AZ</strong><small>Fechamento 19–18 · Revisão <%= closing.revision %></small></span><strong><%= number_to_currency(closing.result['total'].to_d, unit: 'R$ ', separator: ',', delimiter: '.') %></strong><%= disclosure_arrow %></summary>
+  <div class="employees-disclosure__body">
+    <p><%= closing.reason %> · <%= closing.user&.email %></p>
+    <table class="table app-table"><thead><tr><th>Componente</th><th>Valor</th></tr></thead><tbody>
+      <% closing.result.fetch('components', {}).each do |name, value| %><tr><td><%= { 'tma' => 'TMA', 'efficiency' => 'Eficiência', 'wms' => 'WMS', 'ondemand' => 'On Demand', 'point_value' => 'Montagem', 'refugo' => 'Refugo', 'efc' => 'EFC', 'suprimento' => 'Suprimento', 'remonte' => 'Remonte' }.fetch(name, name.humanize) %></td><td><%= number_to_currency(value.to_d, unit: 'R$ ', separator: ',', delimiter: '.') %></td></tr><% end %>
+    </tbody></table>
+    <% if current_user.can_manage_employees? %><%= button_to 'Recalcular e criar revisão', recalculate_closing_employee_path(@employee), params: { closing_id: closing.id }, class: 'btn btn-outline-primary' %><% end %>
+  </div>
+</details>

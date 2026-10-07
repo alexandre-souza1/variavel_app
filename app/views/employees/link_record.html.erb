@@ -43,7 +43,7 @@
           <ul class="list-group list-group-flush">
             <% roles.each do |role| %>
               <li class="list-group-item px-0 d-flex justify-content-between gap-2">
-                <span><strong><%= role.label %></strong><br><small>Promax <%= role.promax %> · <%= role.starts_on ? l(role.starts_on) : 'Início desconhecido' %> até <%= role.ends_on ? l(role.ends_on) : 'em aberto' %></small></span>
+                <span><strong><%= role.label %> · <%= role.sector_label %></strong><br><small><%= role.az? ? "Turno #{role.shift_label || 'não informado'}" : "Promax #{role.promax}" %> · <%= role.starts_on ? l(role.starts_on) : 'Início desconhecido' %> até <%= role.ends_on ? l(role.ends_on) : 'em aberto' %></small></span>
                 <% if role.legacy? %><span class="employees-badge">Legado</span><% end %>
               </li>
             <% end %>
@@ -53,11 +53,11 @@
           <% if closings.any? %>
             <ul class="list-group list-group-flush">
               <% closings.each do |closing| %>
-                <% finish_date = Date.new(closing.year, closing.month, 20) %>
-                <% start_date = finish_date.prev_month.change(day: 21) %>
+                <% finish_date = Date.new(closing.year, closing.month, closing.sector == 'az' ? 18 : 20) %>
+                <% start_date = finish_date.prev_month.change(day: closing.sector == 'az' ? 19 : 21) %>
                 <li class="list-group-item px-0 d-flex justify-content-between gap-2">
                   <span><strong><%= I18n.t('date.month_names')[closing.month].capitalize %> / <%= closing.year %></strong><br><small>Período <%= l(start_date) %> a <%= l(finish_date) %> · revisão <%= closing.revision %></small></span>
-                  <strong><%= number_to_currency(closing.result.dig('totals', 'valor_total').to_d, unit: 'R$ ', separator: ',', delimiter: '.') %></strong>
+                  <strong><%= number_to_currency((closing.sector == 'az' ? closing.result['total'] : closing.result.dig('totals', 'valor_total')).to_d, unit: 'R$ ', separator: ',', delimiter: '.') %></strong>
                 </li>
               <% end %>
             </ul>

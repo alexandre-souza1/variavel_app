@@ -18,7 +18,15 @@ class ConsultasController < ApplicationController
       flash.now[:alert] = 'Há mais de um colaborador com essa matrícula. Solicite ao RH a revisão dos vínculos.'
       return render :new, status: :unprocessable_entity
     end
-    return show_employee(employees.first) if employees.one?
+    if employees.one?
+      person = employees.first
+      sector = params[:employee_sector].presence
+      sector ||= person.role_on(Date.current)&.sector
+      if sector == 'az'
+        return redirect_to az_consulta_path(params.permit(:matricula, :periodo_mes, :periodo_ano).to_h)
+      end
+      return show_employee(person)
+    end
 
     if @categoria == "motorista"
       @driver = Driver.find_by(matricula: @matricula)
@@ -100,7 +108,7 @@ class ConsultasController < ApplicationController
     if params[:periodo_mes].present?
       to = Date.new((params[:periodo_ano].presence || Date.current.year).to_i, params[:periodo_mes].to_i, 20)
       from = to.prev_month.change(day: 21)
-      @closing = employee.variable_closings.where(year: to.year, month: to.month).order(revision: :desc).first
+      @closing = employee.variable_closings.where(sector: 'du', year: to.year, month: to.month).order(revision: :desc).first
     end
     if @closing
       snapshot = @closing.result
@@ -149,12 +157,12 @@ class ConsultasController < ApplicationController
     from = to.prev_month.change(day: 21)
     if @employee
       eligible = @employee.employee_roles.any? do |role|
-        %w[motorista van].include?(role.cargo) &&
+        role.du? && %w[motorista van].include?(role.cargo) &&
           (role.starts_on.nil? || role.starts_on <= to) && (role.ends_on.nil? || role.ends_on >= from)
       end
       return unless eligible
     end
-    @gasola_consumption = Gasola::ConsumptionReport.new(registration: @driver.matricula, from: from, to: to)
+    @gasola_consumption = Gasola::ConsumptionReport.new(registration: @driver.matricula, employee: @employee, from: from, to: to)
   rescue Date::Error
     @gasola_consumption = nil
   end

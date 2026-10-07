@@ -9,8 +9,8 @@ class EmployeeVariableReport
     @effective_cargos = {}
     @services = {}
     @values = {}
-    codes = employee.employee_roles.map(&:promax)
-    other_roles = EmployeeRole.where(promax: codes).where.not(employee_id: employee.id).to_a
+    codes = employee.employee_roles.select(&:du?).map(&:promax)
+    other_roles = EmployeeRole.du.where(promax: codes).where.not(employee_id: employee.id).to_a
     @maps = candidates.select do |mapa|
       date = mapa.data_formatada
       unless date

@@ -15,7 +15,8 @@ class PublicVariableContext
 
   def call
     data = case @identity.profile
-           when "colaborador", "motorista" then employee_record ? career_context : du_context(Mapa.where(matric_motorista: @record.promax))
+           when "colaborador" then combined_context
+           when "motorista" then employee_record ? career_context : du_context(Mapa.where(matric_motorista: @record.promax))
            when "ajudante" then employee_record ? career_context : du_context(ajudante_mapas)
            when "operador" then operator_context
            when "az_ajudante" then az_helper_context
@@ -43,19 +44,19 @@ class PublicVariableContext
 
   def fuel_consumption_context
     employee = employee_record
-    eligible = employee ? employee.employee_roles.where(cargo: %w[motorista van]).exists? : @identity.profile == 'motorista'
+    eligible = employee ? employee.employee_roles.du.where(cargo: %w[motorista van]).exists? : @identity.profile == 'motorista'
     return unless eligible
 
     current = closing_month_for(Date.current).beginning_of_month
     selected = consumption_selected_month
     registration = employee ? employee.matricula : @identity.registration
-    dates = GasolaSupply.consumption.where(registration: registration.to_s.strip)
+    dates = GasolaSupply.consumption.where(registration: employee ? employee.registration_aliases : [registration.to_s.strip])
       .where('concluded_at >= ?', 2.years.ago).pluck(:concluded_at)
     months = (dates.map { |date| closing_month_for(date.in_time_zone.to_date).beginning_of_month } +
       [current, current.prev_month, selected]).compact.uniq.sort
     monthly = months.to_h do |month|
       to = month.change(day: 20)
-      report = Gasola::ConsumptionReport.new(registration: registration, from: to.prev_month.change(day: 21), to: to)
+      report = Gasola::ConsumptionReport.new(registration: registration, employee: employee, from: to.prev_month.change(day: 21), to: to)
       totals = report.totals
       [month.strftime('%Y-%m'), {
         from: report.from.iso8601, to: report.to.iso8601,
@@ -76,7 +77,7 @@ class PublicVariableContext
       selected_period: selected&.strftime('%Y-%m'), monthly: monthly,
       period_definition: 'Dia 21 do mês anterior ao dia 20 do mês indicado.',
       calculation: 'Média = quilômetros totais / litros totais. Meta ponderada pelos litros. ARLA e registros sem distância ou litros positivos ficam fora.',
-      economical_driving_lup: Rails.application.routes.url_helpers.open_download_url(232)
+      economical_driving_lup: Rails.application.routes.url_helpers.open_download_path(232)
     }
   end
 
@@ -100,7 +101,7 @@ class PublicVariableContext
       period = EmployeeVariableReport.new(employee, maps: records)
       [month, money_totals(period.totals).merge(by_role: period.groups.transform_values { |totals| money_totals(totals) }, source: 'prévia')]
     end
-    employee.variable_closings.order(:revision).each do |closing|
+    employee.variable_closings.where(sector: 'du').order(:revision).each do |closing|
       month = format('%04d-%02d', closing.year, closing.month)
       totals = closing.result.fetch('totals').symbolize_keys.transform_values { |value| value.to_d }
       groups = closing.result.fetch('groups').transform_values { |group| money_totals(group.symbolize_keys.transform_values { |value| value.to_d }) }
@@ -110,7 +111,7 @@ class PublicVariableContext
       period_definition: 'Fechamento do dia 21 do mês anterior ao dia 20 do mês informado.',
       current_period: closing_month_for(Date.current).strftime('%Y-%m'), monthly: monthly.sort.to_h,
       issues: report.issues,
-      roles: employee.employee_roles.map { |role| { cargo: role.label, inicio: role.starts_on, fim: role.ends_on } },
+      sector: 'du', roles: employee.employee_roles.du.map { |role| { cargo: role.label, inicio: role.starts_on, fim: role.ends_on } },
       rules: { devolution_target: 'Até 3% de devolução e pelo menos 15 mapas, apurados separadamente por cargo. Van também recebe bônus.',
         note: 'Van recebe caixas e entregas nos mapas marcados como recarga, sem remuneração de recarga. O cargo e as tarifas respeitam a data do mapa.' }
     }
@@ -143,72 +144,46 @@ class PublicVariableContext
     }
   end
 
-  def operator_context
-    start_date = 2.years.ago.to_date
-    maps = AzMapa.where("? = ANY(turno)", @record.turno).where(data: start_date..Date.current).to_a
-    tasks = WmsTask.where(operator_id: @record.id).where(started_at: start_date.beginning_of_day..Time.current).to_a
-    ondemand = AzOperatorOnDemandService.new(employee_name: @record.nome, start_date: start_date, end_date: Date.current)
-    tma_value = decimal(ParametroCalculo.valor_para(categoria: "operador", nome: "valor_tma"))
-    efficiency_value = decimal(ParametroCalculo.valor_para(categoria: "operador", nome: "valor_efc"))
-    wms_value = decimal(ParametroCalculo.valor_para(categoria: "operador", nome: "tarefa_wms"))
-
-    months = (maps.filter_map(&:data) + tasks.filter_map { |task| task.started_at&.to_date } + ondemand.daily.map { |day| day[:date] }).map { |date| az_closing_month_for(date) }.uniq.sort
-    monthly = months.to_h do |month_date|
-      month = month_date.strftime("%Y-%m")
-      month_start = month_date.prev_month.change(day: 19)
-      month_end = month_date.change(day: 18)
-      month_maps = maps.select { |mapa| mapa.data.between?(month_start, month_end) }
-      month_tasks = tasks.select { |task| task.started_at&.to_date&.between?(month_start, month_end) }
-      tma = month_maps.count { |mapa| mapa.tipo == "tempo_atendimento" && mapa.atingiu_meta } * tma_value
-      efficiency_type = [0, 2].include?(@record.turno.to_i) ? "eficiencia_carregamento" : "eficiencia_descarga"
-      efficiency = month_maps.count { |mapa| mapa.tipo == efficiency_type && mapa.meta_remunerada? } * efficiency_value
-      wms = month_tasks.sum { |task| task.duration.to_i >= 10 ? wms_value : 0 }
-      demand_days = ondemand.daily.select { |day| day[:date].between?(month_start, month_end) }
-      demand_quantity = demand_days.sum { |day| day[:quantity] }
-      demand_value = demand_days.sum { |day| day[:value] }
-      [month, { ondemand: number(demand_value), ondemand_quantity: number(demand_quantity), tma: number(tma), efficiency: number(efficiency), wms: number(wms), total: number(tma + efficiency + wms + demand_value) }]
-    end
-
-    {
-      period_definition: "Cada mês representa o fechamento do dia 19 do mês anterior ao dia 18 do mês informado.",
-      current_period: az_closing_month_for(Date.current).strftime("%Y-%m"),
-      monthly: monthly,
-      shift: { code: @record.turno, label: { 0 => "A", 1 => "B", 2 => "C" }[@record.turno] }
-    }
+  def combined_context
+    employee = employee_record
+    du = employee.employee_roles.du.exists? || employee.variable_closings.where(sector: 'du').exists? ? career_context : nil
+    az = employee.employee_roles.az.exists? || employee.variable_closings.where(sector: 'az').exists? ? az_context : nil
+    return du if du && !az
+    return az if az && !du
+    { sectors: { du: du, az: az }, current_sector: employee.role_on(Date.current)&.sector,
+      period_definition: 'DU fecha de 21 a 20; AZ de 19 a 18. Os períodos são apresentados separadamente.' }
   end
 
-  def az_helper_context
-    start_date = 2.years.ago.to_date
-    points = AzRvPoint.for_employee(@record.nome).where(reference_date: start_date..Date.current).to_a
-    refugo = AzRvTask.for_employee(@record.nome).between(start_date, Date.current).where(task_type: "Blitz Refugo").to_a
-    activities = AzRvOnDemandActivity.for_employee(@record.nome).between(start_date, Date.current).to_a
-    efc_daily_values = AzHelperEfcService.new(start_date: start_date, end_date: Date.current).daily_values
-    suprimento_daily_values = @record.turno.to_i == 0 ? AzHelperSuprimentoService.new(start_date: start_date, end_date: Date.current).daily_values : {}
-    remonte_daily_values = @record.turno.to_i == 1 ? AzHelperRemonteService.new(start_date: start_date, end_date: Date.current).daily_values : {}
-    dates = (efc_daily_values.keys + suprimento_daily_values.keys + remonte_daily_values.keys + points.map(&:reference_date) + refugo.filter_map { |item| item.associated_at&.to_date } + activities.filter_map { |item| item.created_at_source&.to_date }).compact.uniq
+  def operator_context = az_context
+  def az_helper_context = az_context
 
-    months = dates.map { |date| az_closing_month_for(date) }.uniq.sort
-    monthly = months.to_h do |month_date|
-      month = month_date.strftime("%Y-%m")
-      start_month = month_date.prev_month.change(day: 19)
-      end_month = month_date.change(day: 18)
-      month_points = points.select { |item| item.reference_date.between?(start_month, end_month) }
-      month_refugo = refugo.select { |item| item.associated_at&.to_date&.between?(start_month, end_month) }
-      month_activities = activities.select { |item| item.created_at_source&.to_date&.between?(start_month, end_month) }
-      point_value = month_points.sum(&:montagem_value)
-      refugo_value = BigDecimal("1.10") * month_refugo.size
-      ondemand_value = month_activities.sum(&:rv_total_amount)
-      efc_value = efc_daily_values.select { |date, _| date.between?(start_month, end_month) }.values.sum(BigDecimal("0"))
-      suprimento_value = suprimento_daily_values.select { |date, _| date.between?(start_month, end_month) }.values.sum(BigDecimal("0"))
-      remonte_value = remonte_daily_values.select { |date, _| date.between?(start_month, end_month) }.values.sum(BigDecimal("0"))
-      [month, { efc: number(efc_value), suprimento: number(suprimento_value), remonte: number(remonte_value), points: number(month_points.sum(&:total_points)), point_value: number(point_value), refugo: number(refugo_value), ondemand: number(ondemand_value), ondemand_quantity: number(month_activities.sum(&:rv_quantity)), total: number(point_value + refugo_value + ondemand_value + efc_value + suprimento_value + remonte_value) }]
+  def az_context
+    person = employee_record || @record
+    from = 2.years.ago.to_date
+    report = AzVariableReport.new(person: person, from: from, to: Date.current)
+    months = report.daily.group_by { |day| az_closing_month_for(day[:date]).strftime('%Y-%m') }
+    monthly = months.sort.to_h do |key, days|
+      anchor = Date.strptime(key, '%Y-%m')
+      saved = AzVariableReport.for_period(person: person, from: anchor.prev_month.change(day: 19), to: anchor.change(day: 18))
+      values = AzVariableReport::COMPONENTS.to_h { |name| [name, number(saved.component(name))] }
+      values.merge!(points: number(saved.quantity(:points)), ondemand_quantity: number(saved.quantity(:ondemand_quantity)), total: number(saved.total))
+      [key, values]
     end
-
+    if employee_record
+      employee_record.variable_closings.where(sector: 'az').order(:revision).each do |closing|
+        snapshot = closing.result
+        monthly[format('%04d-%02d', closing.year, closing.month)] = snapshot.fetch('components').symbolize_keys.transform_values { |value| number(value) }
+          .merge(total: number(snapshot['total']), source: 'fechamento registrado', revision: closing.revision)
+      end
+    end
+    role = employee_record&.role_on(Date.current)
+    turno = role&.az? ? role.turno : @record.try(:turno)
     {
-      period_definition: "Ajudantes do armazém usam o período de fechamento do dia 19 ao dia 18.",
-      current_period: az_closing_month_for(Date.current).strftime("%Y-%m"),
-      monthly: monthly,
-      rules: { efc: "Ajudantes dos turnos A, B e C recebem R$ 5,00 por dia de meta EFC atingida, exceto domingos. EFD não compõe esse valor.", refugo_value: "Cada Blitz Refugo vale R$ 1,10.", other_values: "Os demais valores seguem as taxas cadastradas no sistema." }
+      period_definition: 'Cada mês representa o fechamento do dia 19 do mês anterior ao dia 18 do mês informado.',
+      current_period: az_closing_month_for(Date.current).strftime('%Y-%m'), monthly: monthly.sort.to_h,
+      sector: 'az', roles: employee_record&.employee_roles&.az&.map { |role| { cargo: role.label, turno: role.shift_label, inicio: role.starts_on, fim: role.ends_on } },
+      shift: { code: turno, label: EmployeeRole::TURNOS.key(turno) }, issues: report.issues,
+      rules: { efc: 'Ajudantes A/B/C recebem R$ 5 por dia de meta EFC, exceto domingos; suprimento é do turno A e remonte do turno B.' }
     }
   end
 
@@ -233,7 +208,7 @@ class PublicVariableContext
           description: download.description,
           category: download.category,
           sector: download.sector,
-          link: Rails.application.routes.url_helpers.open_download_url(download)
+          link: Rails.application.routes.url_helpers.open_download_path(download)
         }.tap { |document| document[:relevance] = matches }
       end
       .sort_by { |document| -document[:relevance] }

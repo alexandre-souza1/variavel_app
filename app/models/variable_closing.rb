@@ -7,16 +7,19 @@ class VariableClosing < ApplicationRecord
   validates :reason, :result, presence: true
   validates :month, inclusion: { in: 1..12 }
   validates :year, numericality: { only_integer: true, greater_than: 1900, less_than: 10000 }
+  validates :sector, inclusion: { in: EmployeeRole::SECTORS.values }
   def readonly? = persisted?
 
-  def self.capture!(employee:, user:, year:, month:, reason:)
+  def self.capture!(employee:, user:, year:, month:, reason:, sector: 'du')
     employee.with_lock do
-      finish = Date.new(year, month, 20)
-      start = finish.prev_month.change(day: 21)
-      report = EmployeeVariableReport.new(employee, from: start, to: finish)
+      raise EmployeeRole::HistoryError, 'Setor inválido.' unless EmployeeRole::SECTORS.value?(sector)
+      finish = Date.new(year, month, sector == 'az' ? 18 : 20)
+      start = finish.prev_month.change(day: sector == 'az' ? 19 : 21)
+      raise EmployeeRole::HistoryError, 'Não há vínculo desse setor no período.' unless employee.employee_roles.where(sector: sector).during(start, finish).exists?
+      report = sector == 'az' ? AzVariableReport.new(person: employee, from: start, to: finish) : EmployeeVariableReport.new(employee, from: start, to: finish)
       report.validate!
-      create!(employee: employee, user: user, year: year, month: month, reason: reason,
-        revision: where(employee: employee, year: year, month: month).maximum(:revision).to_i + 1,
+      create!(employee: employee, user: user, year: year, month: month, reason: reason, sector: sector,
+        revision: where(employee: employee, sector: sector, year: year, month: month).maximum(:revision).to_i + 1,
         result: report.snapshot)
     end
   end
@@ -96,7 +99,8 @@ class VariableClosing < ApplicationRecord
   def revise_cargo!(from_cargo:, to_cargo:, user:, reason:)
     from_cargo = from_cargo.to_s
     to_cargo = to_cargo.to_s
-    valid_cargos = EmployeeRole::CARGOS.values
+    raise EmployeeRole::HistoryError, 'Revisão de cargo de mapas é exclusiva da DU.' unless sector == 'du'
+    valid_cargos = EmployeeRole::DU_CARGOS.values
     unless valid_cargos.include?(from_cargo) && valid_cargos.include?(to_cargo) && from_cargo != to_cargo
       raise EmployeeRole::HistoryError, 'Selecione cargos válidos e diferentes para a revisão.'
     end
@@ -128,7 +132,7 @@ class VariableClosing < ApplicationRecord
     end
 
     self.class.create!(employee: employee, user: user, year: year, month: month,
-      revision: self.class.where(employee: employee, year: year, month: month).maximum(:revision).to_i + 1,
+      revision: self.class.where(employee: employee, sector: 'du', year: year, month: month).maximum(:revision).to_i + 1,
       reason: reason.to_s.strip,
       result: result.merge(
         'totals' => totals,

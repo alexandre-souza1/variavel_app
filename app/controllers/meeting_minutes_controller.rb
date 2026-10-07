@@ -243,14 +243,18 @@ class MeetingMinutesController < ApplicationController
       raise ArgumentError, "Selecione um setor válido." if sector_value.nil?
 
       User.active.where(sector: sector_value).where.not(name: [nil, ""]).order(:name).pluck(:name)
-    when "drivers"
-      Driver.active.where.not(nome: [nil, ""]).order(:nome).pluck(:nome)
-    when "operators"
-      Operator.active.where.not(nome: [nil, ""]).order(:nome).pluck(:nome)
-    when "ajudantes"
-      Ajudante.active.where.not(nome: [nil, ""]).order(:nome).pluck(:nome)
-    when "az_ajudantes"
-      AzAjudante.active.where.not(nome: [nil, ""]).order(:nome).pluck(:nome)
+    when "drivers", "operators", "ajudantes", "az_ajudantes"
+      employee_sector, cargos, model = {
+        'drivers' => ['du', %w[motorista van], Driver],
+        'operators' => ['az', %w[operador], Operator],
+        'ajudantes' => ['du', %w[ajudante], Ajudante],
+        'az_ajudantes' => ['az', %w[ajudante], AzAjudante]
+      }.fetch(source)
+      date = @meeting&.meeting_date&.to_date || Date.current
+      roles = EmployeeRole.where(sector: employee_sector, cargo: cargos).on(date)
+      names = Employee.active.where(id: roles.select(:employee_id)).pluck(:nome)
+      names += model.active.where(employee_id: nil).where.not(nome: [nil, '']).pluck(:nome)
+      names.uniq.sort
     else
       raise ArgumentError, "Selecione uma origem válida."
     end

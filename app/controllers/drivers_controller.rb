@@ -2,7 +2,7 @@ class DriversController < ApplicationController
   before_action :set_driver, only: %i[show edit update destroy]
   before_action :authenticate_user!
   before_action :only_admin, only: [:destroy_all]
-  before_action :admin_or_supervisor, only: [:edit, :create, :update, :destroy]
+  before_action :admin_or_supervisor, only: [:edit, :create, :update, :destroy, :import_csv]
   before_action :everyone_can_access, only: [:index, :show, :import]
 
   def only_admin
@@ -22,8 +22,7 @@ class DriversController < ApplicationController
   end
 
   def index
-    @drivers = params[:status] == "inactive" ? Driver.inactive : Driver.active
-    @duplicate_counts = Employee.duplicate_registration_counts(@drivers.pluck(:matricula))
+    redirect_to employees_path(employee_sector: 'du', cargo: 'motorista', status: params[:status] == 'inactive' ? 'archived' : nil)
   end
 
   def import
@@ -62,10 +61,11 @@ class DriversController < ApplicationController
   end
 
   def show
+    return redirect_to employee_path(@driver.employee) if @driver.employee
   end
 
   def new
-    @driver = Driver.new
+    redirect_to new_employee_path(employee_sector: 'du', employee_cargo: 'motorista')
   end
 
   def create
@@ -82,9 +82,11 @@ class DriversController < ApplicationController
   end
 
   def edit
+    return redirect_to edit_employee_path(@driver.employee) if @driver.employee
   end
 
   def update
+    @driver.career_recorded_by = current_user
     if @driver.update(driver_params)
       redirect_to @driver, notice: "Motorista atualizado com sucesso."
     else
@@ -93,13 +95,17 @@ class DriversController < ApplicationController
   end
 
   def destroy
-    @driver.retire!
+    @driver.retire!(user: current_user)
     redirect_to drivers_path, notice: "Motorista inativado com sucesso. O histórico foi preservado."
   end
 
   def destroy_all
-    Driver.update_all(active: false, retired_at: Date.current, updated_at: Time.current)
-    redirect_to drivers_path, notice: "Motoristas inativados com sucesso."
+    Driver.transaction do
+      people = Employee.active.where(id: EmployeeRole.where(sector: 'du', cargo: %w[motorista van]).on(Date.current).select(:employee_id))
+      people.find_each { |person| person.retire!(user: current_user, reason: 'Inativação em lote') }
+      Driver.where(employee_id: nil).update_all(active: false, retired_at: Date.current, updated_at: Time.current)
+    end
+    redirect_to drivers_path, notice: 'Colaboradores inativados. O histórico foi preservado.'
   end
 
   private

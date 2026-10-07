@@ -19,25 +19,36 @@ module Pcd
     def members
       @members ||= begin
         memberships = schedule ? schedule.time_off_memberships.with_active_people.on(date).includes(:driver, :ajudante).to_a : []
-        by_person = memberships.index_by { |m| [m.role == 'driver' ? 'driver' : 'helper', m.person.id] }
+        by_employee = memberships.select(&:employee_id).index_by(&:employee_id)
         availability = TimeOff::Availability.new(schedule: schedule, first: date) if schedule
-        records = [['driver', Driver], ['helper', Ajudante]].flat_map do |type, klass|
-          TimeOff::People.active_records(klass).includes(employee: :employee_roles).map do |person|
-            member = by_person[[type, person.id]]
-            cargo = person.employee ? person.employee.role_on(date)&.cargo : (type == 'driver' ? 'motorista' : 'ajudante')
+        records = Employee.active.in_sector('du', date: date).includes(:employee_roles).map do |person|
+          role = person.role_on(date)
+          member = by_employee[person.id]
+          status = member && availability.status(member, date)
+          { 'id' => "employee:#{person.id}", 'name' => person.nome, 'code' => role.promax,
+            'person_key' => "employee:#{person.id}", 'cargo' => role.cargo,
+            'group' => member&.group_code, 'status' => status || 'working',
+            'role' => role.cargo == 'ajudante' ? 'helper' : 'driver', 'has_schedule' => status.present? }
+        end
+        [['driver', Driver], ['helper', Ajudante]].each do |type, klass|
+          klass.active.where(employee_id: nil).each do |person|
+            member = memberships.find { |m| m.person == person }
             status = member && availability.status(member, date)
-            { 'id' => "#{type}:#{person.id}", 'name' => person.nome, 'code' => person.promax,
-              'person_key' => person.employee_id ? "employee:#{person.employee_id}" : "#{type}:#{person.id}",
-              'cargo' => cargo, 'group' => member&.group_code, 'status' => status || 'working',
-              'role' => cargo == 'ajudante' ? 'helper' : 'driver', 'has_schedule' => status.present? }
+            records << { 'id' => "#{type}:#{person.id}", 'name' => person.nome, 'code' => person.promax,
+              'person_key' => "#{type}:#{person.id}", 'cargo' => type == 'driver' ? 'motorista' : 'ajudante',
+              'group' => member&.group_code, 'status' => status || 'working', 'role' => type, 'has_schedule' => status.present? }
           end
         end
-        records.select { |m| %w[motorista ajudante van].include?(m['cargo']) }.uniq { |m| m['person_key'] }.sort_by { |m| [m['role'], m['name'].to_s] }
+        records.sort_by { |m| [m['role'], m['name'].to_s] }
       end
     end
 
     def member(id)
-      members.find { |m| m['id'] == id }
+      direct = members.find { |m| m['id'] == id }
+      return direct if direct || id.blank?
+      type, key = id.to_s.split(':', 2)
+      legacy = { 'driver' => Driver, 'helper' => Ajudante }[type]&.find_by(id: key)
+      members.find { |m| m['person_key'] == "employee:#{legacy.employee_id}" } if legacy&.employee_id
     end
 
     def cars
@@ -50,6 +61,7 @@ module Pcd
             person = member(car[role])
             valid = car['scheduled'] && person && person['status'] == 'working' && !used.include?(person['person_key']) && eligible?(person, car, role)
             car[role] = nil unless valid
+            car[role] = person['id'] if valid
             used.add(person['person_key']) if valid
           end
           car
@@ -93,7 +105,7 @@ module Pcd
         result = car.deep_dup
         ROLES.each do |role|
           m = car[role] ? legacy.coverage.member(car[role]) : nil
-          result[role] = m && "#{m.role == 'driver' ? 'driver' : 'helper'}:#{m.person.id}"
+          result[role] = m && (m.employee_id ? m.person_key : "#{m.role == 'driver' ? 'driver' : 'helper'}:#{m.person.id}")
         end
         imported = Array(legacy.coverage.details.dig('routing_import', 'rows')).find { |row| row['plate'] == car['plate'] }
         if imported

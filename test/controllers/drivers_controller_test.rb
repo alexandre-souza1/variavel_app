@@ -5,12 +5,12 @@ class DriversControllerTest < ActionDispatch::IntegrationTest
 
   test "should get index" do
     get drivers_index_url
-    assert_response :success
+    assert_redirected_to employees_path(employee_sector: 'du', cargo: 'motorista')
   end
 
   test "should get new" do
     get drivers_new_url
-    assert_response :success
+    assert_redirected_to new_employee_path(employee_sector: 'du', employee_cargo: 'motorista')
   end
 
   test "should get edit" do

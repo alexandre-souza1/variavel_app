@@ -1,8 +1,8 @@
 <% override = @availability.override(member, @date); status = status_for(member, @date); vacation = @availability.vacation(member, @date) %>
 <article class="time-off-person" data-membership-id="<%= member.id %>" data-name="<%= member.person.nome %>" data-role="<%= member.cargo_on(@date) == 'ajudante' ? 'helper' : 'driver' %>" data-revision="<%= override&.lock_version || -1 %>" data-status="<%= status %>" data-movable="<%= !%w[pending vacation].include?(status) %>">
-  <div class="time-off-person-top"><span class="time-off-group time-off-group--<%= member.group_code %>">Grupo <%= member.group_code %></span><span class="time-off-muted"><%= EmployeeRole::CARGOS.key(member.cargo_on(@date)) || member.role_label %><%= " · #{TimeOffMembership::STANDARD_OPERATIONS.key(member.standard_operation)}" if member.standard_operation.present? %></span></div>
+  <div class="time-off-person-top"><span class="time-off-group time-off-group--<%= member.group_code %>">Grupo <%= member.group_code %></span><span class="time-off-muted"><%= EmployeeRole::CARGOS.key(member.cargo_on(@date)) || member.role_label(@date) %><%= " · #{TimeOffMembership::STANDARD_OPERATIONS.key(member.standard_operation)}" if member.standard_operation.present? %></span></div>
   <strong title="<%= member.person.nome %>"><%= member.person.nome %></strong>
-  <small>Cód. <%= member.person.promax %> · <%= pluralize(@extras.dates(member).size, 'extra', 'extras') %> no mês</small>
+  <small>Cód. <%= member.code_on(@date) %> · <%= pluralize(@extras.dates(member).size, 'extra', 'extras') %> no mês</small>
   <% if vacation %><span class="time-off-vacation-badge" title="<%= l(vacation.starts_on) %> a <%= l(vacation.ends_on) %> · <%= vacation.reason %>">Férias · até <%= l(vacation.ends_on, format: '%d/%m') %></span><% end %>
   <% if override %><p class="time-off-person-reason" title="<%= override.reason %>"><i class="bi bi-pencil-square" aria-hidden="true"></i><span class="visually-hidden"><%= override.reason %></span></p><% end %>
   <% if @schedule.base_status(member, @date) == 'off' && status == 'working' %><span class="time-off-callout" title="Convocado na folga do grupo">Convocado</span><% end %>

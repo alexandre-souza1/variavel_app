@@ -46,7 +46,7 @@ module TimeOff
     end
 
     def available?(member)
-      member && member.active_person? && status(member) == 'working'
+      member && member.active_person?(date) && status(member) == 'working'
     end
 
     def eligible?(member, operation:, role:)
@@ -67,7 +67,7 @@ module TimeOff
 
     def default_members(operation, role)
       candidates = members.select do |m|
-        m.role == role && (operation == 'van' ? m.cargo_on(date) == 'van' : m.standard_operation == operation)
+        m.role(date) == role && (operation == 'van' ? m.cargo_on(date) == 'van' : m.standard_operation == operation)
       end
       candidates.uniq(&:person_key).first(quantities.fetch(operation))
     end
@@ -100,7 +100,7 @@ module TimeOff
     end
 
     def helper_driver_candidates
-      members.select { |m| m.role == 'driver' && eligible?(m, operation: 'route', role: 'helper') && !reserved_keys.include?(m.person_key) }.uniq(&:person_key)
+      members.select { |m| m.role(date) == 'driver' && eligible?(m, operation: 'route', role: 'helper') && !reserved_keys.include?(m.person_key) }.uniq(&:person_key)
     end
 
     def rows

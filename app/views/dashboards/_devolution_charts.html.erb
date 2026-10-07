@@ -1,0 +1,46 @@
+<% summary = report.general %>
+<div class="row g-3 mapas-charts-grid">
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 mapas-chart-card">
+      <div class="mapas-card-header app-panel__header">
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="bi bi-pie-chart-fill me-1"></i> Qualidade · Operação</span>
+          <h2>Devolução geral</h2>
+          <small>PDVs devolvidos sobre o total previsto no ciclo.</small>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="mapas-devolution-donut">
+          <%= pie_chart report.general_chart_data, id: 'mapas-devolution-general-chart', donut: true, height: "250px", legend: 'bottom', empty: 'Sem PDVs válidos no período.' %>
+          <% if summary[:percentage] %>
+            <div class="mapas-devolution-rate"><%= number_to_percentage(summary[:percentage] * 100, precision: 2, separator: ',') %></div>
+          <% end %>
+        </div>
+        <div class="mapas-chart-footer mapas-chart-caption">
+          <%= number_with_delimiter(summary[:returned].to_i, delimiter: '.') %> de <%= number_with_delimiter(summary[:total].to_i, delimiter: '.') %> PDVs devolvidos
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6 col-xl-4">
+    <%= render 'devolution_ranking_chart', report: report %>
+  </div>
+  <div class="col-12 col-md-12 col-xl-4">
+    <div class="card h-100 mapas-chart-card">
+      <div class="mapas-card-header app-panel__header">
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="bi bi-graph-up me-1"></i> Tendência · Qualidade</span>
+          <h2>Devolução por dia</h2>
+          <small>Evolução do percentual de devolução no ciclo.</small>
+        </div>
+      </div>
+      <div class="card-body">
+        <%= line_chart report.daily_chart_data, id: 'mapas-devolution-daily-chart', height: "250px", discrete: true, suffix: '%', min: 0, decimal: ',', round: 2, empty: 'Sem PDVs válidos no período.' %>
+        <div class="mapas-chart-footer mapas-chart-caption">Percentual ponderado pelos PDVs de cada dia.</div>
+      </div>
+    </div>
+  </div>
+</div>
+<% if report.ignored_maps_count.positive? %>
+  <p class="mapas-devolution-note"><%= pluralize(report.ignored_maps_count, 'mapa excluído', 'mapas excluídos') %> do cálculo por PDVs ausentes ou inconsistentes.</p>
+<% end %>

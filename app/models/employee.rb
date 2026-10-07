@@ -6,15 +6,54 @@ class Employee < ApplicationRecord
   has_many :variable_closings, dependent: :restrict_with_exception
   has_many :drivers, dependent: :restrict_with_exception
   has_many :ajudantes, dependent: :restrict_with_exception
+  has_many :operators, dependent: :restrict_with_exception
+  has_many :az_ajudantes, dependent: :restrict_with_exception
+  has_many :employee_names, dependent: :restrict_with_exception
+  has_many :time_off_memberships, dependent: :restrict_with_exception
   validates :nome, :matricula, presence: true
   validates :matricula, uniqueness: true, on: :create
+  validate :unique_registration_change, on: :update
 
   scope :active, -> { where(active: true) }
   scope :archived, -> { where(active: false) }
+  before_save do
+    self.registration_aliases = (registration_aliases + [matricula_in_database, matricula]).compact.reject(&:blank?).uniq
+  end
+  after_save { Employees::Registry.synchronize!(self) }
+
+  def self.in_sector(sector, date: Date.current)
+    where(id: EmployeeRole.where(sector: sector).on(date).select(:employee_id))
+  end
+
+  def eligible_for?(feature, date: Date.current)
+    return false unless active?
+    role = role_on(date)
+    return false unless role
+    case feature.to_sym
+    when :time_off, :pcd then role.du?
+    when :consumption then role.du? && %w[motorista van].include?(role.cargo)
+    when :az then role.az?
+    else false
+    end
+  end
+
+  def retire!(date: Date.current, user: nil, reason: 'Inativação do cadastro')
+    Employees::Registry.retire!(self, date: date, user: user, reason: reason)
+  end
+
+  def operational_autonomy
+    Employees::Registry.autonomy_record(matricula)&.autonomy || false
+  end
 
   def self.normalized_cpf(value)
     digits = value.to_s.gsub(/\D/, '')
     digits.present? && digits.length <= 11 ? digits.rjust(11, '0') : digits
+  end
+
+  def unique_registration_change
+    if will_save_change_to_matricula? && self.class.where(matricula: matricula).where.not(id: id).exists?
+      errors.add(:matricula, 'já pertence a outro colaborador; revise os vínculos no RH')
+    end
   end
 
   scope :with_career_history, -> { where(id: EmployeeRole.select(:employee_id)) }
@@ -49,9 +88,13 @@ class Employee < ApplicationRecord
       destination = established.first
       source = single_legacy.first
     elsif people.all? { |person| person.employee_roles.size == 1 && person.employee_roles.first.legacy? }
-      ranked = people.sort_by { |person| CARGO_NIVEL.fetch(person.employee_roles.first.cargo, -1) }
-      raise EmployeeRole::HistoryError, 'Os cadastros têm o mesmo cargo legado. Informe ao RH qual deles deve permanecer como cadastro principal.' if ranked.first.employee_roles.first.cargo == ranked.last.employee_roles.first.cargo
-      destination, source = ranked
+      if people.all? { |person| person.employee_roles.first.du? }
+        ranked = people.sort_by { |person| CARGO_NIVEL.fetch(person.employee_roles.first.cargo, -1) }
+        raise EmployeeRole::HistoryError, 'Os cadastros têm o mesmo cargo legado. Informe ao RH qual deles deve permanecer como cadastro principal.' if ranked.first.employee_roles.first.cargo == ranked.last.employee_roles.first.cargo
+        destination, source = ranked
+      else
+        destination, source = people.sort_by(&:id)
+      end
     else
       raise EmployeeRole::HistoryError, 'Não foi possível determinar com segurança o cadastro principal e o cadastro legado.'
     end
@@ -73,14 +116,14 @@ class Employee < ApplicationRecord
   end
 
   def maps
-    driver_codes = employee_roles.reject { |role| role.cargo == 'ajudante' }.map(&:promax).uniq
-    helper_codes = employee_roles.select { |role| role.cargo == 'ajudante' }.map(&:promax).uniq
+    driver_codes = employee_roles.select { |role| role.du? && role.cargo != 'ajudante' }.map(&:promax).uniq
+    helper_codes = employee_roles.select { |role| role.du? && role.cargo == 'ajudante' }.map(&:promax).uniq
     Mapa.where(matric_motorista: driver_codes).or(Mapa.where(matric_ajudante: helper_codes)).or(Mapa.where(matric_ajudante_2: helper_codes))
   end
 
   def role_for(mapa)
     role = role_on(mapa.data_formatada)
-    return unless role
+    return unless role&.du?
     return role if role.matches_map?(mapa)
 
     # A correção manual existe para mapas legados cuja posição operacional
@@ -131,6 +174,7 @@ class Employee < ApplicationRecord
       role.destroy!
       previous.update!(ends_on: event.details['previous_ends_on'])
       employee_career_events.create!(user: user, details: { action: 'delete_role', removed_role: removed, restored_role: previous.attributes })
+      Employees::Registry.synchronize!(self)
     end
   end
 
@@ -140,10 +184,11 @@ class Employee < ApplicationRecord
       role = employee_roles.new(attributes.merge(created_by: user))
       raise EmployeeRole::HistoryError, 'Informe a data efetiva da movimentação.' unless role.starts_on
       previous = employee_roles.where.not(id: role.id).order(Arel.sql('starts_on DESC NULLS LAST')).first
+      role.sector = previous.sector if previous && attributes[:sector].blank? && attributes['sector'].blank?
       if previous && previous.starts_on && role.starts_on <= previous.starts_on
         raise EmployeeRole::HistoryError, 'A movimentação deve ser posterior à última vigência. Corrija o histórico com uma revisão.'
       end
-      if previous && EmployeeRole::CARGOS.value?(role.cargo) && !EmployeeRole::PROGRESSAO.fetch(previous.cargo, []).include?(role.cargo)
+      if previous && EmployeeRole::CARGOS.value?(role.cargo) && !role.follows?(previous)
         allowed = EmployeeRole::PROGRESSAO.fetch(previous.cargo, []).map { |cargo| EmployeeRole::CARGOS.key(cargo) }
         next_cargos = allowed.any? ? allowed.to_sentence : 'nenhum cargo posterior'
         raise EmployeeRole::HistoryError, "#{previous.label} não pode ser alterado para #{role.label}. Próximos cargos permitidos: #{next_cargos}."
@@ -161,15 +206,18 @@ class Employee < ApplicationRecord
     incoming_cargo = role_attributes['cargo'] || role_attributes[:cargo]
     incoming_promax = role_attributes['promax'] || role_attributes[:promax]
     incoming_legacy = role_attributes['legacy'] || role_attributes[:legacy]
+    incoming_sector = role_attributes['sector'] || role_attributes[:sector] || 'du'
+    incoming_turno = role_attributes['turno'] || role_attributes[:turno]
+    incoming = EmployeeRole.new(cargo: incoming_cargo, promax: incoming_promax, sector: incoming_sector, turno: incoming_turno)
     latest = employee_roles.order(Arel.sql('starts_on DESC NULLS LAST')).first
 
-    if latest.nil? || EmployeeRole::PROGRESSAO.fetch(latest.cargo, []).include?(incoming_cargo)
-      return change_role!({ cargo: incoming_cargo, promax: incoming_promax, starts_on: effective_date,
+    if incoming.follows?(latest)
+      return change_role!({ cargo: incoming_cargo, sector: incoming_sector, turno: incoming_turno, promax: incoming_promax, starts_on: effective_date,
         reason: reason }, user: user)
     end
 
     first = employee_roles.order(Arel.sql('starts_on ASC NULLS FIRST')).first
-    unless employee_roles.size == 1 && first && EmployeeRole::PROGRESSAO.fetch(incoming_cargo, []).include?(first.cargo)
+    unless employee_roles.size == 1 && first && first.follows?(incoming)
       raise EmployeeRole::HistoryError, "A posição escolhida não forma uma progressão válida entre #{first&.label || 'os cargos'} e #{EmployeeRole::CARGOS.key(incoming_cargo) || incoming_cargo}."
     end
     raise EmployeeRole::HistoryError, 'A data da progressão deve ser anterior ou igual ao início do cargo principal.' if first.starts_on && effective_date > first.starts_on
@@ -183,7 +231,7 @@ class Employee < ApplicationRecord
       self.class.connection.execute("SELECT pg_advisory_xact_lock(739231200)")
       original_first = first.attributes
       first.update!(starts_on: effective_date)
-      inserted = employee_roles.create!(cargo: incoming_cargo, promax: incoming_promax,
+      inserted = employee_roles.create!(cargo: incoming_cargo, sector: incoming_sector, turno: incoming_turno, promax: incoming_promax,
         starts_on: previous_starts_on, ends_on: effective_date - 1.day,
         legacy: incoming_legacy, reason: reason, created_by: user)
       employee_career_events.create!(user: user, details: {
@@ -196,15 +244,22 @@ class Employee < ApplicationRecord
 
   def merge_variable_closings_from!(source, user:)
     merged = []
-    source_closings = source.variable_closings.to_a.group_by { |closing| [closing.year, closing.month] }
+    source_closings = source.variable_closings.to_a.group_by { |closing| [closing.sector, closing.year, closing.month] }
       .transform_values { |closings| closings.max_by(&:revision) }
 
     source_closings.sort_by { |period, _closing| period }.each do |period, closing|
       period = [closing.year, closing.month]
-      destination_closing = variable_closings.where(year: period[0], month: period[1]).order(revision: :desc).first
+      destination_closing = variable_closings.where(sector: closing.sector, year: period[0], month: period[1]).order(revision: :desc).first
       if destination_closing
+        if closing.sector == 'az'
+          # Preserve both recorded references. A fresh audited AZ revision is
+          # required rather than summing potentially duplicated sources.
+          merged << { closing_id: closing.id, destination_closing_id: destination_closing.id,
+            year: closing.year, month: closing.month, review_required: true }
+          next
+        end
         consolidated = VariableClosing.create!(employee: self, user: user, year: period[0], month: period[1],
-          revision: variable_closings.where(year: period[0], month: period[1]).maximum(:revision).to_i + 1,
+          revision: variable_closings.where(sector: closing.sector, year: period[0], month: period[1]).maximum(:revision).to_i + 1,
           reason: 'Mesclagem de variáveis de cadastros vinculados',
           result: VariableClosing.merge_results(destination_closing.result, closing.result, employee: self).merge(
             'consolidated_from' => [destination_closing.id, closing.id]

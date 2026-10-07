@@ -1,0 +1,18 @@
+<div class="app-page employees-page employees-page--form">
+  <%= link_to 'Voltar ao colaborador', @employee, class: 'employees-back' %>
+  <header class="app-page-header"><h1>Editar dados de <%= @employee.nome %></h1></header>
+  <%= form_with model: @employee, class: 'employees-form' do |f| %>
+    <% if @employee.errors.any? %><div class="alert alert-danger"><%= @employee.errors.full_messages.to_sentence %></div><% end %>
+    <section class="app-panel"><div class="app-panel__body employees-fields">
+      <% { nome: 'Nome completo', matricula: 'Matrícula', cpf: 'CPF' }.each do |field, label| %>
+        <div class="employees-field"><%= f.label field, label %><%= f.text_field field, required: field != :cpf, class: 'form-control' %></div>
+      <% end %>
+      <div class="employees-field"><%= f.label :data_nascimento, 'Data de nascimento' %><%= f.date_field :data_nascimento, class: 'form-control' %></div>
+      <% if Employees::Registry.autonomy_record(@employee.matricula) %>
+        <div class="employees-field employees-field--full"><label><%= f.check_box :operational_autonomy %> Permitir registro de autonomia</label></div>
+      <% end %>
+      <div class="employees-field employees-field--full"><%= label_tag :reason, 'Motivo da alteração' %><%= text_area_tag :reason, params[:reason], required: true, class: 'form-control' %></div>
+    </div></section>
+    <%= f.submit 'Salvar dados do colaborador', class: 'btn btn-primary' %>
+  <% end %>
+</div>

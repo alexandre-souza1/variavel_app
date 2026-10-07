@@ -51,7 +51,8 @@ module TimeOff
       employee = @person.is_a?(Employee) ? @person : @person.employee
       scope = @schedule.time_off_memberships.with_active_people
       scope = if employee
-                scope.where(driver_id: Driver.where(employee_id: employee.id).select(:id))
+                scope.where(employee_id: employee.id)
+                  .or(scope.where(driver_id: Driver.where(employee_id: employee.id).select(:id)))
                   .or(scope.where(ajudante_id: Ajudante.where(employee_id: employee.id).select(:id)))
               elsif @person.is_a?(Driver)
                 scope.where(driver_id: @person.id)

@@ -51,7 +51,7 @@
       <% members = (@board.pools[status] || []).select { |m| day_member_visible?(m) }; next if status == 'pending' && members.empty? %>
       <section class="time-off-column time-off-column--<%= status %>">
         <header><h3><i class="bi <%= icon %>" aria-hidden="true"></i> <%= label %></h3><span class="time-off-count" data-pool-count="<%= status %>"><%= members.size %></span></header>
-        <p class="time-off-column-summary" data-pool-summary="<%= status %>"><%= members.count { |m| m.role == 'driver' } %> motoristas · <%= members.count { |m| m.role == 'helper' } %> ajudantes</p>
+        <p class="time-off-column-summary" data-pool-summary="<%= status %>"><%= members.count { |m| m.role(@date) == 'driver' } %> motoristas · <%= members.count { |m| m.role(@date) == 'helper' } %> ajudantes</p>
         <div class="time-off-person-drop time-off-pool-drop" data-time-off-board-target="drop" data-status="<%= status %>" data-action="click->time-off-board#destination" role="group" aria-label="<%= label %>">
           <% members.each do |member| %><%= render 'board_person', member: member, editable: can_edit? && status != 'pending', assigned: false %><% end %>
           <button type="button" class="time-off-pool-placeholder" data-action="time-off-board#destination" <%= 'disabled' unless can_edit? && status != 'pending' %>>Mover para <%= label.downcase %></button>

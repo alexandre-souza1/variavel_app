@@ -1,0 +1,27 @@
+<% slides = [
+  { title: 'Devolução por motorista', description: 'Até 10 motoristas com maior percentual no ciclo.', data: report.ranking_chart_data(:driver) },
+  { title: 'Devolução por ajudante', description: 'Até 10 ajudantes com maior percentual no ciclo.', data: report.ranking_chart_data(:helper) }
+] %>
+<div class="card h-100 mapas-chart-card mapas-devolution-ranking"
+     data-controller="chart-carousel" data-chart-carousel-chart-id-value="mapas-devolution-people-chart"
+     data-chart-carousel-slides-value="<%= slides.to_json %>" data-chart-carousel-compact-labels-value="true">
+  <div class="mapas-card-header app-panel__header">
+    <div class="dashboard-panel-heading">
+      <span class="dashboard-panel-kicker"><i class="bi bi-bar-chart-fill me-1"></i> Qualidade · Colaboradores</span>
+      <h2 data-chart-carousel-target="title" aria-live="polite"><%= slides.first[:title] %></h2>
+      <small data-chart-carousel-target="description"><%= slides.first[:description] %></small>
+    </div>
+  </div>
+  <div class="card-body">
+    <%= bar_chart slides.first[:data], id: 'mapas-devolution-people-chart', height: '250px', suffix: '%', min: 0, decimal: ',', round: 2, empty: 'Nenhum colaborador com devolução no período.' %>
+    <div class="mapas-chart-footer mapas-chart-switch" role="group" aria-label="Selecionar função para devolução"
+         data-action="keydown.left->chart-carousel#previous:prevent keydown.right->chart-carousel#next:prevent">
+      <% ['Motoristas', 'Ajudantes'].each_with_index do |label, index| %>
+        <button type="button" class="mapas-chart-toggle" aria-label="Devolução por <%= label.downcase %>"
+                aria-pressed="<%= index.zero? %>" aria-controls="mapas-devolution-people-chart"
+                data-chart-carousel-target="dot" data-chart-carousel-index-param="<%= index %>"
+                data-action="chart-carousel#select"><%= label %></button>
+      <% end %>
+    </div>
+  </div>
+</div>

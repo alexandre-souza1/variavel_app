@@ -18,8 +18,8 @@
                 <i class="bi bi-truck me-1"></i> DU
               </button>
               <ul class="dropdown-menu app-dropdown-menu">
-                <li><%= link_to 'Motoristas', drivers_path, class: 'dropdown-item app-dropdown-item' %></li>
-                <li><%= link_to 'Ajudantes', ajudantes_path, class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Colaboradores', employees_path(employee_sector: 'du'), class: 'dropdown-item app-dropdown-item' %></li>
+
                 <li><%= link_to 'Escala de folgas', time_off_schedule_path, class: 'dropdown-item app-dropdown-item' %></li>
                 <li><%= link_to 'PCD', pcd_path, class: 'dropdown-item app-dropdown-item' %></li>
                 <li><%= link_to 'Mapas', mapas_todos_path, class: 'dropdown-item app-dropdown-item' %></li>
@@ -36,8 +36,8 @@
                 <i class="bi bi-house-door me-1"></i> AZ
               </button>
               <ul class="dropdown-menu app-dropdown-menu">
-                <li><%= link_to 'Operadores', operators_path, class: 'dropdown-item app-dropdown-item' %></li>
-                <li><%= link_to 'Ajudantes', az_ajudantes_path, class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Colaboradores', employees_path(employee_sector: 'az'), class: 'dropdown-item app-dropdown-item' %></li>
+
                 <% if current_user&.can_access_az_dashboard? %><li><%= link_to 'Dashboard de Metas AZ', dashboard_az_path, class: 'dropdown-item app-dropdown-item' %></li><% end %>
                 <li><%= link_to 'Resultados Diários', az_mapas_path, class: 'dropdown-item app-dropdown-item' %></li>
                 <li><%= link_to 'Resultados WMS', wms_tasks_path, class: 'dropdown-item app-dropdown-item' %></li>
@@ -48,7 +48,7 @@
 
           <li class="nav-item dropdown">
             <button class="nav-link dropdown-toggle app-dropdown-toggle" id="rhDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-people me-1"></i> RH</button>
-            <ul class="dropdown-menu app-dropdown-menu"><li><%= link_to "Colaboradores", employees_path, class: "dropdown-item app-dropdown-item" %></li><li><%= link_to "Escala de folgas", time_off_schedule_path, class: "dropdown-item app-dropdown-item" %></li><li><%= link_to "Importar Ciclo de Gente", people_cycle_feedbacks_path, class: "dropdown-item app-dropdown-item" %></li></ul>
+            <ul class="dropdown-menu app-dropdown-menu"><li><%= link_to "Colaboradores", employees_path, class: "dropdown-item app-dropdown-item" %></li><% if current_user.can_view_du_operations? %><li><%= link_to "Escala de folgas", time_off_schedule_path, class: "dropdown-item app-dropdown-item" %></li><% end %><li><%= link_to "Importar Ciclo de Gente", people_cycle_feedbacks_path, class: "dropdown-item app-dropdown-item" %></li></ul>
           </li>
 
           <% if NavbarHelper::FLEET_LINK_KEYS.any? { |key| can_view_nav_link?(key, current_user) } %>
@@ -309,8 +309,8 @@
             <i class="bi bi-truck"></i> DU
           </button>
           <div class="collapse" id="mobileDuCollapse">
-            <%= link_to 'Motoristas', drivers_path, class: 'app-mobile-nav-link' %>
-            <%= link_to 'Ajudantes', ajudantes_path, class: 'app-mobile-nav-link' %>
+            <%= link_to 'Colaboradores', employees_path(employee_sector: 'du'), class: 'app-mobile-nav-link' %>
+
             <%= link_to 'Escala de folgas', time_off_schedule_path, class: 'app-mobile-nav-link' %>
             <%= link_to 'PCD', pcd_path, class: 'app-mobile-nav-link' %>
             <%= link_to 'Mapas', mapas_todos_path, class: 'app-mobile-nav-link' %>
@@ -332,8 +332,8 @@
             <i class="bi bi-house-door"></i> AZ
           </button>
           <div class="collapse" id="mobileAzCollapse">
-            <%= link_to 'Operadores', operators_path, class: 'app-mobile-nav-link' %>
-            <%= link_to 'Ajudantes', az_ajudantes_path, class: 'app-mobile-nav-link' %>
+            <%= link_to 'Colaboradores', employees_path(employee_sector: 'az'), class: 'app-mobile-nav-link' %>
+
             <% if current_user&.can_access_az_dashboard? %><%= link_to 'Dashboard de Metas AZ', dashboard_az_path, class: 'app-mobile-nav-link' %><% end %>
             <%= link_to 'Resultados Diários', az_mapas_path, class: 'app-mobile-nav-link' %>
             <%= link_to 'Resultados WMS', wms_tasks_path, class: 'app-mobile-nav-link' %>
@@ -344,7 +344,7 @@
 
       <div class="app-mobile-nav-section">
         <button class="app-mobile-nav-section__title w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#mobileRhCollapse" aria-expanded="false"><i class="bi bi-people"></i> RH</button>
-        <div class="collapse" id="mobileRhCollapse"><%= link_to "Colaboradores", employees_path, class: "app-mobile-nav-link" %><%= link_to "Escala de folgas", time_off_schedule_path, class: "app-mobile-nav-link" %><%= link_to "Importar Ciclo de Gente", people_cycle_feedbacks_path, class: "app-mobile-nav-link" %></div>
+        <div class="collapse" id="mobileRhCollapse"><%= link_to "Colaboradores", employees_path, class: "app-mobile-nav-link" %><% if current_user.can_view_du_operations? %><%= link_to "Escala de folgas", time_off_schedule_path, class: "app-mobile-nav-link" %><% end %><%= link_to "Importar Ciclo de Gente", people_cycle_feedbacks_path, class: "app-mobile-nav-link" %></div>
       </div>
 
       <% if NavbarHelper::FLEET_LINK_KEYS.any? { |key| can_view_nav_link?(key, current_user) } %>

@@ -43,7 +43,7 @@ module TimeOff
           raise UpdateDay::InvalidChange, 'Operação inválida.' if (details['special_assignments'].keys - Coverage::SPECIAL_OPERATIONS).any?
           details['helper_driver_ids'].each do |id|
             m = proposed.member(id)
-            raise UpdateDay::InvalidChange, 'Selecione um motorista da escala para atuar como ajudante.' unless m&.role == 'driver'
+            raise UpdateDay::InvalidChange, 'Selecione um motorista da escala para atuar como ajudante.' unless m&.role(date) == 'driver'
             validate_person!(proposed, m, 'route', 'helper', used)
           end
           plan = current.plan || schedule.time_off_daily_plans.build(date: date)

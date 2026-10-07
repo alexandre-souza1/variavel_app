@@ -11,7 +11,7 @@ Rails.application.routes.draw do
     post :create_vacation, path: 'ferias'
     patch :cancel_vacation, path: 'ferias/cancelar'
   end
-  resources :employees, path: 'rh/colaboradores', only: %i[index new create show] do
+  resources :employees, path: 'rh/colaboradores', only: %i[index new create show edit update] do
     member do
       delete :delete_role
       post :revise_role
@@ -21,6 +21,8 @@ Rails.application.routes.draw do
       get :link_record
       post :link_record
       post :revise_closing
+      patch :retire
+      patch :reactivate
     end
   end
   resources :people_cycle_feedbacks, only: %i[index create], path: "rh/ciclo-de-gente"

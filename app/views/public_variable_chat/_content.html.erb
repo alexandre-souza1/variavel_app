@@ -23,12 +23,7 @@
     <%= form_with url: identify_public_variable_chat_path, method: :post, local: true, data: { turbo: false } do |form| %>
       <%= hidden_field_tag :return_to, request.fullpath %>
       <div class="public-variable-chat-form-grid">
-        <div>
-          <%= form.label :profile, "Perfil", class: "form-label" %>
-          <%= form.select :profile,
-            [["Colaborador (histórico de cargos)", "colaborador"], ["Motorista", "motorista"], ["Operador", "operador"], ["Ajudante", "ajudante"], ["Ajudante do armazém", "az_ajudante"]],
-            { prompt: "Selecione seu perfil" }, class: "form-select", required: true %>
-        </div>
+        <%= form.hidden_field :profile, value: "colaborador" %>
         <div>
           <%= form.label :registration, "Matrícula", class: "form-label" %>
           <%= form.text_field :registration, class: "form-control", inputmode: "numeric", autocomplete: "off", required: true %>
@@ -63,7 +58,7 @@
         <div class="public-variable-chat-welcome">
           <i class="bi bi-chat-heart"></i>
           <strong>Olá, <%= identity.name.split.first %>!</strong>
-          <% if %w[operador az_ajudante].include?(identity.profile) %>
+          <% if (identity.record.is_a?(Employee) ? identity.record.role_on(Date.current)&.az? : %w[operador az_ajudante].include?(identity.profile)) %>
             <span>Pergunte, por exemplo: “quanto ganhei este mês?” ou “estou batendo minha meta de TMA?”</span>
           <% else %>
             <span>Pergunte, por exemplo: “quanto ganhei este mês?”, “estou batendo minha meta de devolução?” ou “quando é minha próxima folga?”</span>

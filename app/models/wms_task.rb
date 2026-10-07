@@ -1,6 +1,10 @@
 class WmsTask < ApplicationRecord
   belongs_to :operator
+  belongs_to :employee, optional: true
   belongs_to :az_rv_import, optional: true
+  before_validation { self.employee ||= operator&.employee }
+
+  def remunerated? = duration.to_f >= 10
 
   validates :task_code, :task_type, presence: true
   validates :duration, numericality: { greater_than_or_equal_to: 10 }
@@ -9,12 +13,9 @@ class WmsTask < ApplicationRecord
     imported_count = 0
     skipped_operators = []
     failed_rows = []
+    operator_ids = {}
 
     total_rows = rows.size
-
-    operators_hash = Operator.all.each_with_object({}) do |op, hash|
-      hash[normalize_string(op.nome)] = op.id
-    end
 
     rows.each do |row|
       nome_operador = normalize_string(row['Usuário'].to_s)
@@ -24,7 +25,11 @@ class WmsTask < ApplicationRecord
         next
       end
 
-      operator_id = operators_hash[nome_operador]
+      started_at = parse_date(row['Data Última Associação'])
+      identity_key = [nome_operador, started_at&.in_time_zone&.to_date]
+      operator_id = operator_ids.fetch(identity_key) do
+        operator_ids[identity_key] = Employees::Registry.operator_for_name(row['Usuário'], date: identity_key.last)&.id
+      end
       unless operator_id
         skipped_operators << nome_operador
         imported_count += 1 # conta como processada
@@ -37,7 +42,7 @@ class WmsTask < ApplicationRecord
         task_code: row['Tarefa'],
         plate: row['Placa Carreta'],
         pallet: row['Palete'],
-        started_at: parse_date(row['Data Última Associação']),
+        started_at: started_at,
         ended_at: parse_date(row['Data de Alteração'])
       )
 

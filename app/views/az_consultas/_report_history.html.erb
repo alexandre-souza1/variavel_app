@@ -1,0 +1,8 @@
+<% if @closing %><p class="alert alert-info">Fechamento registrado · revisão <%= @closing.revision %>. Valores preservados conforme o registro.</p><% end %>
+<% if @report_issues.any? %><p class="alert alert-warning"><%= @report_issues.uniq.to_sentence %></p><% end %>
+<% groups = @report.daily.group_by { |day| [day[:cargo], day[:turno]] } %>
+<% if groups.size > 1 %>
+  <div class="app-panel mb-3"><div class="app-panel__body"><strong>Vínculos no período</strong>
+    <% groups.each do |(cargo, turno), days| %><p class="mb-1"><%= EmployeeRole::AZ_CARGOS.key(cargo) %> · Turno <%= EmployeeRole::TURNOS.key(turno) %>: <%= l(days.first[:date]) %> a <%= l(days.last[:date]) %> · <%= number_to_currency(days.sum { |day| day[:total_value] }, unit: 'R$ ', separator: ',', delimiter: '.') %></p><% end %>
+  </div></div>
+<% end %>

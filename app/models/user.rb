@@ -73,6 +73,18 @@ class User < ApplicationRecord
     !mechanical? && (admin? || supervisor? || sector_warehouse?)
   end
 
+  def can_manage_employees?
+    !mechanical? && (admin? || supervisor? || sector_hr?)
+  end
+
+  def can_view_employees?
+    !mechanical? && (can_manage_employees? || sector_du? || sector_warehouse? || sector_safety? || sector_planning?)
+  end
+
+  def can_view_du_operations?
+    !mechanical? && (admin? || supervisor? || sector_du? || sector_fleet? || sector_hr? || sector_safety? || sector_planning?)
+  end
+
   USER_SECTORS = {
     "Frota" => :fleet,
     "DU" => :du,

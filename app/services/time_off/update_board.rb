@@ -26,7 +26,7 @@ module TimeOff
           assignments['helper'] = subset.map { |c| c['helper1'] } if operation == 'vespertina'
           assignments
         end
-        helper_drivers = routes.flat_map { |c| [c['helper1'], c['helper2']] }.compact.select { |id| proposed.member(id).role == 'driver' }
+        helper_drivers = routes.flat_map { |c| [c['helper1'], c['helper2']] }.compact.select { |id| proposed.member(id).role(date) == 'driver' }
         UpdateCoverage.call(schedule: schedule, date: date, user: user, attributes: attributes.slice('reason', 'expected_revision', 'dimensioning_signature').merge(
           'solo_routes' => routes.count { |c| c['helper_count'].zero? },
           'double_helper_routes' => routes.count { |c| c['helper_count'] == 2 },

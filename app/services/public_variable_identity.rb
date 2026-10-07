@@ -18,6 +18,7 @@ class PublicVariableIdentity
   attr_reader :profile, :record
 
   def self.find(profile:, registration:, birth_date:)
+    profile = profile.presence || "colaborador"
     record = find_record(profile, registration, birth_date)
     new(profile, record) if record
   end
@@ -28,7 +29,7 @@ class PublicVariableIdentity
     profile = data["profile"]
     model = PROFILES[profile]
     record = model&.find_by(id: data["id"])
-    new(profile, record) if record
+    new(profile, record) if record&.active? && (!record.respond_to?(:employee) || !record.employee || record.employee.active?)
   end
 
   def self.find_record(profile, registration, birth_date)
@@ -36,18 +37,24 @@ class PublicVariableIdentity
     return unless model && registration.present? && birth_date.present?
 
     date = Date.iso8601(birth_date.to_s)
-    scope = model.where(data_nascimento: date)
-    scope = scope.where(matricula: registration.to_s.strip) if [Driver, Ajudante, Employee].include?(model)
-    scope = scope.where(matricula: registration.to_i) if model == Operator || model == AzAjudante
-    records = scope.where(active: true).limit(2).to_a
+    people = Employee.active.where(data_nascimento: date, matricula: registration.to_s.strip).limit(2).to_a
+    return people.first if people.one?
+    return if people.many?
+    models = profile.to_s == 'colaborador' ? [Driver, Ajudante, Operator, AzAjudante] : [model]
+    records = models.flat_map do |klass|
+      scope = klass.where(data_nascimento: date, matricula: registration.to_s.strip, active: true)
+      scope = scope.where(employee_id: nil) if klass != Employee
+      scope.limit(2).to_a
+    end
     records.one? ? records.first : nil
   rescue ArgumentError
     nil
   end
 
   def initialize(profile, record)
-    @profile = profile.to_s
-    @record = record
+    central = record.is_a?(Employee) ? record : record.try(:employee)
+    @record = central || record
+    @profile = central ? 'colaborador' : (profile.to_s == 'colaborador' ? PROFILES.key(record.class) : profile.to_s)
   end
 
   def name
@@ -59,7 +66,8 @@ class PublicVariableIdentity
   end
 
   def label
-    LABELS.fetch(profile, profile.humanize)
+    role = record.role_on(Date.current) if record.is_a?(Employee)
+    role ? "#{role.label} · #{role.sector_label}" : LABELS.fetch(profile, profile.humanize)
   end
 
   def to_h

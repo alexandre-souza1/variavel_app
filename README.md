@@ -21,7 +21,7 @@ O fuso horário da aplicação é `Brasilia` e o timezone padrão do banco é UT
 
 ### Operação e frota
 
-- Cadastro e controle de placas, motoristas, operadores e ajudantes.
+- Cadastro único de colaboradores DU/AZ, com cargos e turnos por vigência; controle de placas. Veja [colaboradores e regras por setor](docs/colaboradores_e_cargos.md).
 - Disponibilidade diária da frota, com posições, depósito, indisponibilidade e rotas especiais.
 - Dimensionamento da frota e placas padrão por posição.
 - Fechamento manual e automático da disponibilidade.

@@ -6,7 +6,7 @@ class Driver < ApplicationRecord
   scope :active, -> { where(active: true) }
   scope :inactive, -> { where(active: false) }
 
-  def retire!
-    update!(active: false, retired_at: Date.current)
+  def retire!(user: nil)
+    employee ? employee.retire!(user: user) : update!(active: false, retired_at: Date.current)
   end
 end

@@ -6,7 +6,10 @@ module Gasola
       @from, @to = from, to
       scope = GasolaSupply.consumption.where(concluded_at: from.in_time_zone...to.next_day.in_time_zone)
       registrations = scope.distinct.pluck(:registration).compact
-      @names = Employee.where(matricula: registrations).group_by(&:matricula).transform_values do |people|
+      candidates = Employee.where('active = TRUE OR EXISTS (SELECT 1 FROM employee_roles r WHERE r.employee_id = employees.id)')
+        .where('registration_aliases ?| ARRAY[:registrations]', registrations: registrations.presence || [''])
+      @names = candidates.flat_map { |person| person.registration_aliases.map { |key| [key, person] } }.group_by(&:first).transform_values do |entries|
+        people = entries.map(&:last).uniq(&:id)
         people.one? ? people.first.nome : 'Cadastro duplicado'
       end
       @drivers = registrations.sort.map { |key| ["#{@names[key] || 'Sem cadastro'} · #{key}", key] }

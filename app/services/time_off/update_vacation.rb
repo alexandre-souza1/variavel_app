@@ -3,7 +3,7 @@ module TimeOff
     def self.create(schedule:, membership_id:, starts_on:, ends_on:, reason:, user:)
       schedule.with_lock do
         member = schedule.time_off_memberships.find(membership_id)
-        raise UpdateDay::InvalidChange, 'Selecione um colaborador ativo para registrar férias.' unless member.active_person?
+        raise UpdateDay::InvalidChange, 'Selecione um colaborador DU ativo para registrar férias.' unless member.active_person?(starts_on)
         vacation = schedule.time_off_vacations.create!(time_off_membership: member, starts_on: starts_on, ends_on: ends_on, reason: reason.to_s.strip)
         audit(schedule, vacation, user, 'vacation', vacation.reason)
         vacation

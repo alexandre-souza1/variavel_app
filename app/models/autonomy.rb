@@ -6,11 +6,8 @@ class Autonomy < ApplicationRecord
   private
 
   def user_has_autonomy_permission
-    # Verifica se existe um Driver ou Operator com a matrícula e autonomy=true
-    driver_valid = Driver.exists?(matricula: registration, autonomy: true)
-    operator_valid = Operator.exists?(matricula: registration, autonomy: true)
-
-    unless driver_valid || operator_valid
+    person = Employees::Registry.autonomy_record(registration)
+    unless person&.autonomy && person == user
       errors.add(:registration, "não possui permissão para registrar autonomia ou não foi encontrada")
     end
   end

@@ -72,29 +72,11 @@ module NavbarHelper
       sectors: [:fleet, :finance, :planning, :safety],
       group: 'Finanças'
     },
-    drivers: {
-      label: 'Motoristas',
-      path: :drivers_path,
-      sectors: [:du, :hr, :safety],
-      group: 'DU'
-    },
-    ajudantes: {
-      label: 'Ajudantes',
-      path: :ajudantes_path,
-      sectors: [:du, :hr, :safety],
-      group: 'DU'
-    },
-    operators: {
-      label: 'Operadores',
-      path: :operators_path,
-      sectors: [:warehouse, :hr, :safety],
-      group: 'AZ'
-    },
-    az_ajudantes: {
-      label: 'Ajudantes AZ',
-      path: :az_ajudantes_path,
-      sectors: [:warehouse, :hr, :safety],
-      group: 'AZ'
+    employees: {
+      label: 'Colaboradores',
+      path: :employees_path,
+      sectors: [:du, :warehouse, :hr, :safety, :planning],
+      group: 'Geral'
     },
     plates: {
       label: 'Placas',

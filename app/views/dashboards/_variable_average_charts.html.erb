@@ -1,0 +1,63 @@
+<div class="row g-3 mapas-charts-grid">
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 mapas-chart-card">
+      <div class="mapas-card-header app-panel__header">
+        <div class="dashboard-panel-heading">
+          <span class="dashboard-panel-kicker"><i class="bi bi-cash-stack me-1"></i> Variável · Comparativo</span>
+          <h2>Média histórica mensal</h2>
+          <small>Fechamentos de <%= report.from.strftime('%m/%Y') %> a <%= report.to.strftime('%m/%Y') %>.</small>
+        </div>
+      </div>
+      <div class="card-body">
+        <%= column_chart report.average_chart_data, id: 'mapas-variable-average-chart', height: '250px', prefix: 'R$ ', thousands: '.', decimal: ',', round: 2, min: 0, empty: 'Sem fechamentos históricos nesta janela.' %>
+        <div class="mapas-chart-footer mapas-chart-caption">
+          Base: <%= report.summary(:driver)[:observations] %> registros de motoristas · <%= report.summary(:helper)[:observations] %> de ajudantes
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6 col-xl-4">
+    <%= render 'variable_comparison_chart', report: report, profile: :driver, label: 'Motoristas', chart_id: 'mapas-variable-drivers-chart' %>
+  </div>
+  <div class="col-12 col-md-12 col-xl-4">
+    <%= render 'variable_comparison_chart', report: report, profile: :helper, label: 'Ajudantes', chart_id: 'mapas-variable-helpers-chart' %>
+  </div>
+</div>
+<p class="mapas-variable-rule">Média histórica = soma das variáveis computadas ÷ registros de pessoa/mês, incluindo variável zerada e apenas a última revisão. Base disponível: <%= report.summary(:driver)[:months] %>/12 meses de motoristas e <%= report.summary(:helper)[:months] %>/12 de ajudantes. Barras: até 10 maiores diferenças do período em R$.</p>
+<% if @periodo_tipo != 'mes' || (@periodo_inicio <= Date.current && @periodo_fim > Date.current) %>
+  <p class="mapas-variable-rule">Período parcial: o valor acumulado está sendo comparado com uma média mensal completa.</p>
+<% end %>
+<details class="mapas-variable-details app-panel">
+  <summary>Ver comparação de todos os colaboradores</summary>
+  <div class="app-table-shell" tabindex="0" role="region" aria-label="Comparação completa de variável">
+    <table class="table app-table app-table--report mapas-variable-table mb-0">
+      <thead>
+        <tr>
+          <th scope="col">Colaborador</th>
+          <th scope="col">Grupo</th>
+          <th scope="col">Variável</th>
+          <th scope="col">Média do grupo</th>
+          <th scope="col">Diferença</th>
+          <th scope="col">Comparação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% DuVariableAverageReport::PROFILES.each do |profile, label| %>
+          <% report.entries(profile).each do |person| %>
+            <tr>
+              <td><%= person[:name] %><small class="d-block text-muted"><%= person[:registration] %></small></td>
+              <td><%= label %></td>
+              <td><%= number_to_currency(person[:value], unit: 'R$ ', separator: ',', delimiter: '.') %></td>
+              <td><%= report.summary(profile)[:average].nil? ? 'Sem histórico' : number_to_currency(report.summary(profile)[:average], unit: 'R$ ', separator: ',', delimiter: '.') %></td>
+              <td><% if person[:difference] %><%= person[:difference].positive? ? '+' : (person[:difference].negative? ? '−' : '') %><%= number_to_currency(person[:difference].abs, unit: 'R$ ', separator: ',', delimiter: '.') %><% else %>—<% end %></td>
+              <td><span class="mapas-variable-status mapas-variable-status--<%= person[:position] %>"><%= { below: 'Abaixo da média', above: 'Acima da média', equal: 'Na média', unavailable: 'Sem histórico' }.fetch(person[:position]) %></span></td>
+            </tr>
+          <% end %>
+        <% end %>
+        <% if report.entries(:driver).empty? && report.entries(:helper).empty? %>
+          <tr><td colspan="6" class="text-center text-muted">Nenhum colaborador com mapas no período.</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</details>

@@ -1,12 +1,23 @@
 class EmployeesController < ApplicationController
   before_action :authenticate_user!
-  before_action :require_hr!
-  before_action :set_employee, only: %i[show change_role close_period recalculate_closing link_record revise_role delete_role revise_closing]
+  before_action :require_access!
+  before_action :require_hr!, except: %i[index show]
+  before_action :set_employee, only: %i[show edit update retire reactivate change_role close_period recalculate_closing link_record revise_role delete_role revise_closing]
 
   def index
     @archived_view = params[:status].to_s == 'archived'
     @employees = (@archived_view ? Employee.archived : Employee.active).order(:nome).includes(:employee_roles)
     @archived_count = Employee.archived.count
+    @sector_filter = params[:employee_sector].presence
+    @sector_filter = current_user.sector_du? ? 'du' : 'az' unless current_user.can_manage_employees? || current_user.sector_safety? || current_user.sector_planning?
+    @employees = @employees.in_sector(@sector_filter) if EmployeeRole::SECTORS.value?(@sector_filter)
+    if params[:cargo].present? || params[:turno].present?
+      roles = EmployeeRole.on(Date.current)
+      roles = roles.where(sector: @sector_filter) if @sector_filter
+      roles = roles.where(cargo: params[:cargo]) if params[:cargo].present?
+      roles = roles.where(turno: params[:turno]) if params[:turno].present?
+      @employees = @employees.where(id: roles.select(:employee_id))
+    end
     if params[:q].present?
       query = "%#{Employee.sanitize_sql_like(params[:q].strip)}%"
       @employees = @employees.where('nome ILIKE ? OR matricula ILIKE ?', query, query)
@@ -19,11 +30,34 @@ class EmployeesController < ApplicationController
     @employee = Employee.new
   end
 
+  def edit; end
+
+  def update
+    Employees::Registry.update!(@employee, attributes: identity_params, user: current_user, reason: params[:reason])
+    redirect_to @employee, notice: 'Dados do colaborador atualizados em todos os módulos.'
+  rescue ActiveRecord::RecordInvalid, EmployeeRole::HistoryError => error
+    flash.now[:alert] = error.message
+    render :edit, status: :unprocessable_entity
+  end
+
+  def retire
+    @employee.retire!(user: current_user, reason: params[:reason].presence || 'Inativação pelo RH')
+    redirect_to @employee, notice: 'Colaborador inativado. O histórico foi preservado.'
+  end
+
+  def reactivate
+    Employees::Registry.update!(@employee, attributes: { active: true, retired_at: nil }, user: current_user,
+      reason: params[:reason].presence || 'Reativação pelo RH')
+    redirect_to @employee, notice: 'Colaborador reativado.'
+  end
+
   def create
-    @employee = Employee.new(params.require(:employee).permit(:nome, :matricula, :cpf, :data_nascimento))
+    @employee = Employee.new(identity_params)
+    initial_role = role_params
+    initial_role[:reason] = initial_role[:reason].presence || 'Cadastro inicial'
     Employee.transaction do
       @employee.save!
-      @employee.change_role!(params.require(:employee_role).permit(:cargo, :promax, :starts_on, :reason), user: current_user)
+      @employee.change_role!(initial_role, user: current_user)
     end
     redirect_to @employee, notice: 'Colaborador cadastrado.'
   rescue ActiveRecord::RecordInvalid, EmployeeRole::HistoryError => error
@@ -36,15 +70,15 @@ class EmployeesController < ApplicationController
     @suggested_source = @duplicate_employees.find { |person| person.id.to_s == params[:source_employee_id].to_s && @employee.linkable_legacy_source?(person) }
     @roles = @employee.employee_roles.order(Arel.sql('starts_on DESC NULLS LAST'))
     latest_role = @roles.first
-    @next_cargos = latest_role ? EmployeeRole.next_cargos(latest_role.cargo) : EmployeeRole::CARGOS.values
+    @next_cargos = latest_role ? EmployeeRole.next_cargos(latest_role.cargo, sector: latest_role.sector) : EmployeeRole::CARGOS.values
     all_closings = @employee.variable_closings.order(year: :desc, month: :desc, revision: :desc).to_a
-    @closings = all_closings.group_by { |closing| [closing.year, closing.month] }.values.map(&:first)
+    @closings = all_closings.group_by { |closing| [closing.sector, closing.year, closing.month] }.values.map(&:first)
     @closing_cargos = @closings.flat_map { |closing| closing.result.fetch('groups', {}).keys }.select { |cargo| EmployeeRole::CARGOS.value?(cargo) }.uniq
     @cargo_filter = params[:cargo].presence
   end
 
   def change_role
-    @employee.change_role!(params.require(:employee_role).permit(:cargo, :promax, :starts_on, :reason), user: current_user)
+    @employee.change_role!(role_params, user: current_user)
     redirect_to @employee, notice: 'Movimentação registrada. Os cargos anteriores foram preservados.'
   rescue ActiveRecord::RecordInvalid, EmployeeRole::HistoryError => error
     redirect_to @employee, alert: error.message
@@ -62,7 +96,7 @@ class EmployeesController < ApplicationController
   end
 
   def revise_role
-    @employee.revise_role!(params[:role_id], params.require(:employee_role).permit(:cargo, :promax, :starts_on, :reason), user: current_user)
+    @employee.revise_role!(params[:role_id], role_params, user: current_user)
     redirect_to @employee, notice: 'Correção registrada. Fechamentos existentes mantêm os resultados; gere uma revisão se necessário.'
   rescue ActiveRecord::RecordInvalid, EmployeeRole::HistoryError => error
     redirect_to @employee, alert: error.message
@@ -70,7 +104,7 @@ class EmployeesController < ApplicationController
 
   def close_period
     closing = VariableClosing.capture!(employee: @employee, user: current_user,
-      year: params[:year].to_i, month: params[:month].to_i, reason: params[:reason])
+      year: params[:year].to_i, month: params[:month].to_i, reason: params[:reason], sector: params[:employee_sector].presence || 'du')
     redirect_to @employee, notice: "Fechamento registrado, revisão #{closing.revision}."
   rescue ActiveRecord::RecordInvalid, EmployeeRole::HistoryError, Date::Error => error
     redirect_to @employee, alert: error.message
@@ -80,7 +114,7 @@ class EmployeesController < ApplicationController
     closing = @employee.variable_closings.find(params[:closing_id])
     reason = params[:reason].presence || 'Recalculado após correção do histórico de cargos'
     revision = VariableClosing.capture!(employee: @employee, user: current_user,
-      year: closing.year, month: closing.month, reason: reason)
+      year: closing.year, month: closing.month, reason: reason, sector: closing.sector)
     redirect_to @employee, notice: "Revisão #{revision.revision} criada com o histórico atual."
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound, EmployeeRole::HistoryError, Date::Error => error
     redirect_to @employee, alert: error.message
@@ -89,7 +123,7 @@ class EmployeesController < ApplicationController
   def revise_closing
     closing = @employee.variable_closings.find(params[:closing_id])
     closing.revise_cargo!(from_cargo: params[:from_cargo], to_cargo: params[:to_cargo], user: current_user, reason: params[:reason])
-    revision = VariableClosing.where(employee: @employee, year: closing.year, month: closing.month).maximum(:revision)
+    revision = VariableClosing.where(employee: @employee, sector: closing.sector, year: closing.year, month: closing.month).maximum(:revision)
     redirect_to @employee, notice: "Revisão #{revision} registrada. A revisão anterior foi preservada."
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound, EmployeeRole::HistoryError => error
     redirect_to @employee, alert: error.message
@@ -128,7 +162,17 @@ class EmployeesController < ApplicationController
       merged_closings = destination.merge_variable_closings_from!(source, user: current_user)
       source.drivers.update_all(employee_id: destination.id)
       source.ajudantes.update_all(employee_id: destination.id)
+      source.operators.update_all(employee_id: destination.id)
+      source.az_ajudantes.update_all(employee_id: destination.id)
+      TimeOffMembership.where(employee_id: source.id).update_all(employee_id: destination.id)
+      [WmsTask, AzRvPoint, AzRvTask, AzRvOnDemandActivity].each do |model|
+        model.where(employee_id: source.id).update_all(employee_id: destination.id)
+      end
+      source.employee_names.each { |entry| Employees::Registry.remember_name!(destination, entry.name) }
       source.update!(active: false)
+      EmployeeName.where(employee_id: source.id).delete_all
+      destination.update!(registration_aliases: (destination.registration_aliases + source.registration_aliases).uniq)
+      Employees::Registry.synchronize!(destination)
       destination.employee_career_events.create!(user: current_user, details: {
         action: 'link_record', source: source.attributes, original_role: original,
         requested_from_employee_id: @employee.id, destination_employee_id: destination.id,
@@ -142,12 +186,30 @@ class EmployeesController < ApplicationController
 
   private
 
+  def identity_params
+    fields = %i[nome matricula cpf data_nascimento]
+    fields << :operational_autonomy if action_name == 'update'
+    params.require(:employee).permit(*fields)
+  end
+
+  def role_params
+    params.require(:employee_role).permit(:sector, :cargo, :promax, :turno, :starts_on, :reason)
+  end
+
+  def require_access!
+    redirect_to root_path, alert: 'Acesso restrito à gestão de colaboradores.' unless current_user.can_view_employees?
+  end
+
   def set_employee
     @employee = Employee.find(params[:id])
+    unless current_user.can_manage_employees? || current_user.sector_safety? || current_user.sector_planning?
+      sector = current_user.sector_du? ? 'du' : 'az'
+      head :forbidden unless @employee.employee_roles.where(sector: sector).exists? || @employee.variable_closings.where(sector: sector).exists?
+    end
   end
 
   def require_hr!
-    return if current_user.admin? || current_user.supervisor? || current_user.sector_hr?
+    return if current_user.can_manage_employees?
     redirect_to root_path, alert: 'Acesso restrito ao RH, supervisão e administração.'
   end
 end

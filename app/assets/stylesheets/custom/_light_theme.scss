@@ -286,12 +286,17 @@ html[data-bs-theme="light"] {
   }
 
   .app-table {
+    --app-table-row-hover: rgba(var(--bs-primary-rgb), .1);
     --bs-table-bg: var(--app-surface);
     --bs-table-striped-bg: var(--app-surface);
     background-color: var(--bs-table-bg);
 
     > :not(caption) > * > * {
       background-color: var(--bs-table-bg) !important;
+    }
+
+    > tbody > tr:hover > * {
+      background-color: var(--app-table-row-hover) !important;
     }
 
     thead th {

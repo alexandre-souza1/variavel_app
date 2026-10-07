@@ -18,6 +18,7 @@ module TimeOff
     end
 
     def status(member, date)
+      return unless member.active_person?(date)
       base = @schedule.base_status(member, date)
       return unless base
       return 'vacation' if vacation(member, date)

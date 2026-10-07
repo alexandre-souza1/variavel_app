@@ -4,6 +4,11 @@ module TimeOff
       fixed_weekday = nil unless group_code == 'FIXO'
       raise UpdateDay::InvalidChange, 'Selecione um colaborador ativo.' unless People.active?(person)
       raise UpdateDay::InvalidChange, 'Data fora da vigência do piloto.' unless schedule.covers?(starts_on)
+      employee = person.is_a?(Employee) ? person : person.employee
+      if employee
+        raise UpdateDay::InvalidChange, 'A escala 5×2 é exclusiva de colaboradores DU.' unless employee.eligible_for?(:time_off, date: starts_on)
+        person = Employees::Registry.model_for(employee.role_on(starts_on)).where(employee_id: employee.id).first!
+      end
       if pilot_key.present?
         entry = PilotSetup.entries.find { |item| item['key'] == pilot_key }
         unless entry && entry['group'] == group_code && entry['role'] == (person.is_a?(Driver) ? 'driver' : 'helper')
@@ -13,6 +18,7 @@ module TimeOff
       schedule.with_lock do
         key = person.is_a?(Driver) ? :driver_id : :ajudante_id
         memberships = schedule.time_off_memberships.where(key => person.id).order(:starts_on)
+        memberships = schedule.time_off_memberships.where(employee_id: employee.id).order(:starts_on) if employee
         current = memberships.on(starts_on).first
         if memberships.where('starts_on > ?', starts_on).exists? || (current && current.starts_on == starts_on)
           raise UpdateDay::InvalidChange, 'Já existe uma vigência nessa data ou depois dela. Escolha uma data posterior para preservar o histórico.'

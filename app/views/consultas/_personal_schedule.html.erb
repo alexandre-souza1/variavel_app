@@ -36,6 +36,7 @@
           <summary class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar3 me-1"></i> Minha escala do mês <%= disclosure_arrow(css_class: "ms-1") %></summary>
           <div class="personal-schedule__month-content">
             <%= form_with url: consulta_path, method: :get, local: true, class: "personal-schedule__month-filter" do %>
+              <%= hidden_field_tag :employee_sector, 'du' if @employee %>
               <% %i[matricula categoria periodo_mes periodo_ano funcao].each do |key| %>
                 <%= hidden_field_tag key, params[key] if params[key].present? %>
               <% end %>

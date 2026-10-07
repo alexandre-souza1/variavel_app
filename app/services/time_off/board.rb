@@ -43,9 +43,9 @@ module TimeOff
     def state
       { cars: cars, routing_import: coverage.details['routing_import'], members: members.map { |m| {
         id: m.id, name: m.person.nome, group: m.group_code, cargo: m.cargo_on(coverage.date),
-        membership_role: m.role,
-        role: EmployeeRole::CARGOS.key(m.cargo_on(coverage.date)) || m.role_label,
-        active: m.active_person?,
+        membership_role: m.role(coverage.date),
+        role: EmployeeRole::CARGOS.key(m.cargo_on(coverage.date)) || m.role_label(coverage.date),
+        active: m.active_person?(coverage.date),
         status: coverage.status(m), revision: coverage.revision(m), vacation: coverage.status(m) == 'vacation'
       } } }
     end

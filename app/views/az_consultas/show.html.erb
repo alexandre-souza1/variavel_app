@@ -1,3 +1,4 @@
+<%= render "report_history" %>
 <div class="az-operator-report-page">
   <header class="az-report-header">
     <div class="az-report-header-content">
@@ -189,14 +190,7 @@
           <% if params[:periodo_mes].present? && @azmapas.any? %>
             <% @azmapas.each do |mapa| %>
               <%
-                if [0, 2].include?(@turno)
-                  valor_tma = mapa.tipo == "tempo_atendimento" && mapa.atingiu_meta ? @valor_tma_operator : 0
-                  valor_efc = mapa.tipo == "eficiencia_carregamento" && mapa.meta_remunerada? ? @valor_efc_operator : 0
-                else
-                  valor_tma = mapa.tipo == "tempo_atendimento" && mapa.atingiu_meta ? @valor_tma_operator : 0
-                  valor_efc = mapa.tipo == "eficiencia_descarga" && mapa.atingiu_meta ? @valor_efc_operator : 0
-                end
-                valor = valor_tma + valor_efc
+                valor = @report.map_value(mapa)
 
                 resultado_formatado = case mapa.tipo.to_s
                   when "eficiencia_carregamento", "eficiencia_descarga" then number_to_percentage(mapa.resultado, precision: 2)

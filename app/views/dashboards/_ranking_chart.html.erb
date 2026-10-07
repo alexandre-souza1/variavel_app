@@ -1,0 +1,28 @@
+<% slides = [
+  { title: "Top 10 #{label} por valor", description: "Maiores remunerações acumuladas no ciclo.", data: top_data },
+  { title: "Bottom 10 #{label} por valor", description: "Menores remunerações acumuladas no ciclo.", data: bottom_data }
+] %>
+<div class="card h-100 mapas-chart-card mapas-chart-carousel"
+     data-controller="chart-carousel"
+     data-chart-carousel-chart-id-value="<%= chart_id %>"
+     data-chart-carousel-slides-value="<%= slides.to_json %>">
+  <div class="mapas-card-header app-panel__header">
+    <div class="dashboard-panel-heading">
+      <span class="dashboard-panel-kicker"><i class="bi <%= icon %> me-1"></i> Produtividade · <%= label %></span>
+      <h2 data-chart-carousel-target="title" aria-live="polite"><%= slides.first[:title] %></h2>
+      <small data-chart-carousel-target="description"><%= slides.first[:description] %></small>
+    </div>
+  </div>
+  <div class="card-body">
+    <%= column_chart top_data, id: chart_id, height: "250px", prefix: "R$ ", thousands: ".", decimal: ",", precision: 5, empty: "Nenhum colaborador no período." %>
+    <div class="mapas-chart-dots mapas-chart-footer" role="group" aria-label="Selecionar ranking de <%= label.downcase %>"
+         data-action="keydown.left->chart-carousel#previous:prevent keydown.right->chart-carousel#next:prevent">
+      <% ["Top 10", "Bottom 10"].each_with_index do |name, index| %>
+        <button type="button" class="mapas-chart-dot" aria-label="Mostrar <%= name %>" title="<%= name %>"
+                aria-controls="<%= chart_id %>" aria-pressed="<%= index.zero? %>"
+                data-chart-carousel-target="dot" data-chart-carousel-index-param="<%= index %>"
+                data-action="chart-carousel#select"><span aria-hidden="true"></span></button>
+      <% end %>
+    </div>
+  </div>
+</div>

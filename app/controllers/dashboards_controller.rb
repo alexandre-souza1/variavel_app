@@ -1,5 +1,6 @@
 class DashboardsController < ApplicationController
   before_action :authenticate_user!
+  before_action :require_du_dashboard_access, only: :mapas
   before_action :require_fleet_dashboard_access, only: :index
   before_action :set_mes_ano, only: [:index, :placas_por_setor, :mapas]
 
@@ -179,17 +180,38 @@ class DashboardsController < ApplicationController
     @total_remuneracao_ajudantes = @ranking_ajudantes.sum { |item| item[:valor_total] }
     # Dados para gráficos
     @motoristas_top10_mapas = @ranking_motoristas.first(10).map { |m| [m[:nome], m[:mapas]] }
-    @motoristas_top10_valor = @ranking_motoristas.first(10).map { |m| [m[:nome], m[:valor_total]] }
-    @ajudantes_top10_valor = @ranking_ajudantes.first(10).map { |m| [m[:nome], m[:valor_total]] }
+    @motoristas_top10_valor = ranking_por_valor(@ranking_motoristas, ascending: false)
+    @motoristas_bottom10_valor = ranking_por_valor(@ranking_motoristas, ascending: true)
+    @ajudantes_top10_valor = ranking_por_valor(@ranking_ajudantes, ascending: false)
+    @ajudantes_bottom10_valor = ranking_por_valor(@ranking_ajudantes, ascending: true)
     @placas_top10_mapas = @ranking_placas.first(10).map { |p| [p[:placa], p[:mapas]] }
 
     @mapas_por_dia = @mapas
       .group_by { |m| m.data_formatada }
       .transform_values(&:count)
       .sort.to_h
+    @devolution_report = DuDevolutionReport.new(@mapas)
+    @variable_average_report = DuVariableAverageReport.new(driver_ranking: @ranking_motoristas, helper_ranking: @ranking_ajudantes, year: @ano, month: @mes)
+    if request.format.pdf?
+      report = DuManagementReport.new(maps: @mapas, drivers: @ranking_motoristas, helpers: @ranking_ajudantes,
+        devolution: @devolution_report, averages: @variable_average_report,
+        from: @periodo_inicio, to: @periodo_fim, partial: @periodo_tipo != 'mes',
+        issues: @career_reports.flat_map { |_, career_report| career_report.issues }.uniq)
+      send_data DuManagementPdf.new(report).render, type: 'application/pdf', disposition: 'attachment',
+        filename: "relatorio-gerencial-du-#{@periodo_inicio.iso8601}-#{@periodo_fim.iso8601}.pdf"
+    end
   end
 
   private
+
+  def ranking_por_valor(ranking, ascending:)
+    ranking.sort_by { |item| [ascending ? item[:valor_total] : -item[:valor_total], item[:nome].to_s, item[:cargo].to_s] }
+      .first(10).map { |item| [item[:cargo] == 'van' ? "#{item[:nome]} · Van" : item[:nome], item[:valor_total]] }
+  end
+
+  def require_du_dashboard_access
+    head :forbidden unless current_user.can_view_du_operations?
+  end
 
   def load_tire_divergences
     @tire_month_start = Date.current.beginning_of_month
@@ -286,7 +308,7 @@ class DashboardsController < ApplicationController
       groups = report.groups
       snapshot_maps = nil
       if @periodo_tipo == 'mes'
-        closing = employee.variable_closings.where(year: @ano, month: @mes).order(revision: :desc).first
+        closing = employee.variable_closings.where(sector: 'du', year: @ano, month: @mes).order(revision: :desc).first
         if closing
           groups = closing.groups_with_devolution_percentages.transform_values { |group| group.symbolize_keys.transform_values { |value| value.nil? ? nil : value.to_d } }
           snapshot_maps = closing.result.fetch('maps')
@@ -300,7 +322,7 @@ class DashboardsController < ApplicationController
         else
           records.map(&:plate)
         end
-        totals.merge(promax: employee.employee_roles.map(&:promax).uniq.join(', '), nome: "#{employee.nome} (#{EmployeeRole::CARGOS.key(cargo)})",
+        totals.merge(person_key: "employee-#{employee.id}", source: snapshot_maps ? 'closing' : 'calculated', promax: employee.employee_roles.map(&:promax).uniq.join(', '), nome: employee.nome, cargo: cargo,
           matricula: employee.matricula, mapas: totals[:quantidade_mapas].to_i, placas: plates.compact_blank.uniq.size)
       end
     end
@@ -326,6 +348,8 @@ class DashboardsController < ApplicationController
         totais = MapaRemuneracaoService.new("motorista").totals(mapas_motorista)
 
         {
+          person_key: "driver-#{driver.id}",
+          source: 'calculated',
           promax: promax,
           nome: driver.nome,  # agora garantido que existe
           matricula: driver.matricula,
@@ -368,6 +392,8 @@ class DashboardsController < ApplicationController
         totais = MapaRemuneracaoService.new("ajudante").totals(mapas_ajudante)
 
         {
+          person_key: "helper-#{ajudante.id}",
+          source: 'calculated',
           promax: promax,
           nome: ajudante.nome,
           matricula: ajudante.matricula,

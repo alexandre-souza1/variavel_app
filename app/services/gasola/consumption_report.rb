@@ -2,10 +2,22 @@ module Gasola
   class ConsumptionReport
     attr_reader :from, :to, :records, :sync
 
-    def initialize(registration:, from:, to:)
+    def initialize(registration:, from:, to:, employee: nil)
       @from, @to = from, to
-      @records = registration.present? ? GasolaSupply.consumption.where(registration: registration.to_s.strip,
+      registrations = employee ? employee.registration_aliases : [registration.to_s.strip]
+      if employee && registrations.any?
+        others = Employee.with_career_history.where.not(id: employee.id)
+          .where('registration_aliases ?| ARRAY[:registrations]', registrations: registrations).pluck(:registration_aliases).flatten
+        registrations -= others
+      end
+      @records = registration.present? ? GasolaSupply.consumption.where(registration: registrations,
         concluded_at: from.in_time_zone...to.next_day.in_time_zone).order(:concluded_at).to_a : []
+      if employee
+        @records.select! do |record|
+          role = employee.role_on(record.concluded_at.in_time_zone.to_date)
+          role&.du? && %w[motorista van].include?(role.cargo)
+        end
+      end
       @sync = GasolaSyncRun.where('from_at <= ? AND to_at > ?', from.in_time_zone,
         from.in_time_zone).order(created_at: :desc).first
     end

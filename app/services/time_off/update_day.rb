@@ -8,7 +8,7 @@ module TimeOff
       raise InvalidChange, 'Situação inválida.' unless %w[working off unavailable original].include?(status)
       schedule.with_lock do
         member = schedule.time_off_memberships.find(membership_id)
-        raise InvalidChange, 'Colaborador inativo não pode ser alterado na escala.' unless member.active_person?
+        raise InvalidChange, 'Colaborador inativo ou fora da DU não pode ser alterado na escala.' unless member.active_person?(date)
         base = schedule.base_status(member, date)
         raise InvalidChange, 'Data fora da vigência da escala ou do grupo.' unless base
         if Availability.new(schedule: schedule, first: date).vacation(member, date)

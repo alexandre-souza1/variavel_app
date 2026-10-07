@@ -3,7 +3,7 @@
     <div>
       <p class="az-new-eyebrow"><i class="bi bi-grid-1x2 me-1"></i> Workstation LOG20 · Foz do Iguaçu</p>
       <h1 class="az-new-title"><i class="bi bi-clipboard-data"></i> Consulta de variável</h1>
-      <p class="az-new-subtitle">Escolha o perfil para consultar a variável de motoristas, ajudantes e vans usando a matrícula.</p>
+      <p class="az-new-subtitle">Informe sua matrícula. O sistema identifica o setor e o histórico de cargos.</p>
     </div>
 
     <div class="az-new-header-actions">
@@ -11,92 +11,7 @@
     </div>
   </header>
 
-  <section aria-labelledby="perfis-heading">
-    <div class="az-new-section-heading">
-      <div>
-        <h2 id="perfis-heading"><i class="bi bi-person-badge"></i> Selecione o perfil</h2>
-        <p>Escolha uma opção para informar a matrícula e abrir o relatório correspondente.</p>
-      </div>
-      <div class="az-new-section-heading__actions">
-        <span class="text-muted small">Toque novamente no perfil para fechar a consulta</span>
-        <%= link_to downloads_path, class: "az-new-link az-new-link--primary" do %>
-          <i class="bi bi-file-earmark-text"></i> Central de padrões
-        <% end %>
-      </div>
-    </div>
-
-    <div class="az-turno-grid">
-      <div data-action="click->formulario#mostrarFormulario"
-           class="az-turno-card"
-           data-categoria="motorista"
-           role="button"
-           tabindex="0"
-           aria-label="Consultar variável de motorista"
-           style="background-image: url('<%= asset_path("caminhao1.png") %>')">
-        <span class="az-turno-label">Motorista</span>
-        <span class="az-turno-action">Consultar variável <i class="bi bi-arrow-right-circle"></i></span>
-      </div>
-
-      <div data-action="click->formulario#mostrarFormulario"
-           class="az-turno-card"
-           data-categoria="ajudante"
-           role="button"
-           tabindex="0"
-           aria-label="Consultar variável de ajudante"
-           style="background-image: url('<%= asset_path("caminhao2.png") %>')">
-        <span class="az-turno-label">Ajudante</span>
-        <span class="az-turno-action">Consultar variável <i class="bi bi-arrow-right-circle"></i></span>
-      </div>
-
-      <div data-action="click->formulario#mostrarFormulario"
-           class="az-turno-card"
-           data-categoria="van"
-           role="button"
-           tabindex="0"
-           aria-label="Consultar variável de van"
-           style="background-image: url('<%= asset_path("caminhao3.png") %>')">
-        <span class="az-turno-label">Van</span>
-        <span class="az-turno-action">Consultar variável <i class="bi bi-arrow-right-circle"></i></span>
-      </div>
-    </div>
-  </section>
-
-  <section id="formulario-consulta" class="az-new-form-area d-none" data-formulario-target="formulario" aria-live="polite">
-    <article class="az-new-form-panel">
-      <div class="az-new-form-header">
-        <div>
-          <h2 id="titulo-form" data-formulario-target="titulo">Consultar</h2>
-          <p>Informe a matrícula para abrir o relatório do período.</p>
-        </div>
-        <i class="bi bi-search az-new-form-icon"></i>
-      </div>
-
-      <div class="az-new-form-body">
-        <%= form_with url: consulta_path, method: :get, local: true, html: { id: "consulta-form" } do %>
-          <div class="row g-3 align-items-end">
-            <div class="col-12 col-lg-8">
-              <%= label_tag :matricula, "Matrícula", class: "az-new-field-label" %>
-              <%= text_field_tag :matricula, params[:matricula], class: "form-control form-control-lg az-new-form-control", inputmode: "numeric", placeholder: "Digite sua matrícula", required: true %>
-            </div>
-
-            <%= hidden_field_tag :categoria, nil, id: "categoria_oculta", data: { formulario_target: "categoriaInput" } %>
-
-            <div class="col-12 col-lg-4 d-grid">
-              <%= button_tag type: "submit", class: "az-new-submit" do %>
-                <i class="bi bi-arrow-right"></i>
-                Consultar variável
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-
-        <p class="az-new-form-help">
-          <i class="bi bi-info-circle-fill"></i>
-          <span>O período pode ser selecionado dentro do relatório depois da consulta.</span>
-        </p>
-      </div>
-    </article>
-  </section>
+  <%= render 'shared/employee_variable_lookup' %>
 
   <section class="az-new-resource-grid">
     <%= render "shared/consulta_quick_access", origin: "consultas" %>

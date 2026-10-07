@@ -118,7 +118,7 @@ module TimeOff
         candidates = cars.select { |car| car['operation'] == row['operation'] && !used.include?(car['key']) }
         car = candidates.find { |c| c['plate'] == row['plate'] } || candidates.find do |c|
           member = @coverage.member(c['driver'])
-          member && row['driver_code'].present? && self.class.driver_code(member.person.promax) == row['driver_code']
+          member && row['driver_code'].present? && self.class.driver_code(member.code_on(@coverage.date)) == row['driver_code']
         end
         next unless car
         used.add(car['key'])

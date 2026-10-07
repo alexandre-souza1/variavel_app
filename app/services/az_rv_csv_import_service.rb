@@ -42,6 +42,7 @@ class AzRvCsvImportService
 
       {
         employee_name: name,
+        employee_id: employee_id_for(name),
         employee_key: normalize_key(name),
         reference_date: @points_reference_date,
         credits: decimal(row, "Créditos", "Creditos"),
@@ -83,6 +84,7 @@ class AzRvCsvImportService
         address: text(row, "Endereço", "Endereco"),
         task_number: text(row, "Tarefa"),
         employee_name: name,
+        employee_id: employee_id_for(name),
         employee_key: normalize_key(name),
         created_at_source: parse_datetime(text(row, "Criação", "Criacao")),
         associated_at: parse_datetime(text(row, "Associação", "Associacao")),
@@ -173,5 +175,10 @@ class AzRvCsvImportService
   def normalize_key(value)
     value.to_s.unicode_normalize(:nfkd).encode("ASCII", invalid: :replace, undef: :replace, replace: "")
         .downcase.gsub(/[^a-z0-9]+/, " ").strip
+  end
+
+  def employee_id_for(name)
+    @employee_ids ||= {}
+    @employee_ids.fetch(name) { @employee_ids[name] = EmployeeName.resolve(name)&.id }
   end
 end
