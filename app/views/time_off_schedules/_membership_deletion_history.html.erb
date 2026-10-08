@@ -1,0 +1,3 @@
+<% before = details.fetch('before') %>
+Vigência excluída: Grupo <%= before['group_code'] %> · <%= l(Date.iso8601(before['starts_on'])) %><%= before['ends_on'] ? " a #{l(Date.iso8601(before['ends_on']))}" : ' em diante' %>
+<% if details['archived_adjustments'].present? %> · <%= pluralize(details['archived_adjustments'].size, 'ajuste arquivado', 'ajustes arquivados') %><% end %>

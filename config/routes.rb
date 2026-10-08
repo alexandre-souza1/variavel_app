@@ -7,6 +7,7 @@ Rails.application.routes.draw do
     post :preview_routing, path: 'cobertura/importar'
     post :assign_group, path: 'grupos'
     patch :revise_membership, path: 'grupos/corrigir-vigencia'
+    patch :delete_membership, path: 'grupos/excluir-vigencia'
     patch :update_day, path: 'dia'
     patch :update_rotation, path: 'rodizio'
     post :create_vacation, path: 'ferias'
@@ -15,6 +16,7 @@ Rails.application.routes.draw do
   resources :employees, path: 'rh/colaboradores', only: %i[index new create show edit update] do
     member do
       post :assign_group
+      patch :revise_membership
       delete :delete_role
       post :revise_role
       post :change_role

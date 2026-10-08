@@ -2,8 +2,8 @@ class EmployeesController < ApplicationController
   before_action :authenticate_user!
   before_action :require_access!
   before_action :set_sector_context
-  before_action :require_hr!, except: %i[index show assign_group]
-  before_action :set_employee, only: %i[show edit update retire reactivate change_role close_period recalculate_closing link_record revise_role delete_role revise_closing assign_group]
+  before_action :require_hr!, except: %i[index show assign_group revise_membership]
+  before_action :set_employee, only: %i[show edit update retire reactivate change_role close_period recalculate_closing link_record revise_role delete_role revise_closing assign_group revise_membership]
   before_action :require_role_sector!, only: %i[create change_role revise_role close_period]
 
   def index
@@ -27,17 +27,37 @@ class EmployeesController < ApplicationController
     @duplicate_counts = visible_employees.duplicate_registration_counts(@employees.map(&:matricula))
     @schedule = TimeOffSchedule.order(:id).first
     @group_memberships = TimeOff::GroupRoster.memberships(schedule: @schedule, date: Date.current, employee_ids: @employees.map(&:id))
+    @editable_group_memberships = TimeOff::GroupRoster.editable_memberships(schedule: @schedule, date: Date.current, employee_ids: @employees.map(&:id))
   end
 
   def assign_group
     return head :forbidden unless current_user.can_manage_time_off? && @employee.eligible_for?(:time_off)
     schedule = TimeOffSchedule.order(:id).first!
     attributes = params.require(:membership).permit(:group_code, :starts_on, :fixed_weekday, :standard_operation)
-    TimeOff::AssignGroup.call(schedule: schedule, person: @employee, user: current_user,
-      group_code: attributes[:group_code], starts_on: Date.iso8601(attributes[:starts_on].to_s),
-      fixed_weekday: attributes[:fixed_weekday].presence&.to_i, standard_operation: attributes[:standard_operation])
+    schedule.with_lock do
+      if schedule.time_off_memberships.for_person(@employee).exists?
+        raise TimeOff::UpdateDay::InvalidChange, 'Este colaborador já possui vigência. Abra a edição para corrigir o vínculo existente.'
+      end
+      TimeOff::AssignGroup.call(schedule: schedule, person: @employee, user: current_user,
+        group_code: attributes[:group_code], starts_on: Date.iso8601(attributes[:starts_on].to_s),
+        fixed_weekday: attributes[:fixed_weekday].presence&.to_i, standard_operation: attributes[:standard_operation])
+    end
     redirect_to employees_path(employee_navigation), notice: 'Grupo salvo. As vigências anteriores foram preservadas.'
   rescue ActiveRecord::RecordInvalid, TimeOff::UpdateDay::InvalidChange, Date::Error => error
+    redirect_to employees_path(employee_navigation), alert: error.message
+  end
+
+  def revise_membership
+    return head :forbidden unless current_user.can_manage_time_off? && @employee.eligible_for?(:time_off)
+    schedule = TimeOffSchedule.order(:id).first!
+    attributes = params.require(:membership).permit(:id, :group_code, :starts_on, :fixed_weekday, :standard_operation, :reason, :expected_updated_at)
+    member = schedule.time_off_memberships.for_person(@employee).find(attributes[:id])
+    TimeOff::ReviseMembership.call(schedule: schedule, membership_id: member.id, user: current_user,
+      group_code: attributes[:group_code], starts_on: Date.iso8601(attributes[:starts_on].to_s),
+      fixed_weekday: attributes[:fixed_weekday].presence&.to_i, standard_operation: attributes[:standard_operation],
+      reason: attributes[:reason], expected_updated_at: attributes[:expected_updated_at])
+    redirect_to employees_path(employee_navigation), notice: 'Grupo e vigência corrigidos. A correção foi registrada no histórico.'
+  rescue ActiveRecord::RecordInvalid, TimeOff::UpdateDay::InvalidChange, TimeOff::UpdateDay::Conflict, Date::Error => error
     redirect_to employees_path(employee_navigation), alert: error.message
   end
 

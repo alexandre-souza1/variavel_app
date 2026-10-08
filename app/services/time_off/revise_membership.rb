@@ -58,16 +58,7 @@ module TimeOff
     end
 
     def self.memberships_for(schedule, member)
-      scope = schedule.time_off_memberships
-      key = member.driver_id ? :driver_id : :ajudante_id
-      people = scope.where(key => member.public_send(key))
-      central_id = member.employee_id || member.person.employee_id
-      if central_id
-        people = people.or(scope.where(employee_id: central_id))
-          .or(scope.where(driver_id: Driver.where(employee_id: central_id).select(:id)))
-          .or(scope.where(ajudante_id: Ajudante.where(employee_id: central_id).select(:id)))
-      end
-      people
+      schedule.time_off_memberships.for_person(member.employee || member.person)
     end
     private_class_method :memberships_for
   end

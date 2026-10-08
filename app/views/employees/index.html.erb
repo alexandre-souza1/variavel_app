@@ -74,7 +74,7 @@
   <% if @schedule && current_user.can_manage_time_off? %>
     <% @employees.each do |employee| %>
       <% next unless employee.active? && employee.role_on(Date.current)&.du? %>
-      <%= render 'time_off_schedules/group_dialog', person: employee, membership: @group_memberships["employee:#{employee.id}"], schedule: @schedule, date: Date.current, url: assign_group_employee_path(employee, employee_navigation) %>
+      <%= render 'time_off_schedules/group_dialog', person: employee, membership: @editable_group_memberships["employee:#{employee.id}"], schedule: @schedule, date: Date.current, url: assign_group_employee_path(employee, employee_navigation), revision_url: revise_membership_employee_path(employee, employee_navigation) %>
     <% end %>
   <% end %>
 </div>

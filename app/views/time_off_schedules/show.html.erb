@@ -16,10 +16,12 @@
         <ul class="time-off-unassigned-list">
           <% @unassigned_people.each do |person| %>
             <li data-person-key="<%= TimeOff::GroupRoster.key(person) %>">
-              <div><strong><%= person.nome %></strong><small><%= person.is_a?(Employee) ? person.role_on(@date).label : person.is_a?(Driver) ? 'Motorista' : 'Ajudante' %> · Matrícula <%= person.matricula %></small></div>
+              <% future_member = @editable_memberships[TimeOff::GroupRoster.key(person)] %>
+              <div><strong><%= person.nome %></strong><small><%= person.is_a?(Employee) ? person.role_on(@date).label : person.is_a?(Driver) ? 'Motorista' : 'Ajudante' %> · Matrícula <%= person.matricula %><% if future_member %> · Grupo <%= future_member.group_code %> a partir de <%= l(future_member.starts_on) %><% end %></small></div>
               <% if can_edit? %>
                 <% dialog_id = "group-dialog-#{TimeOff::GroupRoster.key(person).tr(':', '-')}" %>
-                <button type="button" class="employees-group-trigger" data-action="group-dialog#open" data-group-dialog-id="<%= dialog_id %>" aria-haspopup="dialog" aria-controls="<%= dialog_id %>" aria-label="Definir grupo de <%= person.nome %>">Definir grupo <i class="bi bi-pencil" aria-hidden="true"></i></button>
+                <% group_action = future_member ? 'Corrigir vigência' : 'Definir grupo' %>
+                <button type="button" class="employees-group-trigger" data-action="group-dialog#open" data-group-dialog-id="<%= dialog_id %>" aria-haspopup="dialog" aria-controls="<%= dialog_id %>" aria-label="<%= group_action %> de <%= person.nome %>"><%= group_action %> <i class="bi bi-pencil" aria-hidden="true"></i></button>
               <% end %>
             </li>
           <% end %>
@@ -61,7 +63,7 @@
   <%= render 'change_dialog' if @tab == 'day' %>
   <% if can_edit? %>
     <% @unassigned_people.each do |person| %>
-      <%= render 'group_dialog', person: person, membership: nil, schedule: @schedule, date: @date, url: assign_group_time_off_schedule_path(origin: 'unassigned', date: @date, tab: @tab, role: @role, group: @group, calendar_period: @calendar_period, page: @page, name: @name_query, per_page: @per_page) %>
+      <%= render 'group_dialog', person: person, membership: @editable_memberships[TimeOff::GroupRoster.key(person)], schedule: @schedule, date: @date, url: assign_group_time_off_schedule_path(origin: 'unassigned', date: @date, tab: @tab, role: @role, group: @group, calendar_period: @calendar_period, page: @page, name: @name_query, per_page: @per_page), revision_url: revise_membership_time_off_schedule_path(date: @date, tab: @tab, role: @role, group: @group, calendar_period: @calendar_period, page: @page, name: @name_query, per_page: @per_page) %>
     <% end %>
   <% end %>
 </div>

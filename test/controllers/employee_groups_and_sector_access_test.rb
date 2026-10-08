@@ -90,27 +90,57 @@ class EmployeeGroupsAndSectorAccessTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'DU users assign and move groups from list with audit history and validated dates' do
+  test 'DU users correct groups from list on the same membership with audit and validated dates' do
     original = @schedule.time_off_memberships.create!(driver: @du.drivers.first, group_code: 'E', starts_on: '2026-10-01')
     # Older adapter memberships may not yet have the central employee id.
     original.update_column(:employee_id, nil)
     users(:one).update!(role: :user, sector: :du)
     travel_to Time.zone.local(2026, 10, 7) do
       context = { employee_sector: 'du', q: 'Pessoa' }
-      attributes = { group_code: 'A', starts_on: '2026-10-07' }
-      assert_difference(['TimeOffMembership.count', 'TimeOffChange.count'], 1) do
-        post assign_group_employee_path(@du, context), params: { membership: attributes }
+      attributes = { id: original.id, group_code: 'A', starts_on: '2026-10-12', reason: 'Em integração', expected_updated_at: original.updated_at.iso8601(6) }
+      get employees_path(context)
+      assert_select "dialog#group-dialog-employee-#{@du.id} form[action=?]", revise_membership_employee_path(@du, context)
+      assert_select "#group_employee_#{@du.id}_start[value='2026-10-01']", 1
+      assert_no_difference('TimeOffMembership.count') do
+        assert_difference('TimeOffChange.count', 1) do
+          patch revise_membership_employee_path(@du, context), params: { membership: attributes }
+        end
       end
       assert_redirected_to employees_path(context)
-      assert_equal Date.new(2026, 10, 6), original.reload.ends_on
-      assert_equal 'A', @schedule.time_off_memberships.on(Date.new(2026, 10, 7)).find_by!(employee_id: @du.id).group_code
+      assert_equal Date.new(2026, 10, 12), original.reload.starts_on
+      assert_nil original.ends_on
+      assert_equal 'A', original.group_code
+      get employees_path(context)
+      assert_select "#group_employee_#{@du.id}_membership[value='#{original.id}']", 1
+      assert_select "#group_employee_#{@du.id}_start[value='2026-10-12']", 1
       assert_no_difference('TimeOffMembership.count') do
         post assign_group_employee_path(@du, context), params: { membership: attributes.merge(group_code: 'B') }
       end
-      assert_match /preservar o histórico/, flash[:alert]
+      assert_match /corrigir o vínculo existente/, flash[:alert]
+      patch revise_membership_employee_path(@az), params: { membership: attributes }
+      assert_response :forbidden
       post assign_group_employee_path(@az), params: { membership: attributes }
       assert_response :forbidden
     end
+  end
+
+  test 'correction cannot access another employee membership and new changes require explicit intent' do
+    own = @schedule.time_off_memberships.create!(driver: @du.drivers.first, group_code: 'A', starts_on: '2026-10-01')
+    foreign = @schedule.time_off_memberships.create!(ajudante: ajudantes(:one), group_code: 'B', starts_on: '2026-10-01')
+    attributes = { id: foreign.id, group_code: 'C', starts_on: '2026-10-12', reason: 'Teste', expected_updated_at: foreign.updated_at.iso8601(6) }
+    patch revise_membership_employee_path(@du), params: { membership: attributes }
+    assert_response :not_found
+    sign_in users(:one)
+    attributes = { person: "employee:#{@du.id}", group_code: 'B', starts_on: '2026-10-12' }
+    assert_no_difference('TimeOffMembership.count') do
+      post assign_group_time_off_schedule_path, params: { membership: attributes }
+    end
+    assert_match /marque a opção correspondente/, flash[:alert]
+    assert_difference('TimeOffMembership.count', 1) do
+      post assign_group_time_off_schedule_path, params: { membership: attributes.merge(new_change: '1') }
+    end
+    assert_equal Date.new(2026, 10, 11), own.reload.ends_on
+    assert_equal 'B', @schedule.time_off_memberships.for_person(@du).on(Date.new(2026, 10, 12)).sole.group_code
   end
 
   test 'schedule highlights unassigned DU people independently of filters and allows assignment there' do

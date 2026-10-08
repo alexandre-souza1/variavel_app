@@ -134,6 +134,13 @@ export default class extends Controller {
     form.elements.namedItem('membership[group_code]').dispatchEvent(new Event('change', { bubbles: true }))
   }
 
+  confirmMembershipDeletion(event) {
+    const form = event.currentTarget.form
+    if (!form.reportValidity()) { event.preventDefault(); return }
+    const option = form.elements.namedItem('membership[id]').selectedOptions[0]
+    if (!window.confirm(`Excluir esta vigência da escala?\n\n${option.textContent.trim()}\n\nOs outros vínculos mantêm suas datas. O histórico e as férias serão preservados.`)) event.preventDefault()
+  }
+
   syncMonth(event) {
     if (event.target.value) event.target.form.elements.namedItem("month").value = event.target.value.slice(0, 7)
   }

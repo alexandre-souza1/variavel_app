@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_07_130000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_08_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -1152,11 +1152,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_07_130000) do
     t.string "pilot_key"
     t.string "standard_operation"
     t.bigint "employee_id"
+    t.datetime "cancelled_at"
     t.index ["ajudante_id"], name: "index_time_off_memberships_on_ajudante_id"
     t.index ["driver_id"], name: "index_time_off_memberships_on_driver_id"
     t.index ["employee_id"], name: "index_time_off_memberships_on_employee_id"
-    t.index ["time_off_schedule_id", "ajudante_id"], name: "time_off_current_helper", unique: true, where: "((ends_on IS NULL) AND (ajudante_id IS NOT NULL))"
-    t.index ["time_off_schedule_id", "driver_id"], name: "time_off_current_driver", unique: true, where: "((ends_on IS NULL) AND (driver_id IS NOT NULL))"
+    t.index ["time_off_schedule_id", "ajudante_id"], name: "time_off_current_helper", unique: true, where: "((ends_on IS NULL) AND (ajudante_id IS NOT NULL) AND (cancelled_at IS NULL))"
+    t.index ["time_off_schedule_id", "driver_id"], name: "time_off_current_driver", unique: true, where: "((ends_on IS NULL) AND (driver_id IS NOT NULL) AND (cancelled_at IS NULL))"
     t.index ["time_off_schedule_id", "pilot_key"], name: "time_off_pilot_slot", unique: true, where: "(pilot_key IS NOT NULL)"
     t.index ["time_off_schedule_id"], name: "index_time_off_memberships_on_time_off_schedule_id"
     t.check_constraint "(driver_id IS NOT NULL) <> (ajudante_id IS NOT NULL)", name: "time_off_exactly_one_person"

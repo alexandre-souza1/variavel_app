@@ -3,7 +3,7 @@ class TimeOffSchedulesController < ApplicationController
   CALENDAR_PAGE_SIZES = [12, 24, 48].freeze
   before_action :authenticate_user!
   before_action :require_access!
-  before_action :require_editor!, only: %i[assign_group revise_membership update_day update_rotation update_coverage preview_routing create_vacation cancel_vacation]
+  before_action :require_editor!, only: %i[assign_group revise_membership delete_membership update_day update_rotation update_coverage preview_routing create_vacation cancel_vacation]
   before_action :set_schedule
 
   def show
@@ -15,6 +15,7 @@ class TimeOffSchedulesController < ApplicationController
     @date = @month if @date.beginning_of_month != @month
     @month_days = (@month..@month.end_of_month).to_a
     @unassigned_people = TimeOff::GroupRoster.new(schedule: @schedule, date: @date).unassigned
+    @editable_memberships = TimeOff::GroupRoster.editable_memberships(schedule: @schedule, date: @date)
     @days = @month_days
     prepare_calendar_days if @tab == 'calendar'
     first, last = @month, @month.end_of_month
@@ -56,12 +57,18 @@ class TimeOffSchedulesController < ApplicationController
   end
 
   def assign_group
-    attributes = params.require(:membership).permit(:person, :group_code, :starts_on, :fixed_weekday, :pilot_key, :standard_operation)
+    attributes = params.require(:membership).permit(:person, :group_code, :starts_on, :fixed_weekday, :pilot_key, :standard_operation, :new_change)
     type, id = attributes[:person].to_s.split(':', 2)
     klass = { 'employee' => Employee, 'driver' => Driver, 'helper' => Ajudante }[type]
     raise TimeOff::UpdateDay::InvalidChange, 'Selecione um motorista ou ajudante.' unless klass
     date = Date.iso8601(attributes[:starts_on].to_s)
-    TimeOff::AssignGroup.call(schedule: @schedule, person: klass.find(id), group_code: attributes[:group_code], starts_on: date, user: current_user, fixed_weekday: attributes[:fixed_weekday].presence&.to_i, pilot_key: attributes[:pilot_key], standard_operation: attributes[:standard_operation])
+    person = klass.find(id)
+    @schedule.with_lock do
+      if @schedule.time_off_memberships.for_person(person).exists? && attributes[:new_change] != '1'
+        raise TimeOff::UpdateDay::InvalidChange, 'Este colaborador já possui vigência. Use Corrigir vigência; para registrar uma nova mudança, marque a opção correspondente.'
+      end
+      TimeOff::AssignGroup.call(schedule: @schedule, person: person, group_code: attributes[:group_code], starts_on: date, user: current_user, fixed_weekday: attributes[:fixed_weekday].presence&.to_i, pilot_key: attributes[:pilot_key], standard_operation: attributes[:standard_operation])
+    end
     redirect_to group_assignment_path(date: date), notice: 'Grupo salvo. As vigências anteriores foram preservadas.'
   rescue ActiveRecord::RecordInvalid, TimeOff::UpdateDay::InvalidChange, Date::Error => error
     redirect_to group_assignment_path(date: params[:date]), alert: error.message
@@ -90,6 +97,15 @@ class TimeOffSchedulesController < ApplicationController
       reason: attributes[:reason], expected_updated_at: attributes[:expected_updated_at], user: current_user)
     redirect_to settings_path(correction: 1, membership_id: member.id), notice: 'Vigência corrigida. A correção foi registrada no histórico.'
   rescue ActiveRecord::RecordInvalid, TimeOff::UpdateDay::InvalidChange, TimeOff::UpdateDay::Conflict, Date::Error => error
+    redirect_to settings_path(correction: 1, membership_id: attributes[:id]), alert: error.message
+  end
+
+  def delete_membership
+    attributes = params.require(:membership).permit(:id, :reason, :expected_updated_at)
+    TimeOff::DeleteMembership.call(schedule: @schedule, membership_id: attributes[:id],
+      reason: attributes[:reason], expected_updated_at: attributes[:expected_updated_at], user: current_user)
+    redirect_to settings_path(correction: 1), notice: 'Vigência excluída da escala. O histórico e as férias foram preservados.'
+  rescue ActiveRecord::RecordInvalid, TimeOff::UpdateDay::InvalidChange, TimeOff::UpdateDay::Conflict => error
     redirect_to settings_path(correction: 1, membership_id: attributes[:id]), alert: error.message
   end
 

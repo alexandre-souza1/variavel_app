@@ -4,7 +4,7 @@ class TimeOffSchedule < ApplicationRecord
   WEEKDAYS = { 'Segunda-feira' => 1, 'Terça-feira' => 2, 'Quarta-feira' => 3, 'Quinta-feira' => 4, 'Sexta-feira' => 5, 'Sábado' => 6 }.freeze
   STATUSES = { 'working' => 'Em escala', 'off' => 'Folga', 'unavailable' => 'Indisponível', 'vacation' => 'Férias', 'dsr' => 'DSR', 'pending' => 'Folga fixa a definir' }.freeze
 
-  has_many :time_off_memberships, dependent: :restrict_with_exception
+  has_many :time_off_memberships, -> { active }, dependent: :restrict_with_exception
   has_many :time_off_changes, dependent: :restrict_with_exception
   has_many :time_off_daily_plans, dependent: :restrict_with_exception
   has_many :time_off_vacations, dependent: :restrict_with_exception

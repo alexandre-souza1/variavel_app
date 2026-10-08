@@ -26,6 +26,18 @@ module TimeOff
         .index_by(&:person_key)
     end
 
+    def self.editable_memberships(schedule:, date:, employee_ids: nil)
+      return {} unless schedule
+      scope = schedule.time_off_memberships.with_active_people.where('ends_on IS NULL OR ends_on >= ?', date)
+      if employee_ids
+        scope = scope.where(employee_id: employee_ids)
+          .or(scope.where(driver_id: Driver.where(employee_id: employee_ids).select(:id)))
+          .or(scope.where(ajudante_id: Ajudante.where(employee_id: employee_ids).select(:id)))
+      end
+      scope.includes(:employee, driver: :employee, ajudante: :employee).order(:starts_on, :id)
+        .group_by(&:person_key).transform_values(&:first)
+    end
+
     def unassigned
       people.reject { |person| memberships.key?(self.class.key(person)) }
     end

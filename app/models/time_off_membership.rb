@@ -16,12 +16,28 @@ class TimeOffMembership < ApplicationRecord
   validate :no_overlap
   validate :valid_standard_operation
 
-  scope :on, ->(date) { where('starts_on <= ? AND (ends_on IS NULL OR ends_on >= ?)', date, date) }
-  scope :during, ->(first, last) { where('starts_on <= ? AND (ends_on IS NULL OR ends_on >= ?)', last, first) }
+  scope :active, -> { where(cancelled_at: nil) }
+  scope :on, ->(date) { active.where('starts_on <= ? AND (ends_on IS NULL OR ends_on >= ?)', date, date) }
+  scope :during, ->(first, last) { active.where('starts_on <= ? AND (ends_on IS NULL OR ends_on >= ?)', last, first) }
   scope :with_active_people, -> {
     where(employee_id: Employee.active.select(:id))
       .or(where(employee_id: nil, driver_id: Driver.active.where(employee_id: nil).or(Driver.active.where(employee_id: Employee.active.select(:id))).select(:id)))
-      .or(where(employee_id: nil, ajudante_id: Ajudante.active.where(employee_id: nil).or(Ajudante.active.where(employee_id: Employee.active.select(:id))).select(:id)))
+      .or(where(employee_id: nil, ajudante_id: Ajudante.active.where(employee_id: nil).or(Ajudante.active.where(employee_id: Employee.active.select(:id))).select(:id))).active
+  }
+
+  scope :for_person, ->(person) {
+    central_id = person.is_a?(Employee) ? person.id : person.employee_id
+    people = if person.is_a?(Employee)
+               where(employee_id: person.id)
+             else
+               where((person.is_a?(Driver) ? :driver_id : :ajudante_id) => person.id)
+             end
+    if central_id
+      people = people.or(where(employee_id: central_id))
+        .or(where(driver_id: Driver.where(employee_id: central_id).select(:id)))
+        .or(where(ajudante_id: Ajudante.where(employee_id: central_id).select(:id)))
+    end
+    people
   }
 
   def active_person?(date = Date.current)
@@ -42,7 +58,7 @@ class TimeOffMembership < ApplicationRecord
   end
 
   def covers?(date)
-    starts_on && date >= starts_on && (ends_on.nil? || date <= ends_on)
+    !cancelled_at && starts_on && date >= starts_on && (ends_on.nil? || date <= ends_on)
   end
 
   def cargo_on(date)
@@ -83,6 +99,7 @@ class TimeOffMembership < ApplicationRecord
   end
 
   def no_overlap
+    return if cancelled_at
     return unless time_off_schedule_id && starts_on && (driver_id || ajudante_id)
     key = driver_id ? :driver_id : :ajudante_id
     same_person = self.class.where(key => public_send(key))
@@ -92,7 +109,7 @@ class TimeOffMembership < ApplicationRecord
         .or(self.class.where(driver_id: Driver.where(employee_id: central_id).select(:id)))
         .or(self.class.where(ajudante_id: Ajudante.where(employee_id: central_id).select(:id)))
     end
-    overlap = same_person.where(time_off_schedule_id: time_off_schedule_id).where.not(id: id).where('ends_on IS NULL OR ends_on >= ?', starts_on)
+    overlap = same_person.active.where(time_off_schedule_id: time_off_schedule_id).where.not(id: id).where('ends_on IS NULL OR ends_on >= ?', starts_on)
     overlap = overlap.where('starts_on <= ?', ends_on) if ends_on
     errors.add(:base, 'O colaborador já pertence a um grupo nesse período') if overlap.exists?
   end
