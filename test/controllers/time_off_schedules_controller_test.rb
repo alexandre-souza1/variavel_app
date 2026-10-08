@@ -21,7 +21,7 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#time-off-calendar input[type="month"], #time-off-calendar select[name="group"], #time-off-calendar select[name="role"]', 0
     assert_select '.time-off-calendar-filters[data-turbo-frame="time-off-calendar-content"] input[data-action*="input->time-off#searchCalendar"]', 1
     assert_select '.time-off-role-picker button', 3
-    assert_select '#time-off-settings .time-off-membership-form', 1
+    assert_select '#time-off-settings .time-off-membership-form', 0
     assert_select '.time-off-tabs a[aria-current="page"]', text: 'Calendário'
     assert_select 'a.time-off-day-link[href=?]', time_off_schedule_path(tab: 'day', date: '2026-10-02')
     get time_off_schedule_path(tab: 'day', date: '2026-10-02', group: 'E')
@@ -269,7 +269,7 @@ class TimeOffSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.time-off-history li', 1
     assert_select '.time-off-board', 0
     get time_off_schedule_path(tab: 'groups', date: '2026-10-02')
-    assert_select '.time-off-membership-form', 1
+    assert_select '.time-off-membership-form', 0
     assert_select '.time-off-calendar', 1
     assert_select '#time-off-settings', 1
     assert_select '.time-off-board', 0
