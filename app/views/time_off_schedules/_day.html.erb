@@ -11,8 +11,7 @@
         <div class="<%= 'is-missing' if @demand[:helper_gap] > 0 %>"><i class="bi bi-people" aria-hidden="true"></i><div><strong data-day-helper-gap><%= @demand[:helper_gap] %></strong> ajudantes faltando</div><small><%= @demand[:helpers] %> em escala · <%= @demand[:helper_need] %> necessários</small></div>
       </div>
     <% end %>
-    <% if current_user.admin? || current_user.sector_du? %><div class="time-off-notice">As equipes, placas e composições são definidas no <%= link_to 'PCD do dia', pcd_path(date: @date) %>. Freteiros não entram na necessidade do piloto.</div><% end %>
-    <div class="time-off-board time-off-availability-board">
+   <div class="time-off-board time-off-availability-board">
       <% ([['working', 'Em escala', 'bi-person-check'], ['off', @date.sunday? ? 'DSR · Domingo' : 'De folga', 'bi-cup-hot'], ['unavailable', 'Indisponíveis', 'bi-person-x']] + (@daily['pending'].present? ? [['pending', 'Folga fixa a definir', 'bi-question-circle']] : [])).each do |status, label, icon| %>
         <% members = (@daily[status] || []) + (status == 'off' ? (@daily['dsr'] || []) : []) %>
         <section class="time-off-column time-off-column--<%= status %>">
