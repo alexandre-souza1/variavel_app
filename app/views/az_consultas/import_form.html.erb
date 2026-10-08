@@ -92,7 +92,7 @@
           <%= form.label :tipo, "Tipo de meta", class: "form-label fw-semibold" %>
           <%= form.select :tipo,
                 AzMapa.tipos.keys.map { |k| [k.humanize.titleize, k] },
-                {},
+                { include_blank: "Selecione a meta" },
                 { required: true, class: "form-select", data: { resultado_target: "tipo", action: "change->resultado#atualizar" } } %>
         </div>
 

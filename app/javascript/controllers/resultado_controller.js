@@ -51,7 +51,7 @@ export default class extends Controller {
 
     // Monta o wrapper com input group
     this.campoWrapperTarget.innerHTML = `
-      <div class="d-flex gap-1 align-items-center">
+      <div class="d-flex gap-1 align-items-center w-100">
         <select data-resultado-target="campoHora" class="form-select form-select-sm">${horasOptions}</select>
         <select data-resultado-target="campoMinuto" class="form-select form-select-sm">${minutosOptions}</select>
       </div>

@@ -64,7 +64,8 @@ export default class extends Controller {
     const computed = getComputedStyle(element)
     const style = {
       paddingTop: computed.paddingTop, paddingLeft: computed.paddingLeft,
-      fontSize: computed.fontSize, lineHeight: computed.lineHeight, minHeight: computed.minHeight
+      fontSize: computed.fontSize, lineHeight: computed.lineHeight,
+      minHeight: computed.minHeight === "auto" ? "0px" : computed.minHeight
     }
     const label = element.labels?.[0]
     const labelFor = label?.getAttribute("for")
@@ -89,6 +90,7 @@ export default class extends Controller {
     }
     select.wrapper.style.setProperty("--app-select-padding-y", style.paddingTop)
     select.wrapper.style.setProperty("--app-select-padding-x", style.paddingLeft)
+    select.wrapper.style.setProperty("--app-select-min-height", style.minHeight)
     select.dropdown.classList.add("app-select-menu")
     select.dropdown.style.fontSize = style.fontSize
     select.dropdown.setAttribute("popover", "manual")

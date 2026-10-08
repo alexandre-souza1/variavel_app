@@ -611,6 +611,10 @@
 
   .filter-form { padding: .35rem; border: 1px solid var(--bs-border-color); border-radius: 10px; background: var(--bs-tertiary-bg); }
   .filter-form .form-select { min-height: 34px; border-radius: 8px; }
+  .filter-form .filter-group { flex-wrap: wrap; gap: .5rem; }
+  .filter-form .app-select { --app-select-width: auto; flex: 0 0 auto; }
+  .filter-form #month + .app-select { min-width: 9rem; }
+  .filter-form #year + .app-select { min-width: 6rem; }
   .chart-card, .info-card, .table-card { border-radius: 14px; box-shadow: 0 8px 22px rgba(15, 23, 42, .055); }
 }
 

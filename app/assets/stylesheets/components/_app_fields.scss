@@ -162,6 +162,9 @@ html:root body.app-shell {
   }
 
   .ts-wrapper.single .ts-control {
+    // O Tom Select calcula o padding com esta variável e usa !important.
+    // Reserva espaço para a nossa seta também nos selects compactos.
+    --ts-pr-caret: 2rem;
     padding-right: 2rem;
     &::after {
       content: "";
@@ -190,16 +193,23 @@ html:root body.app-shell {
   .ts-wrapper:where(.form-control-sm, .form-select-sm) .ts-control { border-radius: var(--app-field-radius-sm); }
   .ts-wrapper:where(.form-control-lg, .form-select-lg) .ts-control { border-radius: var(--app-field-radius-lg); }
 
-  .app-select { width: 100%; }
+  .app-select { min-width: 0; width: var(--app-select-width, 100%); }
   .app-select:where(.position-select) { width: auto; }
   .app-select .ts-control {
-    min-height: inherit;
+    // Max usa a função CSS e evita o max numérico do SassC.
+    min-height: Max(var(--app-select-min-height, 0px), calc(1lh + 2 * var(--app-select-padding-y, .375rem) + 2px));
     padding: var(--app-select-padding-y, .375rem) 2rem var(--app-select-padding-y, .375rem) var(--app-select-padding-x, .75rem);
     font-size: inherit;
     line-height: inherit;
     cursor: pointer;
     .item { min-width: 0; overflow-wrap: anywhere; }
     input { font-size: inherit; }
+  }
+
+  .app-select.single .ts-control {
+    flex-wrap: nowrap;
+    .item { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    input { min-width: 0; }
   }
 
   .app-select-menu[popover] {
@@ -234,6 +244,11 @@ html:root body.app-shell {
   }
 
   // Mantém a junção com prefixos, sufixos e botões de busca.
+  .input-group > .app-select {
+    flex: 1 1 0;
+    min-width: 0;
+    width: 1%;
+  }
   .input-group > :is(.form-control, .form-select, .ts-wrapper) {
     &:not(:first-child), &:not(:first-child) .ts-control { border-top-left-radius: 0; border-bottom-left-radius: 0; }
     &:not(:last-child), &:not(:last-child) .ts-control { border-top-right-radius: 0; border-bottom-right-radius: 0; }

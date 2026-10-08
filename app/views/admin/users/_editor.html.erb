@@ -5,7 +5,7 @@
       <p class="text-muted mb-0"><%= user.email %></p>
     </div>
     <%= link_to admin_users_path, class: "btn btn-outline-secondary btn-sm" do %>
-      <i class="bi bi-x-lg me-1"></i>Fechar
+      <i class="bi bi-x-lg me-1" aria-hidden="true"></i>Fechar
     <% end %>
   </div>
 
@@ -20,7 +20,7 @@
     </div>
   <% end %>
 
-  <%= form_with(model: [:admin, user], local: true, html: { multipart: true }) do |f| %>
+  <%= form_with(model: [:admin, user], local: true, html: { multipart: true, class: "user-editor-card__form" }) do |f| %>
     <div class="row g-3">
       <div class="col-md-8">
         <%= f.label :name, "Nome", class: "form-label fw-semibold" %>
@@ -84,7 +84,7 @@
         <div class="form-text">A escolha vale para o claro e o escuro. O modo de exibição continua separado.</div>
       </div>
       <% if current_user.admin? %>
-        <div class="col-md-3">
+        <div class="col-md-6">
           <%= f.label :role, "Perfil de acesso", class: "form-label fw-semibold" %>
           <div class="input-group user-editor-select-group">
             <span class="input-group-text" aria-hidden="true"><i class="bi bi-person-badge user-editor-select-icon"></i></span>
@@ -93,7 +93,7 @@
               {}, class: "form-select", data: { icon_map: { user: "bi-person", supervisor: "bi-person-workspace", admin: "bi-shield-lock-fill", mechanical: "bi-tools" }.to_json, action: "change->theme#setSelectionIcon" } %>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-6">
           <%= f.label :sector, "Setor", class: "form-label fw-semibold" %>
           <div class="input-group user-editor-select-group">
             <span class="input-group-text" aria-hidden="true"><i class="bi bi-building user-editor-select-icon"></i></span>
