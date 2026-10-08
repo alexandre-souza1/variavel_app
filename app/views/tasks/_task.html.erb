@@ -6,8 +6,10 @@
     data-action="click->task-modal#open"
     data-action-plan-filter-target="item"
     data-search-text="<%= search_text %>"
-    data-plan-id="<%= task.bucket.action_plan.id %>"
+    data-plan-id="<%= task.bucket.action_plan_id %>"
     data-bucket-id="<%= task.bucket.id %>"
+    data-task-url="<%= task_path(task) %>"
+    data-task-move-version="<%= task.updated_at.iso8601(6) %>"
     data-task-id="<%= task.id %>">
 
   <% if task.labels.any? %>
@@ -22,7 +24,7 @@
 
   <div class="action-plan-task-card__header">
 
-    <%= button_to toggle_complete_action_plan_bucket_task_path(task.bucket.action_plan, task.bucket, task),
+    <%= button_to toggle_complete_task_path(task),
       method: :patch,
       data: { turbo_stream: true },
       class: "action-plan-task-card__check",
@@ -85,7 +87,7 @@
       <div class="avatar-group action-plan-task-card__avatars">
         <% users.first(3).each do |user| %>
           <div class="avatar-circle-sm">
-            <%= user.name.first.upcase %>
+            <%= (user.name.presence || user.email).first.upcase %>
           </div>
         <% end %>
 

@@ -156,7 +156,7 @@ class PlatesController < ApplicationController
 
     task_ids = matching_tasks.pluck(:id) + comment_task_ids.pluck(:task_id)
 
-    Task.where(id: task_ids.uniq)
+    Task.accessible_to(current_user).joins(:bucket).where(buckets: { inbox: false }).where(id: task_ids.uniq)
       .includes(:bucket, :creator, :comments)
       .order(updated_at: :desc)
   end

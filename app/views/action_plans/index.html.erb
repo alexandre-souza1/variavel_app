@@ -12,6 +12,10 @@
         <p class="subtitle">Acompanhamento das suas tarefas e planos</p>
       </div>
       <div class="header-actions">
+        <%= link_to inbox_path, class: "btn-outline" do %>
+          <i class="bi bi-inbox"></i>
+          <span>Minha Entrada</span>
+        <% end %>
         <button type="button" class="btn-outline action-plans-mobile-menu d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#plansOffcanvas" aria-controls="plansOffcanvas">
           <i class="bi bi-folder2-open"></i>
           <span>Meus Planos</span>

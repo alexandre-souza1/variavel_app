@@ -1,5 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import Sortable from "sortablejs"
+import { Turbo } from "@hotwired/turbo-rails"
+import { updateOpenTaskCount } from "task_move_stream"
 
 export default class extends Controller {
   static values = { bucketId: Number }
@@ -20,6 +22,8 @@ export default class extends Controller {
       delayOnTouchOnly: true,
       touchStartThreshold: 5,
       draggable: ".task-card",
+      filter: "[data-task-move-pending]",
+      preventOnFilter: false,
       forceFallback: true,
       fallbackOnBody: true,
       fallbackTolerance: 1,
@@ -53,30 +57,52 @@ export default class extends Controller {
     const bucketElement = event.to.closest("[data-bucket-id]")
     const newBucketId = bucketElement.dataset.bucketId
     const oldBucketId = event.from.closest("[data-bucket-id]")?.dataset.bucketId
-    const crossedInbox = event.from.dataset.sortableSource === "inbox" ||
-      event.to.dataset.sortableSource === "inbox"
+    const newPosition = event.newDraggableIndex
+    const actionPlanId = this.element.closest("[data-action-plan-id]")?.dataset.actionPlanId
+    if (oldBucketId === newBucketId && event.oldDraggableIndex === newPosition) return
 
-    const newPosition = event.newIndex
+    const oldPlanId = event.item.dataset.planId
+    event.item.dataset.bucketId = newBucketId
+    event.item.dataset.planId = event.to.dataset.sortableSource === "inbox" ? "" : actionPlanId || oldPlanId
+    event.item.dataset.taskMovePending = "true"
+    updateOpenTaskCount(oldBucketId)
+    updateOpenTaskCount(newBucketId)
+    const siblings = [...event.to.children].filter(element => element.matches(".task-card"))
+    const nextCard = siblings[newPosition + 1]
+    const previousCard = siblings[newPosition - 1]
+    const context = new URLSearchParams(window.location.search)
 
-    const response = await fetch(`/tasks/${taskId}/move`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": document.querySelector("meta[name=csrf-token]").content
-      },
-      body: JSON.stringify({
-        bucket_id: newBucketId,
-        position: newPosition
+    try {
+      const response = await fetch(`/tasks/${taskId}/move`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "text/vnd.turbo-stream.html",
+          "X-CSRF-Token": document.querySelector("meta[name=csrf-token]")?.content
+        },
+        body: JSON.stringify({
+          bucket_id: newBucketId,
+          position: newPosition,
+          following_task_id: nextCard?.dataset.taskId,
+          preceding_task_id: previousCard?.dataset.taskId,
+          action_plan_id: actionPlanId,
+          view: context.get("view"),
+          routine_id: context.get("routine_id")
+        })
       })
-    })
 
-    if (!response.ok) {
-      window.location.reload()
-      return
-    }
-
-    if (oldBucketId !== newBucketId && crossedInbox) {
-      event.item.dataset.bucketId = newBucketId
+      if (!response.ok) throw new Error("Não foi possível mover a tarefa")
+      Turbo.renderStreamMessage(await response.text())
+    } catch (error) {
+      event.item.dataset.bucketId = oldBucketId
+      event.item.dataset.planId = oldPlanId
+      const siblings = [...event.from.children].filter(element => element.matches(".task-card") && element !== event.item)
+      event.from.insertBefore(event.item, siblings[event.oldDraggableIndex] || null)
+      updateOpenTaskCount(oldBucketId)
+      updateOpenTaskCount(newBucketId)
+      console.error(error)
+    } finally {
+      delete event.item.dataset.taskMovePending
     }
   }
 }

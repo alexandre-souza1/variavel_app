@@ -57,6 +57,7 @@ class ActionPlansController < ApplicationController
     # -------------------------
 
     @my_tasks = Task
+      .joins(:bucket).where(buckets: { inbox: false })
       .joins(:task_assignments)
       .includes(bucket: :action_plan)
       .where(task_assignments: { user_id: current_user.id })
@@ -85,24 +86,13 @@ class ActionPlansController < ApplicationController
       .includes(tasks: :users)
       .order(:position)
 
-    @inbox_bucket = @buckets.find(&:inbox?)
-    unless @inbox_bucket
-      @inbox_bucket = @action_plan.buckets.create!(
-        name: "Entrada",
-        position: -1,
-        inbox: true
-      )
-      @buckets = @action_plan
-        .buckets
-        .includes(tasks: :users)
-        .order(:position)
-    end
+    @inbox_bucket = current_user.personal_inbox!
 
     @work_buckets = @buckets.reject(&:inbox?)
     @inbox_tasks = @inbox_bucket&.tasks
       &.visible_for(current_user)
       &.includes(:users, :labels)
-      &.order(created_at: :desc) || Task.none
+      &.order(:position) || Task.none
 
     visible_tasks = Task
       .joins(:bucket)
@@ -123,7 +113,7 @@ class ActionPlansController < ApplicationController
       .where("due_at < ?", Time.current)
       .count
 
-    @task_to_open = Task.find_by(id: params[:task_id])
+    @task_to_open = visible_tasks.or(Task.joins(:bucket).where(bucket: @inbox_bucket, creator: current_user).visible_for(current_user)).find_by(id: params[:task_id])
 
     # Usuários disponíveis para receber as tarefas
     @users = User.order(:name)

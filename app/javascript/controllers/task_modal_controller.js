@@ -69,16 +69,17 @@ export default class extends Controller {
     console.log("[task-modal] abrindo modal", this.element.dataset.taskId)
 
     const taskId = this.element.dataset.taskId
-    const planId = this.element.dataset.planId
-    const bucketId = this.element.dataset.bucketId
-
-    const url = new URL(`/action_plans/${planId}/buckets/${bucketId}/tasks/${taskId}`, window.location.origin)
+    const url = new URL(this.element.dataset.taskUrl || `/tasks/${taskId}`, window.location.origin)
+    const planId = this.element.closest("[data-action-plan-id]")?.dataset.actionPlanId || this.element.dataset.planId
+    if (planId) url.searchParams.set("action_plan_id", planId)
     const currentParams = new URLSearchParams(window.location.search)
     if (currentParams.get("view") === "gerot_actions") {
       url.searchParams.set("view", "gerot_actions")
       if (currentParams.get("routine_id")) url.searchParams.set("routine_id", currentParams.get("routine_id"))
     }
     const response = await fetch(url)
+
+    if (!response.ok) return
 
     const html = await response.text()
 

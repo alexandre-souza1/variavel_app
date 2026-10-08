@@ -1,8 +1,10 @@
 <div
   class="container-fluid action-plan-show dashboard-page <%= 'action-plan-show--auto-view' if params[:view].blank? || params[:view] == 'gerot_actions' %>"
+  data-action-plan-id="<%= @action_plan.id %>"
   data-controller="open-task"
   data-open-task-task-id-value="<%= @task_to_open&.id %>"
 >
+  <%= turbo_stream_from "tasks_inbox_#{current_user.id}" %>
   <% if params[:view] == 'gerot_actions' %>
     <%= turbo_stream_from @source_gerot || @action_plan, :gerot_tasks %>
   <% else %>

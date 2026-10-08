@@ -2,9 +2,10 @@
   <section class="action-plan-inbox-intro">
     <div>
       <span class="action-plan-inbox-eyebrow"><i class="bi bi-inbox me-1"></i> Entrada</span>
-      <h2>Capture agora, organize depois</h2>
+      <h2>Sua Entrada pessoal</h2>
+      <p>Suas tarefas sem plano, disponíveis em todos os planos de ação.</p>
     </div>
-    <span class="action-plan-inbox-count"><%= inbox_tasks.size %> <%= inbox_tasks.size == 1 ? "tarefa" : "tarefas" %></span>
+    <span id="inbox-count-<%= current_user.id %>" class="action-plan-inbox-count"><%= inbox_tasks.size %> <%= inbox_tasks.size == 1 ? "tarefa" : "tarefas" %></span>
   </section>
 
   <% unless current_user.mechanical? %>
@@ -18,16 +19,13 @@
            data-bucket-id="<%= inbox_bucket.id %>"
            data-controller="sortable"
            data-sortable-source="inbox">
-    <% if inbox_tasks.empty? %>
-      <div class="action-plan-inbox-empty">
+      <div id="inbox-empty-<%= current_user.id %>" class="action-plan-inbox-empty">
         <i class="bi bi-inbox"></i>
         <strong>Nada na Entrada</strong>
         <span>Capture uma tarefa acima e organize-a quando estiver pronto.</span>
       </div>
-    <% else %>
       <% inbox_tasks.each do |task| %>
         <%= render "tasks/task", task: task %>
       <% end %>
-    <% end %>
   </section>
 </div>

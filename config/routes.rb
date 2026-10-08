@@ -247,7 +247,14 @@ Rails.application.routes.draw do
 
   resources :labels, only: [:create]
 
-  patch "tasks/:id/move", to: "tasks#move"
+  get "inbox", to: "inboxes#show", as: :inbox
+  resources :tasks, only: [:create, :show, :update] do
+    patch :move, on: :member
+    patch :toggle_complete, on: :member
+    resources :comments, only: :create
+    resource :tasklist, only: [:create, :destroy, :update]
+    resources :tasklist_items, only: [:create, :update]
+  end
 
   resources :common do
     collection do

@@ -24,7 +24,7 @@ class TaskActivity < ApplicationRecord
 
   def broadcast_activity
     broadcast_append_to(
-      "task_feed_#{task.id}",
+      task.feed_stream,
       target: "task_feed_#{task.id}",
       partial: "task_activities/activity",
       locals: { activity: self }

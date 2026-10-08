@@ -2,12 +2,12 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["itemsContainer", "itemTemplate"]
-  static values = { actionPlanId: Number, bucketId: Number, taskId: Number }
+  static values = { url: String, bucketId: Number, taskId: Number }
 
   addItem(content = null) {
-    const url = `/action_plans/${this.actionPlanIdValue}/buckets/${this.bucketIdValue}/tasks/${this.taskIdValue}/tasklist_items`
+    const url = this.urlValue
 
-    const body = content === null
+    const body = typeof content !== "string"
       ? null
       : new URLSearchParams({ "tasklist_item[content]": content })
 

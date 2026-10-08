@@ -13,11 +13,11 @@ class DashboardsController < ApplicationController
     # ------------------------------------------------------------
     # 1. Tarefas
     # ------------------------------------------------------------
-    @pending_tasks = Task.includes(bucket: :action_plan)
+    @pending_tasks = Task.joins(:bucket).where(buckets: { inbox: false }).includes(bucket: :action_plan)
                          .where(completed: [false, nil])
                          .where(assignee_id: current_user.id)
 
-    @tasks_due_soon = Task.where(completed: [false, nil])
+    @tasks_due_soon = Task.joins(:bucket).where(buckets: { inbox: false }).where(completed: [false, nil])
                           .where("due_at <= ?", 2.days.from_now.end_of_day)
                           .where(assignee_id: current_user.id)
                           .order(due_at: :asc)

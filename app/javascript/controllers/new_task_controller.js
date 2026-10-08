@@ -140,6 +140,8 @@ export default class extends Controller {
   }
 
   filterLabels() {
+    if (!this.hasLabelSearchTarget) return
+
     const normalize = value => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR")
     const query = normalize(this.labelSearchTarget.value.trim())
     this.labelOptionTargets.forEach(option => { option.hidden = !normalize(option.dataset.name).includes(query) })
@@ -168,7 +170,7 @@ export default class extends Controller {
     this.userCountTarget.textContent = users.length ? `${users.length} selecionado${users.length === 1 ? "" : "s"}` : "Nenhum selecionado"
     const recurrence = this.recurrenceTarget
     const labels = this.badgeTargets.filter(input => input.checked)
-    this.labelCountTarget.textContent = labels.length ? `${labels.length} selecionada${labels.length === 1 ? "" : "s"}` : "Nenhuma selecionada"
+    if (this.hasLabelCountTarget) this.labelCountTarget.textContent = labels.length ? `${labels.length} selecionada${labels.length === 1 ? "" : "s"}` : "Nenhuma selecionada"
     const summaries = {
       date: date ? date.split("-").reverse().slice(0, 2).join("/") : "Prazo",
       users: users.length ? `${users.length} ${users.length === 1 ? "responsável" : "responsáveis"}` : "Responsáveis",

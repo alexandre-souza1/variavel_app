@@ -1,9 +1,10 @@
 class CommentsController < ApplicationController
   include MechanicTaskNavigation
+  include TaskAccess
   before_action :authenticate_user!
 
   def create
-    @task = accessible_tasks.find(params[:task_id])
+    @task = find_accessible_task(params[:task_id])
     @comment = @task.comments.new(comment_params)
     @comment.user = current_user
 
@@ -12,7 +13,7 @@ class CommentsController < ApplicationController
       respond_to do |format|
         format.turbo_stream { head :ok }
         format.html do
-          destination = current_user.mechanical? ? mechanic_tasks_return_path : action_plan_path(@task.bucket.action_plan)
+          destination = task_return_path
           redirect_to destination, notice: "Comentário adicionado."
         end
       end
@@ -22,15 +23,6 @@ class CommentsController < ApplicationController
   end
 
   private
-
-  def accessible_action_plans
-    ActionPlan.visible_to(current_user)
-  end
-
-  def accessible_tasks
-    scope = Task.joins(:bucket).where(buckets: { action_plan_id: accessible_action_plans.select(:id) })
-    current_user.mechanical? ? scope.visible_for(current_user) : scope
-  end
 
   def comment_params
     params.require(:comment).permit(:content)

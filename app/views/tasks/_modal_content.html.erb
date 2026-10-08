@@ -1,0 +1,220 @@
+<div class="modal-header">
+  <div>
+    <%= form_with model: task, url: task_path(task, action_plan_id: @action_plan&.id),
+        class: "task-detail-modal__title-form",
+        data: {
+          controller: "autosave-form",
+          action: "input->autosave-form#change change->autosave-form#change"
+        } do |title_form| %>
+      <%= title_form.label :title, "Título da tarefa", class: "visually-hidden" %>
+      <%= title_form.text_field :title,
+        class: "task-detail-modal__title-input",
+        aria: { label: "Título da tarefa" },
+        placeholder: "Título da tarefa" %>
+    <% end %>
+    <small class="task-detail-modal__created-at"><i class="bi bi-clock-history"></i> Criada em <%= task.created_at.strftime("%d/%m/%Y %H:%M") %></small>
+    <% if task.routine_value %>
+      <div class="task-detail-modal__origin">
+        <%= link_to routine_path(task.routine_value.routine), class: "task-detail-modal__origin-link", data: { turbo: false } do %>
+          <i class="bi bi-calendar-check" aria-hidden="true"></i>
+          <span>Origem: <%= task.routine_value.routine.title %> · <%= l(task.routine_value.reference_date) %></span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="d-flex gap-2 align-items-center">
+
+    <%= form_with model: task, url: task_path(task, action_plan_id: @action_plan&.id),
+        class: "task-reminder-toggle-form",
+        data: {
+          controller: "autosave-form",
+          action: "change->autosave-form#change"
+        } do |reminder_form| %>
+      <div class="task-reminder-toggle task-reminder-toggle--header">
+        <div class="form-check form-switch task-reminder-toggle__control">
+          <%= reminder_form.check_box :due_notification_enabled,
+            class: "form-check-input",
+            role: "switch" %>
+          <%= reminder_form.label :due_notification_enabled,
+            class: "form-check-label task-reminder-toggle__label" do %>
+            <i class="bi bi-bell"></i>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div id="task-status-button">
+      <%= button_to toggle_complete_task_path(task, action_plan_id: @action_plan&.id),
+          method: :patch,
+          params: { view: params[:view], routine_id: params[:routine_id] },
+          data: {
+            turbo_stream: true
+          },
+          class: "btn btn-sm #{task.completed ? 'btn-success' : 'btn-outline-success'}" do %>
+
+          <% if task.completed %>
+            <i class="bi bi-check-circle-fill"></i>
+            Concluída
+          <% else %>
+            <i class="bi bi-circle"></i>
+            Concluir
+          <% end %>
+
+      <% end %>
+    </div>
+
+    <button class="btn-close" data-bs-dismiss="modal"></button>
+
+  </div>
+</div>
+
+<div class="modal-body">
+  <div class="row">
+
+    <!-- COLUNA ESQUERDA -->
+    <div class="col-md-7">
+
+      <%= form_with model: task, url: task_path(task, action_plan_id: @action_plan&.id),
+          data: {
+            controller: "autosave-form",
+            action: "input->autosave-form#change change->autosave-form#change"
+          } do |f| %>
+
+        <!-- RÓTULOS -->
+        <% unless task.inbox? %>
+        <div class="mb-3 labels-field">
+          <label for="task-labels-<%= task.id %>">Rótulos</label>
+          <%= hidden_field_tag "task[label_ids][]", "", id: nil %>
+          <select name="task[label_ids][]"
+                  id="task-labels-<%= task.id %>"
+                  multiple
+                  class="form-control form-control-sm"
+                  data-controller="tom-select"
+                  data-tom-select-action-plan-id-value="<%= task.bucket.action_plan.id %>">
+
+            <% task.bucket.action_plan.labels.each do |label| %>
+              <% if task.labels.include?(label) %>
+                <option value="<%= label.id %>" data-color="<%= label.color %>" selected>
+                  <%= label.name %>
+                </option>
+              <% else %>
+                <option value="<%= label.id %>" data-color="<%= label.color %>">
+                  <%= label.name %>
+                </option>
+              <% end %>
+            <% end %>
+          </select>
+        </div>
+
+        <% end %>
+
+        <!-- DESCRIÇÃO -->
+        <div class="mb-3">
+          <%= f.text_area :description, class: "form-control", rows: 3, placeholder: "Anotações..." %>
+        </div>
+
+        <!-- CHECKLIST -->
+        <%= render "tasklists/form", task: task, f: f %>
+
+        <div class="mb-3">
+
+          <!-- LINHA 1: DATAS -->
+          <div class="row">
+            <div class="col-md-6">
+              <%= f.label :start_at, class: "d-none" %>
+              <p class="text-muted small mb-1">Data e hora de início</p>
+              <%= render "tasks/datetime_picker", f: f, field: :start_at, label: "Data e hora de início" %>
+            </div>
+
+            <div class="col-md-6">
+              <%= f.label :due_at, class: "d-none" %>
+              <p class="text-muted small mb-1">Data e hora de Conclusão</p>
+              <%= render "tasks/datetime_picker", f: f, field: :due_at, label: "Data e hora de conclusão" %>
+            </div>
+          </div>
+
+          <!-- LINHA 2: RECORRÊNCIA -->
+          <div class="row mt-3">
+            <div class="col-md-6">
+              <%= f.label :recurrence, "Repetir tarefa" %>
+
+              <%= f.select :recurrence,
+                options_for_select([
+                  ["Não repetir", nil],
+                  ["Diariamente", "daily"],
+                  ["Semanalmente", "weekly"],
+                  ["Mensalmente", "monthly"],
+                  ["Bimestralmente", "bimonthly"]
+                ], task.recurrence),
+                {},
+                class: "form-control", data: { controller: "task-select", task_select_search_value: false } %>
+            </div>
+            <div class="col-md-6">
+              <%= f.label :bucket_id, "Bucket" %>
+              <%= f.select :bucket_id, task_bucket_options(task), {}, class: "form-control", data: { controller: "task-select", task_select_placeholder_value: "Buscar bucket..." } %>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mb-3 users-field">
+          <div class="task-detail-modal__field-heading">
+            <label for="task-users-<%= task.id %>"><i class="bi bi-people me-1"></i> Responsáveis</label>
+            <small><%= task.inbox? ? "Os responsáveis serão avisados ao lançar a tarefa em um plano" : "Quem deve executar esta tarefa" %></small>
+          </div>
+
+          <%= hidden_field_tag "task[user_ids][]", "", id: nil %>
+          <%= select_tag "task[user_ids][]",
+            options_from_collection_for_select(User.all, :id, :name, task.users.pluck(:id)),
+            multiple: true,
+            id: "task-users-#{task.id}",
+            class: "form-control",
+            data: { controller: "tom-select-users" } %>
+        </div>
+
+
+      <% end %>
+    </div>
+
+    <!-- COLUNA DIREITA (COMENTÁRIOS) -->
+    <div class="col-md-5 border-start">
+
+      <h6>Log e Comentários</h6>
+
+      <%= turbo_stream_from task.feed_stream %>
+
+      <!-- LISTA DE COMENTÁRIOS -->
+      <div id="task_feed_<%= task.id %>"
+          data-controller="comment-list"
+          class="comments-box"
+          style="max-height: 400px; overflow-y: auto;">
+
+        <% activities = (
+          task.comments.to_a +
+          task.task_activities.where.not(activity_type: :title_changed).to_a
+        ).sort_by(&:created_at) %>
+
+        <% activities.each do |activity| %>
+
+          <% if activity.is_a?(Comment) %>
+            <%= render "comments/comment", comment: activity %>
+          <% else %>
+            <%= render "task_activities/activity", activity: activity %>
+          <% end %>
+
+        <% end %>
+
+      </div>
+
+      <hr>
+
+      <!-- FORMULÁRIO -->
+      <div id="new_comment_form_<%= task.id %>">
+        <%= render "comments/form", task: task, comment: Comment.new %>
+      </div>
+
+    </div>
+
+  </div>
+</div>

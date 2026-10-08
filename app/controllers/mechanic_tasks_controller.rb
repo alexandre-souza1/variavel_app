@@ -23,7 +23,7 @@ class MechanicTasksController < ApplicationController
       .where(user_id: current_user.id)
       .select(:task_id)
 
-    assigned_tasks = Task.where(id: assigned_task_ids)
+    assigned_tasks = Task.joins(:bucket).where(buckets: { inbox: false }).where(id: assigned_task_ids)
     @labels = Label.where(id: TaskLabel.where(task_id: assigned_task_ids).select(:label_id))
       .includes(:action_plan).order(:name, :id)
     all_tasks = assigned_tasks

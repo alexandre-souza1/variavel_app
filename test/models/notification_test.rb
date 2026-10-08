@@ -15,7 +15,7 @@ class NotificationTest < ActiveSupport::TestCase
     assert_equal "Nova tarefa para você", notification.title
     assert_equal task, notification.notifiable
     assert_equal task.creator, notification.actor
-    assert_equal Rails.application.routes.url_helpers.action_plan_path(task.bucket.action_plan),
+    assert_equal Rails.application.routes.url_helpers.action_plan_path(task.bucket.action_plan, task_id: task.id),
                  notification.action_url
   end
 

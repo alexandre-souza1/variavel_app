@@ -1,19 +1,24 @@
 class TasksController < ApplicationController
   include MechanicTaskNavigation
+  include TaskAccess
   before_action :authenticate_user!
   before_action :set_task, only: [:show, :update, :move, :toggle_complete]
   before_action :block_mechanical!, only: [:create]
 
   def create
-    @bucket = accessible_buckets.find(params[:bucket_id])
-    @task = @bucket.tasks.build(task_params)
+    set_task_context
+    @bucket = if params[:bucket_id].present?
+      raise ActiveRecord::RecordNotFound unless @action_plan
+      @action_plan.buckets.find(params[:bucket_id])
+    else
+      current_user.personal_inbox!
+    end
+    @task = @bucket.tasks.build(task_params.except(:bucket_id))
 
-    @task.label_ids &= @bucket.action_plan.label_ids
+    @task.label_ids &= @bucket.action_plan&.label_ids || []
     @task.creator = current_user
 
-    # Desloca todas as tarefas para baixo
-    @bucket.tasks.update_all("position = position + 1")
-    @task.position = 0
+    @task.position = 1
 
     if @task.save
 
@@ -24,13 +29,13 @@ class TasksController < ApplicationController
       )
       respond_to do |format|
         format.turbo_stream
-        format.html { redirect_to action_plan_path(@bucket.action_plan, view: params[:view].presence) }
+        format.html { redirect_to task_return_path }
       end
     else
       respond_to do |format|
-        format.turbo_stream
+        format.turbo_stream { render plain: @task.errors.full_messages.to_sentence, status: :unprocessable_entity }
         format.html do
-          redirect_to action_plan_path(@bucket.action_plan, view: params[:view].presence),
+          redirect_to task_return_path,
                       alert: @task.errors.full_messages.to_sentence
         end
       end
@@ -42,90 +47,97 @@ class TasksController < ApplicationController
   end
 
   def update
-    @task = Task.find(params[:id])
-
     old_due_at = @task.due_at
     old_bucket = @task.bucket
     old_users = @task.user_ids.sort
+    @task.inbox_assignee_ids_before_move = old_users
 
-
-    if @task.update(task_params)
-
-      if old_due_at != @task.due_at
-        TaskActivityService.log(
-          task: @task,
-          user: current_user,
-          activity_type: :due_date_changed,
-          old_value: old_due_at,
-          new_value: @task.due_at
-        )
-      end
-
-      if old_bucket.id != @task.bucket_id
-        TaskActivityService.log(
-          task: @task,
-          user: current_user,
-          activity_type: :bucket_changed,
-          old_value: old_bucket.name,
-          new_value: @task.bucket.name
-        )
-      end
-
-      added_users = @task.user_ids - old_users
-
-      if added_users.any?
-        added_users.each do |user_id|
-
-          added_user = User.find(user_id)
-
-          TaskActivityService.log(
-            task: @task,
-            user: current_user,
-            activity_type: :assignee_added,
-            new_value: added_user.name,
-            metadata: {
-            user_id: added_user.id
-            }
-          )
-
-        end
-      end
+    attributes = task_params
+    if attributes[:bucket_id].present? && attributes[:bucket_id].to_i != @task.bucket_id
+      destination = accessible_buckets.find(attributes[:bucket_id])
+      head :forbidden and return unless allowed_destination?(destination)
+      @task.broadcast_as_move = true
+    end
+    unless @task.update(attributes)
+      render plain: @task.errors.full_messages.to_sentence, status: :unprocessable_entity
+      return
     end
 
-
-    respond_to do |format|
-      format.turbo_stream
-      format.html { redirect_to(current_user.mechanical? ? mechanic_tasks_return_path : action_plan_path(@task.bucket.action_plan)) }
+    if old_due_at != @task.due_at
+      TaskActivityService.log(
+        task: @task,
+        user: current_user,
+        activity_type: :due_date_changed,
+        old_value: old_due_at,
+        new_value: @task.due_at
+      )
     end
-  end
 
-  def move
-    new_bucket_id = params[:bucket_id]
-    new_position = params[:position].to_i
-
-    if new_bucket_id.present? && new_bucket_id.to_i != @task.bucket_id
-      new_bucket = accessible_buckets.find(new_bucket_id)
-      head :forbidden and return unless new_bucket.action_plan_id == @task.bucket.action_plan_id
-
-      old_bucket = @task.bucket
-      @task.update!(bucket: new_bucket)
-
+    @bucket_changed = old_bucket.id != @task.bucket_id
+    if @bucket_changed
       TaskActivityService.log(
         task: @task,
         user: current_user,
         activity_type: :bucket_changed,
         old_value: old_bucket.name,
-        new_value: new_bucket.name
+        new_value: @task.bucket.name
       )
     end
 
-    @task.insert_at(new_position + 1)
+    added_users = @task.user_ids - old_users
 
-    head :ok
+    if added_users.any?
+      added_users.each do |user_id|
+
+        added_user = User.find(user_id)
+
+        TaskActivityService.log(
+          task: @task,
+          user: current_user,
+          activity_type: :assignee_added,
+          new_value: added_user.name,
+          metadata: { user_id: added_user.id }
+        )
+
+      end
+    end
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to task_return_path }
+    end
+  end
+
+  def move
+    destination = params[:bucket_id].present? ? accessible_buckets.find(params[:bucket_id]) : @task.bucket
+    head :forbidden and return unless allowed_destination?(destination)
+
+    old_bucket = @task.bucket
+    @task.inbox_assignee_ids_before_move = @task.user_ids
+    @task.broadcast_as_move = true
+    @task.update!(bucket: destination, position: destination_position(destination))
+
+    if old_bucket.id != @task.bucket_id
+      TaskActivityService.log(
+        task: @task,
+        user: current_user,
+        activity_type: :bucket_changed,
+        old_value: old_bucket.name,
+        new_value: destination.name
+      )
+    end
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { head :ok }
+      format.json { head :ok }
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    render plain: e.record.errors.full_messages.to_sentence, status: :unprocessable_entity
   end
 
   def toggle_complete
-    if params[:view] == "gerot_actions"
+    if params[:view] == "gerot_actions" && !@task.inbox?
       @gerot_source = @task.bucket.action_plan.routines.find(params[:routine_id]) if params[:routine_id].present?
     end
     new_status = !@task.completed
@@ -142,7 +154,7 @@ class TasksController < ApplicationController
     )
 
     done_tasks = @task.bucket.tasks.visible_for(current_user).where(completed: true)
-    if params[:view] == "gerot_actions"
+    if params[:view] == "gerot_actions" && !@task.inbox?
       done_tasks = done_tasks.where.not(routine_value_id: nil)
       done_tasks = done_tasks.joins(:routine_value).where(routine_values: { routine_id: @gerot_source.id }) if @gerot_source
     end
@@ -152,27 +164,58 @@ class TasksController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to(current_user.mechanical? ? mechanic_tasks_return_path : action_plan_path(@task.bucket.action_plan)) }
+      format.html { redirect_to task_return_path }
     end
   end
 
   private
 
   def set_task
-    @task = accessible_tasks.find(params[:id])
+    @task = find_accessible_task(params[:id])
   end
 
   def accessible_action_plans
     ActionPlan.visible_to(current_user)
   end
 
-  def accessible_buckets
-    Bucket.where(action_plan_id: accessible_action_plans.select(:id))
+  def destination_position(destination)
+    siblings = destination.tasks.visible_for(current_user).where.not(id: @task.id)
+    if params[:view] == "gerot_actions" && !destination.inbox?
+      siblings = siblings.where.not(routine_value_id: nil)
+      if params[:routine_id].present?
+        routine = destination.action_plan.routines.find(params[:routine_id])
+        siblings = siblings.joins(:routine_value).where(routine_values: { routine_id: routine.id })
+      end
+    end
+
+    following = if params[:following_task_id].present?
+      siblings.find(params[:following_task_id])
+    elsif params[:preceding_task_id].blank?
+      matching_siblings = destination.inbox? ? siblings : siblings.where(completed: @task.completed?)
+      matching_siblings.order(:position).offset([params[:position].to_i, 0].max).first
+    end
+    preceding = siblings.find(params[:preceding_task_id]) if !following && params[:preceding_task_id].present?
+    unless following || preceding
+      matching_siblings = destination.inbox? ? siblings : siblings.where(completed: @task.completed?)
+      preceding = matching_siblings.order(:position).last
+    end
+    reference = following || preceding
+    position = following ? following.position : preceding&.position.to_i + 1
+    # acts_as_list removes the old position before inserting into the same list.
+    position -= 1 if reference && destination == @task.bucket && @task.position < reference.position
+    position
   end
 
-  def accessible_tasks
-    scope = Task.where(bucket_id: accessible_buckets.select(:id))
-    current_user.mechanical? ? scope.visible_for(current_user) : scope
+  def accessible_buckets
+    Bucket.where(action_plan_id: accessible_action_plans.select(:id))
+      .or(Bucket.where(inbox: true, user_id: current_user.id))
+  end
+
+  def allowed_destination?(destination)
+    return @task.creator_id == current_user.id && destination.user_id == current_user.id && @task.routine_value_id.nil? if destination.inbox?
+    return false if @action_plan && destination.action_plan_id != @action_plan.id
+
+    @task.inbox? || destination.action_plan_id == @task.bucket.action_plan_id
   end
 
   def block_mechanical!
@@ -211,7 +254,8 @@ class TasksController < ApplicationController
       end
 
       if @task&.persisted? && whitelisted.key?(:label_ids)
-        whitelisted[:label_ids] &= @task.bucket.action_plan.label_ids
+        destination = whitelisted[:bucket_id].present? ? accessible_buckets.find(whitelisted[:bucket_id]) : @task.bucket
+        whitelisted[:label_ids] &= destination.action_plan&.label_ids || []
       end
 
     end

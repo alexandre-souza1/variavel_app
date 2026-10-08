@@ -11,7 +11,7 @@ class ActionPlanDashboardsTest < ActionDispatch::IntegrationTest
     @open.users << @user
     @open.users << users(:two)
     @other_plan = @user.action_plans.create!(name: "Outro plano")
-    Task.create!(title: "Tarefa de outro plano", bucket: @other_plan.inbox_bucket, creator: @user)
+    Task.create!(title: "Tarefa de outro plano", bucket: @other_plan.buckets.first, creator: @user)
   end
 
   test "dashboard scopes totals and clickable charts to the plan without duplicate assignments" do
@@ -35,7 +35,7 @@ class ActionPlanDashboardsTest < ActionDispatch::IntegrationTest
     assert_select ".plan-dashboard__task", count: 1, text: /Aberta sem prazo/
     get action_plan_path(@plan, view: "dashboard", member_id: "unassigned")
     assert_select ".plan-dashboard__task", count: 2
-    get action_plan_path(@plan, view: "dashboard", bucket_id: @other_plan.inbox_bucket.id)
+    get action_plan_path(@plan, view: "dashboard", bucket_id: @other_plan.buckets.first.id)
     assert_select ".plan-dashboard__task", count: 0
   end
 
@@ -70,7 +70,7 @@ class ActionPlanDashboardsTest < ActionDispatch::IntegrationTest
   test "inaccessible plans do not expose a dashboard" do
     @other_plan.update!(user: users(:two), sector: :warehouse, public: false)
     @user.update!(role: :user, sector: :fleet)
-    @other_plan.inbox_bucket.tasks.update_all(creator_id: users(:two).id)
+    @other_plan.buckets.first.tasks.update_all(creator_id: users(:two).id)
     sign_in @user
     get action_plan_path(@other_plan, view: "dashboard")
     assert_response :not_found

@@ -9,7 +9,7 @@
 
   <div id="<%= composer_id %>" class="task-composer__wrapper" data-new-task-target="wrapper" inert>
     <div class="task-composer__inner">
-      <%= form_with model: [action_plan, bucket, Task.new], namespace: composer_id,
+      <%= form_with model: Task.new, url: bucket.inbox? ? tasks_path(action_plan_id: action_plan&.id) : action_plan_bucket_tasks_path(action_plan, bucket), namespace: composer_id,
           class: "task-composer__form",
           data: { new_task_target: "form", action: "submit->new-task#validate change->new-task#update turbo:submit-start->new-task#submitting turbo:submit-end->new-task#afterSubmit" } do |f| %>
         <%= hidden_field_tag :view, local_assigns[:view] if local_assigns[:view].present? %>
@@ -26,6 +26,7 @@
             </button>
           <% end %>
           <div class="task-composer__labels-alert">
+            <% unless bucket.inbox? %>
             <button type="button" class="task-composer__tool" data-new-task-target="tool"
                     data-panel="labels" data-action="new-task#showPanel"
                     title="Selecionar etiquetas" aria-label="Selecionar etiquetas"
@@ -33,6 +34,7 @@
               <i class="bi bi-tags" aria-hidden="true"></i>
               <span data-summary="labels">Etiquetas</span>
             </button>
+            <% end %>
             <%= f.check_box :due_notification_enabled, class: "d-none", data: { new_task_target: "reminder" }, tabindex: -1, aria: { hidden: true } %>
             <button type="button" class="task-composer__tool task-composer__reminder"
                     title="Avisar sobre o vencimento" aria-label="Alerta de prazo" aria-pressed="false"
@@ -82,6 +84,7 @@
             <button type="button" class="btn btn-sm btn-outline-secondary" data-action="new-task#closeUsers">Pronto</button>
           </div>
         </div>
+        <% unless bucket.inbox? %>
         <div id="<%= composer_id %>-labels" class="task-composer__panel task-composer__people-popover"
              popover="manual" role="dialog" aria-label="Selecionar etiquetas"
              data-new-task-target="panel" data-panel="labels" hidden>
@@ -106,6 +109,7 @@
             <button type="button" class="btn btn-sm btn-outline-secondary" data-action="new-task#closeLabels">Pronto</button>
           </div>
         </div>
+        <% end %>
         <div id="<%= composer_id %>-repeat" class="task-composer__panel" data-new-task-target="panel" data-panel="repeat" hidden>
           <%= f.label :recurrence, "Repetir ao concluir", class: "form-label" %>
           <%= f.select :recurrence, [["Não repetir", ""], ["Diariamente", "daily"], ["Semanalmente", "weekly"], ["Mensalmente", "monthly"], ["Bimestralmente", "bimonthly"]], {}, class: "form-select form-select-sm", data: { new_task_target: "recurrence" } %>

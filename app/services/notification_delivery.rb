@@ -17,6 +17,8 @@ class NotificationDelivery
   end
 
   def task_assigned(task:, user:, actor:)
+    return if task.inbox?
+
     Notification.create!(
       user: user,
       actor: actor,
@@ -25,7 +27,7 @@ class NotificationDelivery
       title: "Nova tarefa para você",
       body: task.title,
       action_text: "Abrir tarefa",
-      action_url: action_plan_path(task.bucket.action_plan)
+      action_url: action_plan_path(task.bucket.action_plan, task_id: task.id)
     )
   end
 
@@ -59,7 +61,7 @@ class NotificationDelivery
         body: early ? "#{task.title} vence nas próximas 48 horas (#{I18n.l(task.due_at, format: :short)})." :
                       "#{task.title} vence em #{I18n.l(task.due_at, format: :short)}.",
         action_text: "Abrir tarefa",
-        action_url: action_plan_path(task.bucket.action_plan)
+        action_url: task.inbox? ? inbox_path(task_id: task.id) : action_plan_path(task.bucket.action_plan, task_id: task.id)
       )
     end
   end
@@ -75,6 +77,8 @@ class NotificationDelivery
   end
 
   def recipients_for_task_due_soon(task)
+    return User.where(id: task.creator_id) if task.inbox?
+
     recipients = task.users
     return recipients.distinct if recipients.exists?
 

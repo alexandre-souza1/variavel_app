@@ -1,0 +1,2 @@
+<%= turbo_stream_action_tag :task_move, target: task.task_list_id,
+  template: render(partial: "tasks/task", formats: [:html], locals: { task: task }), **task.move_stream_attributes %>

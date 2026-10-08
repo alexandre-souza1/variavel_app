@@ -84,6 +84,8 @@ Rails.application.configure do
   config.assets.quiet = true
 
   config.assets.compile = true
+  # Precompiled assets from local tests must not hide newer source changes.
+  config.assets.resolve_with = [:environment]
 
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true

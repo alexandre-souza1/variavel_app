@@ -2,7 +2,7 @@
 
 <%= turbo_stream.remove "task_#{@task.id}" %>
 
-<% if @task.completed %>
+<% if @task.completed && !@task.inbox? %>
   <%= turbo_stream.prepend "done-tasks-#{bucket.id}" do %>
     <%= render "tasks/task", task: @task %>
   <% end %>
@@ -16,7 +16,7 @@
   ✔️ Tarefas concluídas (<%= @done_tasks_count %>)
 <% end %>
 
-<% if @task.completed && @task.recurrence.present? && params[:view] != 'gerot_actions' %>
+<% if @task.completed && @task.recurrence.present? && @task.due_at.present? && params[:view] != 'gerot_actions' %>
   <% next_task = Task.find_by(
     bucket: bucket,
     title: @task.title,
@@ -43,11 +43,7 @@
 
 <%= turbo_stream.update "task-status-button" do %>
 
-  <%= button_to toggle_complete_action_plan_bucket_task_path(
-        @task.bucket.action_plan,
-        @task.bucket,
-        @task
-      ),
+  <%= button_to toggle_complete_task_path(@task, action_plan_id: @action_plan&.id),
       method: :patch,
       params: { view: params[:view], routine_id: params[:routine_id] },
       data: {

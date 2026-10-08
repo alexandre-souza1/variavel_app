@@ -5,7 +5,7 @@ O plano reúne as tarefas do ano e vários GEROTs, cada um com seu próprio per�
 ## Como usar
 
 1. Abra um plano de ação e escolha a aba **GEROTs**.
-2. Use **Criar modelo do plano**. O setor vem do plano e cada bucket, incluindo a Entrada, se torna uma categoria do modelo.
+2. Use **Criar modelo do plano**. O setor vem do plano e cada bucket do plano se torna uma categoria do modelo. A Entrada pessoal fica fora do modelo.
 3. Cadastre os indicadores e suas metas nas categorias. Criar, renomear ou reordenar buckets atualiza as categorias automaticamente.
 4. Clique em um mês vazio ou em **Gerar GEROT**. O calendário usa o ano do primeiro GEROT do plano, ou o ano de criação do plano enquanto não houver acompanhamentos. Selecione os indicadores; as datas podem ser alteradas para qualquer período. O modelo já é o do plano e as tarefas vão para o bucket da categoria.
 5. Escolha quando gerar tarefas. O padrão é **Comentário em indicador fora da meta**; também é possível escolher **Preenchimento fora da meta**, que dispensa o comentário.

@@ -1,4 +1,5 @@
 class TasklistsController < ApplicationController
+  include TaskAccess
   before_action :authenticate_user!
   before_action :set_task
   before_action :set_tasklist, only: [:destroy, :update]
@@ -41,15 +42,7 @@ class TasklistsController < ApplicationController
   private
 
   def set_task
-    @task = accessible_tasks.find(params[:task_id])
-  end
-
-  def accessible_action_plans
-    ActionPlan.visible_to(current_user)
-  end
-
-  def accessible_tasks
-    Task.joins(:bucket).where(buckets: { action_plan_id: accessible_action_plans.select(:id) })
+    @task = find_accessible_task(params[:task_id])
   end
 
   def set_tasklist

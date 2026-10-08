@@ -2,7 +2,7 @@
 
 <div class="mt-4 mb-3"
      data-controller="task-checklist"
-     data-task-checklist-action-plan-id-value="<%= task.bucket.action_plan.id %>"
+     data-task-checklist-url-value="<%= task_tasklist_items_path(task, action_plan_id: @action_plan&.id) %>"
      data-task-checklist-bucket-id-value="<%= task.bucket.id %>"
      data-task-checklist-task-id-value="<%= task.id %>">
   <div class="d-flex justify-content-between align-items-center mb-2">

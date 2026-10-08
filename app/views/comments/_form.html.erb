@@ -1,4 +1,4 @@
-<%= form_with model: [task.bucket.action_plan, task.bucket, task, comment],
+<%= form_with model: comment, url: task_comments_path(task, action_plan_id: @action_plan&.id),
           html: {
             id: "new_comment_form_#{task.id}",
             data: {

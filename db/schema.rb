@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_08_100000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_08_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -208,11 +208,15 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_08_100000) do
   create_table "buckets", force: :cascade do |t|
     t.string "name"
     t.integer "position"
-    t.bigint "action_plan_id", null: false
+    t.bigint "action_plan_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "inbox", default: false, null: false
+    t.bigint "user_id"
     t.index ["action_plan_id"], name: "index_buckets_on_action_plan_id"
+    t.index ["user_id"], name: "index_buckets_on_personal_inbox_owner", unique: true, where: "(inbox = true)"
+    t.index ["user_id"], name: "index_buckets_on_user_id"
+    t.check_constraint "inbox = true AND user_id IS NOT NULL AND action_plan_id IS NULL OR inbox = false AND user_id IS NULL AND action_plan_id IS NOT NULL", name: "buckets_owner_matches_inbox"
   end
 
   create_table "budget_categories", force: :cascade do |t|
@@ -1288,6 +1292,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_08_100000) do
   add_foreign_key "az_rv_tasks", "az_rv_imports"
   add_foreign_key "az_rv_tasks", "employees"
   add_foreign_key "buckets", "action_plans"
+  add_foreign_key "buckets", "users"
   add_foreign_key "checklist_defects", "checklists"
   add_foreign_key "checklist_items", "checklist_templates"
   add_foreign_key "checklist_photos", "checklists"

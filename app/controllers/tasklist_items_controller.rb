@@ -1,5 +1,6 @@
 class TasklistItemsController < ApplicationController
   include MechanicTaskNavigation
+  include TaskAccess
   before_action :authenticate_user!
   before_action :set_task
   before_action :set_item, only: :update
@@ -21,7 +22,7 @@ class TasklistItemsController < ApplicationController
           )
         end
         format.html do
-          destination = current_user.mechanical? ? mechanic_tasks_return_path : action_plan_path(@task.bucket.action_plan)
+          destination = task_return_path
           redirect_to destination, notice: "Item adicionado à lista."
         end
         format.json { render json: { id: @item.id }, status: :created }
@@ -43,7 +44,7 @@ class TasklistItemsController < ApplicationController
           )
         end
         format.html do
-          destination = current_user.mechanical? ? mechanic_tasks_return_path : action_plan_path(@task.bucket.action_plan)
+          destination = task_return_path
           redirect_to destination, notice: "Item atualizado."
         end
       end
@@ -55,16 +56,7 @@ class TasklistItemsController < ApplicationController
   private
 
   def set_task
-    @task = accessible_tasks.find(params[:task_id])
-  end
-
-  def accessible_tasks
-    scope = Task.joins(:bucket).where(buckets: { action_plan_id: accessible_action_plans.select(:id) })
-    current_user.mechanical? ? scope.visible_for(current_user) : scope
-  end
-
-  def accessible_action_plans
-    ActionPlan.visible_to(current_user)
+    @task = find_accessible_task(params[:task_id])
   end
 
   def tasklist_item_params
