@@ -40,63 +40,7 @@
   display: none;
 }
 
-/* estado base (invisível) */
-.labels-field .ts-wrapper,
-.labels-field .ts-wrapper.multi,
-.labels-field .ts-wrapper.multi .ts-control {
-  border: none !important;
-  box-shadow: none !important;
-  outline: none !important;
-  background: transparent !important;
-  padding: 0 !important;
-  min-height: auto !important;
-  cursor: pointer;
-}
-
-/* input escondido */
-.labels-field .ts-control input {
-  width: auto !important;
-  opacity: 1 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-/* hover (visual leve) */
-.labels-field:hover .ts-wrapper.multi .ts-control {
-  background: rgba(0, 0, 0, 0.08);
-  border-radius: 6px;
-}
-
-/* mostra input no hover */
-.labels-field:hover .ts-control input {
-  width: auto !important;
-  opacity: 1 !important;
-}
-
-/* remove foco padrão */
-.labels-field .ts-wrapper.focus .ts-control {
-  border: none !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-/* animação */
-.labels-field .ts-control {
-  transition: all 0.15s ease;
-}
-
-.labels-field .ts-dropdown {
-  margin-top: 4px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-}
-
-.labels-field .ts-dropdown-content {
-  padding: 4px;
-}
+// A aparência dos seletores de rótulos é compartilhada em app_fields.
 
 .completed-task {
   background: #f8f9fa;

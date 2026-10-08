@@ -48,7 +48,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="app-shell" data-user-id="<%= current_user&.id || 'guest' %>" data-controller="chart-theme meeting-recorder-launch">
+  <body class="app-shell" data-user-id="<%= current_user&.id || 'guest' %>" data-controller="chart-theme meeting-recorder-launch app-selects">
   <%= render "shared/navbar" %>
   <div id="flash-container">
     <%= render 'shared/flashes' %>

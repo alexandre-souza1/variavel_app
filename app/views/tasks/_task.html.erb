@@ -89,9 +89,9 @@
           </div>
         <% end %>
 
-         <% if users.size > 3 %>
-          <div class="avatar-circle-sm extra">
-            +<<%= users.size - 3 %>
+        <% if users.size > 3 %>
+          <div class="avatar-circle-sm extra" title="<%= users.drop(3).map(&:name).join(', ') %>">
+            +<%= users.size - 3 %>
           </div>
         <% end %>
       </div>

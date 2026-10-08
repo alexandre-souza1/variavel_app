@@ -1,0 +1,249 @@
+// Aparência compartilhada; tamanhos, ícones e espaçamentos pertencem aos
+// módulos. Não alteramos a geometria das células editáveis de rotinas.
+:root {
+  --app-field-base: var(--bs-card-bg, var(--bs-body-bg));
+  --app-field-bg: color-mix(in srgb, var(--bs-primary) 4%, var(--app-field-base));
+  --app-field-ink: var(--app-button-ink);
+  --app-field-muted: color-mix(in srgb, var(--app-field-ink) 88%, var(--app-field-bg));
+  --app-field-border: color-mix(in srgb, var(--app-field-ink) 34%, var(--app-field-base));
+  --app-field-accent: var(--app-button-accent-ink);
+  --app-field-idle-line: color-mix(in srgb, var(--bs-primary) 38%, var(--app-field-border));
+}
+
+html[data-bs-theme="dark"] {
+  --app-field-base: var(--app-dark-input, var(--bs-body-bg));
+  --app-field-bg: color-mix(in srgb, var(--bs-primary) 8%, var(--app-field-base));
+  --app-field-muted: color-mix(in srgb, var(--app-field-ink) 76%, var(--app-field-bg));
+}
+
+@mixin app-field-surface {
+  background-color: var(--app-field-bg);
+  border: 1px solid var(--app-field-edge, var(--app-field-border));
+  border-bottom-color: var(--app-field-line, var(--app-field-idle-line));
+  border-radius: var(--app-field-radius);
+  color: var(--app-field-ink);
+  box-shadow: inset 0 -1px 0 var(--app-field-line, var(--app-field-idle-line));
+  transition: background-color var(--app-field-duration) ease,
+              border-color var(--app-field-duration) ease,
+              box-shadow var(--app-field-duration) ease;
+
+  &:hover:where(:not(:disabled):not([readonly]):not(.disabled)) {
+    border-color: var(--app-field-edge, color-mix(in srgb, var(--app-field-accent) 65%, var(--app-field-border)));
+  }
+
+  &:focus-within, &.focus, &[aria-expanded="true"] {
+    background-color: var(--app-field-bg);
+    border-color: var(--app-field-feedback, var(--app-field-accent));
+    color: var(--app-field-ink);
+    box-shadow: inset 0 -2px 0 var(--app-field-feedback, var(--app-field-accent));
+    outline: 2px solid var(--app-field-feedback, var(--app-field-accent));
+    outline-offset: 2px;
+  }
+
+  &::placeholder {
+    color: var(--app-field-muted);
+    opacity: 1;
+  }
+
+  &:is(:disabled, .disabled), &:has(> input:disabled) {
+    background-color: var(--app-field-base);
+    border-color: var(--app-field-border);
+    color: var(--app-field-muted);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  &[readonly] {
+    background-color: var(--app-field-base);
+    box-shadow: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) { transition: none; }
+}
+
+html:root body.app-shell {
+  :is(.form-control, .form-select, .form-control-custom, .search-input,
+      .position-select, .ts-control, .task-datetime__trigger,
+      .task-datetime__time input, .parking-assign select,
+      .plan-dashboard__filters select):where(:not(.ts-wrapper):not(.form-control-plaintext):not(.form-control-color):not(.action-plan-task-modal__title-input)) {
+    @include app-field-surface;
+  }
+
+  :is(.form-control-sm, .form-select-sm, .position-select) { border-radius: var(--app-field-radius-sm); }
+  :is(.form-control-lg, .form-select-lg) { border-radius: var(--app-field-radius-lg); }
+
+  // Ícones de data, setas e indicadores de validação nativos são preservados.
+  .form-select:where(:not(.ts-wrapper):not([multiple]):not([size]), :not(.ts-wrapper):not([multiple])[size="1"]) {
+    background-image: var(--bs-form-select-bg-img), var(--bs-form-select-bg-icon, none);
+  }
+  select option, select optgroup { background-color: var(--app-field-base); color: var(--app-field-ink); }
+
+  // A alça nativa fica dentro do canto, sem riscar o contorno do campo.
+  textarea.form-control {
+    resize: vertical;
+    &::-webkit-resizer {
+      background: repeating-linear-gradient(135deg, transparent 0 2px, var(--app-field-border) 2px 3px);
+      background-clip: content-box;
+      border: 4px solid transparent;
+      border-radius: 0 0 8px 0;
+    }
+  }
+
+  @each $state, $tone in (invalid: danger, valid: success) {
+    :is(.form-control, .form-select, .ts-wrapper).is-#{$state},
+    .was-validated :is(.form-control, .form-select, .ts-wrapper):#{$state},
+    .was-validated select:#{$state} + .ts-wrapper {
+      --app-field-edge: var(--bs-#{$tone});
+      --app-field-line: var(--bs-#{$tone});
+      --app-field-feedback: var(--bs-#{$tone}-text-emphasis);
+    }
+  }
+
+  :is(.form-control, .form-select, .ts-wrapper)[aria-invalid="true"] {
+    --app-field-edge: var(--bs-danger);
+    --app-field-line: var(--bs-danger);
+    --app-field-feedback: var(--bs-danger-text-emphasis);
+  }
+
+  .form-control[type="file"]::file-selector-button {
+    background-color: color-mix(in srgb, var(--bs-primary) 12%, var(--app-field-base));
+    border-inline-end-color: var(--app-field-border);
+    color: var(--app-field-accent);
+  }
+
+  // Uma única superfície, mesmo quando há ícones, chips ou botão de limpar.
+  :is(.time-off-search, .roto-search, .parking-search,
+      .action-plan-labels-search, .email-chip-field) {
+    @include app-field-surface;
+
+    input, input:focus {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      color: var(--app-field-ink);
+      outline: 0;
+    }
+
+    input::placeholder { color: var(--app-field-muted); opacity: 1; }
+    > i { color: var(--app-field-accent); }
+  }
+
+  // Tom Select replica as classes do select no wrapper. Só o controle interno
+  // recebe contorno, evitando caixas e setas duplicadas. A prioridade também
+  // neutraliza o padding e os ícones da validação nativa do Bootstrap.
+  .ts-wrapper {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0;
+    padding: 0 !important;
+    box-shadow: none !important;
+    outline: 0 !important;
+  }
+
+  .ts-control {
+    font-family: inherit;
+    input { color: var(--app-field-ink); }
+    input::placeholder { color: var(--app-field-muted); opacity: 1; }
+    .item:where(:not(.action-plan-color-badge)) { color: var(--app-field-ink); }
+  }
+
+  .ts-wrapper.multi .ts-control > .item:where(:not(.action-plan-color-badge)) {
+    background-color: color-mix(in srgb, var(--bs-primary) 12%, var(--app-field-base));
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 28%, var(--app-field-base));
+    border-radius: var(--app-field-radius-sm);
+    .remove { border-left-color: var(--app-field-border); color: inherit; }
+  }
+
+  // O estado ativo do Tom Select também deve conservar a cor do rótulo.
+  .ts-control .action-plan-color-badge {
+    background-color: var(--label-fill);
+    border: 1px solid var(--label-outline);
+  }
+
+  .ts-wrapper.single .ts-control {
+    padding-right: 2rem;
+    &::after {
+      content: "";
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      top: calc(50% - 5px);
+      right: .8rem;
+      margin: 0;
+      border: 0;
+      border-right: 1.5px solid var(--app-field-accent);
+      border-bottom: 1.5px solid var(--app-field-accent);
+      transform: rotate(45deg);
+      pointer-events: none;
+    }
+  }
+  .ts-wrapper.single.dropdown-active .ts-control::after { top: calc(50% - 2px); transform: rotate(225deg); }
+
+  .ts-wrapper.focus .ts-control {
+    border-color: var(--app-field-feedback, var(--app-field-accent));
+    box-shadow: inset 0 -2px 0 var(--app-field-feedback, var(--app-field-accent));
+    outline: 2px solid var(--app-field-feedback, var(--app-field-accent));
+    outline-offset: 2px;
+  }
+  .ts-wrapper.disabled .ts-control { background-color: var(--app-field-base); box-shadow: none; cursor: not-allowed; }
+  .ts-wrapper:where(.form-control-sm, .form-select-sm) .ts-control { border-radius: var(--app-field-radius-sm); }
+  .ts-wrapper:where(.form-control-lg, .form-select-lg) .ts-control { border-radius: var(--app-field-radius-lg); }
+
+  .app-select { width: 100%; }
+  .app-select:where(.position-select) { width: auto; }
+  .app-select .ts-control {
+    min-height: inherit;
+    padding: var(--app-select-padding-y, .375rem) 2rem var(--app-select-padding-y, .375rem) var(--app-select-padding-x, .75rem);
+    font-size: inherit;
+    line-height: inherit;
+    cursor: pointer;
+    .item { min-width: 0; overflow-wrap: anywhere; }
+    input { font-size: inherit; }
+  }
+
+  .app-select-menu[popover] {
+    inset: auto;
+    margin: 0;
+    max-width: none;
+    max-height: none;
+    z-index: 1090;
+    .option { padding: .6rem .55rem; overflow-wrap: anywhere; }
+    .task-select-option { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+    .task-select-option i { flex-shrink: 0; opacity: 0; }
+    .task-select-option.selected i { opacity: 1; }
+    .optgroup-header { background: transparent; color: var(--app-field-muted); padding: .5rem .55rem; font-size: .75rem; font-weight: 650; }
+    .option[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+  }
+
+  .ts-dropdown {
+    background-color: var(--app-field-base);
+    border: 1px solid var(--app-field-border);
+    border-radius: var(--app-field-radius);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, .18);
+    color: var(--app-field-ink);
+    margin-top: .5rem;
+    padding: .35rem;
+    overflow: hidden;
+    .ts-dropdown-content { padding: 0; overscroll-behavior: contain; }
+    :is(.option, .create) { border-radius: var(--app-field-radius-sm); color: var(--app-field-ink); }
+    :is(.option, .create):is(.active, :hover), .option.selected {
+      background-color: color-mix(in srgb, var(--bs-primary) 12%, var(--app-field-base));
+      color: var(--app-field-ink);
+    }
+  }
+
+  // Mantém a junção com prefixos, sufixos e botões de busca.
+  .input-group > :is(.form-control, .form-select, .ts-wrapper) {
+    &:not(:first-child), &:not(:first-child) .ts-control { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+    &:not(:last-child), &:not(:last-child) .ts-control { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  }
+  .input-group-text {
+    background-color: var(--app-field-base);
+    border-color: var(--app-field-border);
+    color: var(--app-field-muted);
+    border-radius: var(--app-field-radius);
+    &:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+    &:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  }
+}

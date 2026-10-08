@@ -141,4 +141,16 @@
 
 .action-plan-task-card .avatar-circle-sm {
   border: 1px solid var(--bs-body-bg);
+  flex-shrink: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.action-plan-task-card .avatar-circle-sm.extra {
+  background: #6c757d;
+  color: white;
+  font-size: 10px;
+  height: 22px;
+  margin-left: -6px;
+  width: 22px;
 }

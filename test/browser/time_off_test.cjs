@@ -1,3 +1,4 @@
+const chooseSelect = require('./helpers/select.cjs');
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -92,7 +93,7 @@ const fs = require('node:fs');
       await page.locator('dialog[open]').waitFor();
     }
     async function confirm(reason, status) {
-      if (status) await page.locator('select[name="change[status]"]').selectOption(status);
+      if (status) await chooseSelect(page, page.locator('select[name="change[status]"]'), status);
       const id = await page.locator('input[name="change[membership_id]"]').inputValue();
       const expected = await page.locator('select[name="change[status]"]').inputValue();
       await page.locator('textarea[name="change[reason]"]').fill(reason);
@@ -121,7 +122,7 @@ const fs = require('node:fs');
     await page.getByRole('button', { name: 'Configuração', exact: true }).click();
     await page.locator('#time-off-settings.show').waitFor();
     const form = page.locator('.time-off-vacation-form');
-    await form.locator('select').selectOption({ label: 'PATRICK VIEIRA DA SILVA · Ajudante' });
+    await chooseSelect(page, form.locator('select'), { label: 'PATRICK VIEIRA DA SILVA · Ajudante' });
     await form.locator('input[type="date"]').first().fill('2026-10-02');
     await form.locator('input[type="date"]').last().fill('2026-10-08');
     await form.locator('textarea').fill('Férias programadas');

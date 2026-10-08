@@ -1,3 +1,4 @@
+const chooseSelect = require('./helpers/select.cjs');
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -19,7 +20,7 @@ const fs = require('node:fs');
     await page.locator('#time-off-settings.show').waitFor();
     const form = page.locator('.time-off-correction-form');
     const member = await form.locator('option').filter({ hasText: 'PATRICK VIEIRA DA SILVA' }).getAttribute('value');
-    await page.locator('#correction-membership').selectOption(member);
+    await chooseSelect(page, page.locator('#correction-membership'), member);
     assert.equal(await page.locator('#correction-start').inputValue(), '2026-10-08');
     assert.equal(await page.locator('#correction-group').inputValue(), 'A');
     assert.ok(await page.locator('#correction-updated-at').inputValue());

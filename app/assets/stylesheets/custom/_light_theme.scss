@@ -166,8 +166,7 @@ html[data-bs-theme="light"] {
 
   .dropdown-menu,
   .app-dropdown-menu,
-  .workstation-sector-picker__menu,
-  .ts-dropdown {
+  .workstation-sector-picker__menu {
     background-color: var(--bs-tertiary-bg) !important;
     border-color: var(--app-soft);
     box-shadow: 0 10px 24px rgba(82, 120, 83, 0.16);

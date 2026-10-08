@@ -1033,9 +1033,22 @@ main.app-main:has(.action-plan-show) {
 }
 
 .action-plan-kanban-card__remove {
+  align-items: center;
+  background: transparent;
   border: 0;
+  box-shadow: none;
+  display: inline-flex;
   flex-shrink: 0;
+  font-size: .8rem;
+  justify-content: center;
+  line-height: 1;
   padding: 0.25rem 0.35rem;
+  text-decoration: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-primary-text-emphasis);
+    outline-offset: 2px;
+  }
 }
 
 .action-plan-kanban-card__composer {
