@@ -187,40 +187,6 @@ html[data-bs-theme="light"] {
     }
   }
 
-  // Botões Bootstrap seguem a mesma identidade teal/navy do restante do app.
-  .btn-primary {
-    --bs-btn-color: #ffffff;
-    --bs-btn-bg: var(--app-primary);
-    --bs-btn-border-color: var(--app-primary);
-    --bs-btn-hover-color: #ffffff;
-    --bs-btn-hover-bg: var(--app-strong);
-    --bs-btn-hover-border-color: var(--app-strong);
-    --bs-btn-active-color: #ffffff;
-    --bs-btn-active-bg: var(--app-strong);
-    --bs-btn-active-border-color: var(--app-strong);
-    --bs-btn-disabled-color: #ffffff;
-    --bs-btn-disabled-bg: var(--app-soft);
-    --bs-btn-disabled-border-color: var(--app-soft);
-    box-shadow: 0 2px 6px rgba(82, 120, 83, 0.14);
-  }
-
-  .theme-toggle-group .btn.active {
-    background-color: var(--bs-primary);
-    border-color: var(--bs-primary);
-    color: #ffffff;
-  }
-
-  .btn-outline-primary {
-    --bs-btn-color: var(--app-primary);
-    --bs-btn-border-color: var(--app-primary);
-    --bs-btn-hover-color: #ffffff;
-    --bs-btn-hover-bg: var(--app-primary);
-    --bs-btn-hover-border-color: var(--app-primary);
-    --bs-btn-active-color: #ffffff;
-    --bs-btn-active-bg: var(--app-strong);
-    --bs-btn-active-border-color: var(--app-strong);
-  }
-
   // KPIs precisam ser uma camada própria, e não uma extensão do fundo da página.
   .kpi-card {
     background: var(--app-surface);

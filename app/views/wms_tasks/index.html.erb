@@ -26,7 +26,10 @@
             </p>
           </div>
           <div class="d-flex col-md-6 text-md-end justify-content-end gap-2">
-            <%= button_to "Deletar Todas as Tarefas", delete_all_wms_tasks_path, method: :delete, class: "btn btn-danger", data: { confirm: "Tem certeza que deseja deletar todas as tarefas?" } %>
+            <%= button_to "Deletar Todas as Tarefas", delete_all_wms_tasks_path,
+                          method: :delete,
+                          class: "btn btn-danger",
+                          form: { data: { turbo_confirm: "Tem certeza que deseja deletar TODAS as tarefas WMS? Essa ação não pode ser desfeita." } } %>
           </div>
         </div>
       </div>

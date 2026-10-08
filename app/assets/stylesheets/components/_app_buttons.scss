@@ -1,0 +1,279 @@
+// Identidade de ações da Workstation. As classes existentes continuam sendo
+// a API dos templates; esta camada final cuida da aparência e dos estados.
+// Dimensões específicas de tabelas, formulários e ferramentas ficam nas páginas.
+
+:root {
+  --app-button-surface: var(--bs-card-bg, var(--bs-body-bg));
+  --app-button-ink: color-mix(in srgb, var(--bs-body-color) 85%, #000);
+  --app-button-accent-ink: color-mix(in srgb, var(--bs-primary) 68%, #000);
+  --app-button-solid: color-mix(in srgb, var(--bs-primary) 72%, #000);
+  --app-button-shadow: rgba(15, 23, 42, .12);
+}
+
+html[data-bs-theme="dark"] {
+  --app-button-ink: var(--bs-body-color);
+  --app-button-accent-ink: var(--bs-primary-text-emphasis);
+  --app-button-shadow: rgba(0, 0, 0, .28);
+}
+
+@mixin app-button-feedback {
+  border-radius: var(--app-button-radius);
+  transition: background-color var(--app-button-duration) ease,
+              border-color var(--app-button-duration) ease,
+              color var(--app-button-duration) ease,
+              box-shadow var(--app-button-duration) ease,
+              transform var(--app-button-duration) ease;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    outline: 3px solid var(--bs-primary-text-emphasis);
+    outline-offset: 3px;
+  }
+
+  &:active:where(:not(:disabled):not(.disabled):not([aria-disabled="true"])) {
+    transform: translateY(1px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    transform: none;
+
+    &:hover, &:active { transform: none; }
+  }
+}
+
+// Leve contraste de superfície, sem o contorno saturado padrão do framework.
+// O escopo do app também vence os estilos legados de módulos sem !important.
+html:root body.app-shell {
+  :is(.btn, .btn-primary-solid, .btn-outline, .btn-search,
+      .btn-save-position, .az-report-btn, .btn-success-custom,
+      .btn-filter, .download-open-btn, .back-btn, .icon-btn, .link-action) {
+    --app-action-color: var(--bs-primary);
+    --app-action-ink: var(--app-button-accent-ink);
+    --app-action-bg: color-mix(in srgb, var(--app-action-color) 6%, var(--app-button-surface));
+    --app-action-hover-bg: color-mix(in srgb, var(--app-action-color) 13%, var(--app-button-surface));
+    --app-action-border: color-mix(in srgb, var(--app-action-color) 18%, var(--app-button-surface));
+    --app-action-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 2px 0 var(--app-button-shadow);
+    --app-action-image: none;
+
+    @include app-button-feedback;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    padding: .6rem 1rem;
+    border: 1px solid var(--app-action-border);
+    background-color: var(--app-action-bg);
+    background-image: var(--app-action-image);
+    color: var(--app-action-ink);
+    box-shadow: var(--app-action-shadow);
+    font-size: .875rem;
+    font-weight: 650;
+    line-height: 1.35;
+    letter-spacing: -.015em;
+    text-decoration: none;
+    vertical-align: middle;
+    cursor: pointer;
+
+    &:hover:where(:not(:disabled):not(.disabled):not([aria-disabled="true"])) {
+      background-color: var(--app-action-hover-bg);
+      border-color: color-mix(in srgb, var(--app-action-color) 38%, var(--app-button-surface));
+      color: var(--app-action-ink);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 3px 0 var(--app-button-shadow);
+      transform: translateY(-1px);
+      text-decoration: none;
+    }
+
+    &:is(:active, .active, [aria-pressed="true"]) {
+      background-color: var(--app-action-hover-bg);
+      color: var(--app-action-ink);
+      border-color: var(--app-action-color);
+      box-shadow: inset 0 2px 3px var(--app-button-shadow);
+    }
+
+    &:focus-visible {
+      box-shadow: var(--app-action-shadow);
+    }
+
+    &:active:where(:not(:disabled):not(.disabled):not([aria-disabled="true"])) {
+      transform: translateY(1px);
+    }
+
+    &:is(:disabled, .disabled, [aria-disabled="true"]) {
+      opacity: .45;
+      box-shadow: none;
+      transform: none;
+      cursor: default;
+      pointer-events: none;
+    }
+  }
+
+  :is(.btn-primary, .btn-primary-solid, .btn-search, .btn-save-position,
+      .az-report-btn--primary) {
+    --app-action-bg: var(--app-button-solid);
+    --app-action-hover-bg: color-mix(in srgb, var(--app-button-solid) 88%, #000);
+    --app-action-border: var(--app-button-solid);
+    --app-action-ink: #fff;
+    --app-action-image: linear-gradient(180deg, rgba(255, 255, 255, .07), transparent 65%);
+  }
+
+  :is(.btn-secondary, .btn-outline-secondary, .btn-light, .btn-dark, .btn-outline) {
+    --app-action-ink: var(--app-button-ink);
+    --app-action-bg: var(--app-button-surface);
+  }
+
+  // As cores de resultado e risco permanecem semânticas em todas as paletas.
+  @each $tone in success, danger, warning, info {
+    :is(.btn-#{$tone}, .btn-outline-#{$tone}, .icon-btn:where(.#{$tone}), .link-action:where(.#{$tone})) {
+      --app-action-color: var(--bs-#{$tone});
+      --app-action-ink: var(--bs-#{$tone}-text-emphasis);
+    }
+  }
+
+  :is(.btn-danger, .btn-success, .btn-success-custom) {
+    --app-action-ink: #fff;
+    --app-action-bg: color-mix(in srgb, var(--app-action-color) 78%, #000);
+    --app-action-hover-bg: color-mix(in srgb, var(--app-action-color) 66%, #000);
+    --app-action-border: var(--app-action-bg);
+    --app-action-image: linear-gradient(180deg, rgba(255, 255, 255, .07), transparent 65%);
+  }
+
+  .btn-success-custom { --app-action-color: var(--bs-success); }
+
+  fieldset:disabled :is(.btn-primary-solid, .btn-outline, .btn-search, .btn-save-position, .az-report-btn, .icon-btn, .link-action) {
+    opacity: .45;
+    pointer-events: none;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .btn-check:focus-visible + .btn {
+    outline: 3px solid var(--bs-primary-text-emphasis);
+    outline-offset: 3px;
+  }
+
+  :is(.btn-warning, .btn-info) {
+    --app-action-bg: color-mix(in srgb, var(--app-action-color) 20%, var(--app-button-surface));
+  }
+
+  :is(.btn-sm, .btn-group-sm > .btn, .btn-save-position) {
+    padding: .4rem .7rem;
+    border-radius: var(--app-button-radius-sm);
+    font-size: .78rem;
+  }
+
+  .btn-lg {
+    padding: .8rem 1.3rem;
+    border-radius: var(--app-button-radius-lg);
+    font-size: 1rem;
+  }
+
+  :is(.icon-btn, .link-action, .btn-link) {
+    --app-action-bg: transparent;
+    --app-action-border: transparent;
+    --app-action-shadow: none;
+    --app-action-ink: var(--app-button-ink);
+    padding: .35rem .5rem;
+    border-radius: var(--app-button-radius-sm);
+    font-size: .8rem;
+
+    &:hover:where(:not(:disabled):not(.disabled):not([aria-disabled="true"])) {
+      color: var(--app-button-accent-ink);
+      box-shadow: none;
+      transform: none;
+    }
+  }
+
+  .icon-btn {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: .95rem;
+  }
+
+  :is(.icon-btn, .link-action):is(.danger, .warning) {
+    --app-action-ink: var(--bs-danger-text-emphasis);
+    &:hover { color: var(--app-action-ink); }
+  }
+
+  :is(.icon-btn, .link-action).warning {
+    --app-action-ink: var(--bs-warning-text-emphasis);
+  }
+
+  // Seletores agrupados conservam a união entre segmentos e inputs de busca.
+  :is(.btn-group, .btn-group-vertical) > .btn { transform: none; }
+  .btn-group > .btn:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  .btn-group > .btn:not(:last-child):not(.dropdown-toggle) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .btn-group-vertical > .btn:not(:first-child) { border-top-left-radius: 0; border-top-right-radius: 0; }
+  .btn-group-vertical > .btn:not(:last-child) { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  .input-group > .btn:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  .input-group > .btn:not(:last-child):not(.dropdown-toggle) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+
+  :is(.theme-toggle-group .btn, .btn-filter):is(.active, [aria-pressed="true"]),
+  .btn-check:checked + .btn {
+    background-color: color-mix(in srgb, var(--app-action-color) 72%, #000);
+    border-color: var(--app-action-color);
+    color: #fff;
+  }
+
+  .btn-check:disabled + .btn {
+    opacity: .45;
+    box-shadow: none;
+    transform: none;
+  }
+
+  // A barra usa contraste próprio porque sua superfície já é colorida.
+  :is(.app-navbar-action, .app-mobile-menu-btn) {
+    --app-action-bg: rgba(0, 0, 0, .08);
+    --app-action-hover-bg: rgba(0, 0, 0, .16);
+    --app-action-border: rgba(255, 255, 255, .2);
+    --app-action-ink: var(--bs-navbar-color);
+    --app-action-shadow: none;
+  }
+
+  .app-mobile-menu-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+
+  .btn-close {
+    @include app-button-feedback;
+    border-radius: var(--app-button-radius-sm);
+    box-shadow: none;
+    opacity: .65;
+    &:hover { opacity: 1; box-shadow: 0 0 0 5px rgba(var(--bs-primary-rgb), .1); }
+  }
+
+  // Controles especializados recebem a mesma assinatura sem mudar seu layout.
+  :is(.quick-access-controls button, .quick-access-tabs button,
+      .roto-modes button, .roto-filters button, .roto-reader button,
+      .roto-fit, .roto-star, .parking-modes button, .parking-zoom button,
+      .time-off-pagination-button, .time-off-group-button,
+      .time-off-calendar-button, .tire-page-button,
+      .position-edit-btn, .fleet-dimensioning-copy-button,
+      .notification-clear-btn, .notification-delete-btn,
+      .fleet-plate-card__observation-button, .routine-cell__comment-button,
+      .app-mobile-menu-btn) {
+    @include app-button-feedback;
+  }
+
+  :is(.roto-modes, .parking-modes) button[aria-pressed="true"],
+  .tire-page-button.is-active {
+    background: var(--app-button-solid);
+    color: #fff;
+  }
+
+  @media (max-width: 767.98px) {
+    :is(.btn, .btn-primary-solid, .btn-outline, .btn-search, .az-report-btn,
+        .btn-save-position, .btn-success-custom, .btn-filter,
+        .download-open-btn, .back-btn) { min-height: 44px; }
+    :is(.icon-btn, .link-action) { min-width: 44px; min-height: 44px; }
+  }
+
+  // Esta regra fica após hover e estados de grupo para honrar movimento reduzido.
+  @media (prefers-reduced-motion: reduce) {
+    :is(.btn, .btn-primary-solid, .btn-outline, .btn-search, .btn-save-position,
+        .az-report-btn, .btn-success-custom, .btn-filter, .download-open-btn,
+        .back-btn, .icon-btn, .link-action):is(:hover, :active) { transform: none; }
+  }
+}

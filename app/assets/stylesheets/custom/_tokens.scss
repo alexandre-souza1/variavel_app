@@ -13,4 +13,10 @@
   --app-radius-sm: 6px;
   --app-radius-md: 8px;
   --app-radius-lg: 12px;
+
+  // A quina inferior mais curta é a assinatura das ações da Workstation.
+  --app-button-radius: 12px 12px 12px 5px;
+  --app-button-radius-sm: 9px 9px 9px 4px;
+  --app-button-radius-lg: 15px 15px 15px 6px;
+  --app-button-duration: 160ms;
 }

@@ -50,54 +50,7 @@
   }
 }
 
-// ----- Botões -----
-.btn-primary-solid {
-  background: var(--bs-primary, $custom-primary);
-  color: #fff;
-  border: none;
-  padding: 0.5rem 1.2rem;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 0.9rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  text-decoration: none;
-  transition: 0.2s ease;
-  cursor: pointer;
-  box-shadow: 0 1px 2px rgba(79, 110, 247, 0.2);
-
-  &:hover {
-    background: var(--bs-primary-dark, $custom-primary-dark);
-    color: #fff;
-    text-decoration: none;
-    box-shadow: 0 4px 12px rgba(79, 110, 247, 0.3);
-    transform: translateY(-1px);
-  }
-}
-
-.btn-outline {
-  background: transparent;
-  color: var(--bs-secondary-color);
-  border: 1px solid var(--bs-border-color);
-  padding: 0.5rem 1.2rem;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 0.9rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  text-decoration: none;
-  transition: 0.2s ease;
-  cursor: pointer;
-
-  &:hover {
-    background: var(--bs-tertiary-bg);
-    color: var(--bs-body-color);
-    border-color: var(--bs-border-color);
-    text-decoration: none;
-  }
-}
+// Botões compartilhados: components/_app_buttons.scss.
 
 .theme-color-preview {
   display: flex;
@@ -158,22 +111,6 @@
     &::placeholder {
       color: var(--bs-secondary-color);
       opacity: 0.7;
-    }
-  }
-
-  .btn-search {
-    background: var(--bs-primary);
-    color: #fff;
-    border: none;
-    padding: 0.45rem 1rem;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: 0.2s ease;
-
-    &:hover {
-      background: var(--bs-primary-dark);
     }
   }
 }
@@ -529,22 +466,6 @@
     background: var(--bs-body-bg);
     color: var(--bs-body-color);
   }
-
-  .btn-save-position {
-    background: var(--bs-primary);
-    color: #fff;
-    border: none;
-    padding: 0.2rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: 0.2s ease;
-
-    &:hover {
-      background: var(--bs-primary-dark);
-    }
-  }
 }
 
 // ----- Card "Adicionar categoria" (mesclado) -----
@@ -881,17 +802,5 @@
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
-  }
-}
-
-.btn-outline-danger {
-  @extend .btn-outline;
-  border-color: var(--bs-danger);
-  color: var(--bs-danger);
-
-  &:hover {
-    background: var(--bs-danger);
-    color: #fff;
-    border-color: var(--bs-danger);
   }
 }

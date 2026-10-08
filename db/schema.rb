@@ -389,7 +389,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_08_100000) do
     t.index ["employee_id"], name: "index_employee_roles_on_employee_id"
     t.index ["promax", "cargo"], name: "index_employee_roles_on_promax_and_cargo"
     t.index ["sector", "cargo", "starts_on", "ends_on"], name: "index_employee_roles_profile_period"
-    t.check_constraint "sector::text = 'du'::text AND (cargo::text = ANY (ARRAY['motorista'::character varying::text, 'van'::character varying::text, 'ajudante'::character varying::text])) AND promax IS NOT NULL OR sector::text = 'az'::text AND (cargo::text = ANY (ARRAY['operador'::character varying::text, 'ajudante'::character varying::text])) AND (turno IS NOT NULL AND turno >= 0 AND turno <= 2 OR legacy = true AND turno IS NULL)", name: "employee_role_valid_profile"
+    t.check_constraint "sector::text = 'du'::text AND (cargo::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[])) AND promax IS NOT NULL OR sector::text = 'az'::text AND (cargo::text = ANY (ARRAY['operador'::character varying, 'ajudante'::character varying]::text[])) AND (turno IS NOT NULL AND turno >= 0 AND turno <= 2 OR legacy = true AND turno IS NULL)", name: "employee_role_valid_profile"
     t.check_constraint "starts_on IS NOT NULL OR legacy = true", name: "employee_role_start_required"
     t.check_constraint "starts_on IS NULL OR ends_on IS NULL OR ends_on >= starts_on", name: "employee_role_valid_dates"
   end
@@ -650,8 +650,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_08_100000) do
     t.datetime "updated_at", null: false
     t.index ["mapa_id"], name: "index_mapa_cargo_overrides_on_mapa_id"
     t.index ["user_id"], name: "index_mapa_cargo_overrides_on_user_id"
-    t.check_constraint "cargo IS NULL OR (cargo::text = ANY (ARRAY['motorista'::character varying::text, 'van'::character varying::text, 'ajudante'::character varying::text]))", name: "mapa_override_valid_cargo"
-    t.check_constraint "previous_cargo IS NULL OR (previous_cargo::text = ANY (ARRAY['motorista'::character varying::text, 'van'::character varying::text, 'ajudante'::character varying::text]))", name: "mapa_override_valid_previous_cargo"
+    t.check_constraint "cargo IS NULL OR (cargo::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[]))", name: "mapa_override_valid_cargo"
+    t.check_constraint "previous_cargo IS NULL OR (previous_cargo::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[]))", name: "mapa_override_valid_previous_cargo"
   end
 
   create_table "mapas", force: :cascade do |t|
@@ -680,7 +680,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_08_100000) do
     t.index ["matric_ajudante"], name: "index_mapas_on_matric_ajudante"
     t.index ["matric_ajudante_2"], name: "index_mapas_on_matric_ajudante_2"
     t.index ["matric_motorista"], name: "index_mapas_on_matric_motorista"
-    t.check_constraint "cargo_override IS NULL OR (cargo_override::text = ANY (ARRAY['motorista'::character varying::text, 'van'::character varying::text, 'ajudante'::character varying::text]))", name: "mapa_valid_cargo_override"
+    t.check_constraint "cargo_override IS NULL OR (cargo_override::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[]))", name: "mapa_valid_cargo_override"
   end
 
   create_table "meeting_minute_edits", force: :cascade do |t|
@@ -1163,7 +1163,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_08_100000) do
     t.check_constraint "(driver_id IS NOT NULL) <> (ajudante_id IS NOT NULL)", name: "time_off_exactly_one_person"
     t.check_constraint "ends_on IS NULL OR ends_on >= starts_on", name: "time_off_valid_membership_dates"
     t.check_constraint "fixed_weekday IS NULL OR fixed_weekday >= 1 AND fixed_weekday <= 6", name: "time_off_valid_fixed_weekday"
-    t.check_constraint "group_code::text = ANY (ARRAY['A'::character varying::text, 'B'::character varying::text, 'C'::character varying::text, 'D'::character varying::text, 'E'::character varying::text, 'F'::character varying::text, 'FIXO'::character varying::text])", name: "time_off_valid_group"
+    t.check_constraint "group_code::text = ANY (ARRAY['A'::character varying, 'B'::character varying, 'C'::character varying, 'D'::character varying, 'E'::character varying, 'F'::character varying, 'FIXO'::character varying]::text[])", name: "time_off_valid_group"
     t.check_constraint "standard_operation IS NULL OR group_code::text = 'FIXO'::text AND fixed_weekday = 6 AND (standard_operation::text = 'vespertina'::text OR standard_operation::text = 'as'::text AND driver_id IS NOT NULL)", name: "time_off_valid_standard_operation"
   end
 
@@ -1177,7 +1177,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_08_100000) do
     t.datetime "updated_at", null: false
     t.index ["time_off_membership_id", "date"], name: "time_off_one_override_per_day", unique: true
     t.index ["time_off_membership_id"], name: "index_time_off_overrides_on_time_off_membership_id"
-    t.check_constraint "status::text = ANY (ARRAY['working'::character varying::text, 'off'::character varying::text, 'unavailable'::character varying::text])", name: "time_off_valid_status"
+    t.check_constraint "status::text = ANY (ARRAY['working'::character varying, 'off'::character varying, 'unavailable'::character varying]::text[])", name: "time_off_valid_status"
   end
 
   create_table "time_off_schedules", force: :cascade do |t|
@@ -1239,7 +1239,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_08_100000) do
     t.index ["employee_id"], name: "index_variable_closings_on_employee_id"
     t.index ["sector", "year", "month", "employee_id", "revision"], name: "index_variable_closings_history"
     t.index ["user_id"], name: "index_variable_closings_on_user_id"
-    t.check_constraint "sector::text = ANY (ARRAY['du'::character varying::text, 'az'::character varying::text])", name: "variable_closing_valid_sector"
+    t.check_constraint "sector::text = ANY (ARRAY['du'::character varying, 'az'::character varying]::text[])", name: "variable_closing_valid_sector"
   end
 
   create_table "vehicle_remunerations", force: :cascade do |t|

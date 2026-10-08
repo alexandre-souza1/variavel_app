@@ -56,6 +56,13 @@ para "organizar" os arquivos: a ordem pode resolver conflitos de cascata.
 
 ### Componentes de interface
 
+- `_app_buttons.scss`: identidade compartilhada de botões, ações de ícone e
+  controles especializados. É importado no fim de `application.scss`, após os
+  temas e páginas. Mantém as classes existentes (`btn-*`, `btn-primary-solid`,
+  `btn-outline`, `az-report-btn`) e centraliza cores, relevo, foco, seleção,
+  estados desabilitados e movimento reduzido. Os tokens `--app-button-radius*`
+  e `--app-button-duration` ficam em `custom/_tokens.scss`; páginas continuam
+  responsáveis por posições, larguras e organização dos controles.
 - `_navbar.scss`: `.app-navbar`, marca, seletor de setor, navegacao,
   dropdowns, avatar e controles responsivos do navbar.
 - `_app_panels.scss`: `.app-panel`, headers/bodies, tabelas (`.app-table*`),
