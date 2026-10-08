@@ -3,6 +3,7 @@
     <div class="time-off-panel-heading"><div><h2 id="calendar-heading"><i class="bi bi-calendar3" aria-hidden="true"></i> <%= l(@month, format: '%B de %Y').capitalize %></h2><p>Selecione um dia para ajustar a escala. Cores identificam os grupos; • indica ajuste individual.</p></div>
       <nav aria-label="Navegação do calendário" class="time-off-month-navigation">
         <%= link_to calendar_month_path(-1), class: 'time-off-month-arrow', rel: 'prev', aria: { label: 'Mês anterior' }, title: 'Mês anterior' do %><i class="bi bi-chevron-left" aria-hidden="true"></i><% end %>
+        <%= render 'date_picker', mode: 'month', date: @month %>
         <%= link_to calendar_month_path(1), class: 'time-off-month-arrow', rel: 'next', aria: { label: 'Próximo mês' }, title: 'Próximo mês' do %><i class="bi bi-chevron-right" aria-hidden="true"></i><% end %>
       </nav>
     </div>

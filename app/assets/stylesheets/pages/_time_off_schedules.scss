@@ -99,6 +99,19 @@
   &:disabled { opacity: .4; cursor: default; }
 }
 #time-off-calendar .time-off-panel-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+.time-off-day-navigation:has(.calendar-picker) { grid-template-columns: 34px minmax(0, 1fr) 34px 34px; }
+.time-off-date-trigger {
+  display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;
+  border: 1px solid var(--bs-border-color); border-radius: var(--app-button-radius-sm);
+  background: var(--bs-body-bg); color: var(--bs-primary-text-emphasis); font-size: .85rem; cursor: pointer;
+  &:hover, &[aria-expanded="true"] { background: color-mix(in srgb, var(--bs-primary) 12%, var(--bs-body-bg)); border-color: var(--bs-primary); }
+}
+.calendar-picker__panel {
+  .task-composer__calendar-days button { min-height: 36px; }
+  .task-composer__calendar-days button[aria-pressed="true"] { background: var(--app-button-solid); color: #fff; }
+  .calendar-picker__months { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
+  .calendar-picker__months button { min-height: 44px; text-transform: capitalize; }
+}
 .time-off-month-navigation { display: flex; gap: .4rem; }
 .time-off-month-arrow {
   display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;
@@ -106,6 +119,19 @@
   &:hover { color: var(--bs-primary); border-color: var(--bs-primary); background: color-mix(in srgb, var(--bs-primary) 8%, transparent); }
 }
 @media (max-width: 600px) {
+  #time-off-day .time-off-panel-heading > div { width: 100%; }
+  .time-off-day-navigation:has(.calendar-picker) {
+    grid-template-columns: 44px 44px minmax(0, 1fr); gap: .35rem; width: 100%;
+    h2 { grid-column: 1 / -1; grid-row: 1; text-align: left; }
+    > a { grid-row: 2; }
+    .calendar-picker { grid-row: 2; justify-self: end; }
+  }
+  #time-off-calendar .time-off-panel-heading { display: flex; flex-direction: column; align-items: stretch; }
+  .time-off-month-navigation { align-self: flex-end; }
+  .time-off-date-trigger, .time-off-day-navigation:has(.calendar-picker) .time-off-day-arrow,
+  .time-off-month-arrow { width: 44px; height: 44px; }
+  .calendar-picker__panel .task-composer__calendar-days button { min-height: 44px; }
+  .calendar-picker__panel .task-datetime__footer button { min-height: 44px; }
   .time-off-calendar-filters { padding: 1rem; gap: .6rem; }
   .time-off-search { flex-basis: 100%; max-width: none; }
   .time-off-role-picker { width: 100%; > button { flex: 1; } }

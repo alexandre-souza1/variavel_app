@@ -1,0 +1,33 @@
+<% picker_id = "time-off-#{mode}-picker"; label = mode == 'month' ? 'Escolher mês' : 'Escolher dia' %>
+<div class="calendar-picker" data-controller="calendar-picker"
+     data-calendar-picker-mode-value="<%= mode %>" data-calendar-picker-date-value="<%= date.iso8601 %>"
+     data-action="click@window->calendar-picker#outside keydown.esc->calendar-picker#escape turbo:before-cache@document->calendar-picker#close">
+  <button type="button" class="time-off-date-trigger" data-calendar-picker-target="button"
+          data-action="calendar-picker#toggle" aria-label="<%= label %>" title="<%= label %>"
+          aria-haspopup="dialog" aria-expanded="false" aria-controls="<%= picker_id %>">
+    <i class="bi bi-calendar3" aria-hidden="true"></i>
+  </button>
+  <div id="<%= picker_id %>" class="task-composer__people-popover task-composer__calendar calendar-picker__panel"
+       data-calendar-picker-target="panel" popover="manual" role="dialog" aria-label="<%= label %>" hidden>
+    <div class="task-composer__calendar-header">
+      <button type="button" class="btn btn-sm" data-action="calendar-picker#changePeriod" data-offset="-1"
+              aria-label="<%= mode == 'month' ? 'Ano anterior' : 'Mês anterior' %>">
+        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+      </button>
+      <strong data-calendar-picker-target="heading" aria-live="polite"></strong>
+      <button type="button" class="btn btn-sm" data-action="calendar-picker#changePeriod" data-offset="1"
+              aria-label="<%= mode == 'month' ? 'Próximo ano' : 'Próximo mês' %>">
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+      </button>
+    </div>
+    <% if mode == 'day' %>
+      <div class="task-composer__calendar-week" aria-hidden="true"><% %w[D S T Q Q S S].each do |day| %><span><%= day %></span><% end %></div>
+    <% end %>
+    <div class="task-composer__calendar-days <%= 'calendar-picker__months' if mode == 'month' %>"
+         data-calendar-picker-target="options" data-action="click->calendar-picker#choose keydown->calendar-picker#move"></div>
+    <div class="task-datetime__footer">
+      <button type="button" data-action="calendar-picker#cancel">Cancelar</button>
+      <button type="button" class="task-datetime__apply" data-action="calendar-picker#today"><%= mode == 'month' ? 'Mês atual' : 'Hoje' %></button>
+    </div>
+  </div>
+</div>

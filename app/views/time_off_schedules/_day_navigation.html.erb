@@ -6,4 +6,5 @@
   <%= link_to time_off_tab_path(@tab, date: @date + 1), class: 'time-off-day-arrow', rel: 'next', title: "Próximo dia · #{l(@date + 1)}", aria: { label: 'Próximo dia' } do %>
     <span aria-hidden="true">›</span>
   <% end %>
+  <% if @tab == 'day' %><%= render 'date_picker', mode: 'day', date: @date %><% end %>
 </nav>
