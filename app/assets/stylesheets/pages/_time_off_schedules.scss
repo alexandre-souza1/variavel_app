@@ -11,6 +11,8 @@
   strong { font-size: .85rem; }
   small { display: block; font-size: .75rem; color: var(--bs-secondary-color); margin-top: .25rem; }
 }
+.time-off-suggestion-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.time-off-suggestion-actions form, .time-off-ignored-suggestions form { margin: 0; }
 .time-off-page {
   --bs-body-bg: var(--bs-card-bg, var(--bs-tertiary-bg));
   --time-off-a: #2c78c4; --time-off-b: #8755c6; --time-off-c: #19856b;

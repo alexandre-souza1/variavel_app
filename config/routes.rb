@@ -6,6 +6,8 @@ Rails.application.routes.draw do
     patch :update_coverage
     post :preview_routing, path: 'cobertura/importar'
     post :assign_group, path: 'grupos'
+    patch :ignore_suggestion, path: 'sugestoes/ignorar'
+    patch :restore_suggestion, path: 'sugestoes/restaurar'
     patch :revise_membership, path: 'grupos/corrigir-vigencia'
     patch :delete_membership, path: 'grupos/excluir-vigencia'
     patch :update_day, path: 'dia'

@@ -3,6 +3,7 @@ module TimeOff
     attr_reader :people, :memberships
 
     def initialize(schedule:, date:)
+      @schedule = schedule
       @people = Employee.active.in_sector('du', date: date).includes(:employee_roles).order(:nome).to_a
       @people += People.active_records(Driver, date: date).where(employee_id: nil).order(:nome).to_a
       @people += People.active_records(Ajudante, date: date).where(employee_id: nil).order(:nome).to_a
@@ -40,6 +41,20 @@ module TimeOff
 
     def unassigned
       people.reject { |person| memberships.key?(self.class.key(person)) }
+    end
+
+    def suggestions
+      unassigned.reject { |person| ignored_keys.include?(self.class.key(person)) }
+    end
+
+    def ignored_suggestions
+      unassigned.select { |person| ignored_keys.include?(self.class.key(person)) }
+    end
+
+    private
+
+    def ignored_keys
+      @ignored_keys ||= @schedule&.ignored_group_suggestions || []
     end
   end
 end

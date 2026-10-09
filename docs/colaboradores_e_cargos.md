@@ -64,6 +64,8 @@ A coluna **Grupo** lê a vigência atual de `TimeOffMembership`; não há um seg
 
 As tabelas `drivers`, `ajudantes`, `operators` e `az_ajudantes` continuam como adaptadores para associações históricas de mapas, WMS, autonomias e outros módulos. `Employees::Registry` centraliza sua sincronização. Sua remoção exige outra migração dos consumidores históricos.
 
+Na **Escala de folgas**, **Ignorar sugestão** oculta uma pessoa do aviso de colaboradores sem grupo, por exemplo cadastros de reserva. A preferência é salva na escala e vale para todos os usuários e datas. Ela não altera o cadastro, os grupos ou a disponibilidade. Gestores podem desfazer a ação em **Sugestões ignoradas → Restaurar sugestão**; a pessoa continua disponível em **Colaboradores** para receber um grupo.
+
 No CSV de cadastro, informe `inicio_cargo` como `AAAA-MM-DD`. Motoristas aceitam `cargo` igual a `motorista` ou `van`; AZ exige turno A/B/C. Os arquivos são transacionais: um erro reverte o cadastro daquele arquivo. Atualizações de código/turno em cadastros vinculados devem ser registradas como movimentações no RH.
 
 Homônimos não são fundidos. O vínculo manual abre uma conferência dos cadastros e exige CPF coincidente, data e motivo. Ao incorporar um cadastro legado, seus IDs e fontes são preservados. Conflitos de fechamento DU seguem a consolidação já existente. Dois fechamentos AZ do mesmo período permanecem como referências para conferência, sem somar fontes potencialmente duplicadas; a auditoria do vínculo registra a necessidade de revisão.

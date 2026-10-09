@@ -9,7 +9,7 @@
   </header>
 
   <% if @unassigned_people.any? %>
-    <details class="time-off-unassigned app-panel">
+    <details class="time-off-unassigned time-off-active-suggestions app-panel">
       <summary><i class="bi bi-exclamation-circle" aria-hidden="true"></i> <strong><%= @unassigned_people.size %> <%= @unassigned_people.one? ? 'colaborador DU sem grupo definido' : 'colaboradores DU sem grupo definido' %></strong><span> em <%= l(@date) %></span><%= disclosure_arrow %></summary>
       <div class="app-panel__body">
         <p>Esses colaboradores ainda não aparecem na escala desta data. A lista considera toda a equipe DU, independentemente dos filtros de função e grupo.</p>
@@ -21,8 +21,28 @@
               <% if can_edit? %>
                 <% dialog_id = "group-dialog-#{TimeOff::GroupRoster.key(person).tr(':', '-')}" %>
                 <% group_action = future_member ? 'Corrigir vigência' : 'Definir grupo' %>
-                <button type="button" class="employees-group-trigger" data-action="group-dialog#open" data-group-dialog-id="<%= dialog_id %>" aria-haspopup="dialog" aria-controls="<%= dialog_id %>" aria-label="<%= group_action %> de <%= person.nome %>"><%= group_action %> <i class="bi bi-pencil" aria-hidden="true"></i></button>
+                <div class="time-off-suggestion-actions">
+                  <%= button_to ignore_suggestion_time_off_schedule_path(suggestion_navigation), method: :patch, params: { person: TimeOff::GroupRoster.key(person) }, class: 'btn btn-sm btn-outline-secondary', aria: { label: "Ignorar sugestão de #{person.nome}" } do %><i class="bi bi-eye-slash" aria-hidden="true"></i> Ignorar sugestão<% end %>
+                  <button type="button" class="employees-group-trigger" data-action="group-dialog#open" data-group-dialog-id="<%= dialog_id %>" aria-haspopup="dialog" aria-controls="<%= dialog_id %>" aria-label="<%= group_action %> de <%= person.nome %>"><%= group_action %> <i class="bi bi-pencil" aria-hidden="true"></i></button>
+                </div>
               <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </details>
+  <% end %>
+
+  <% if can_edit? && @ignored_suggestions.any? %>
+    <details class="time-off-unassigned time-off-ignored-suggestions app-panel">
+      <summary><i class="bi bi-eye-slash" aria-hidden="true"></i><strong>Sugestões ignoradas (<%= @ignored_suggestions.size %>)</strong><%= disclosure_arrow %></summary>
+      <div class="app-panel__body">
+        <p>Esses colaboradores foram ocultados das sugestões de grupo. Você pode reexibi-los quando precisar.</p>
+        <ul class="time-off-unassigned-list">
+          <% @ignored_suggestions.each do |person| %>
+            <li data-person-key="<%= TimeOff::GroupRoster.key(person) %>">
+              <div><strong><%= person.nome %></strong><small>Matrícula <%= person.matricula %></small></div>
+              <%= button_to restore_suggestion_time_off_schedule_path(suggestion_navigation), method: :patch, params: { person: TimeOff::GroupRoster.key(person) }, class: 'btn btn-sm btn-outline-secondary', aria: { label: "Restaurar sugestão de #{person.nome}" } do %><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Restaurar sugestão<% end %>
             </li>
           <% end %>
         </ul>
