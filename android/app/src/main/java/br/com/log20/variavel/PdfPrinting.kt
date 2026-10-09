@@ -56,7 +56,7 @@ object PdfPrinting {
                         worker.shutdown()
                     }
                 }
-                activity.getSystemService(PrintManager::class.java).print("Workstation PDF", adapter, null)
+                activity.getSystemService(PrintManager::class.java).print("Log IA PDF", adapter, null)
             } catch (_: Exception) {
                 android.widget.Toast.makeText(activity, R.string.file_export_failed, android.widget.Toast.LENGTH_LONG).show()
             }

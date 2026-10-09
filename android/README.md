@@ -1,8 +1,8 @@
-# Workstation para Android
+# Log IA para Android
 
 Aplicativo Kotlin/Hotwire Native 1.3.1 para Android 9 (API 28) ou superior. Usa o Rails em `https://workstation-app-foz-f23ff3447c33.herokuapp.com/` e precisa de internet. Inclui notificações push com Firebase Cloud Messaging; não implementa operação offline.
 
-O nome exibido é **Workstation**. O ícone utiliza `app/assets/images/icon-512x512.png`, autorizado como alternativa ao `public/favicon.ico` vazio, e tem versão adaptativa para o launcher. O identificador `br.com.log20.variavel` foi mantido para preservar a identidade de instalação nas atualizações.
+O nome exibido é **Log IA**. O ícone utiliza `app/assets/images/icon-512x512.png`, derivado do símbolo fornecido em `app/assets/images/logo-new.png`, e tem versão adaptativa com fundo branco para o launcher. O identificador `br.com.log20.variavel` e a URL atual do Heroku foram mantidos para preservar a instalação e o acesso ao servidor.
 
 As telas web usam apenas a navbar do Rails: a barra de título adicional do Hotwire foi removida. O botão Voltar do Android continua disponível. O contêiner respeita barra de status, recortes de tela, navegação do sistema e teclado. Não há barra inferior de atalhos nesta versão; os menus existentes continuam seguindo as permissões do usuário.
 
@@ -36,7 +36,7 @@ Para atualizar o teste instalado, use um APK assinado com a mesma chave de debug
 
 O app está vinculado ao Firebase `workstation-7a115`, pacote `br.com.log20.variavel`. `app/google-services.json` é a configuração pública do cliente; nunca coloque a conta de serviço privada nessa pasta. Apenas o SDK Messaging foi adicionado; o SDK Analytics não foi incluído.
 
-Após o login, Android 13+ solicita permissão. O celular registra o token FCM pelo WebView autenticado, usando o cookie e o CSRF do Rails. O usuário é definido pelo servidor, não por um parâmetro enviado pelo cliente. Novas visitas e retorno ao app sincronizam o token atual, inclusive após renovação. Se negar a permissão, é possível ativar depois nas configurações de notificações do Workstation no Android e reabrir o app.
+Após o login, Android 13+ solicita permissão. O celular registra o token FCM pelo WebView autenticado, usando o cookie e o CSRF do Rails. O usuário é definido pelo servidor, não por um parâmetro enviado pelo cliente. Novas visitas e retorno ao app sincronizam o token atual, inclusive após renovação. Se negar a permissão, é possível ativar depois nas configurações de notificações do Log IA no Android e reabrir o app.
 
 O Rails envia push para os eventos já existentes no sino (tarefas, vencimentos, disponibilidade e atas). As mensagens mostram o título e o texto da notificação, com texto expandido e visibilidade privada na tela bloqueada; ao tocar, o servidor verifica a conta, marca a notificação como lida e abre seu destino. O Android descarta mensagens destinadas a outra conta. Logout desvincula os dispositivos registrados na mesma sessão sem afetar outros celulares. Tokens que o FCM informa como inválidos são removidos. Erros temporários são repetidos pelo job, sem registrar credenciais ou tokens nos logs.
 
@@ -75,7 +75,7 @@ A execução no GitHub ainda depende de publicar estes arquivos e configurar os 
 O usuário já validou os fluxos web principais e o leitor inicial de PDFs. Para esta versão, conferir:
 
 1. Atualização sobre o debug anterior e manutenção de login.
-2. Nome Workstation e ícone na tela inicial.
+2. Nome Log IA e ícone na tela inicial.
 3. PDF: páginas, ampliação, salvar e abrir a cópia salva, compartilhar, impressão, rotação e Voltar.
 4. XLSX, CSV, ZIP e anexo protegido: salvar, compartilhar, cancelar o seletor e tentar de novo.
 5. Negar acesso ou usar sessão expirada: mensagem de erro, sem salvar HTML como documento.

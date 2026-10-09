@@ -28,7 +28,7 @@ class FirebasePush
       message: {
         token: device.token,
         data: { user_id: notification.user_id.to_s, notification_id: notification.id.to_s,
-                title: push_text(notification.title, "Workstation", 160),
+                title: push_text(notification.title, "Log IA", 160),
                 body: push_text(notification.body, "Você tem uma nova notificação no sistema.", 500) },
         android: { priority: "HIGH", ttl: "86400s" }
       }

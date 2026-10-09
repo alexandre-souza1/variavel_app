@@ -7,7 +7,7 @@ class NavigationJourneysTest < ActionDispatch::IntegrationTest
       users(:one).update!(role: :user, sector: sector)
       get variaveis_path
       assert_response :success
-      assert_select "a.navbar-brand[href=?][aria-label=?]", variaveis_path, "Workstation — Início"
+      assert_select "a.navbar-brand[href=?][aria-label=?]", variaveis_path, "Log IA — Início"
       assert_select "a.user-name[href=?]", root_path
     end
   end

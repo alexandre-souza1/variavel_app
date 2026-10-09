@@ -3,10 +3,12 @@
     <!-- Logo -->
     <%= link_to variaveis_path,
                 class: "navbar-brand d-flex align-items-center gap-2",
-                aria: { label: "Workstation — Início" },
+                aria: { label: "Log IA — Início" },
                 data: { turbo: false } do %>
-      <%= image_tag "logo.png", alt: "Workstation Logo", height: "40" %>
-      <span class="fw-bold brand-text">Workstation</span>
+      <%= image_tag "logo-log-ia.png", alt: "Logo Log IA", class: "app-brand-logo", width: 40, height: 40 %>
+      <span class="fw-bold brand-text">
+        <%= image_tag "logo-log-ia-texto.png", alt: "Log IA", class: "app-brand-wordmark", width: 77, height: 24 %>
+      </span>
     <% end %>
 
     <div class="collapse navbar-collapse d-none d-lg-flex" id="navbarMain">
@@ -285,7 +287,7 @@
     <div class="offcanvas-header">
       <div>
         <h5 class="offcanvas-title" id="mobileNavOffcanvasLabel">Menu</h5>
-        <span class="app-mobile-offcanvas__subtitle">Workstation</span>
+        <span class="app-mobile-offcanvas__subtitle">Log IA</span>
       </div>
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
     </div>
