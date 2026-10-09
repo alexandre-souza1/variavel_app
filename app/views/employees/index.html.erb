@@ -58,6 +58,9 @@
                     <% if @schedule && current_user.can_manage_time_off? %>
                       <button type="button" class="employees-group-trigger" data-action="group-dialog#open" data-group-dialog-id="group-dialog-employee-<%= employee.id %>" aria-haspopup="dialog" aria-controls="group-dialog-employee-<%= employee.id %>" aria-label="<%= membership ? 'Alterar' : 'Definir' %> grupo de <%= employee.nome %>"><span class="employees-group-value"><%= membership&.group_code %></span><i class="bi bi-pencil" aria-hidden="true"></i></button>
                     <% else %><span class="employees-group-value"><%= membership&.group_code %></span><% end %>
+                    <% if @ignored_group_suggestion_keys.include?("employee:#{employee.id}") %>
+                      <i class="bi bi-eye-slash text-muted ms-2" role="img" aria-label="Sugestão de grupo ignorada" title="Sugestão de grupo ignorada"></i>
+                    <% end %>
                   <% end %>
                 </td>
                 <td><span class="employees-status <%= 'employees-status--active' if employee.active? && !employee.awaiting_function_start? %>"><%= employee.employment_status_label %></span></td>

@@ -3,7 +3,7 @@ class TimeOffSchedulesController < ApplicationController
   CALENDAR_PAGE_SIZES = [12, 24, 48].freeze
   before_action :authenticate_user!
   before_action :require_access!
-  before_action :require_editor!, only: %i[assign_group ignore_suggestion restore_suggestion revise_membership delete_membership update_day update_rotation update_coverage preview_routing create_vacation cancel_vacation]
+  before_action :require_editor!, only: %i[assign_group ignore_suggestion revise_membership delete_membership update_day update_rotation update_coverage preview_routing create_vacation cancel_vacation]
   before_action :set_schedule
 
   def show
@@ -16,7 +16,6 @@ class TimeOffSchedulesController < ApplicationController
     @month_days = (@month..@month.end_of_month).to_a
     roster = TimeOff::GroupRoster.new(schedule: @schedule, date: @date)
     @unassigned_people = roster.suggestions
-    @ignored_suggestions = roster.ignored_suggestions
     @editable_memberships = TimeOff::GroupRoster.editable_memberships(schedule: @schedule, date: @date)
     @days = @month_days
     prepare_calendar_days if @tab == 'calendar'
@@ -77,11 +76,19 @@ class TimeOffSchedulesController < ApplicationController
   end
 
   def ignore_suggestion
-    update_group_suggestion(ignored: true)
-  end
+    date = params[:date].present? ? Date.iso8601(params[:date]) : Date.current
+    @schedule.with_lock do
+      person = TimeOff::GroupRoster.new(schedule: @schedule, date: date).unassigned
+        .find { |item| TimeOff::GroupRoster.key(item) == params[:person] }
+      raise TimeOff::UpdateDay::InvalidChange, 'Selecione uma sugestão de colaborador DU sem grupo.' unless person
 
-  def restore_suggestion
-    update_group_suggestion(ignored: false)
+      key = TimeOff::GroupRoster.key(person)
+      keys = @schedule.ignored_group_suggestions
+      @schedule.update!(ignored_group_suggestions: (keys + [key]).uniq)
+    end
+    redirect_to time_off_schedule_path(suggestion_navigation), notice: 'Sugestão ignorada.'
+  rescue ActiveRecord::RecordInvalid, TimeOff::UpdateDay::InvalidChange, Date::Error => error
+    redirect_to time_off_schedule_path(suggestion_navigation), alert: error.message
   end
 
   def update_day
@@ -150,22 +157,6 @@ class TimeOffSchedulesController < ApplicationController
   end
 
   private
-
-  def update_group_suggestion(ignored:)
-    date = params[:date].present? ? Date.iso8601(params[:date]) : Date.current
-    @schedule.with_lock do
-      person = TimeOff::GroupRoster.new(schedule: @schedule, date: date).unassigned
-        .find { |item| TimeOff::GroupRoster.key(item) == params[:person] }
-      raise TimeOff::UpdateDay::InvalidChange, 'Selecione uma sugestão de colaborador DU sem grupo.' unless person
-
-      key = TimeOff::GroupRoster.key(person)
-      keys = @schedule.ignored_group_suggestions
-      @schedule.update!(ignored_group_suggestions: ignored ? (keys + [key]).uniq : keys - [key])
-    end
-    redirect_to time_off_schedule_path(suggestion_navigation), notice: ignored ? 'Sugestão ignorada.' : 'Sugestão restaurada.'
-  rescue ActiveRecord::RecordInvalid, TimeOff::UpdateDay::InvalidChange, Date::Error => error
-    redirect_to time_off_schedule_path(suggestion_navigation), alert: error.message
-  end
 
   def suggestion_navigation
     params.slice(:tab, :date, :month, :role, :group, :calendar_period, :page, :name, :per_page)

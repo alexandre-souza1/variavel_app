@@ -47,10 +47,6 @@ module TimeOff
       unassigned.reject { |person| ignored_keys.include?(self.class.key(person)) }
     end
 
-    def ignored_suggestions
-      unassigned.select { |person| ignored_keys.include?(self.class.key(person)) }
-    end
-
     private
 
     def ignored_keys

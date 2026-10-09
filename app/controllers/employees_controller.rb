@@ -26,6 +26,7 @@ class EmployeesController < ApplicationController
     @employees = @employees.limit(200)
     @duplicate_counts = visible_employees.duplicate_registration_counts(@employees.map(&:matricula))
     @schedule = TimeOffSchedule.order(:id).first
+    @ignored_group_suggestion_keys = (@schedule&.ignored_group_suggestions || []).to_set
     @group_memberships = TimeOff::GroupRoster.memberships(schedule: @schedule, date: Date.current, employee_ids: @employees.map(&:id))
     @editable_group_memberships = TimeOff::GroupRoster.editable_memberships(schedule: @schedule, date: Date.current, employee_ids: @employees.map(&:id))
   end
