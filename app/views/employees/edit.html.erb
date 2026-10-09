@@ -8,6 +8,20 @@
         <div class="employees-field"><%= f.label field, label %><%= f.text_field field, required: field != :cpf, class: 'form-control' %></div>
       <% end %>
       <div class="employees-field"><%= f.label :data_nascimento, 'Data de nascimento' %><%= f.date_field :data_nascimento, class: 'form-control' %></div>
+      <div class="employees-field"><%= f.label :registered_on, 'Data de registro na carteira' %><%= f.date_field :registered_on, class: 'form-control' %></div>
+      <% if @employee.employee_roles.size == 1 && current_user.employee_sectors.include?(@employee.initial_role.sector) %>
+        <%= fields_for :employee_role do |career| %>
+          <% if @employee.initial_role.pending_start? %>
+            <div class="employees-field employees-field--full"><span>Setor e cargo definidos: <strong><%= @employee.initial_role.sector_label %> · <%= @employee.initial_role.label %></strong></span><small>Preencha os dados operacionais e o início na função ao concluir a integração.</small></div>
+            <% if @employee.initial_role.du? %>
+              <div class="employees-field"><%= career.label :promax, 'Código Promax', for: 'initial_promax' %><%= career.text_field :promax, value: params.dig(:employee_role, :promax) || @employee.initial_role.promax, id: 'initial_promax', class: 'form-control' %></div>
+            <% else %>
+              <div class="employees-field"><%= career.label :turno, 'Turno', for: 'initial_turno' %><%= career.select :turno, EmployeeRole::TURNOS, { selected: params.dig(:employee_role, :turno) || @employee.initial_role.turno, include_blank: 'Definir após a integração' }, id: 'initial_turno', class: 'form-select' %></div>
+            <% end %>
+          <% end %>
+          <div class="employees-field"><%= career.label :starts_on, 'Data de início na função', for: 'initial_starts_on' %><%= career.date_field :starts_on, value: params.dig(:employee_role, :starts_on) || @employee.initial_role.starts_on, id: 'initial_starts_on', required: @employee.initial_role.starts_on.present?, class: 'form-control' %><small>O colaborador fica disponível para a operação a partir dessa data.</small></div>
+        <% end %>
+      <% end %>
       <% if Employees::Registry.autonomy_record(@employee.matricula) %>
         <div class="employees-field employees-field--full"><label><%= f.check_box :operational_autonomy %> Permitir registro de autonomia</label></div>
       <% end %>

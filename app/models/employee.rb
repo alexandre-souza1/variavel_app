@@ -13,6 +13,7 @@ class Employee < ApplicationRecord
   validates :nome, :matricula, presence: true
   validates :matricula, uniqueness: true, on: :create
   validate :unique_registration_change, on: :update
+  validate :valid_registration_date
 
   scope :active, -> { where(active: true) }
   scope :archived, -> { where(active: false) }
@@ -25,13 +26,24 @@ class Employee < ApplicationRecord
     where(id: EmployeeRole.where(sector: sector).on(date).select(:employee_id))
   end
 
-  # Retired people keep the sector of their last started career period.
-  # Future transfers must not change access before their effective date.
+  # Before the first role starts, RH access follows its intended sector.
+  # Later transfers only change access on their effective date.
   def self.in_current_or_last_sector(sectors, date: Date.current)
-    latest = EmployeeRole.where('starts_on IS NULL OR starts_on <= ?', date)
-      .select('DISTINCT ON (employee_id) employee_id, sector')
-      .order(Arel.sql('employee_id, starts_on DESC NULLS LAST, id DESC'))
-    where("employees.id IN (SELECT employee_id FROM (#{latest.to_sql}) AS latest_roles WHERE sector IN (?))", Array(sectors))
+    where(id: EmployeeRole.for_directory(date: date).where(sector: sectors).select(:employee_id))
+  end
+
+  def initial_role
+    employee_roles.min_by { |role| [role.starts_on || Date.new(1, 1, 1), role.id || 0] }
+  end
+
+  def awaiting_function_start?(date: Date.current)
+    role = initial_role
+    role && (role.pending_start? || (role.starts_on && role.starts_on > date))
+  end
+
+  def employment_status_label(date: Date.current)
+    return 'Inativo' unless active?
+    awaiting_function_start?(date: date) ? 'Em integração' : 'Ativo'
   end
 
   def eligible_for?(feature, date: Date.current)
@@ -62,6 +74,14 @@ class Employee < ApplicationRecord
   def unique_registration_change
     if will_save_change_to_matricula? && self.class.where(matricula: matricula).where.not(id: id).exists?
       errors.add(:matricula, 'já pertence a outro colaborador; revise os vínculos no RH')
+    end
+  end
+
+  def valid_registration_date
+    if registered_on.nil? && registered_on_before_type_cast.present?
+      errors.add(:registered_on, 'é inválida')
+    elsif registered_on && employee_roles.where('starts_on < ?', registered_on).exists?
+      errors.add(:registered_on, 'deve ser igual ou anterior ao início na função')
     end
   end
 
@@ -125,8 +145,8 @@ class Employee < ApplicationRecord
   end
 
   def maps
-    driver_codes = employee_roles.select { |role| role.du? && role.cargo != 'ajudante' }.map(&:promax).uniq
-    helper_codes = employee_roles.select { |role| role.du? && role.cargo == 'ajudante' }.map(&:promax).uniq
+    driver_codes = employee_roles.select { |role| role.du? && role.cargo != 'ajudante' }.filter_map { |role| role.promax.presence }.uniq
+    helper_codes = employee_roles.select { |role| role.du? && role.cargo == 'ajudante' }.filter_map { |role| role.promax.presence }.uniq
     Mapa.where(matric_motorista: driver_codes).or(Mapa.where(matric_ajudante: helper_codes)).or(Mapa.where(matric_ajudante_2: helper_codes))
   end
 
@@ -152,6 +172,7 @@ class Employee < ApplicationRecord
       before = roles.map(&:attributes)
       role.assign_attributes(attributes)
       raise EmployeeRole::HistoryError, 'Informe a data efetiva corrigida.' unless role.starts_on
+      role.pending_start = false
       if (previous&.starts_on && role.starts_on <= previous.starts_on) || (following && role.starts_on >= following.starts_on)
         raise EmployeeRole::HistoryError, 'A correção deve manter a ordem das movimentações.'
       end
@@ -193,6 +214,9 @@ class Employee < ApplicationRecord
       role = employee_roles.new(attributes.merge(created_by: user))
       raise EmployeeRole::HistoryError, 'Informe a data efetiva da movimentação.' unless role.starts_on
       previous = employee_roles.where.not(id: role.id).order(Arel.sql('starts_on DESC NULLS LAST')).first
+      if previous&.pending_start?
+        raise EmployeeRole::HistoryError, 'Informe o início na função em Editar dados antes de registrar uma movimentação.'
+      end
       role.sector = previous.sector if previous && attributes[:sector].blank? && attributes['sector'].blank?
       if previous && previous.starts_on && role.starts_on <= previous.starts_on
         raise EmployeeRole::HistoryError, 'A movimentação deve ser posterior à última vigência. Corrija o histórico com uma revisão.'
@@ -206,6 +230,17 @@ class Employee < ApplicationRecord
       previous&.update!(ends_on: role.starts_on - 1.day)
       role.save!
       employee_career_events.create!(user: user, details: { action: 'change_role', previous_role_id: previous&.id, previous_ends_on: previous_ends_on, role: role.attributes })
+      role
+    end
+  end
+
+  def register_initial_role!(attributes, user:)
+    return change_role!(attributes, user: user) if attributes[:starts_on].present? || attributes['starts_on'].present?
+
+    with_lock do
+      raise EmployeeRole::HistoryError, 'O cargo inicial já foi cadastrado.' if employee_roles.exists?
+      role = employee_roles.create!(attributes.to_h.merge(pending_start: true, created_by: user))
+      employee_career_events.create!(user: user, details: { action: 'register_initial_role', role: role.attributes })
       role
     end
   end

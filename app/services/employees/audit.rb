@@ -24,8 +24,9 @@ module Employees
         [model.name, { count: ids.size, sample_ids: ids.first(20) }]
       end
       {
-        missing_start_dates: EmployeeRole.where(starts_on: nil).pluck(:employee_id, :id),
-        missing_az_shifts: EmployeeRole.az.where(turno: nil).pluck(:employee_id, :id),
+        missing_start_dates: EmployeeRole.where(starts_on: nil, pending_start: false).pluck(:employee_id, :id),
+        pending_function_starts: EmployeeRole.where(pending_start: true).pluck(:employee_id, :id),
+        missing_az_shifts: EmployeeRole.az.where(turno: nil, pending_start: false).pluck(:employee_id, :id),
         duplicate_registrations: duplicate_registrations, overlapping_registration_aliases: overlapping_registrations,
         ambiguous_exact_names: ambiguous_names,
         identity_mismatches: mismatches, unresolved_az_sources: unresolved_sources

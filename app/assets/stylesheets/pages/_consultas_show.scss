@@ -320,6 +320,227 @@ html[data-bs-theme="dark"] {
   }
 }
 
+.az-operator-report-page.consultas-report-page {
+  .az-report-header-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 690px;
+    gap: 1.5rem;
+  }
+
+  .consultas-report-identity { min-width: 0; }
+
+  .az-report-actions {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .6rem;
+  }
+
+  .az-report-back-link { align-self: flex-end; }
+
+  .consultas-report-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 328px) 350px;
+    align-items: start;
+    gap: .75rem;
+    width: 100%;
+
+    .az-report-actions__controls {
+      min-width: 0;
+      max-width: none;
+      align-items: stretch;
+    }
+
+    .az-period-filter {
+      min-height: 78px;
+      padding: .6rem .75rem;
+      margin: 0;
+      align-items: center;
+      background: var(--bs-card-bg, var(--bs-body-bg));
+      border-color: var(--bs-border-color-translucent, var(--bs-border-color));
+
+      .az-period-field { min-width: 0; flex: 1; }
+      .az-period-submit { margin-top: 1.25rem; }
+    }
+  }
+
+  .consultas-parameters {
+    min-width: 0;
+    min-height: 78px;
+    align-self: start;
+    padding: .5rem .75rem;
+    border: 1px solid var(--bs-border-color-translucent, var(--bs-border-color));
+    border-radius: 12px;
+    background: var(--bs-card-bg, var(--bs-body-bg));
+
+    &__header {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
+      margin-bottom: .25rem;
+    }
+
+    h2 {
+      min-width: 0;
+      margin: 0;
+      color: var(--bs-secondary-color);
+      font-size: .65rem;
+      font-weight: 650;
+      line-height: 1.2;
+
+      i { margin-right: .3rem; }
+    }
+
+    &__profiles {
+      display: grid;
+      gap: .65rem;
+    }
+
+    &__profile {
+      display: grid;
+      grid-template-columns: 1fr;
+      align-items: center;
+      gap: .2rem;
+
+      + .consultas-parameters__profile {
+        padding-top: .65rem;
+        border-top: 1px solid var(--bs-border-color-translucent, var(--bs-border-color));
+      }
+    }
+
+    &__heading {
+      display: flex;
+      flex-direction: row;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: .15rem .4rem;
+      font-size: .68rem;
+      line-height: 1.2;
+
+      small {
+        color: var(--bs-secondary-color);
+        font-size: .6rem;
+      }
+    }
+
+    &__rates {
+      display: grid;
+      grid-template-columns: minmax(0, .85fr) minmax(0, .85fr) minmax(0, 1.15fr) minmax(0, 1.15fr);
+      gap: .4rem;
+      margin: 0;
+
+      > div {
+        padding-left: .4rem;
+        border-left: 1px solid var(--bs-border-color-translucent, var(--bs-border-color));
+      }
+
+      > div:first-child { padding-left: 0; border-left: 0; }
+
+      dt {
+        color: var(--bs-secondary-color);
+        font-size: .6rem;
+        font-weight: 500;
+        line-height: 1.2;
+      }
+
+      dd {
+        margin: .15rem 0 0;
+        font-size: .75rem;
+        font-weight: 650;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+    }
+
+    &__help {
+      flex-shrink: 0;
+      color: var(--bs-secondary-color);
+      font-size: .65rem;
+      line-height: 1;
+
+      summary {
+        display: flex;
+        padding: 0;
+        cursor: pointer;
+        list-style: none;
+
+        &::-webkit-details-marker { display: none; }
+        &:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 3px; }
+      }
+
+      p {
+        position: absolute;
+        z-index: 5;
+        top: calc(100% + .5rem);
+        right: 0;
+        width: 240px;
+        max-width: 100%;
+        padding: .75rem;
+        margin: 0;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 8px;
+        background: var(--bs-card-bg, var(--bs-body-bg));
+        box-shadow: 0 6px 20px rgba(0, 0, 0, .1);
+        line-height: 1.5;
+      }
+    }
+
+    &__empty {
+      margin: 0;
+      color: var(--bs-secondary-color);
+      font-size: .75rem;
+      line-height: 1.5;
+    }
+  }
+
+  @media (min-width: 821px) and (max-width: 1250px) {
+    .az-report-header-content { grid-template-columns: minmax(0, 1fr) 350px; }
+    .consultas-report-toolbar { grid-template-columns: 1fr; }
+    .consultas-report-toolbar .az-report-actions__controls { grid-row: 1; }
+  }
+
+  @media (max-width: 820px) {
+    .az-report-header-content { grid-template-columns: 1fr; }
+    .consultas-report-toolbar { grid-template-columns: 1fr; }
+    .consultas-report-toolbar .az-report-actions__controls { grid-row: 1; }
+    .az-report-back-link { align-self: flex-start; }
+  }
+
+  @media (max-width: 560px) {
+    .consultas-report-toolbar .az-period-filter {
+      .az-period-field { min-width: calc(50% - .25rem); }
+      .az-period-submit { margin-top: 0; }
+    }
+
+    .consultas-parameters__rates {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .8rem 1rem;
+
+      > div { padding-left: 0; border-left: 0; }
+    }
+  }
+
+  @media (max-width: 360px) {
+    .consultas-parameters__heading { flex-wrap: wrap; }
+
+    .consultas-parameters__rates {
+      grid-template-columns: 1fr;
+
+      > div {
+        display: flex;
+        flex-direction: column;
+        gap: .2rem;
+      }
+
+      dd { margin: 0; }
+    }
+  }
+}
+
 // Faixa compacta de consumo, com expansão nativa por mouse e teclado.
 .consumption-tab {
   &__summary {

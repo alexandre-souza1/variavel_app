@@ -8,7 +8,7 @@
 <div class="az-operator-report-page consultas-report-page">
   <header class="az-report-header">
     <div class="az-report-header-content">
-      <div>
+      <div class="consultas-report-identity">
         <p class="az-report-eyebrow"><i class="bi bi-graph-up-arrow me-1"></i> Remuneração variável · <%= profile_label %></p>
         <h1 class="az-report-title">
           <i class="bi bi-person-circle"></i>
@@ -29,48 +29,83 @@
           <i class="bi bi-arrow-left"></i> Voltar
         <% end %>
 
-        <div class="az-report-actions__controls">
-          <%= form_with url: consulta_path, method: :get, local: true,
-                        class: "az-period-filter",
-                        data: { controller: "autosubmit", autosubmit_target: "form" } do %>
-            <%= hidden_field_tag :matricula, @matricula %>
-            <%= hidden_field_tag :return_to, consultation_return_path %>
-            <%= hidden_field_tag :categoria, @categoria %>
-            <%= hidden_field_tag :employee_sector, 'du' if @employee %>
-            <%= hidden_field_tag :funcao, params[:funcao] if params[:funcao].present? %>
-
-            <div class="az-period-field">
-              <%= label_tag :periodo_mes, "Mês" %>
-              <%= select_tag :periodo_mes,
-                  options_for_select((1..12).map { |month| [I18n.t("date.month_names")[month], month] }, params[:periodo_mes]),
-                  class: "form-select form-select-sm",
-                  data: { autosubmit_target: "select", action: "change->autosubmit#submitOnChange" },
-                  required: true %>
+        <div class="consultas-report-toolbar">
+          <aside class="consultas-parameters" aria-labelledby="consultas-parameters-title">
+            <div class="consultas-parameters__header">
+              <h2 id="consultas-parameters-title"><i class="bi bi-sliders"></i> Parâmetros de cálculo</h2>
+              <% if @selected_parameter_profiles.present? %>
+                <details class="consultas-parameters__help">
+                  <summary aria-label="Sobre as tarifas de cálculo"><i class="bi bi-info-circle" aria-hidden="true"></i></summary>
+                  <p>Tarifas do último mapa de cada cargo no período. Cada mapa mantém sua própria tarifa.</p>
+                </details>
+              <% end %>
             </div>
-
-            <div class="az-period-field">
-              <%= label_tag :periodo_ano, "Ano" %>
-              <%= select_tag :periodo_ano,
-                  options_for_select((Date.current.year - 5..Date.current.year).to_a.reverse, params[:periodo_ano] || Date.current.year),
-                  class: "form-select form-select-sm",
-                  data: { autosubmit_target: "select", action: "change->autosubmit#submitOnChange" },
-                  required: true %>
-            </div>
-
-            <%= submit_tag "Atualizar", class: "az-period-submit" %>
-          <% end %>
-
-          <% if @parameter_profiles&.many? %>
-            <div class="az-function-switch" aria-label="Selecionar função do período" data-controller="function-switch">
-              <div class="az-function-switch__options" role="tablist" aria-label="Funções disponíveis">
-                <%= link_to 'Todos', consulta_path(matricula: @matricula, categoria: @categoria, employee_sector: @employee ? 'du' : nil, periodo_mes: params[:periodo_mes], periodo_ano: params[:periodo_ano], funcao: 'todos', return_to: consultation_return_path), class: "az-function-switch__option #{'is-active' if @selected_function.blank?}", aria: { selected: @selected_function.blank? }, data: { action: 'click->function-switch#change' } %>
-                <% @parameter_profiles.each do |profile| %>
-                  <% switch_label = profile[:cargo] == 'van' ? 'Van' : profile[:cargo].capitalize %>
-                  <%= link_to switch_label, consulta_path(matricula: @matricula, categoria: @categoria, employee_sector: @employee ? 'du' : nil, periodo_mes: params[:periodo_mes], periodo_ano: params[:periodo_ano], funcao: profile[:cargo], return_to: consultation_return_path), class: "az-function-switch__option #{'is-active' if @selected_function == profile[:cargo]}", aria: { selected: @selected_function == profile[:cargo] }, title: profile[:label], data: { action: 'click->function-switch#change' } %>
+            <% if @selected_parameter_profiles.present? %>
+              <div class="consultas-parameters__profiles">
+                <% @selected_parameter_profiles.each do |profile| %>
+                  <div class="consultas-parameters__profile">
+                    <div class="consultas-parameters__heading">
+                      <strong><%= profile[:label] %></strong>
+                      <small><%= profile[:map_date] ? l(profile[:map_date]) : 'Data não informada' %></small>
+                    </div>
+                    <dl class="consultas-parameters__rates">
+                      <div><dt>Caixa real</dt><dd><%= number_to_currency(profile[:caixa], unit: "R$ ", separator: ",", delimiter: ".") %></dd></div>
+                      <div><dt>PDV real</dt><dd><%= number_to_currency(profile[:entrega], unit: "R$ ", separator: ",", delimiter: ".") %></dd></div>
+                      <% unless profile[:cargo] == "van" %>
+                        <div><dt>Recarga</dt><dd><%= number_to_currency(profile[:recarga], unit: "R$ ", separator: ",", delimiter: ".") %></dd></div>
+                      <% end %>
+                      <div><dt title="Bônus de devolução">Bônus</dt><dd><%= number_to_currency(profile[:bonus_devolucao], unit: "R$ ", separator: ",", delimiter: ".") %></dd></div>
+                    </dl>
+                  </div>
                 <% end %>
               </div>
-            </div>
-          <% end %>
+            <% else %>
+              <p class="consultas-parameters__empty">Selecione um período com mapas calculados para visualizar os parâmetros.</p>
+            <% end %>
+          </aside>
+          <div class="az-report-actions__controls">
+            <%= form_with url: consulta_path, method: :get, local: true,
+                          class: "az-period-filter",
+                          data: { controller: "autosubmit", autosubmit_target: "form" } do %>
+              <%= hidden_field_tag :matricula, @matricula %>
+              <%= hidden_field_tag :return_to, consultation_return_path %>
+              <%= hidden_field_tag :categoria, @categoria %>
+              <%= hidden_field_tag :employee_sector, 'du' if @employee %>
+              <%= hidden_field_tag :funcao, params[:funcao] if params[:funcao].present? %>
+
+              <div class="az-period-field">
+                <%= label_tag :periodo_mes, "Mês" %>
+                <%= select_tag :periodo_mes,
+                    options_for_select((1..12).map { |month| [I18n.t("date.month_names")[month], month] }, params[:periodo_mes]),
+                    class: "form-select form-select-sm",
+                    data: { autosubmit_target: "select", action: "change->autosubmit#submitOnChange" },
+                    required: true %>
+              </div>
+
+              <div class="az-period-field">
+                <%= label_tag :periodo_ano, "Ano" %>
+                <%= select_tag :periodo_ano,
+                    options_for_select((Date.current.year - 5..Date.current.year).to_a.reverse, params[:periodo_ano] || Date.current.year),
+                    class: "form-select form-select-sm",
+                    data: { autosubmit_target: "select", action: "change->autosubmit#submitOnChange" },
+                    required: true %>
+              </div>
+
+              <%= submit_tag "Atualizar", class: "az-period-submit" %>
+            <% end %>
+
+            <% if @parameter_profiles&.many? %>
+              <div class="az-function-switch" aria-label="Selecionar função do período" data-controller="function-switch">
+                <div class="az-function-switch__options" role="tablist" aria-label="Funções disponíveis">
+                  <%= link_to 'Todos', consulta_path(matricula: @matricula, categoria: @categoria, employee_sector: @employee ? 'du' : nil, periodo_mes: params[:periodo_mes], periodo_ano: params[:periodo_ano], funcao: 'todos', return_to: consultation_return_path), class: "az-function-switch__option #{'is-active' if @selected_function.blank?}", aria: { selected: @selected_function.blank? }, data: { action: 'click->function-switch#change' } %>
+                  <% @parameter_profiles.each do |profile| %>
+                    <% switch_label = profile[:cargo] == 'van' ? 'Van' : profile[:cargo].capitalize %>
+                    <%= link_to switch_label, consulta_path(matricula: @matricula, categoria: @categoria, employee_sector: @employee ? 'du' : nil, periodo_mes: params[:periodo_mes], periodo_ano: params[:periodo_ano], funcao: profile[:cargo], return_to: consultation_return_path), class: "az-function-switch__option #{'is-active' if @selected_function == profile[:cargo]}", aria: { selected: @selected_function == profile[:cargo] }, title: profile[:label], data: { action: 'click->function-switch#change' } %>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
         </div>
       </div>
     </div>
@@ -222,62 +257,6 @@
       </div>
     <% end %>
   </article>
-
-  <section class="az-report-section-grid">
-    <article class="az-report-panel">
-      <div class="az-panel-header">
-        <div>
-          <h2 class="az-report-section-title"><i class="bi bi-list-check"></i> Resumo operacional</h2>
-          <p>Volumes e indicadores do período.</p>
-        </div>
-      </div>
-      <div class="az-report-table-wrap">
-        <table class="az-report-table">
-          <tbody>
-            <tr><td data-label="Caixa real"><%= totals[:caixas_reais].to_i %></td><td data-label="Valor" class="text-end az-table-total"><%= number_to_currency(totals[:valor_caixas].to_f, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr>
-            <tr><td data-label="PDV real"><%= totals[:pdvs_reais].to_i %></td><td data-label="Valor" class="text-end az-table-total"><%= number_to_currency(totals[:valor_pdvs].to_f, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr>
-            <% if show_recarga %><tr><td data-label="Recargas"><%= totals[:recargas].to_i %></td><td data-label="Valor" class="text-end az-table-total"><%= number_to_currency(totals[:valor_recargas].to_f, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr><% end %>
-            <tr><td data-label="Devolução"><%= totals[:devolucoes].to_f.to_i %> · <%= (totals[:percentual_devolucao].to_f * 100).round(2) %>%</td><td data-label="Bônus" class="text-end az-table-total"><%= number_to_currency(totals[:bonus_devolucao].to_f, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr>
-            <tr><td data-label="Quantidade de mapas"> <%= totals[:total_mapas].to_i %></td><td data-label="Total" class="text-end az-table-total"><%= number_to_currency(totals[:valor_total].to_f, unit: "R$ ", separator: ",", delimiter: ".") %></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </article>
-
-    <article class="az-report-panel">
-      <div class="az-panel-header">
-        <div>
-          <h2 class="az-report-section-title"><i class="bi bi-sliders"></i> Parâmetros de cálculo</h2>
-          <p>Parâmetros efetivamente usados no cálculo da função selecionada.</p>
-        </div>
-      </div>
-      <div class="az-panel-body">
-        <% if @selected_parameter_profiles.present? %>
-          <p class="text-muted small">Valores da última data de mapa de <strong><%= @selected_function ? @selected_parameter_profile[:label] : 'todos os cargos' %></strong> no período. Cada mapa mantém a tarifa usada no seu próprio cálculo.</p>
-          <div class="az-parameter-profiles">
-            <% @selected_parameter_profiles.each do |profile| %>
-              <div class="az-parameter-profile">
-                <div class="az-parameter-profile__header">
-                  <strong><%= profile[:label] %></strong>
-                  <small><%= profile[:map_date] ? l(profile[:map_date]) : 'Data não informada' %></small>
-                </div>
-                <div class="az-period-details">
-                  <div class="az-detail-item"><span>Caixa real</span><span><%= number_to_currency(profile[:caixa], unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
-                  <div class="az-detail-item"><span>PDV real</span><span><%= number_to_currency(profile[:entrega], unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
-                  <% unless profile[:cargo] == "van" %>
-                    <div class="az-detail-item"><span>Recarga</span><span><%= number_to_currency(profile[:recarga], unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
-                  <% end %>
-                  <div class="az-detail-item"><span>Bônus devolução</span><span><%= number_to_currency(profile[:bonus_devolucao], unit: "R$ ", separator: ",", delimiter: ".") %></span></div>
-                </div>
-              </div>
-            <% end %>
-          </div>
-        <% else %>
-          <p class="text-muted mb-0">Selecione um período com mapas calculados para visualizar os parâmetros utilizados.</p>
-        <% end %>
-      </div>
-    </article>
-  </section>
 </div>
 
 <%= public_variable_chat_widget %>

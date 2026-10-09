@@ -158,7 +158,7 @@ class ConsultasController < ApplicationController
     from = to.prev_month.change(day: 21)
     if @employee
       eligible = @employee.employee_roles.any? do |role|
-        role.du? && %w[motorista van].include?(role.cargo) &&
+        !role.pending_start? && role.du? && %w[motorista van].include?(role.cargo) &&
           (role.starts_on.nil? || role.starts_on <= to) && (role.ends_on.nil? || role.ends_on >= from)
       end
       return unless eligible

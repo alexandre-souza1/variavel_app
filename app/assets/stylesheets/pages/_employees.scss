@@ -89,7 +89,7 @@
 .employees-field--full { grid-column: 1 / -1; }
 .employees-form-actions { display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: .75rem; padding-top: .8rem; border-top: 1px solid var(--bs-border-color); }
 .employees-form-actions > span { margin-right: auto; font-size: .78rem; color: var(--bs-secondary-color); }
-.employees-overview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.employees-overview { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
 .employees-stat { padding: 1.15rem 1.25rem; display: flex; flex-direction: column; gap: .75rem; }
 .employees-stat > span { font-size: .73rem; color: var(--bs-secondary-color); display: flex; gap: .45rem; align-items: center; }
 .employees-stat > strong { font-size: 1.02rem; font-weight: 650; }

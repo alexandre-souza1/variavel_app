@@ -13,7 +13,7 @@ class EmployeesController < ApplicationController
     @employees = (@archived_view ? scope.archived : scope.active).order(:nome).includes(:employee_roles)
     @archived_count = scope.archived.count
     if params[:cargo].present? || params[:turno].present?
-      roles = EmployeeRole.on(Date.current)
+      roles = EmployeeRole.for_directory
       roles = roles.where(sector: @sector_filter) if @sector_filter
       roles = roles.where(cargo: params[:cargo]) if params[:cargo].present?
       roles = roles.where(turno: params[:turno]) if params[:turno].present?
@@ -68,10 +68,16 @@ class EmployeesController < ApplicationController
   def edit; end
 
   def update
-    Employees::Registry.update!(@employee, attributes: identity_params, user: current_user, reason: params[:reason])
+    initial_role_attributes = params.fetch(:employee_role, ActionController::Parameters.new).permit(:starts_on, :promax, :turno)
+    if initial_role_attributes.present? && !current_user.employee_sectors.include?(@employee.initial_role&.sector)
+      return head :forbidden
+    end
+    Employees::Registry.update!(@employee, attributes: identity_params, user: current_user, reason: params[:reason],
+      initial_role_attributes: initial_role_attributes)
     redirect_to employee_destination(@employee), notice: 'Dados do colaborador atualizados em todos os módulos.'
   rescue ActiveRecord::RecordInvalid, EmployeeRole::HistoryError => error
     flash.now[:alert] = error.message
+    @employee.employee_roles.reload
     render :edit, status: :unprocessable_entity
   end
 
@@ -92,7 +98,7 @@ class EmployeesController < ApplicationController
     initial_role[:reason] = initial_role[:reason].presence || 'Cadastro inicial'
     Employee.transaction do
       @employee.save!
-      @employee.change_role!(initial_role, user: current_user)
+      @employee.register_initial_role!(initial_role, user: current_user)
     end
     redirect_to employee_destination(@employee), notice: 'Colaborador cadastrado.'
   rescue ActiveRecord::RecordInvalid, EmployeeRole::HistoryError => error
@@ -229,7 +235,7 @@ class EmployeesController < ApplicationController
   end
 
   def employee_navigation
-    context = params.permit(:q, :cargo, :turno, :status).to_h.symbolize_keys
+    context = params.slice(:q, :cargo, :turno, :status).permit(:q, :cargo, :turno, :status).to_h.symbolize_keys
     context[:employee_sector] = @sector_filter if @sector_filter
     context
   end
@@ -253,7 +259,7 @@ class EmployeesController < ApplicationController
   end
 
   def identity_params
-    fields = %i[nome matricula cpf data_nascimento]
+    fields = %i[nome matricula cpf data_nascimento registered_on]
     fields << :operational_autonomy if action_name == 'update'
     params.require(:employee).permit(*fields)
   end

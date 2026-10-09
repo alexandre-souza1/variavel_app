@@ -9,6 +9,12 @@ pt:
       greater_than_or_equal_to: "deve ser maior ou igual a %{count}"
   activerecord:
     attributes:
+      employee:
+        registered_on: "Data de registro na carteira"
+      employee_role:
+        starts_on: "Data de início na função"
+        promax: "Código Promax"
+        turno: "Turno"
       invoice:
         invoice_numbers: "NFs"
         supplier_id: "Fornecedor"
@@ -27,6 +33,8 @@ pt:
       fleet_availability:
         date: "Data"
     errors:
+      messages:
+        record_invalid: "Não foi possível salvar: %{errors}"
       models:
         invoice:
           attributes:

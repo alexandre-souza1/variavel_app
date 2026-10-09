@@ -1,5 +1,6 @@
 <% field_prefix = local_assigns.fetch(:prefix, 'career') %>
 <% current_role = local_assigns[:current_role] %>
+<% initial_registration = local_assigns.fetch(:initial_registration, false) %>
 <% selected_sector = params.dig(:employee_role, :sector).presence || current_role&.sector || params[:employee_sector].presence || 'du' %>
 <% sector_options = EmployeeRole::SECTORS.select { |_, sector| current_user.employee_sectors.include?(sector) } %>
 <% selected_sector = sector_options.values.first unless sector_options.value?(selected_sector) %>
@@ -13,12 +14,13 @@
      [label, value, { 'data-sectors' => sectors.join(' ') }]
    end %>
 <%= fields_for :employee_role do |f| %>
-  <div class="employees-fields" data-controller="employee-role">
+  <div class="employees-fields" data-controller="employee-role" data-employee-role-initial-registration-value="<%= initial_registration %>">
     <div class="employees-field"><%= f.label :sector, 'Setor', for: "#{field_prefix}_sector" %><%= f.select :sector, sector_options, { selected: selected_sector }, id: "#{field_prefix}_sector", class: 'form-select', data: { employee_role_target: 'sector', action: 'change->employee-role#update' } %></div>
     <div class="employees-field"><%= f.label :cargo, 'Cargo', for: "#{field_prefix}_cargo" %><%= f.select :cargo, options, { selected: selected_cargo }, id: "#{field_prefix}_cargo", class: 'form-select', data: { employee_role_target: 'cargo' } %></div>
-    <div class="employees-field" data-employee-role-target="du"><%= f.label :promax, 'Código Promax', for: "#{field_prefix}_promax" %><%= f.text_field :promax, value: params.dig(:employee_role, :promax), id: "#{field_prefix}_promax", class: 'form-control', placeholder: 'Código vigente na DU' %></div>
-    <div class="employees-field" data-employee-role-target="az"><%= f.label :turno, 'Turno', for: "#{field_prefix}_turno" %><%= f.select :turno, EmployeeRole::TURNOS, { selected: params.dig(:employee_role, :turno) || current_role&.turno, include_blank: 'Selecione o turno' }, id: "#{field_prefix}_turno", class: 'form-select' %></div>
-    <div class="employees-field employees-field--full"><%= f.label :starts_on, 'Data efetiva de início', for: "#{field_prefix}_starts_on" %><%= f.date_field :starts_on, value: params.dig(:employee_role, :starts_on), id: "#{field_prefix}_starts_on", required: true, class: 'form-control' %><small>A data determina quando o novo vínculo passa a valer.</small></div>
+    <div class="employees-field" data-employee-role-target="du"><%= f.label :promax, 'Código Promax', for: "#{field_prefix}_promax" %><%= f.text_field :promax, value: params.dig(:employee_role, :promax), id: "#{field_prefix}_promax", class: 'form-control', placeholder: initial_registration ? 'Preencher após a integração' : 'Código vigente na DU' %></div>
+    <div class="employees-field" data-employee-role-target="az"><%= f.label :turno, 'Turno', for: "#{field_prefix}_turno" %><%= f.select :turno, EmployeeRole::TURNOS, { selected: params.dig(:employee_role, :turno) || current_role&.turno, include_blank: initial_registration ? 'Definir após a integração' : 'Selecione o turno' }, id: "#{field_prefix}_turno", class: 'form-select' %></div>
+    <% if initial_registration %><p class="employees-field--full employees-muted">Defina o setor e o cargo agora. Promax ou turno podem ser preenchidos em Editar dados ao concluir a integração.</p><% end %>
+    <div class="employees-field employees-field--full"><%= f.label :starts_on, initial_registration ? 'Data de início na função' : 'Data efetiva de início', for: "#{field_prefix}_starts_on" %><%= f.date_field :starts_on, value: params.dig(:employee_role, :starts_on), id: "#{field_prefix}_starts_on", required: !initial_registration, class: 'form-control', data: { employee_role_target: 'startsOn', action: 'input->employee-role#update change->employee-role#update' } %><small><%= initial_registration ? 'Deixe em branco durante a integração. Para iniciar na função, informe a data e o Promax (DU) ou turno (AZ).' : 'A data determina quando o novo vínculo passa a valer.' %></small></div>
     <% if local_assigns.fetch(:include_reason, true) %>
       <div class="employees-field employees-field--full"><%= f.label :reason, 'Motivo da alteração', for: "#{field_prefix}_reason" %><%= f.text_area :reason, value: params.dig(:employee_role, :reason), id: "#{field_prefix}_reason", rows: 3, required: true, class: 'form-control', placeholder: 'Promoção, transferência, troca de turno ou correção' %></div>
     <% end %>

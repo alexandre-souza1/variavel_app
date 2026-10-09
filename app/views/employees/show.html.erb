@@ -1,4 +1,5 @@
 <% current_role = @employee.role_on(Date.current) %>
+<% displayed_role = current_role || (@employee.initial_role if @employee.awaiting_function_start?) %>
 <div class="app-page employees-page">
   <%= link_to employees_path(employee_navigation), class: 'employees-back' do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Colaboradores<% end %>
   <header class="app-page-header">
@@ -9,10 +10,11 @@
     <%= render 'duplicate_registrations', employee: @employee, duplicate_employees: @duplicate_employees %>
   <% end %>
   <section class="employees-overview" aria-label="Resumo do colaborador">
-    <div class="app-panel employees-stat"><span><i class="bi bi-briefcase" aria-hidden="true"></i> Cargo atual</span><strong><%= current_role&.label || 'Sem vigência' %></strong></div>
-    <div class="app-panel employees-stat"><span><i class="bi bi-calendar-check" aria-hidden="true"></i> Início no cargo</span><strong><%= current_role&.starts_on ? l(current_role.starts_on) : 'Não informado' %></strong></div>
-    <div class="app-panel employees-stat"><span><i class="bi bi-person-badge" aria-hidden="true"></i> Código / turno atual</span><strong><%= current_role&.az? ? "Turno #{current_role.shift_label || 'não informado'}" : (current_role&.promax || '—') %></strong></div>
-    <div class="app-panel employees-stat"><span><i class="bi bi-person-check" aria-hidden="true"></i> Situação</span><strong class="employees-status <%= 'employees-status--active' if @employee.active? %>"><%= @employee.active? ? 'Ativo' : 'Inativo' %></strong></div>
+    <div class="app-panel employees-stat"><span><i class="bi bi-briefcase" aria-hidden="true"></i> <%= current_role || !@employee.awaiting_function_start? ? 'Cargo atual' : 'Cargo previsto' %></span><strong><%= displayed_role&.label || 'Sem vigência' %></strong></div>
+    <div class="app-panel employees-stat"><span><i class="bi bi-calendar-check" aria-hidden="true"></i> Início na função</span><strong><%= displayed_role&.starts_on ? l(displayed_role.starts_on) : 'Não informado' %></strong></div>
+    <div class="app-panel employees-stat"><span><i class="bi bi-calendar3" aria-hidden="true"></i> Registro na carteira</span><strong><%= @employee.registered_on ? l(@employee.registered_on) : 'Não informado' %></strong></div>
+    <div class="app-panel employees-stat"><span><i class="bi bi-person-badge" aria-hidden="true"></i> Código / turno</span><strong><%= displayed_role&.az? ? "Turno #{displayed_role.shift_label || 'não informado'}" : (displayed_role&.promax || '—') %></strong></div>
+    <div class="app-panel employees-stat"><span><i class="bi bi-person-check" aria-hidden="true"></i> Situação</span><strong class="employees-status <%= 'employees-status--active' if @employee.active? && !@employee.awaiting_function_start? %>"><%= @employee.employment_status_label %></strong></div>
   </section>
 
   <div class="employees-profile-grid">
@@ -23,9 +25,9 @@
           <ol class="employees-timeline">
             <% @roles.each do |role| %>
               <li class="employees-timeline__item <%= 'employees-timeline__item--current' if role.covers?(Date.current) %>">
-                <div class="employees-timeline__heading"><h3><%= role.label %> · <%= role.sector_label %></h3><% if role.covers?(Date.current) %><span class="employees-badge employees-badge--accent">Atual</span><% elsif role.starts_on && role.starts_on > Date.current %><span class="employees-badge">Agendado</span><% end %></div>
-                <p class="employees-timeline__period"><i class="bi bi-calendar3" aria-hidden="true"></i> <%= role.starts_on ? l(role.starts_on) : 'Início desconhecido' %> <span>→</span> <%= role.ends_on ? l(role.ends_on) : 'Em aberto' %></p>
-                <p><span class="employees-badge"><%= role.az? ? "Turno #{role.shift_label || 'não informado'}" : "Promax #{role.promax}" %></span></p>
+                <div class="employees-timeline__heading"><h3><%= role.label %> · <%= role.sector_label %></h3><% if role.pending_start? %><span class="employees-badge">Em integração</span><% elsif role.covers?(Date.current) %><span class="employees-badge employees-badge--accent">Atual</span><% elsif role.starts_on && role.starts_on > Date.current %><span class="employees-badge">Agendado</span><% end %></div>
+                <p class="employees-timeline__period"><i class="bi bi-calendar3" aria-hidden="true"></i> <%= role.starts_on ? l(role.starts_on) : (role.pending_start? ? 'Aguardando início na função' : 'Início desconhecido') %> <span>→</span> <%= role.ends_on ? l(role.ends_on) : 'Em aberto' %></p>
+                <p><span class="employees-badge"><%= role.az? ? "Turno #{role.shift_label || 'a definir'}" : "Promax #{role.promax.presence || 'a definir'}" %></span></p>
                 <p class="employees-timeline__reason"><%= role.reason %></p>
                 <small><i class="bi bi-person" aria-hidden="true"></i> <%= role.created_by&.email || 'Migração do cadastro' %></small>
                 <% if current_user.admin? && role.created_by_id == current_user.id && role == @roles.first && @roles.size > 1 %>
@@ -43,6 +45,10 @@
     <section class="app-panel">
       <div class="app-panel__header"><div><span class="app-panel__kicker">Movimentação</span><h2 class="app-panel__title">Alterar setor, cargo ou turno</h2><p class="app-panel__subtitle">O vínculo anterior termina na véspera da nova vigência.</p></div><i class="bi bi-arrow-left-right employees-panel-icon" aria-hidden="true"></i></div>
       <div class="app-panel__body">
+        <% if @employee.initial_role&.pending_start? %>
+          <p>O colaborador está em integração. Informe a data de início na função para liberar sua atuação na operação.</p>
+          <%= link_to 'Informar início na função', edit_employee_path(@employee, employee_navigation), class: 'btn btn-primary' %>
+        <% else %>
         <%= form_with url: change_role_employee_path(@employee, employee_navigation), class: 'employees-form' do |f| %>
           <%= render 'role_fields', prefix: 'promotion', allowed_cargos: @next_cargos, current_role: @roles.first %>
           <div class="employees-form-actions"><%= f.submit 'Registrar movimentação', class: 'btn btn-primary' %></div>
@@ -62,6 +68,7 @@
               <%= f.submit 'Registrar troca de código', class: 'btn btn-outline-primary' %>
             <% end %>
           </details>
+        <% end %>
         <% end %>
       </div>
     </section>

@@ -4,35 +4,68 @@ module Employees
   class Registry
     MODELS = [Driver, Ajudante, Operator, AzAjudante].freeze
     IDENTITY_FIELDS = %w[nome matricula cpf data_nascimento active retired_at].freeze
+    AUDITED_FIELDS = (IDENTITY_FIELDS + %w[registered_on]).freeze
 
     def self.create!(attributes:, role:, user:)
       Employee.transaction do
         person = Employee.create!(attributes)
-        person.change_role!(role, user: user)
+        person.register_initial_role!(role, user: user)
         person
       end
     end
 
-    def self.update!(person, attributes:, user:, reason:)
+    def self.update!(person, attributes:, user:, reason:, initial_role_attributes: nil)
       raise EmployeeRole::HistoryError, 'Informe o motivo da alteração.' if reason.to_s.strip.blank?
       attributes = attributes.to_h.stringify_keys
       autonomy_changed = attributes.key?('operational_autonomy')
       autonomy = attributes.delete('operational_autonomy')
       person.with_lock do
-        before = person.attributes.slice(*IDENTITY_FIELDS).merge('operational_autonomy' => person.operational_autonomy)
-        person.update!(attributes)
-        if autonomy_changed
+        before = person.attributes.slice(*AUDITED_FIELDS).merge('operational_autonomy' => person.operational_autonomy)
+        person.assign_attributes(attributes)
+        revise_initial_role!(person, attributes: initial_role_attributes, user: user, reason: reason) if initial_role_attributes.present?
+        person.save!
+        if autonomy_changed && ActiveModel::Type::Boolean.new.cast(autonomy) != before['operational_autonomy']
           adapter = autonomy_record(person.matricula)
           raise EmployeeRole::HistoryError, 'Autonomia exige vínculo vigente de motorista DU ou operador AZ.' unless adapter
           adapter.update!(autonomy: ActiveModel::Type::Boolean.new.cast(autonomy))
         end
         person.employee_career_events.create!(user: user, details: {
           action: 'update_identity', before: before,
-          after: person.attributes.slice(*IDENTITY_FIELDS).merge('operational_autonomy' => person.operational_autonomy), reason: reason
+          after: person.attributes.slice(*AUDITED_FIELDS).merge('operational_autonomy' => person.operational_autonomy), reason: reason
         }) if user
       end
       person
     end
+
+    def self.revise_initial_role!(person, attributes:, user:, reason:)
+      roles = person.employee_roles.to_a
+      raise EmployeeRole::HistoryError, 'Revise a data de início pelo histórico de cargos.' unless roles.one?
+
+      role = roles.first
+      before = roles.map(&:attributes)
+      was_pending = role.pending_start?
+      attributes = attributes.to_h.symbolize_keys.slice(:starts_on, :promax, :turno)
+      role.assign_attributes(attributes)
+      role.promax = role.du? ? role.promax.to_s.strip.presence : nil
+      role.turno = nil if role.du?
+      if attributes[:starts_on].present? && role.starts_on.nil?
+        raise EmployeeRole::HistoryError, 'Informe uma data de início na função válida.'
+      end
+      if !was_pending && (role.will_save_change_to_promax? || role.will_save_change_to_turno?)
+        raise EmployeeRole::HistoryError, 'Registre a mudança de Promax ou turno no histórico de cargos, com data efetiva.'
+      end
+      role.pending_start = false if role.starts_on
+      return unless role.changed?
+
+      person.class.connection.execute('SELECT pg_advisory_xact_lock(739231200)')
+      role.employee = person
+      role.reason = reason
+      role.save!
+      person.employee_career_events.create!(user: user, details: {
+        action: 'revise_role', before: before, after: person.employee_roles.reload.map(&:attributes), reason: reason
+      })
+    end
+    private_class_method :revise_initial_role!
 
     def self.retire!(person, date: Date.current, user: nil, reason: 'Inativação do cadastro')
       person.with_lock do
@@ -57,8 +90,8 @@ module Employees
       if attributes[:starts_on].present?
         person.change_role!(attributes, user: record.career_recorded_by)
       else
-        # Legacy callers may not supply a date; never invent one. Public forms
-        # and new CSV imports require the actual effective date.
+        # Legacy operational callers may not supply a date; never invent one.
+        # CSV imports still require the actual effective date.
         person.employee_roles.create!(attributes.merge(legacy: true))
       end
       remember_name!(person, record.nome)
@@ -78,7 +111,7 @@ module Employees
         fields['turno'] = role.turno if role.az?
         model.insert_all!([fields])
       end
-      current = roles.find { |role| role.covers?(Date.current) }
+      current = roles.find { |role| role.covers?(Date.current) } || (roles.first if roles.one?)
       if current
         specific = current.du? ? { promax: current.promax } : { turno: current.turno }
         model_for(current).where(employee_id: person.id).update_all(specific.merge(updated_at: Time.current))

@@ -39,10 +39,11 @@
     <% if @employees.any? %>
       <div class="app-table-shell">
         <table class="table app-table app-table--data employees-table">
-          <thead><tr><th>Colaborador</th><th>Matrícula</th><th>Setor</th><th>Cargo atual</th><th>Turno</th><th>Grupo</th><th>Situação</th><th aria-label="Acessar cadastro"></th></tr></thead>
+          <thead><tr><th>Colaborador</th><th>Matrícula</th><th>Setor</th><th>Cargo</th><th>Turno</th><th>Grupo</th><th>Situação</th><th aria-label="Acessar cadastro"></th></tr></thead>
           <tbody>
             <% @employees.each do |employee| %>
               <% role = employee.role_on(Date.current) %>
+              <% displayed_role = role || (employee.initial_role if employee.awaiting_function_start?) %>
               <tr>
                 <td><%= link_to employee_path(employee, employee_navigation), class: 'employees-person' do %><span class="employees-avatar" aria-hidden="true"><%= employee.nome.split.first(2).map(&:first).join %></span><span><strong><%= employee.nome %></strong><small>Ver cadastro e histórico</small></span><% end %></td>
                 <td><span class="employees-code"><%= employee.matricula %></span>
@@ -50,7 +51,7 @@
                     <%= link_to employee_path(employee, **employee_navigation, anchor: 'cadastros-duplicados'), class: 'employees-duplicate-link' do %><i class="bi bi-intersect" aria-hidden="true"></i> Matrícula repetida · revisar vínculo<% end %>
                   <% end %>
                 </td>
-                <td><%= role&.sector_label || '—' %></td><td><span class="employees-badge"><%= role&.label || 'Sem vigência' %></span></td><td><%= role&.az? ? role.shift_label : '—' %></td>
+                <td><%= displayed_role&.sector_label || '—' %></td><td><span class="employees-badge"><%= displayed_role&.label || 'Sem vigência' %></span></td><td><%= displayed_role&.az? ? (displayed_role.shift_label || 'A definir') : '—' %></td>
                 <td class="employees-group-cell" data-employee-id="<%= employee.id %>">
                   <% if role&.du? && employee.active? %>
                     <% membership = @group_memberships["employee:#{employee.id}"] %>
@@ -59,7 +60,7 @@
                     <% else %><span class="employees-group-value"><%= membership&.group_code %></span><% end %>
                   <% end %>
                 </td>
-                <td><span class="employees-status <%= 'employees-status--active' if employee.active? %>"><%= employee.active? ? 'Ativo' : 'Inativo' %></span></td>
+                <td><span class="employees-status <%= 'employees-status--active' if employee.active? && !employee.awaiting_function_start? %>"><%= employee.employment_status_label %></span></td>
                 <td><%= link_to employee_path(employee, employee_navigation), class: 'icon-btn', aria: { label: "Abrir cadastro de #{employee.nome}" } do %><i class="bi bi-arrow-up-right" aria-hidden="true"></i><% end %></td>
               </tr>
             <% end %>

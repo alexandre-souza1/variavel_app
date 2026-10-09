@@ -11,20 +11,34 @@ class EmployeeRole < ApplicationRecord
   belongs_to :created_by, class_name: 'User', optional: true
   scope :du, -> { where(sector: 'du') }
   scope :az, -> { where(sector: 'az') }
-  scope :on, ->(date) { where('(starts_on IS NULL OR starts_on <= ?) AND (ends_on IS NULL OR ends_on >= ?)', date, date) }
-  scope :during, ->(first, last) { where('(starts_on IS NULL OR starts_on <= ?) AND (ends_on IS NULL OR ends_on >= ?)', last, first) }
+  scope :on, ->(date) { where(pending_start: false).where('(starts_on IS NULL OR starts_on <= ?) AND (ends_on IS NULL OR ends_on >= ?)', date, date) }
+  scope :during, ->(first, last) { where(pending_start: false).where('(starts_on IS NULL OR starts_on <= ?) AND (ends_on IS NULL OR ends_on >= ?)', last, first) }
+
+  # The RH directory includes people awaiting their first operational day,
+  # while transfers keep the latest sector that has already started.
+  def self.for_directory(date: Date.current)
+    quoted_date = connection.quote(date)
+    selected = select('DISTINCT ON (employee_id) id').order(Arel.sql(<<~SQL.squish))
+      employee_id,
+      CASE WHEN starts_on IS NULL OR starts_on <= #{quoted_date} THEN 0 ELSE 1 END,
+      CASE WHEN starts_on <= #{quoted_date} THEN starts_on END DESC NULLS LAST,
+      starts_on ASC NULLS FIRST, id DESC
+    SQL
+    where(id: selected)
+  end
 
   validates :sector, inclusion: { in: SECTORS.values }
   validates :cargo, inclusion: { in: ->(role) { cargos_for(role.sector).values } }
   validates :reason, presence: true
-  validates :promax, presence: true, if: :du?
-  validates :turno, inclusion: { in: TURNOS.values }, if: -> { az? && !(legacy? && turno.nil?) }
-  validates :starts_on, presence: true, unless: :legacy?
+  validates :promax, presence: true, if: -> { du? && !pending_start? }
+  validates :turno, inclusion: { in: TURNOS.values }, if: -> { az? && !(turno.nil? && (legacy? || pending_start?)) }
+  validates :starts_on, presence: true, unless: -> { legacy? || pending_start? }
   validate :valid_interval
+  validate :valid_employment_dates
   validate :unique_code_owner
   validate :valid_progression
   before_validation do
-    self.promax = du? ? promax.to_s.strip : nil
+    self.promax = du? ? promax.to_s.strip.presence : nil
     self.turno = nil if du?
   end
   after_save { Employees::Registry.synchronize!(employee) }
@@ -39,7 +53,7 @@ class EmployeeRole < ApplicationRecord
   def profile = az? ? (cargo == 'operador' ? 'operador' : 'az_ajudante') : cargo
 
   def covers?(date)
-    date && (starts_on.nil? || starts_on <= date) && (ends_on.nil? || date <= ends_on)
+    !pending_start? && date && (starts_on.nil? || starts_on <= date) && (ends_on.nil? || date <= ends_on)
   end
 
   def follows?(previous)
@@ -57,6 +71,18 @@ class EmployeeRole < ApplicationRecord
   end
 
   private
+
+  def valid_employment_dates
+    if starts_on && employee&.registered_on && starts_on < employee.registered_on
+      errors.add(:starts_on, 'deve ser igual ou posterior à data de registro na carteira')
+    end
+    return unless pending_start?
+
+    errors.add(:base, 'Um cargo em integração não pode ter datas de vigência nem ser legado') if starts_on || ends_on || legacy?
+    if employee && employee.employee_roles.where.not(id: id).exists?
+      errors.add(:base, 'A integração só pode ser registrada no cargo inicial')
+    end
+  end
 
   def unique_code_owner
     return unless du? && promax.present? && employee_id

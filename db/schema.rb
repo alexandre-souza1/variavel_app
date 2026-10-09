@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_08_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_09_153000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -389,12 +389,14 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_08_120000) do
     t.datetime "updated_at", null: false
     t.string "sector", default: "du", null: false
     t.integer "turno"
+    t.boolean "pending_start", default: false, null: false
     t.index ["created_by_id"], name: "index_employee_roles_on_created_by_id"
     t.index ["employee_id"], name: "index_employee_roles_on_employee_id"
     t.index ["promax", "cargo"], name: "index_employee_roles_on_promax_and_cargo"
     t.index ["sector", "cargo", "starts_on", "ends_on"], name: "index_employee_roles_profile_period"
-    t.check_constraint "sector::text = 'du'::text AND (cargo::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[])) AND promax IS NOT NULL OR sector::text = 'az'::text AND (cargo::text = ANY (ARRAY['operador'::character varying, 'ajudante'::character varying]::text[])) AND (turno IS NOT NULL AND turno >= 0 AND turno <= 2 OR legacy = true AND turno IS NULL)", name: "employee_role_valid_profile"
-    t.check_constraint "starts_on IS NOT NULL OR legacy = true", name: "employee_role_start_required"
+    t.check_constraint "pending_start = false OR starts_on IS NULL AND ends_on IS NULL AND legacy = false", name: "employee_role_pending_start_dates"
+    t.check_constraint "sector::text = 'du'::text AND (cargo::text = ANY (ARRAY['motorista'::character varying, 'van'::character varying, 'ajudante'::character varying]::text[])) AND (promax IS NOT NULL OR pending_start = true) OR sector::text = 'az'::text AND (cargo::text = ANY (ARRAY['operador'::character varying, 'ajudante'::character varying]::text[])) AND (turno IS NOT NULL AND turno >= 0 AND turno <= 2 OR (legacy = true OR pending_start = true) AND turno IS NULL)", name: "employee_role_valid_profile"
+    t.check_constraint "starts_on IS NOT NULL OR legacy = true OR pending_start = true", name: "employee_role_start_required"
     t.check_constraint "starts_on IS NULL OR ends_on IS NULL OR ends_on >= starts_on", name: "employee_role_valid_dates"
   end
 
@@ -408,6 +410,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_08_120000) do
     t.datetime "updated_at", null: false
     t.date "retired_at"
     t.jsonb "registration_aliases", default: [], null: false
+    t.date "registered_on"
     t.index ["matricula"], name: "index_employees_on_matricula"
     t.index ["registration_aliases"], name: "index_employees_on_registration_aliases", using: :gin
   end

@@ -72,6 +72,29 @@ class EmployeeGroupsAndSectorAccessTest < ActionDispatch::IntegrationTest
     assert_redirected_to employee_path(@az, employee_sector: 'az')
   end
 
+  test 'sector navigation does not report request parameters as unpermitted' do
+    warnings = []
+    subscriber = ->(event) { warnings.concat(event.payload[:keys]) }
+
+    ActiveSupport::Notifications.subscribed(subscriber, 'unpermitted_parameters.action_controller') do
+      %w[du az].each do |sector|
+        context = { employee_sector: sector, q: 'Pessoa' }
+        person = sector == 'du' ? @du : @az
+        get employees_path(context)
+        assert_response :success
+        assert_select '.employees-person[href=?]', employee_path(person, context)
+        get employee_path(person, context)
+        assert_response :success
+        assert_select '.employees-back[href=?]', employees_path(context)
+      end
+
+      get operator_path(@az.operators.first, employee_sector: 'az')
+      assert_redirected_to employee_path(@az, employee_sector: 'az')
+    end
+
+    assert_empty warnings
+  end
+
   test 'group column reuses existing dated groups and leaves unassigned and AZ cells blank' do
     @schedule.time_off_memberships.create!(driver: @du.drivers.first, group_code: 'E', starts_on: '2026-10-01')
     travel_to Time.zone.local(2026, 10, 7) do
