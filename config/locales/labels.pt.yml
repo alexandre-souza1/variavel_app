@@ -1,0 +1,15 @@
+pt:
+  activerecord:
+    models:
+      label:
+        one: Etiqueta
+        other: Etiquetas
+    attributes:
+      task:
+        labels: Etiquetas
+      routine_indicator:
+        labels: Etiquetas
+      task_label:
+        label: Etiqueta
+      routine_indicator_label:
+        label: Etiqueta

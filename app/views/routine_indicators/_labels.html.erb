@@ -1,0 +1,14 @@
+<% if indicator.labels.any? %>
+  <% labels = indicator.labels.sort_by { |label| label.name.downcase } %>
+  <% compact = local_assigns.fetch(:compact, false) %>
+  <div class="routine-indicator-labels" aria-label="Etiquetas do indicador">
+    <% (compact ? labels.first(1) : labels).each do |label| %>
+      <span class="badge action-plan-color-badge" style="--task-label-color: <%= label.color %>" title="<%= label.name %>"><%= label.name %></span>
+    <% end %>
+    <% if compact && labels.size > 1 %>
+      <% remaining = labels.drop(1) %>
+      <span class="routine-indicator-label-count" title="<%= remaining.map(&:name).join(', ') %>"
+            aria-label="<%= remaining.size %> etiquetas adicionais: <%= remaining.map(&:name).join(', ') %>">+<%= remaining.size %></span>
+    <% end %>
+  </div>
+<% end %>

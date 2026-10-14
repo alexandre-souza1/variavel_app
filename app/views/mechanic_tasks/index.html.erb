@@ -56,14 +56,14 @@
         <%= select_tag :action_plan_id, options_from_collection_for_select(@action_plans, :id, :name, params[:action_plan_id]), include_blank: "Todos os planos", class: "form-select", id: "mechanic-action-plan" %>
       </div>
       <div class="mechanic-tasks-field mechanic-tasks-field--badges">
-        <label id="mechanic-badges-label">Badges</label>
+        <label id="mechanic-badges-label">Etiquetas</label>
         <details class="mechanic-badge-picker" data-mechanic-filters-target="picker" data-action="keydown.esc->mechanic-filters#close click@window->mechanic-filters#closeOutside">
-          <summary aria-labelledby="mechanic-badges-label mechanic-badges-count"><span id="mechanic-badges-count" data-mechanic-filters-target="count"><%= @label_ids.any? ? "#{@label_ids.size} selecionados" : "Todos os badges" %></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+          <summary aria-labelledby="mechanic-badges-label mechanic-badges-count"><span id="mechanic-badges-count" data-mechanic-filters-target="count"><%= @label_ids.any? ? "#{@label_ids.size} selecionadas" : "Todas as etiquetas" %></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
           <div class="mechanic-badge-picker__menu">
             <div class="mechanic-badge-picker__search">
-              <input type="search" class="form-control" placeholder="Buscar badge..." aria-label="Buscar badge" data-mechanic-filters-target="search" data-action="input->mechanic-filters#search keydown.enter->mechanic-filters#preventSubmit">
+              <input type="search" class="form-control" placeholder="Buscar etiqueta..." aria-label="Buscar etiqueta" data-mechanic-filters-target="search" data-action="input->mechanic-filters#search keydown.enter->mechanic-filters#preventSubmit">
             </div>
-            <p class="mechanic-badge-picker__hint">Selecione um ou mais. A OS pode ter qualquer um deles.</p>
+            <p class="mechanic-badge-picker__hint">Selecione uma ou mais. A OS pode ter qualquer uma delas.</p>
             <div class="mechanic-badge-picker__options">
               <% @labels.each do |label| %>
                 <label class="mechanic-badge-picker__option" data-mechanic-filters-target="option" data-search-text="<%= "#{label.name} #{label.action_plan.name}" %>">
@@ -72,8 +72,8 @@
                   <span><strong><%= label.name %></strong><small><%= label.action_plan.name %></small></span>
                 </label>
               <% end %>
-              <% if @labels.empty? %><p class="mechanic-badge-picker__hint">Suas OS ainda não têm badges.</p><% end %>
-              <p class="mechanic-badge-picker__hint" data-mechanic-filters-target="empty" hidden>Nenhum badge encontrado.</p>
+              <% if @labels.empty? %><p class="mechanic-badge-picker__hint">Suas OS ainda não têm etiquetas.</p><% end %>
+              <p class="mechanic-badge-picker__hint" data-mechanic-filters-target="empty" hidden>Nenhuma etiqueta encontrada.</p>
             </div>
             <button type="button" class="mechanic-badge-picker__done" data-action="mechanic-filters#close">Confirmar seleção <i class="bi bi-check-lg" aria-hidden="true"></i></button>
           </div>
@@ -96,8 +96,8 @@
         <% end %>
         <% @label_ids.each do |label_id| %>
           <% label = @labels.find { |item| item.id.to_s == label_id } %>
-          <%= link_to mechanic_tasks_path(@filter_params.merge(label_ids: @label_ids - [label_id])), class: "mechanic-filter-chip", title: label&.action_plan&.name, aria: { label: "Remover badge #{label&.name || label_id}" } do %>
-            <i class="bi bi-tag" aria-hidden="true"></i> <%= label&.name || "Badge selecionado" %> <i class="bi bi-x" aria-hidden="true"></i>
+          <%= link_to mechanic_tasks_path(@filter_params.merge(label_ids: @label_ids - [label_id])), class: "mechanic-filter-chip", title: label&.action_plan&.name, aria: { label: "Remover etiqueta #{label&.name || label_id}" } do %>
+            <i class="bi bi-tag" aria-hidden="true"></i> <%= label&.name || "Etiqueta selecionada" %> <i class="bi bi-x" aria-hidden="true"></i>
           <% end %>
         <% end %>
       </div>
@@ -149,7 +149,7 @@
       <div class="mechanic-tasks-empty">
         <div><i class="bi <%= @filters_active ? 'bi-search' : 'bi-check2-circle' %>" aria-hidden="true"></i></div>
         <h3><%= @filters_active ? "Nenhuma OS encontrada" : "Nenhuma OS por aqui" %></h3>
-        <p><%= @filters_active ? "Experimente outro título, plano de ação ou badge." : "As OS atribuídas a você aparecerão aqui. Você também pode consultar outro status." %></p>
+        <p><%= @filters_active ? "Experimente outro título, plano de ação ou etiqueta." : "As OS atribuídas a você aparecerão aqui. Você também pode consultar outro status." %></p>
         <% if @filters_active %><%= link_to "Limpar filtros", mechanic_tasks_path(status: @status, view: @view), class: "btn btn-outline-primary" %><% end %>
       </div>
     <% end %>

@@ -151,6 +151,7 @@ Rails.application.routes.draw do
   end
 
   resources :routines, only: %i[index show destroy] do
+    resources :indicator_labels, only: :update, controller: :routine_indicator_labels
     collection do
       get :archived
     end

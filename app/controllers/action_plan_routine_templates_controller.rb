@@ -25,6 +25,10 @@ class ActionPlanRoutineTemplatesController < ApplicationController
 
   def show
     @routine_template = @action_plan.gerot_template || raise(ActiveRecord::RecordNotFound)
+    ActiveRecord::Associations::Preloader.new(
+      records: [@routine_template],
+      associations: { routine_categories: { routine_indicators: :labels } }
+    ).call
     @can_manage_template = @action_plan.manageable_by?(current_user)
     render "routine_templates/show"
   end

@@ -98,6 +98,44 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     assert_equal 2, task.comments.count
   end
 
+  test "tasks generated from a deviation comment inherit all indicator labels at creation" do
+    labels = [
+      @plan.labels.create!(name: "Segurança", color: "#ff6600"),
+      @plan.labels.create!(name: "Frota", color: "#3366ff")
+    ]
+    @indicator.update!(labels: labels)
+    create_gerot("2026-01-01", "2026-01-31", task_generation_mode: "commented_deviation")
+    value = Routine.last.routine_values.first
+    assert_no_difference(["Task.count", "TaskLabel.count"]) { save_value(value, "8") }
+
+    assert_difference("Task.count", 1) do
+      assert_difference("TaskLabel.count", 2) { comment_on(value, "Verificar a conformidade") }
+    end
+    assert_response :created
+    task = value.reload.generated_task
+    assert_equal labels.map(&:id).sort, task.label_ids.sort
+    assert_equal @plan.id, task.bucket.action_plan_id
+
+    manual_label = @plan.labels.create!(name: "Acompanhamento", color: "#228833")
+    task.update!(labels: [labels.first, manual_label])
+    @indicator.update!(labels: [labels.last])
+    assert_no_difference(["Task.count", "TaskLabel.count"]) { comment_on(value, "Acompanhando a correção") }
+    assert_response :created
+    assert_equal task.id, response.parsed_body["generated_task_id"]
+    assert_equal [labels.first.id, manual_label.id].sort, task.reload.label_ids.sort
+  end
+
+  test "tasks generated on value entry also inherit indicator labels" do
+    label = @plan.labels.create!(name: "Qualidade", color: "#228833")
+    @indicator.update!(labels: [label])
+    create_gerot("2026-01-01", "2026-01-31", task_generation_mode: "deviation")
+    value = Routine.last.routine_values.first
+
+    assert_difference(["Task.count", "TaskLabel.count"], 1) { save_value(value, "8") }
+    assert_response :success
+    assert_equal [label.id], value.reload.generated_task.label_ids
+  end
+
   test "normal blank manual and goal-less indicators never generate a task from comments" do
     create_gerot("2026-01-01", "2026-01-31", task_generation_mode: "commented_deviation")
     value = Routine.last.routine_values.first
@@ -206,11 +244,13 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
   end
 
   test "a task generation failure rolls back its triggering comment" do
+    label = @plan.labels.create!(name: "Segurança", color: "#ff6600")
+    @indicator.update!(labels: [label])
     create_gerot("2026-01-01", "2026-01-31", task_generation_mode: "commented_deviation")
     value = Routine.last.routine_values.first
     save_value(value, "8")
     TaskActivityService.stub(:log, ->(**) { raise ActiveRecord::RecordInvalid.new(Task.new) }) do
-      assert_no_difference(["Task.count", "RoutineComment.count", "Comment.count"]) { comment_on(value, "Revisar o processo") }
+      assert_no_difference(["Task.count", "TaskLabel.count", "RoutineComment.count", "Comment.count"]) { comment_on(value, "Revisar o processo") }
     end
     assert_response :unprocessable_entity
   end

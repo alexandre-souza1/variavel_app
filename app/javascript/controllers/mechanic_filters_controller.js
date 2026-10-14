@@ -14,7 +14,7 @@ export default class extends Controller {
 
   updateCount() {
     const count = this.checkboxTargets.filter(input => input.checked).length
-    this.countTarget.textContent = count ? `${count} selecionados` : "Todos os badges"
+    this.countTarget.textContent = count ? `${count} selecionadas` : "Todas as etiquetas"
   }
 
   search() {

@@ -37,7 +37,7 @@ export default class extends Controller {
 
     if (this.hasEmptyTarget) this.emptyTarget.classList.toggle("d-none", visibleCount > 0)
     this.cloudTarget.classList.toggle("d-none", visibleCount === 0)
-    this.resultCountTarget.textContent = `${visibleCount} ${visibleCount === 1 ? "label encontrada" : "labels encontradas"}`
+    this.resultCountTarget.textContent = `${visibleCount} ${visibleCount === 1 ? "etiqueta encontrada" : "etiquetas encontradas"}`
     this.scheduleLayout()
   }
 

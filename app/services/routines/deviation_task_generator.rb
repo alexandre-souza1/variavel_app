@@ -29,6 +29,7 @@ module Routines
         task = bucket.tasks.create!(
           routine_value: routine_value,
           creator: actor,
+          labels: indicator.labels.to_a,
           title: "Investigar #{indicator.name} fora da meta — #{routine_value.reference_date.strftime('%d/%m/%Y')}",
           description: [
             "Gerado pelo GEROT: #{routine.title}",

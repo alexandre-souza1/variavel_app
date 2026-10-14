@@ -29,6 +29,8 @@ class RoutinesController < ApplicationController
 
   def show
     @action_plan = @routine.action_plan
+    @plan_labels = @action_plan ? @action_plan.labels.order(:name).to_a : []
+    @can_manage_indicator_labels = @action_plan.present? && @routine.routine_template.manageable_by?(current_user)
     @days = (@routine.period_start..@routine.period_end).to_a
 
     selected_indicator_ids = @routine.selected_indicator_ids
@@ -36,7 +38,7 @@ class RoutinesController < ApplicationController
     @categories = @routine
                     .routine_template
                     .routine_categories
-                    .includes(routine_indicators: :routine_indicator_targets)
+                    .includes(routine_indicators: [:routine_indicator_targets, :labels])
                     .order(:position)
                     .select do |category|
                       category.routine_indicators.any? do |indicator|

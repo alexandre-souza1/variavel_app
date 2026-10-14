@@ -8,7 +8,7 @@ class ActionPlansControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".action-plan-label-cloud__word[href=?]",
       action_plan_path(plan, view: "list", label_query: label.name), text: label.name
-    assert_select ".action-plan-label-cloud__delete[aria-label=?]", "Excluir label #{label.name}"
+    assert_select ".action-plan-label-cloud__delete[aria-label=?]", "Excluir etiqueta #{label.name}"
     get action_plan_path(plan, view: "list", label_query: label.name)
     assert_response :success
     assert_select "input[data-action-plan-filter-target=query][value=?]", label.name

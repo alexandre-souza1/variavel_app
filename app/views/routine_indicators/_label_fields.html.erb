@@ -1,0 +1,30 @@
+<fieldset class="routine-indicator-label-picker" data-controller="indicator-label-picker">
+  <legend>Etiquetas do plano</legend>
+  <%= hidden_field_tag "routine_indicator[label_ids][]", "", id: nil %>
+  <% selected_ids = indicator.label_ids %>
+  <% if labels.any? %>
+    <div class="routine-indicator-label-picker__search">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <input type="search" class="form-control" placeholder="Buscar etiqueta..." aria-label="Buscar etiqueta"
+             data-indicator-label-picker-target="search" data-action="input->indicator-label-picker#filter keydown.enter->indicator-label-picker#preventSubmit">
+    </div>
+    <div class="routine-indicator-label-picker__summary">
+      <span data-indicator-label-picker-target="count" aria-live="polite"><%= selected_ids.empty? ? "Nenhuma selecionada" : "#{selected_ids.size} selecionada#{selected_ids.one? ? '' : 's'}" %></span>
+      <button type="button" data-indicator-label-picker-target="clear" data-action="indicator-label-picker#clear" <%= 'hidden' if selected_ids.empty? %>>Limpar seleção</button>
+    </div>
+    <div class="routine-indicator-label-picker__options">
+      <% labels.each do |label| %>
+        <label class="routine-indicator-label-picker__option action-plan-color-badge" style="--task-label-color: <%= label.color %>"
+               title="<%= label.name %>" data-indicator-label-picker-target="option" data-label-name="<%= label.name %>">
+          <%= check_box_tag "routine_indicator[label_ids][]", label.id, selected_ids.include?(label.id), id: nil, class: "visually-hidden", data: { indicator_label_picker_target: "checkbox", action: "change->indicator-label-picker#updateCount" } %>
+          <span class="routine-indicator-label-picker__check" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+          <span class="routine-indicator-label-picker__name"><%= label.name %></span>
+        </label>
+      <% end %>
+    </div>
+    <p class="routine-indicator-label-picker__empty" data-indicator-label-picker-target="empty" hidden>Nenhuma etiqueta encontrada.</p>
+    <p class="routine-indicator-label-picker__hint"><i class="bi bi-info-circle" aria-hidden="true"></i> A seleção vale para este indicador em todos os GEROTs do modelo.</p>
+  <% else %>
+    <p class="text-muted mb-0">Este plano ainda não tem etiquetas.</p>
+  <% end %>
+</fieldset>

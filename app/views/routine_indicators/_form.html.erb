@@ -1,5 +1,9 @@
 <%= form_with model: [@template, @category, @routine_indicator] do |f| %>
 
+  <% if @routine_indicator.errors.any? %>
+    <div class="alert alert-danger" role="alert"><%= @routine_indicator.errors.full_messages.to_sentence %></div>
+  <% end %>
+
   <div class="mb-3">
 
     <%= f.label :name, "Nome do Indicador" %>
@@ -53,6 +57,12 @@
           class: "form-select" %>
     </div>
   </div>
+
+  <% if @template.action_plan %>
+    <div class="mt-4">
+      <%= render "routine_indicators/label_fields", indicator: @routine_indicator, labels: @template.action_plan.labels.order(:name).to_a %>
+    </div>
+  <% end %>
 
   <div class="mt-4 d-flex gap-4">
 

@@ -10,7 +10,7 @@ export default class extends Controller {
     if (this.element.tomselect) return
 
     this.tom = new TomSelect(this.element, {
-      placeholder: "Adicionar rótulo...",
+      placeholder: "Adicionar etiqueta...",
       valueField: "value",
       labelField: "text",
       searchField: "text",

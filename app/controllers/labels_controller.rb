@@ -26,14 +26,14 @@ class LabelsController < ApplicationController
     end
 
     message = if tasks_count.positive?
-                "Label excluída e removida de #{tasks_count} tarefa(s)."
+                "Etiqueta excluída e removida de #{tasks_count} tarefa(s)."
               else
-                "Label excluída com sucesso."
+                "Etiqueta excluída com sucesso."
               end
 
     redirect_to action_plan_path(@action_plan, view: "labels"), notice: message
   rescue ActiveRecord::RecordNotFound
-    redirect_to action_plans_path, alert: "Label não encontrada."
+    redirect_to action_plans_path, alert: "Etiqueta não encontrada."
   end
 
   private

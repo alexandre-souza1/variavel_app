@@ -84,7 +84,7 @@
         <!-- RÓTULOS -->
         <% unless task.inbox? %>
         <div class="mb-3 labels-field">
-          <label for="task-labels-<%= task.id %>">Rótulos</label>
+          <label for="task-labels-<%= task.id %>">Etiquetas</label>
           <%= hidden_field_tag "task[label_ids][]", "", id: nil %>
           <select name="task[label_ids][]"
                   id="task-labels-<%= task.id %>"

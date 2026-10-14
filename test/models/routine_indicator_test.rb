@@ -1,6 +1,14 @@
 require "test_helper"
 
 class RoutineIndicatorTest < ActiveSupport::TestCase
+  test "independent indicators cannot receive plan badges" do
+    plan = users(:one).action_plans.create!(name: "Plano com badge", sector: users(:one).sector)
+    label = plan.labels.create!(name: "Segurança", color: "#ff6600")
+    indicator = routine_indicators(:one)
+    assert_raises(ActiveRecord::RecordInvalid) { indicator.update!(labels: [label]) }
+    assert_empty indicator.reload.labels
+  end
+
   test "daily reference dates include every date in the period" do
     indicator = routine_indicators(:one)
     indicator.response_frequency = :daily

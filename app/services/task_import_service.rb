@@ -1,7 +1,7 @@
 class TaskImportService
   # Constantes para evitar strings mágicas e suportar múltiplos padrões
   BUCKET_NAME_KEYS = ["Nome do Bucket", "Bucket Name", "Categoria"].freeze
-  LABEL_KEYS = ["Rótulos", "Labels"].freeze
+  LABEL_KEYS = ["Etiquetas", "Rótulos", "Labels"].freeze
   CHECKLIST_KEYS = ["Itens da lista de verificação", "Checklist items"].freeze
   DESCRIPTION_KEYS = ["Descrição", "Notas"].freeze
   STATUS_KEYS = ["Progresso", "Status"].freeze

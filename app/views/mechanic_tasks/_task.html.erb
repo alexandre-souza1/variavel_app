@@ -12,7 +12,7 @@
   <h3><%= task.title %></h3>
   <p class="mechanic-task__location"><i class="bi bi-kanban" aria-hidden="true"></i> <%= task.bucket.action_plan.name %> <span>· <%= task.bucket.name %></span></p>
   <% if task.labels.any? %>
-    <div class="mechanic-task__labels" aria-label="Badges da OS">
+    <div class="mechanic-task__labels" aria-label="Etiquetas da OS">
       <% task.labels.each do |label| %><span style="--label-color: <%= mechanic_label_color(label) %>"><%= label.name %></span><% end %>
     </div>
   <% end %>

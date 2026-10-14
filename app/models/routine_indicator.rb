@@ -2,6 +2,12 @@ class RoutineIndicator < ApplicationRecord
   belongs_to :routine_category
   belongs_to :source_indicator, class_name: "RoutineIndicator", optional: true
 
+  delegate :routine_template, to: :routine_category
+  delegate :action_plan, to: :routine_template
+
+  has_many :routine_indicator_labels, dependent: :destroy
+  has_many :labels, through: :routine_indicator_labels
+
   has_many :routine_indicator_targets,
            dependent: :destroy
 
@@ -42,6 +48,7 @@ class RoutineIndicator < ApplicationRecord
 
   validates :name, presence: true
   validates :position, presence: true
+  validate :labels_match_plan
 
   scope :active, -> { where(active: true) }
 
@@ -168,6 +175,12 @@ class RoutineIndicator < ApplicationRecord
   }.freeze
 
   private
+
+  def labels_match_plan
+    return if labels.all? { |label| label.action_plan_id == action_plan&.id }
+
+    errors.add(:labels, "devem pertencer ao plano do indicador")
+  end
 
   def weekly_reference_dates_between(period_start, period_end, configured_weekday = nil)
     dates = []

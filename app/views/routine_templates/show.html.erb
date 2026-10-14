@@ -91,6 +91,7 @@
                   <div class="indicator-item">
                     <div class="indicator-main">
                       <span class="indicator-name"><%= indicator.name %></span>
+                      <%= render "routine_indicators/labels", indicator: indicator %>
                       <div class="indicator-tags">
                         <span class="tag tag-type"><%= indicator.value_type_label.humanize %></span>
                         <span class="tag tag-calc"><%= indicator.calculation_type_label.humanize %></span>

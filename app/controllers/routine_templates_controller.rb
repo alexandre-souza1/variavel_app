@@ -13,7 +13,7 @@ class RoutineTemplatesController < ApplicationController
   end
 
   def show
-    @routine_template = RoutineTemplate.visible_to(current_user).includes(routine_categories: :routine_indicators).find(params[:id])
+    @routine_template = RoutineTemplate.visible_to(current_user).includes(routine_categories: { routine_indicators: :labels }).find(params[:id])
     @action_plan = @routine_template.action_plan
     @can_manage_template = @routine_template.manageable_by?(current_user)
   end

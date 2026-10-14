@@ -41,6 +41,9 @@ class RoutineIndicatorsController < ApplicationController
       render :edit,
              status: :unprocessable_entity
     end
+  rescue ActiveRecord::RecordInvalid => error
+    @routine_indicator.errors.add(:base, error.record.errors.full_messages.to_sentence)
+    render :edit, status: :unprocessable_entity
   end
 
   def destroy
@@ -79,7 +82,8 @@ class RoutineIndicatorsController < ApplicationController
         :goal_direction,
         :response_frequency,
         :required,
-        :active
+        :active,
+        label_ids: []
       )
   end
 end
