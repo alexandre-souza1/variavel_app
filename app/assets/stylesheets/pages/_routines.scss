@@ -28,6 +28,7 @@
 .routine-indicator-badges {
   flex: 0 1 auto;
   min-width: 0;
+  &:not(:has(.routine-indicator-labels)) { display: none; }
 
   .routine-indicator-labels {
     flex-wrap: nowrap;
@@ -170,17 +171,17 @@
   }
 }
 
-.routine-indicator-label-modal {
-  .modal-dialog { max-width: 620px; }
-  &__heading { display: flex; align-items: center; gap: .75rem; min-width: 0; }
-  &__heading p { margin: .15rem 0 0; color: var(--bs-secondary-color); font-size: .85rem; overflow-wrap: anywhere; }
-  &__icon { display: grid; place-items: center; flex-shrink: 0; width: 2.5rem; height: 2.5rem; border-radius: .7rem; background: rgba(var(--bs-primary-rgb), .1); color: var(--bs-primary); }
-  &__manage { margin-right: auto; font-size: .75rem; text-decoration: none; color: var(--bs-secondary-color); }
-  &__manage:hover { color: var(--bs-primary); text-decoration: underline; }
+.routine-indicator-label-popover {
+  overflow: hidden;
+
+  > form { display: flex; flex-direction: column; min-height: 0; width: 100%; }
+  .form-label, .form-control, .task-composer__people-footer { flex-shrink: 0; }
+  .task-composer__people { min-height: 0; }
+  &__status { display: block; font-size: .65rem; }
+  &__status:empty { display: none; }
 }
 
 @media (max-width: 575.98px) {
-  .routine-indicator-label-modal__manage { flex-basis: 100%; margin-bottom: .35rem; }
   .routine-indicator-label-picker__option { padding: .6rem .5rem; gap: .4rem; font-size: .75rem; }
 }
 

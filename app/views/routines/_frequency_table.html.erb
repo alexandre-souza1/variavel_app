@@ -64,20 +64,7 @@
                        aria-label="Descrição: <%= indicator.description %>"></i>
                   <% end %>
                 </div>
-                <div class="routine-indicator-meta">
-                  <% if indicator.labels.any? %>
-                    <div class="routine-indicator-badges">
-                      <%= render "routine_indicators/labels", indicator: indicator, compact: true %>
-                    </div>
-                  <% end %>
-                  <% if @can_manage_indicator_labels %>
-                    <button type="button" class="routine-indicator-label-trigger"
-                            data-bs-toggle="modal" data-bs-target="#routineIndicatorLabelsModal-<%= indicator.id %>"
-                            title="Adicionar ou alterar etiquetas" aria-label="Adicionar ou alterar etiquetas de <%= indicator.name %>">
-                      <i class="bi bi-tag" aria-hidden="true"></i>
-                    </button>
-                  <% end %>
-                </div>
+                <%= render "routines/indicator_labels", routine: routine, indicator: indicator %>
               </td>
 
               <td class="text-center goal-value">

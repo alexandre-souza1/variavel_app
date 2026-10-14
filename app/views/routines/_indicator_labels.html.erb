@@ -1,0 +1,51 @@
+<div class="routine-indicator-meta"
+     <% if @can_manage_indicator_labels %>
+       data-controller="indicator-label-picker" data-indicator-label-picker-autosave-value="true"
+       data-action="click@window->indicator-label-picker#outside keydown.esc@window->indicator-label-picker#escape indicator-label-picker:opened@window->indicator-label-picker#otherOpened"
+     <% end %>>
+  <div id="routine-indicator-labels-<%= routine.id %>-<%= indicator.id %>" class="routine-indicator-badges">
+    <%= render "routine_indicators/labels", indicator: indicator, compact: true %>
+  </div>
+  <% if @can_manage_indicator_labels %>
+    <% panel_id = "routineIndicatorLabelsPopover-#{routine.id}-#{indicator.id}" %>
+    <button type="button" class="routine-indicator-label-trigger"
+            data-indicator-label-picker-target="trigger" data-action="indicator-label-picker#toggle"
+            title="Adicionar ou alterar etiquetas" aria-label="Adicionar ou alterar etiquetas de <%= indicator.name %>"
+            aria-expanded="false" aria-controls="<%= panel_id %>">
+      <i class="bi bi-tag" aria-hidden="true"></i>
+    </button>
+    <div id="<%= panel_id %>" class="task-composer__panel task-composer__people-popover routine-indicator-label-popover"
+         popover="manual" role="dialog" aria-label="Etiquetas de <%= indicator.name %>"
+         data-indicator-label-picker-target="panel" hidden>
+      <%= form_with model: indicator, url: routine_indicator_label_path(routine, indicator), method: :patch,
+          data: { indicator_label_picker_target: "form", action: "change->indicator-label-picker#changed turbo:submit-start->indicator-label-picker#submitting turbo:submit-end->indicator-label-picker#submitted turbo:fetch-request-error->indicator-label-picker#requestFailed" } do %>
+        <label for="<%= panel_id %>-search" class="form-label">Etiquetas do plano</label>
+        <input id="<%= panel_id %>-search" type="search" class="form-control form-control-sm"
+               placeholder="Buscar etiqueta..." autocomplete="off" aria-label="Buscar etiqueta"
+               data-indicator-label-picker-target="search" data-action="input->indicator-label-picker#filter keydown.enter->indicator-label-picker#preventSubmit">
+        <%= hidden_field_tag "routine_indicator[label_ids][]", "", id: nil %>
+        <% selected_ids = indicator.label_ids %>
+        <div class="task-composer__people" role="group" aria-label="Etiquetas">
+          <% @plan_labels.each do |label| %>
+            <label class="task-composer__person" data-indicator-label-picker-target="option" data-label-name="<%= label.name %>">
+              <%= check_box_tag "routine_indicator[label_ids][]", label.id, selected_ids.include?(label.id), id: nil,
+                  data: { indicator_label_picker_target: "checkbox" } %>
+              <span class="task-composer__label action-plan-color-badge" style="--task-label-color: <%= label.color %>"><%= label.name %></span>
+            </label>
+          <% end %>
+        </div>
+        <p class="task-composer__hint" data-indicator-label-picker-target="empty" role="status" <%= 'hidden' if @plan_labels.any? %>>
+          <%= @plan_labels.empty? ? 'Este plano ainda não tem etiquetas.' : 'Nenhuma etiqueta encontrada.' %>
+        </p>
+        <div class="task-composer__people-footer">
+          <div>
+            <span data-indicator-label-picker-target="count" aria-live="polite"></span>
+            <span id="routine-indicator-labels-status-<%= routine.id %>-<%= indicator.id %>"
+                  class="routine-indicator-label-popover__status" data-indicator-label-picker-target="status" aria-live="polite"></span>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-action="indicator-label-picker#close">Pronto</button>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

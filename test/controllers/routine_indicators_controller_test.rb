@@ -42,7 +42,9 @@ class RoutineIndicatorsControllerTest < ActionDispatch::IntegrationTest
     get routine_path(@routine)
     assert_response :success
     assert_select ".indicator-row .routine-indicator-labels .badge", text: "Segurança"
-    assert_select "button[data-bs-target=?]", "#routineIndicatorLabelsModal-#{@indicator.id}"
+    assert_select "button[aria-controls=?]", "routineIndicatorLabelsPopover-#{@routine.id}-#{@indicator.id}"
+    assert_select ".routine-indicator-label-popover[popover=manual]"
+    assert_select ".routine-indicator-label-modal", count: 0
     assert_select "form[action=?]", routine_indicator_label_path(@routine, @indicator)
 
     patch routine_indicator_label_path(@routine, @indicator), params: {
@@ -72,6 +74,44 @@ class RoutineIndicatorsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to routine_path(@routine)
     assert flash[:alert].present?
     assert_equal [@label.id], @indicator.reload.label_ids
+  end
+
+  test "turbo changes update only the compact labels and save status" do
+    patch routine_indicator_label_path(@routine, @indicator), params: {
+      routine_indicator: { label_ids: ["", @label.id, @second_label.id] }
+    }, as: :turbo_stream
+
+    assert_response :success
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+    assert_equal [@label.id, @second_label.id].sort, @indicator.reload.label_ids.sort
+    target = "routine-indicator-labels-#{@routine.id}-#{@indicator.id}"
+    assert_select "turbo-stream[action=update][target=?]", target do
+      assert_select ".badge", text: "Frota", count: 1
+      assert_select ".routine-indicator-label-count", text: "+1"
+    end
+    assert_select "turbo-stream[action=update][target=?]", "routine-indicator-labels-status-#{@routine.id}-#{@indicator.id}", text: /Salvo/
+    assert_select "turbo-stream", count: 2
+
+    patch routine_indicator_label_path(@routine, @indicator), params: { routine_indicator: { label_ids: [""] } }, as: :turbo_stream
+    assert_response :success
+    assert_empty @indicator.reload.labels
+    assert_select "turbo-stream[target=?] .badge", target, count: 0
+  end
+
+  test "turbo rejects foreign labels and reports errors inside the picker" do
+    @indicator.update!(labels: [@label])
+    other_plan = @user.action_plans.create!(name: "Outro plano com etiquetas", sector: @user.sector)
+    foreign_label = other_plan.labels.create!(name: "Externa", color: "#112233")
+
+    patch routine_indicator_label_path(@routine, @indicator), params: {
+      routine_indicator: { label_ids: [foreign_label.id] }
+    }, as: :turbo_stream
+
+    assert_response :unprocessable_entity
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+    assert_equal [@label.id], @indicator.reload.label_ids
+    assert_select "turbo-stream[target=?] .text-danger", "routine-indicator-labels-status-#{@routine.id}-#{@indicator.id}", text: /deve pertencer ao plano/
+    assert_select "turbo-stream", count: 1
   end
 
   test "plan viewers see badges without controls and cannot change them" do

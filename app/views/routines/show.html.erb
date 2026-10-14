@@ -122,11 +122,6 @@
   </div>
 
   <%= render "routines/comments_modal" %>
-  <% if @can_manage_indicator_labels %>
-    <% @indicators.each do |indicator| %>
-      <%= render "routines/indicator_labels_modal", routine: @routine, indicator: indicator %>
-    <% end %>
-  <% end %>
 
   <!-- ========== OFFCANVAS DE ATIVIDADES ========== -->
   <div
