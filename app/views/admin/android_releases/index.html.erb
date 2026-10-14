@@ -1,0 +1,65 @@
+<div class="container py-4">
+  <p class="text-muted"><i class="bi bi-shield-lock me-1"></i>Administração</p>
+  <h1><i class="bi bi-android2 me-2"></i>Atualizações do aplicativo</h1>
+  <p>Disponibilize uma nova versão do Log IA. Os usuários recebem o aviso dentro do app e podem tocar em Atualizar.</p>
+
+  <div class="card p-4 my-4">
+    <h2 class="h5">Publicar uma versão</h2>
+    <%= form_with model: @android_release, url: admin_android_releases_path, local: true, data: { turbo: false } do |form| %>
+      <% if @android_release.errors.any? %>
+        <div class="alert alert-danger" role="alert"><%= @android_release.errors.full_messages.to_sentence %></div>
+      <% end %>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <%= form.label :channel, "Distribuição", class: "form-label" %>
+          <%= form.select :channel, [["Produção", "release"], ["Teste (debug)", "debug"]], {}, class: "form-select" %>
+        </div>
+        <div class="col-md-4">
+          <%= form.label :version_name, "Versão", class: "form-label" %>
+          <%= form.text_field :version_name, required: true, maxlength: 50, placeholder: "Ex.: 0.4.0", class: "form-control" %>
+        </div>
+        <div class="col-md-4">
+          <%= form.label :version_code, "Código da versão", class: "form-label" %>
+          <%= form.number_field :version_code, required: true, min: 1, max: 2_100_000_000, class: "form-control" %>
+        </div>
+        <div class="col-12">
+          <%= form.label :apk_upload, "Arquivo APK assinado", class: "form-label" %>
+          <%= form.file_field :apk_upload, required: true, accept: ".apk", class: "form-control" %>
+          <p class="small text-muted mt-2">Até 150 MB. Informe a versão e o código presentes no APK. A assinatura deve ser a mesma da instalação anterior.</p>
+        </div>
+        <div class="col-12">
+          <%= form.label :notes, "O que mudou", class: "form-label" %>
+          <%= form.text_area :notes, rows: 3, maxlength: 4000, class: "form-control" %>
+        </div>
+      </div>
+      <%= form.submit "Disponibilizar atualização", class: "btn btn-primary mt-3" %>
+    <% end %>
+  </div>
+
+  <h2 class="h5">Versões publicadas</h2>
+  <p class="small text-muted">O app oferece a versão disponível com o maior código para cada distribuição.</p>
+  <% if @android_releases.empty? %>
+    <p>Nenhuma versão publicada ainda.</p>
+  <% else %>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead><tr><th>Versão</th><th>Distribuição</th><th>Tamanho</th><th>Situação</th><th>Ações</th></tr></thead>
+        <tbody>
+          <% @android_releases.each do |release| %>
+            <tr>
+              <td><%= release.version_name %> <small class="text-muted">(código <%= release.version_code %>)</small></td>
+              <td><%= release.channel == "release" ? "Produção" : "Teste" %></td>
+              <td><%= number_to_human_size(release.byte_size) %></td>
+              <td><%= release.published? ? "Disponível" : "Retirada" %></td>
+              <td class="d-flex gap-2">
+                <%= link_to "Baixar APK", apk_mobile_android_release_path(release), class: "btn btn-sm btn-outline-primary", data: { turbo: false } if release.published? %>
+                <%= button_to(release.published? ? "Retirar" : "Disponibilizar", admin_android_release_path(release), method: :patch,
+                  params: { android_release: { published: !release.published? } }, class: "btn btn-sm btn-outline-secondary") %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

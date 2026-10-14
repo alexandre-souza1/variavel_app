@@ -9,6 +9,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
 class MainActivity : HotwireActivity() {
+    private val appUpdatePrompt by lazy { AppUpdatePrompt(this) }
+
+    fun checkForAppUpdate(webView: android.webkit.WebView) = appUpdatePrompt.check(webView)
+
     private fun notificationLocation(intent: android.content.Intent): String? {
         val id = intent.getStringExtra("notification_id") ?: return null
         val user = getSharedPreferences("push", 0).getString("user", null) ?: return null

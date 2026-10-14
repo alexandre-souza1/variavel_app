@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_14_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_14_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -74,6 +74,20 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_14_120000) do
     t.bigint "employee_id"
     t.index ["active"], name: "index_ajudantes_on_active"
     t.index ["employee_id"], name: "index_ajudantes_on_employee_id"
+  end
+
+  create_table "android_releases", force: :cascade do |t|
+    t.string "channel", default: "release", null: false
+    t.integer "version_code", null: false
+    t.string "version_name", null: false
+    t.text "notes"
+    t.string "sha256", null: false
+    t.bigint "byte_size", null: false
+    t.boolean "published", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["channel", "version_code"], name: "index_android_releases_on_channel_and_version_code", unique: true
+    t.check_constraint "version_code > 0 AND byte_size > 0", name: "android_releases_positive_values"
   end
 
   create_table "autonomies", force: :cascade do |t|

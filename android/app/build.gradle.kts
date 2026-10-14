@@ -36,8 +36,8 @@ android {
         applicationId = "br.com.log20.variavel"
         minSdk = 28
         targetSdk = 35
-        versionCode = 7
-        versionName = "0.3.2"
+        versionCode = 8
+        versionName = "0.4.0"
         buildConfigField("String", "APP_URL", "\"${endpoint.toASCIIString()}\"")
     }
 
@@ -85,6 +85,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
     implementation("com.google.firebase:firebase-messaging")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
     implementation("dev.hotwire:core:1.3.1")
     implementation("dev.hotwire:navigation-fragments:1.3.1")
     implementation("com.google.android.material:material:1.12.0")

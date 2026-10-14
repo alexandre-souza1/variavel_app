@@ -14,7 +14,8 @@ internal class PdfDownload(
 ) {
     data class Metadata(val mimeType: String, val disposition: String?)
 
-    fun fetch(location: String, destination: File, requirePdf: Boolean = true): Metadata {
+    fun fetch(location: String, destination: File, requirePdf: Boolean = true,
+              maxBytes: Long = 50L * 1024 * 1024, onProgress: (Long) -> Unit = {}): Metadata {
         try {
             var current = URI(location)
             repeat(6) {
@@ -48,8 +49,9 @@ internal class PdfDownload(
                                     val count = input.read(buffer)
                                     if (count < 0) break
                                     total += count
-                                    if (total > 50L * 1024 * 1024) throw IOException("O arquivo ultrapassa o limite de 50 MB.")
+                                    if (total > maxBytes) throw IOException("O arquivo ultrapassa o limite de ${maxBytes / (1024 * 1024)} MB.")
                                     output.write(buffer, 0, count)
+                                    onProgress(total)
                                 }
                             }
                         }

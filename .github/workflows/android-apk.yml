@@ -60,6 +60,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: workstation-android-${{ inputs.build_type }}
-          path: android/app/build/outputs/apk/${{ inputs.build_type }}/*.apk
+          path: |
+            android/app/build/outputs/apk/${{ inputs.build_type }}/*.apk
+            android/app/build/outputs/apk/${{ inputs.build_type }}/output-metadata.json
           if-no-files-found: error
           retention-days: 14

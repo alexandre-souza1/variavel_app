@@ -1,0 +1,14 @@
+<div class="container py-4">
+  <h1><i class="bi bi-android2 me-2"></i>Aplicativo Log IA</h1>
+  <p>As próximas versões podem ser baixadas e instaladas pelo próprio aplicativo.</p>
+  <% if @android_release %>
+    <div class="card p-4">
+      <h2 class="h5">Versão <%= @android_release.version_name %></h2>
+      <%= simple_format(@android_release.notes) if @android_release.notes.present? %>
+      <p>Instale esta versão para habilitar a atualização pelo app. O Android solicitará sua confirmação.</p>
+      <%= link_to "Baixar APK", apk_mobile_android_release_path(@android_release), class: "btn btn-primary", data: { turbo: false } %>
+    </div>
+  <% else %>
+    <p>Nenhuma versão disponível para download no momento.</p>
+  <% end %>
+</div>

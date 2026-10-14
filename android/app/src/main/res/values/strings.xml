@@ -23,4 +23,16 @@
     <string name="print_file">Imprimir</string>
     <string name="hotwire_error_message">Não foi possível carregar a página</string>
     <string name="connection_retry">Confira a conexão e toque em Tentar novamente.</string>
+    <string name="update_title">Atualizar Log IA</string>
+    <string name="update_installed_version">Versão instalada: %1$s</string>
+    <string name="update_checking">Verificando atualizações…</string>
+    <string name="update_current">Você está usando a versão mais recente disponível.</string>
+    <string name="update_available">Nova versão disponível: %1$s</string>
+    <string name="update_download">Atualizar</string>
+    <string name="update_later">Agora não</string>
+    <string name="update_downloading">Baixando atualização: %1$d%%</string>
+    <string name="update_ready">Atualização pronta. Toque em Instalar e confirme no Android.</string>
+    <string name="update_install">Instalar atualização</string>
+    <string name="update_permission_needed">Autorize o Log IA a instalar aplicativos nesta tela e volte para continuar.</string>
+    <string name="update_install_failed">Não foi possível abrir a instalação. Verifique a permissão do Log IA e tente novamente.</string>
 </resources>

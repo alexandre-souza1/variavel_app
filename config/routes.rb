@@ -67,6 +67,7 @@ Rails.application.routes.draw do
     get 'users/edit'
     get 'users/update'
     resource :ai_setting, only: %i[edit update], path: "configuracoes-ia"
+    resources :android_releases, only: %i[index create update], path: "atualizacoes-android"
   end
 
   devise_for :users
@@ -101,6 +102,11 @@ Rails.application.routes.draw do
   end
 
   namespace :mobile do
+    get "app_update", to: "android_releases#show", as: :app_update
+    get "android_release", to: "android_releases#latest", as: :latest_android_release, defaults: { format: :json }
+    resources :android_releases, only: [] do
+      get :apk, on: :member
+    end
     resource :push_device, only: %i[create destroy], controller: :push_devices
     get "notifications/:id", to: "push_devices#open", as: :notification
   end

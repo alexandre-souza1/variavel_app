@@ -12,11 +12,12 @@ import dev.hotwire.navigation.routing.SystemNavigationRouteDecisionHandler
 class VariavelApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        Hotwire.config.applicationUserAgentPrefix = "Workstation Android;"
+        Hotwire.config.applicationUserAgentPrefix = "Workstation Android; updates-v1;"
         Hotwire.config.webViewDebuggingEnabled = BuildConfig.DEBUG
         Hotwire.defaultFragmentDestination = VariavelWebFragment::class
         Hotwire.registerFragmentDestinations(VariavelWebFragment::class)
         Hotwire.registerRouteDecisionHandlers(
+            AppUpdateRouteDecisionHandler(),
             PdfRouteDecisionHandler(),
             DownloadRouteDecisionHandler(),
             AppNavigationRouteDecisionHandler(),
@@ -27,7 +28,7 @@ class VariavelApplication : Application() {
         java.util.concurrent.Executors.newSingleThreadExecutor().let { executor ->
             executor.execute {
                 val cutoff = System.currentTimeMillis() - 24 * 60 * 60 * 1000L
-                listOf("exports", "downloads").forEach { name ->
+                listOf("exports", "downloads", "updates").forEach { name ->
                     java.io.File(cacheDir, name).listFiles()?.filter { it.lastModified() < cutoff }
                         ?.forEach { it.deleteRecursively() }
                 }

@@ -8,6 +8,19 @@ import dev.hotwire.navigation.fragments.HotwireWebFragment
 import dev.hotwire.navigation.navigator.NavigatorConfiguration
 import dev.hotwire.navigation.routing.Router
 
+class AppUpdateRouteDecisionHandler : Router.RouteDecisionHandler {
+    override val name = "app-update"
+    override fun matches(proposal: VisitProposal, configuration: NavigatorConfiguration) =
+        PdfDownload.sameOrigin(configuration.startLocation, proposal.location) &&
+            runCatching { java.net.URI(proposal.location).path == "/mobile/app_update" }.getOrDefault(false)
+
+    override fun handle(proposal: VisitProposal, configuration: NavigatorConfiguration,
+                        activity: HotwireActivity): Router.Decision {
+        AppUpdateActivity.open(activity)
+        return Router.Decision.CANCEL
+    }
+}
+
 class PdfRouteDecisionHandler : Router.RouteDecisionHandler {
     override val name = "pdf-reader"
 
@@ -41,12 +54,16 @@ class VariavelWebFragment : HotwireWebFragment() {
 
     override fun onVisitCompleted(location: String, completedOffline: Boolean) {
         super.onVisitCompleted(location, completedOffline)
-        if (!completedOffline) pushRegistration.sync(navigator.session.webView)
+        if (!completedOffline) {
+            pushRegistration.sync(navigator.session.webView)
+            (activity as? MainActivity)?.checkForAppUpdate(navigator.session.webView)
+        }
     }
 
     override fun onResume() {
         super.onResume()
         pushRegistration.sync(navigator.session.webView)
+        (activity as? MainActivity)?.checkForAppUpdate(navigator.session.webView)
     }
     // The Rails navbar already supplies the title and menus for each user's role.
     override fun onCreateView(

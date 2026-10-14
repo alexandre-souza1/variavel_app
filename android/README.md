@@ -46,6 +46,12 @@ Validação: instale o APK novo, faça login, aceite notificações e atribua um
 
 O aparelho precisa de Google Play Services e conexão. A entrega depende do Android/FCM; forçar a parada do app nas configurações impede recebimento até abri-lo novamente. Não é necessário manter a tela do aplicativo aberta. Sem permissão, o sino dentro do site continua funcionando.
 
+## Atualização pelo próprio app (0.4.0)
+
+A versão **0.4.0, código 8**, verifica novas versões após o login e oferece **Atualizar aplicativo** no menu do usuário. O administrador publica APKs em **Atualizações do aplicativo** no Rails. O celular baixa, verifica tamanho, SHA-256, pacote, versão e assinatura, e abre o instalador do Android. A versão inicial precisa ser instalada uma vez pelo método anterior; as próximas podem ser recebidas pelo app.
+
+Confira [preparação, publicação de versões e testes no aparelho](../docs/atualizacoes_android.md). Publique também o Rails e sua migração para habilitar a consulta. A compilação continua no computador ou GitHub Actions.
+
 ## Assinatura definitiva
 
 O build `release` usa uma chave permanente, separada da chave de debug. A chave local está fora do repositório, em `~/.local/share/workstation-signing/workstation.p12`; a configuração privada fica em `android/keystore.properties`, ignorada pelo Git, com uma cópia em `~/.local/share/workstation-signing/keystore.properties`.
