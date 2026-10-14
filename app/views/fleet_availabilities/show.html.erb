@@ -6,7 +6,7 @@
 <% special_route_items = @items.select(&:special_route?).group_by(&:special_route) %>
 <% availability_slots = [@fleet_availability.agreed_quantity, 0].max %>
 <% available_item_by_position = available_items.index_by { |item| item.position.to_i } %>
-<% maintenance_count = unavailable_items.count { |item| item.reason == "maintenance" } %>
+<% maintenance_count = unavailable_items.size %>
 <% maintenance_percentage = @items.any? ? ((maintenance_count.to_f / @items.size) * 100).round : 0 %>
 <% used_items = available_items + @items.select(&:special_route?) %>
 <% used_profile_counts = used_items.each_with_object(Hash.new(0)) { |item, counts| counts[item.plate.perfil.presence || "Sem perfil"] += 1 } %>

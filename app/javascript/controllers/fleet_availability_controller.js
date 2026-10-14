@@ -1333,10 +1333,7 @@ export default class extends Controller {
 
     if (!unavailableList) return
 
-    const maintenanceCount = Array
-      .from(unavailableList.querySelectorAll(".sortable-item"))
-      .filter((item) => item.dataset.reason === "maintenance")
-      .length
+    const maintenanceCount = unavailableList.querySelectorAll(".sortable-item").length
 
     const percentage = totalItems === 0
       ? 0
