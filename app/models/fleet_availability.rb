@@ -49,6 +49,35 @@ class FleetAvailability < ApplicationRecord
     fleet_availability_items.unavailable.count
   end
 
+  def operational_percentage(items: nil)
+    items ||= fleet_availability_items.select { |item| item.plate.active_on?(date) }
+    return 0 if items.empty?
+
+    operational_count = items.count { |item| !item.unavailable? }
+    ((operational_count.to_f / items.size) * 100).round
+  end
+
+  def operational_surplus
+    operational_count = fleet_availability_items.count do |item|
+      item.plate.active_on?(date) && !item.unavailable?
+    end
+    required_count = agreed_quantity.to_i + active_special_routes.values.sum
+
+    operational_count - required_count
+  end
+
+  def operational_dimensioning_met?
+    operational_surplus >= 0
+  end
+
+  def operational_availability_bar_class
+    case operational_surplus
+    when 3..Float::INFINITY then "bg-success"
+    when 0..2 then "bg-warning"
+    else "bg-danger"
+    end
+  end
+
   def coverage_percentage
     return 0 if agreed_quantity.zero?
 

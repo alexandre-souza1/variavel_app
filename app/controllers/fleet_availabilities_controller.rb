@@ -78,7 +78,7 @@ class FleetAvailabilitiesController < ApplicationController
     @fleet_availabilities =
       fleet_availabilities_for(@selected_dimensioning)
       .recent
-      .includes(:user)
+      .includes(:user, fleet_availability_items: :plate)
     @fleet_summary = fleet_summary(@fleet_availabilities)
 
     new_date = default_start_date

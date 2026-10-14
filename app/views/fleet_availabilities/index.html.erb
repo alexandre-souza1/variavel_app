@@ -160,6 +160,8 @@
 
                 <th class="text-center">Cobertura</th>
 
+                <th class="text-center">Frotas disponíveis</th>
+
                 <th class="text-end"></th>
 
               </tr>
@@ -231,6 +233,20 @@
                       </div>
                     </div>
 
+                  </td>
+
+                  <td data-label="Frotas disponíveis" class="text-center fleet-availability-table__coverage">
+                    <% operational_percentage = availability.operational_percentage %>
+
+                    <div class="fleet-availability-coverage" title="Frotas em roteirização e no depósito sobre o total de veículos">
+                      <span class="fleet-availability-coverage__value"><%= operational_percentage %>%</span>
+                      <div class="progress" role="progressbar"
+                           aria-label="Frotas disponíveis"
+                           aria-valuenow="<%= operational_percentage %>" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar <%= availability.operational_availability_bar_class %>"
+                             style="width: <%= operational_percentage %>%"></div>
+                      </div>
+                    </div>
                   </td>
 
                   <td class="text-end fleet-availability-table__actions">

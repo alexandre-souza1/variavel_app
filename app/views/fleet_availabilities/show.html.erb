@@ -1,6 +1,8 @@
 <% available_items = @items.select(&:available?) %>
 <% deposit_items = @items.select(&:exchange?) %>
 <% unavailable_items = @items.select(&:unavailable?) %>
+<% operational_count = @items.size - unavailable_items.size %>
+<% operational_percentage = @fleet_availability.operational_percentage(items: @items) %>
 <% special_route_items = @items.select(&:special_route?).group_by(&:special_route) %>
 <% availability_slots = [@fleet_availability.agreed_quantity, 0].max %>
 <% available_item_by_position = available_items.index_by { |item| item.position.to_i } %>
@@ -124,6 +126,18 @@
           <%= @fleet_availability.agreed_quantity %> linhas
         </small>
 
+        </div>
+
+        <div class="fleet-kpi-panel" title="Frotas em roteirização e no depósito sobre o total de veículos">
+          <span class="text-muted">Frotas disponíveis</span>
+
+          <strong data-operational-percentage>
+            <%= operational_percentage %>%
+          </strong>
+
+          <small data-operational-ratio>
+            <%= operational_count %> / <%= @items.size %> veículos
+          </small>
         </div>
 
         <div class="fleet-kpi-panel fleet-kpi-panel--danger">

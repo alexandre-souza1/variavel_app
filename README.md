@@ -99,6 +99,14 @@ Inicie o servidor:
 bin/rails server
 ```
 
+No desenvolvimento, alterações em SCSS/CSS e JavaScript aparecem ao salvar e
+atualizar a página, sem executar `assets:precompile`. O Sprockets processa os
+fontes sob demanda em `/dev-assets`, separado dos arquivos pré-compilados em
+`public/assets`. Depois de alterar `config/environments/development.rb`, reinicie
+o servidor. Se o navegador ainda mostrar uma versão antiga, use `Ctrl+Shift+R`.
+Isso não atualiza a página automaticamente. Em produção, a pré-compilação
+continua fazendo parte do deploy.
+
 Acesse `http://localhost:3000`.
 
 ## Variáveis de ambiente

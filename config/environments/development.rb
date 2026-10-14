@@ -84,6 +84,8 @@ Rails.application.configure do
   config.assets.quiet = true
 
   config.assets.compile = true
+  # Keep development requests away from files precompiled into public/assets.
+  config.assets.prefix = "/dev-assets"
   # Precompiled assets from local tests must not hide newer source changes.
   config.assets.resolve_with = [:environment]
 

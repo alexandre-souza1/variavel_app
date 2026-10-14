@@ -1093,6 +1093,7 @@ export default class extends Controller {
     this.refreshSpecialRoutePlaceholders()
     this.refreshCounts()
     this.refreshCoverage()
+    this.refreshOperationalAvailability()
     this.refreshMaintenance()
     this.refreshUsedProfiles()
   }
@@ -1304,6 +1305,24 @@ export default class extends Controller {
 
     if (ratioElement) {
       ratioElement.textContent = `${availableCount} / ${maxItems} linhas`
+    }
+  }
+
+
+  refreshOperationalAvailability() {
+    const totalItems = this.element.querySelectorAll(".sortable-item").length
+    const unavailableCount = this.element.querySelectorAll("#unavailable-list .sortable-item").length
+    const operationalCount = totalItems - unavailableCount
+    const percentage = totalItems === 0 ? 0 : Math.round((operationalCount / totalItems) * 100)
+    const percentageElement = this.element.querySelector("[data-operational-percentage]")
+    const ratioElement = this.element.querySelector("[data-operational-ratio]")
+
+    if (percentageElement) {
+      percentageElement.textContent = `${percentage}%`
+    }
+
+    if (ratioElement) {
+      ratioElement.textContent = `${operationalCount} / ${totalItems} veículos`
     }
   }
 

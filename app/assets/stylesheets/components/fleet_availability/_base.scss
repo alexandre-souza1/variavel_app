@@ -12,7 +12,7 @@
 
   .fleet-availability-command-center {
     width: 100%;
-    max-width: 42rem;
+    max-width: 48rem;
     display: grid;
     gap: 0.75rem;
     justify-items: end;
@@ -143,6 +143,8 @@
     grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
     gap: 0.5rem;
     width: 100%;
+    max-width: 42rem;
+    justify-self: end;
 
     form {
       display: flex;
@@ -160,7 +162,7 @@
 
   .fleet-availability-metrics {
     display: grid;
-    grid-template-columns: minmax(8.5rem, 0.8fr) minmax(8.5rem, 0.8fr) minmax(13rem, 1.4fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1.65fr);
     gap: 0.5rem;
     width: 100%;
   }
@@ -198,9 +200,24 @@
   }
 
   .fleet-kpi-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
     span,
     small {
       display: block;
+    }
+
+    > span {
+      min-height: 2.7em;
+      font-size: 0.875rem;
+      line-height: 1.35;
+    }
+
+    > small {
+      margin-top: auto;
+      line-height: 1.4;
     }
 
     strong {
