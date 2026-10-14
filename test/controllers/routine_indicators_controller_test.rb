@@ -128,6 +128,12 @@ class RoutineIndicatorsControllerTest < ActionDispatch::IntegrationTest
     patch routine_indicator_label_path(@routine, @indicator), params: { routine_indicator: { label_ids: [""] } }
     assert_response :forbidden
     assert_equal [@label.id], @indicator.reload.label_ids
+
+    patch routine_indicator_label_path(@routine, @indicator), params: { routine_indicator: { label_ids: [""] } }, as: :turbo_stream
+    assert_response :forbidden
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+    assert_select "turbo-stream[target=?] .text-danger", "routine-indicator-labels-status-#{@routine.id}-#{@indicator.id}", text: /não tem permissão/
+    assert_equal [@label.id], @indicator.reload.label_ids
   end
 
   test "plan owner can change indicator badges" do

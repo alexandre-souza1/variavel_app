@@ -71,10 +71,6 @@ export default class extends Controller {
     this.saving = true
   }
 
-  requestFailed(event) {
-    event.preventDefault()
-  }
-
   submitted(event) {
     this.saving = false
     if (event.detail.success) {
