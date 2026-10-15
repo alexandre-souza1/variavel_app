@@ -30,6 +30,7 @@ class FleetDimensioningCopyPreviousMonthTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "form[action='#{fleet_dimensionings_path}'][method='post']"
+    assert_select ".fleet-dimensioning-copy-status", count: 0
     assert_select "#fleet_dimensioning_period_year option[selected][value='2090']"
     assert_select "#fleet_dimensioning_period_month option[selected][value='2']"
     assert_select "#fleet_dimensioning_period_half option[selected][value='q2']"
@@ -39,7 +40,7 @@ class FleetDimensioningCopyPreviousMonthTest < ActionDispatch::IntegrationTest
     assert_select "[data-position='18'] [data-fleet-dimensioning-form-target='plateInput'][value='#{plates(:two).id}']"
     assert_select "[data-special-route='as'] [data-fleet-dimensioning-form-target='plateInput'][value='#{@special_plate.id}']"
     assert_select "input[name$='[id]']", count: 0
-    assert_select "[data-fleet-dimensioning-form-target='copyStatus']", text: /Q2 JANEIRO 90/
+    assert_select "form[data-copied-dimensioning-label='Q2 JANEIRO 90']"
     assert_equal original_assignments, @previous.reload.fleet_dimensioning_standard_plates.map(&:attributes)
   end
 
@@ -86,7 +87,7 @@ class FleetDimensioningCopyPreviousMonthTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "#fleet_dimensioning_period_year option[selected][value='2091']"
     assert_select "#fleet_dimensioning_period_month option[selected][value='1']"
-    assert_select "[data-fleet-dimensioning-form-target='copyStatus']", text: /Q2 DEZEMBRO 90/
+    assert_select "form[data-copied-dimensioning-label='Q2 DEZEMBRO 90']"
   end
 
   test "reports a missing previous period" do
@@ -135,6 +136,7 @@ class FleetDimensioningCopyPreviousMonthTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "form[action='#{fleet_dimensionings_path}'][method='post']"
+    assert_select ".fleet-dimensioning-copy-status", count: 0
     assert_select "#fleet_dimensioning_period_year option[selected][value='2090']"
     assert_select "#fleet_dimensioning_period_month option[selected][value='2']"
     assert_select "#fleet_dimensioning_period_half option[selected][value='q2']"
@@ -143,7 +145,7 @@ class FleetDimensioningCopyPreviousMonthTest < ActionDispatch::IntegrationTest
     assert_select "[data-position='1'] [data-fleet-dimensioning-form-target='plateInput'][value='#{plates(:two).id}']"
     assert_select "[data-special-route='as'] [data-fleet-dimensioning-form-target='plateInput'][value='#{@special_plate.id}']"
     assert_select "input[name$='[id]']", count: 0
-    assert_select "[data-fleet-dimensioning-form-target='copyStatus']", text: /Q1 FEVEREIRO 90/
+    assert_select "form[data-copied-dimensioning-label='Q1 FEVEREIRO 90']"
     assert_equal original_assignments, previous_half.reload.fleet_dimensioning_standard_plates.map(&:attributes)
   end
 
@@ -154,7 +156,7 @@ class FleetDimensioningCopyPreviousMonthTest < ActionDispatch::IntegrationTest
     assert_select "#fleet_dimensioning_period_month option[selected][value='2']"
     assert_select "#fleet_dimensioning_period_half option[selected][value='q1']"
     assert_select "#fleet_dimensioning_route_quantity[value='19']"
-    assert_select "[data-fleet-dimensioning-form-target='copyStatus']", text: /Q2 JANEIRO 90/
+    assert_select "form[data-copied-dimensioning-label='Q2 JANEIRO 90']"
   end
 
   test "copies the previous half across the year change" do
@@ -166,7 +168,7 @@ class FleetDimensioningCopyPreviousMonthTest < ActionDispatch::IntegrationTest
     assert_select "#fleet_dimensioning_period_year option[selected][value='2091']"
     assert_select "#fleet_dimensioning_period_month option[selected][value='1']"
     assert_select "#fleet_dimensioning_period_half option[selected][value='q1']"
-    assert_select "[data-fleet-dimensioning-form-target='copyStatus']", text: /Q2 DEZEMBRO 90/
+    assert_select "form[data-copied-dimensioning-label='Q2 DEZEMBRO 90']"
   end
 
   test "reports a missing previous half even when the previous month has a dimensioning" do

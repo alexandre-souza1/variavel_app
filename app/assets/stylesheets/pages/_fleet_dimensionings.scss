@@ -86,17 +86,6 @@
   .fleet-dimensioning-copy-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
   .fleet-dimensioning-copy-button { flex: 0 0 auto; border-radius: 8px; }
 
-  .fleet-dimensioning-copy-status {
-    padding: .85rem 1rem;
-    border: 1px solid var(--bs-border-color);
-    border-radius: 10px;
-    background: var(--fleet-dimensioning-surface);
-    color: var(--bs-body-color);
-    font-size: .82rem;
-
-    &--error { border-color: var(--bs-danger); color: var(--bs-danger-text-emphasis); }
-  }
-
   .fleet-dimensioning-section__body { padding: 1.25rem; }
 
   .form-label { margin-bottom: .4rem; font-size: .8rem; font-weight: 600; }

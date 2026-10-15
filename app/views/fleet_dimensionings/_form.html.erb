@@ -2,7 +2,8 @@
 <%= form_with model: @fleet_dimensioning,
               class: "fleet-dimensioning-form",
               data: {
-                controller: "fleet-dimensioning-form"
+                controller: "fleet-dimensioning-form",
+                copied_dimensioning_label: @copied_dimensioning_label
               },
               html: { novalidate: true } do |f| %>
   <% if @fleet_dimensioning.errors.any? %>
@@ -13,17 +14,6 @@
           <li><%= message %></li>
         <% end %>
       </ul>
-    </div>
-  <% end %>
-
-  <% if @fleet_dimensioning.new_record? %>
-    <div class="fleet-dimensioning-copy-status <%= 'd-none' if @copied_dimensioning_label.blank? %>"
-         data-fleet-dimensioning-form-target="copyStatus"
-         role="status"
-         aria-live="polite">
-      <% if @copied_dimensioning_label.present? %>
-        Placas e quantidades carregadas de <%= @copied_dimensioning_label %>. Revise antes de salvar.
-      <% end %>
     </div>
   <% end %>
 
@@ -173,7 +163,6 @@
                   title="Carregar placas e quantidades da mesma quinzena do mês anterior"
                   data-fleet-dimensioning-form-target="copyButton"
                   data-fleet-dimensioning-form-url-param="<%= copy_previous_month_fleet_dimensionings_path %>"
-                  data-fleet-dimensioning-form-period-param="do mês anterior"
                   data-action="fleet-dimensioning-form#copyPreviousPeriod">
             <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>
             Puxar mês anterior
@@ -183,7 +172,6 @@
                   title="Carregar placas e quantidades da quinzena imediatamente anterior"
                   data-fleet-dimensioning-form-target="copyButton"
                   data-fleet-dimensioning-form-url-param="<%= copy_previous_half_fleet_dimensionings_path %>"
-                  data-fleet-dimensioning-form-period-param="da quinzena anterior"
                   data-action="fleet-dimensioning-form#copyPreviousPeriod">
             <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>
             Puxar quinzena anterior

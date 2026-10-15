@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { showFlash } from "controllers/flash_controller"
 import Sortable from "sortablejs"
 
 export default class extends Controller {
@@ -12,7 +13,6 @@ export default class extends Controller {
     "slotList",
     "plateInput",
     "destroyInput",
-    "copyStatus",
     "copyButton"
   ]
 
@@ -27,9 +27,11 @@ export default class extends Controller {
   }
 
   async copyPreviousPeriod(event) {
+    const button = event.currentTarget
+    const originalContent = button.innerHTML
     const buttons = this.copyButtonTargets
     buttons.forEach(button => { button.disabled = true })
-    this.showCopyStatus(`Buscando o dimensionamento ${event.params.period}…`)
+    button.textContent = "Buscando…"
 
     try {
       const url = new URL(event.params.url, window.location.origin)
@@ -45,7 +47,7 @@ export default class extends Controller {
       })
       if (!response.ok) {
         const error = await response.json()
-        this.showCopyStatus(error.error || "Não foi possível carregar o dimensionamento anterior.", true)
+        showFlash(error.error || "Não foi possível carregar o dimensionamento anterior.", { type: "warning" })
         return
       }
 
@@ -54,17 +56,13 @@ export default class extends Controller {
       const newForm = template.content.querySelector(".fleet-dimensioning-form")
       if (!newForm) throw new Error("Formulário não encontrado")
       this.element.replaceWith(newForm)
+      showFlash(`Placas e quantidades carregadas de ${newForm.dataset.copiedDimensioningLabel}. Revise antes de salvar.`)
     } catch (_error) {
-      this.showCopyStatus("Não foi possível carregar o dimensionamento anterior. Tente novamente.", true)
+      showFlash("Não foi possível carregar o dimensionamento anterior. Tente novamente.", { type: "warning" })
     } finally {
+      button.innerHTML = originalContent
       buttons.forEach(button => { button.disabled = false })
     }
-  }
-
-  showCopyStatus(message, error = false) {
-    this.copyStatusTarget.textContent = message
-    this.copyStatusTarget.classList.remove("d-none")
-    this.copyStatusTarget.classList.toggle("fleet-dimensioning-copy-status--error", error)
   }
 
   disconnect() {
