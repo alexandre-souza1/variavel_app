@@ -70,6 +70,13 @@
 </div>
 
 <div class="modal-body">
+  <div class="mb-3">
+    <button type="button" class="btn btn-sm btn-outline-primary"
+            data-controller="ai-assistant-context" data-action="ai-assistant-context#open"
+            data-ai-assistant-context-page-value="<%= AiAssistant::PageContext.new(user: current_user, reference: { type: 'task', id: task.id }).client_data.to_json %>">
+      <i class="bi bi-stars me-1" aria-hidden="true"></i> Usar esta tarefa no assistente
+    </button>
+  </div>
   <div class="row">
 
     <!-- COLUNA ESQUERDA -->

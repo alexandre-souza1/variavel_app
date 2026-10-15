@@ -75,6 +75,47 @@ class AiAssistantsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "stores only the authorized reference per question so tabs cannot replace a queued context" do
+    first = action_plans(:one)
+    second = action_plans(:two)
+    with_api_key do
+      post ai_assistant_path, params: { question: "Resuma este plano", page_context: { type: "plan", id: first.id, label: "Forjado", role: "admin" } }, as: :json
+      assert_response :accepted
+      conversation = users(:one).reload.ai_conversation
+      first_message = conversation.ai_messages.last
+      assert_equal({ "type" => "plan", "id" => first.id }, first_message.page_context)
+      conversation.finish!(conversation.request_token, answer: { content: "Resumo", sources: [] })
+      post ai_assistant_path, params: { question: "Quais pendências tenho aqui?", page_context: { type: "plan", id: second.id } }, as: :json
+      assert_response :accepted
+      assert_equal second.id, conversation.ai_messages.last.page_context["id"]
+      assert_equal first.id, first_message.reload.page_context["id"]
+    end
+  end
+
+  test "forged inaccessible page references cannot start jobs or expose another inbox" do
+    users(:one).update!(role: :user, sector: :fleet, name: "Ana")
+    users(:two).update!(name: "Bruno")
+    plan = users(:two).action_plans.create!(name: "Restrito", sector: :warehouse, public: false)
+    private_task = users(:two).personal_inbox!.tasks.create!(title: "Segredo", creator: users(:two))
+    with_api_key do
+      [{ type: "plan", id: plan.id }, { type: "task", id: private_task.id }].each do |reference|
+        assert_no_difference "AiMessage.count" do
+          assert_no_enqueued_jobs do
+            post ai_assistant_path, params: { question: "Resuma isto", page_context: reference, user_id: users(:two).id }, as: :json
+          end
+          assert_response :unprocessable_entity
+        end
+      end
+    end
+    get action_plan_path(action_plans(:one))
+    assert_response :success
+    assert_select ".ai-assistant[data-ai-assistant-page-value]" do |elements|
+      assert_equal action_plans(:one).id, JSON.parse(elements.first["data-ai-assistant-page-value"])["reference"]["id"]
+    end
+    get inbox_path
+    assert_select ".ai-assistant[data-ai-assistant-page-value='{}']"
+  end
+
   private
 
   def with_api_key

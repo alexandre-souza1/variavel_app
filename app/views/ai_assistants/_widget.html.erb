@@ -1,6 +1,7 @@
 <aside id="ai-assistant-<%= current_user.id %>" class="ai-assistant"
        data-controller="ai-assistant" data-ai-assistant-url-value="<%= ai_assistant_path %>"
-       data-action="keydown.esc->ai-assistant#close meeting-recorder:opened@window->ai-assistant#close public-variable-chat:opened@window->ai-assistant#close turbo:before-cache@document->ai-assistant#beforeCache">
+       data-ai-assistant-page-value="<%= ai_assistant_page_context.to_json %>"
+       data-action="keydown.esc->ai-assistant#close ai-assistant:context@window->ai-assistant#openWithContext meeting-recorder:opened@window->ai-assistant#close public-variable-chat:opened@window->ai-assistant#close turbo:before-cache@document->ai-assistant#beforeCache">
   <button type="button" class="ai-assistant__launcher" data-ai-assistant-target="launcher"
           data-action="ai-assistant#open" aria-controls="ai-assistant-panel" aria-expanded="false"
           aria-label="Abrir meu assistente de IA" title="Meu assistente de IA">
@@ -19,10 +20,18 @@
       </button>
     </header>
 
+    <div class="ai-assistant__context" data-ai-assistant-target="contextBar" aria-label="Atalhos desta tela" hidden>
+      <div class="ai-assistant__context-heading">
+        <small data-ai-assistant-target="contextLabel"></small>
+        <button type="button" data-action="ai-assistant#removeContext" aria-label="Remover contexto da tela"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+      </div>
+      <div class="ai-assistant__context-buttons" data-ai-assistant-target="contextButtons"></div>
+    </div>
+
     <div class="ai-assistant__messages" data-ai-assistant-target="messages" role="log" aria-live="polite" aria-label="Conversa com o assistente" hidden></div>
     <div class="ai-assistant__welcome" data-ai-assistant-target="welcome">
       <strong>Como posso ajudar?</strong>
-      <p>Consulte os dados dos módulos liberados para seu perfil e setor.</p>
+      <p>Consulte os dados liberados para seu perfil e setor. Atualize suas tarefas com uma prévia antes de confirmar.<%= " Você também pode criar tarefas e planos de ação." if AiAssistant::ActionDraft.allowed?(current_user) %></p>
       <% ai_assistant_suggestions(current_user).each do |question| %>
         <button type="button" data-action="ai-assistant#suggest" data-question="<%= question %>"><%= question %><i class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
       <% end %>
@@ -38,7 +47,7 @@
       </button>
     </form>
     <footer class="ai-assistant__footer">
-      <small>Confira as informações nos registros consultados.</small>
+      <small>Confira as informações e as prévias antes de confirmar.</small>
       <button type="button" data-ai-assistant-target="clear" data-action="ai-assistant#clear">Limpar conversa</button>
     </footer>
   </section>

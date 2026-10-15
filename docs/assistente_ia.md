@@ -2,7 +2,7 @@
 
 O botão **Assistente IA** aparece para usuários autenticados no canto inferior direito. Em telas com o gravador de reuniões, aparece acima dele. Os painéis se minimizam mutuamente sem interromper uma gravação. No celular, assistente e gravador usam botões de ícone, deixando o botão Entrada livre no centro.
 
-Cada conta tem uma conversa persistida no banco, independente do navegador e das conversas de outras contas. **Limpar conversa** exclui o histórico daquela conta e descarta respostas de consultas anteriores ainda em execução.
+Cada conta tem uma conversa persistida no banco, independente do navegador e das conversas de outras contas. **Limpar conversa** exclui o histórico daquela conta, cancela propostas pendentes e descarta respostas anteriores ainda em execução. Os registros já criados e sua auditoria são mantidos. O botão **Perguntar à IA** pertence ao fluxo público por matrícula e nascimento e não aparece para contas logadas; esse fluxo público não executa ações.
 
 ## Consultas disponíveis
 
@@ -26,7 +26,55 @@ As permissões usam `User`, `NavbarHelper` e os escopos dos registros. Financeir
 
 Administradores podem consultar os módulos de todos os setores. As conversas pessoais e as credenciais continuam privadas. Mecânicos mantêm seu fluxo de tarefas atribuídas e Entrada pessoal, além dos checklists próprios e recursos públicos; o setor gravado no cadastro não amplia seu acesso.
 
-Resultados são paginados em 20 registros e incluem os totais completos. Os links dos registros são gerados pelo Rails. A versão atual realiza somente consultas.
+Resultados são paginados em 20 registros e incluem os totais completos. Os links dos registros são gerados pelo Rails.
+
+## Criação de tarefas e planos com confirmação
+
+Usuários ativos que podem criar tarefas nas telas do app podem solicitar ao assistente:
+
+- Uma tarefa na **Entrada pessoal**, ou em um bucket de um plano acessível.
+- Título, descrição, responsáveis por conta do app, início, prazo, checklist e lembrete de vencimento.
+- Um novo plano de ação com descrição, setor, visibilidade e até dez tarefas iniciais em **A Fazer**. Os buckets padrão do app também são criados.
+
+Contas comuns criam planos no próprio setor; administradores podem escolher qualquer setor. Mecânicos mantêm as consultas e o fluxo de tarefas atribuídas, sem as funções de criação do assistente. A atribuição de responsáveis usa contas ativas do app, como o formulário de tarefas; não utiliza colaboradores identificados apenas por matrícula. A Entrada permanece privada mesmo com outros responsáveis atribuídos: eles veem a tarefa quando ela é movida para um plano.
+
+As funções `prepare_task` e `prepare_plan` apenas preparam prévias. O usuário confere todos os dados, inclusive destino e visibilidade, e escolhe **Confirmar criação**, **Ajustar** ou **Cancelar**. Nenhuma tarefa, plano, Entrada ou notificação é criado durante a preparação. Responder “sim” na conversa não executa a ação. `action_options` localiza buckets e contas ativas; `pending_actions` permite consultar os dados da proposta atual para ajustá-la, sem enviar o token de confirmação ao modelo.
+
+Cada proposta vale por **30 minutos** e pertence exclusivamente à conta autenticada. A confirmação exige o token da prévia e confere novamente perfil, setor, acesso ao plano/bucket, responsáveis ativos e os dados mostrados. Mudanças no destino ou na visibilidade exigem nova proposta. Uma nova resposta com propostas cancela as anteriores ainda pendentes. Até três propostas podem ser preparadas por resposta.
+
+Sem destino solicitado, o padrão é a Entrada pessoal; sem responsável, a própria conta. Sem prazo solicitado, não há prazo. Uma data sem hora vence às **23:59:59 em Brasília**. Lembretes são ativados somente quando solicitados com prazo e seguem as notificações de vencimento existentes do app. Novos planos são restritos ao setor por padrão; torná-los públicos deve ser solicitado explicitamente e aparece na prévia.
+
+Confirmações usam transação e bloqueio no banco. Repetir um clique ou requisição retorna o resultado já registrado sem criar cópias. A criação de um plano e suas tarefas é atômica: uma falha desfaz todo o conjunto. Notificações e checklists usam o fluxo normal dos modelos.
+
+A tabela `ai_action_requests` registra conta autora, tipo, dados aprovados, prévia, estado, validade, horário de execução e IDs/links do resultado. Atividades de tarefas registram a origem `ai_assistant` e o ID da proposta. Essa auditoria permanece após limpar a conversa, com o vínculo à mensagem removido. Não é incluída nas estatísticas administrativas de consumo nem permite consultar conversas de outras contas.
+
+Exemplos: “Crie uma tarefa para inspecionar os pneus amanhã às 14h, com lembrete”, “No plano Revisão de Frota, crie uma tarefa para conferir o estepe e atribua à Ana”, “Prepare um plano de inspeção mensal com tarefas para pressão, sulcos e estepe”.
+
+## Atualização e conclusão de tarefas
+
+`task_details` consulta os dados atuais da tarefa autorizada. `prepare_task_update` prepara mudanças somente nos campos solicitados: título, descrição, início, prazo, responsáveis, lembrete e situação. A prévia mostra **Antes** e **Depois**, com **Confirmar alterações**, **Ajustar** e **Cancelar**. Mensagens de texto não confirmam uma alteração.
+
+Os campos omitidos são preservados. Mudar apenas o prazo não remove responsáveis, etiquetas ou checklist. Remover o prazo também desativa o lembrete, mostrado na comparação. Conclusão e reabertura usam situações explícitas, sem alternância em requisições repetidas; a conclusão grava `completed_at`, e a reabertura o remove. Tarefas recorrentes mantêm o fluxo existente de próxima ocorrência, com aviso na prévia.
+
+O acesso usa `Task.accessible_to`, como a edição normal do app. Mecânicos podem atualizar tarefas atribuídas e da própria Entrada, sem ganhar acesso a tarefas de outros mecânicos ou à criação. Administradores continuam sem acesso às Entradas pessoais alheias. A atribuição seleciona contas ativas, e o autor registrado é sempre a conta autenticada.
+
+A confirmação bloqueia a tarefa na transação e compara os dados atuais com o estado usado na prévia, inclusive responsáveis e versão. Se alguém editar a tarefa, movê-la ou alterar seus acessos, a proposta não sobrescreve a edição: é preciso consultar novamente e preparar outra. As atividades registram autor, origem do assistente e proposta para cada campo alterado, incluindo responsáveis adicionados/removidos. O quadro recebe as atualizações pelo fluxo normal de transmissão do app.
+
+Exemplos: “Adie esta tarefa para sexta às 15h”, “Adicione a Ana aos responsáveis e mantenha os demais”, “Desative o lembrete”, “Conclua esta tarefa”, “Reabra a tarefa de conferir os pneus”.
+
+Excluir registros, movimentar tarefas, alterar recorrência/checklist/etiquetas e registrar manutenção diretamente continuam disponíveis pelas telas correspondentes.
+
+## Atalhos da tela aberta
+
+O painel mostra o registro usado como referência e atalhos conforme a tela:
+
+- Plano: **Resumir plano**, **Ver pendências** e **Criar tarefa** (quando permitido).
+- Tarefa: **Resumir tarefa**, **Alterar prazo** e **Concluir/Reabrir tarefa**.
+- Veículo: **Ver pendências**, **Ver disponibilidade** e **Ver pneus**, conforme acesso aos módulos.
+
+Na janela de uma tarefa, **Usar esta tarefa no assistente** fecha a janela e abre o assistente com a referência escolhida. O usuário pode remover o contexto pelo botão ao lado do nome. Cada pergunta guarda somente o tipo e o ID do registro em `ai_messages.page_context`, evitando que uma navegação ou outra aba troque a referência de uma pergunta já enfileirada. Não é enviado o HTML da página.
+
+O servidor valida a referência ao receber a pergunta e novamente no worker. Abrir uma tela ou enviar um ID manualmente não amplia permissões. Se o acesso tiver sido revogado, o modelo recebe um aviso de contexto indisponível. As funções continuam exigindo autorização em cada consulta e proposta.
 
 ## Resumo do dia
 
@@ -57,10 +105,12 @@ Exemplos: “Resuma meu dia”, “Quanto sobra da meta de manutenção deste m�
 
 As consultas são processadas em segundo plano e o painel acompanha a resposta. Cada conta pode ter uma consulta em andamento e até 20 novas perguntas por janela de uma hora; limpar o histórico não reinicia esse limite. Consultas sem conclusão após cinco minutos são liberadas para nova tentativa.
 
-A integração usa a API Interactions com funções permitidas explicitamente e `store: false`. O histórico do app fica no banco local. Apenas as perguntas recentes e os resultados das consultas autorizadas da rodada são enviados ao Gemini; respostas antigas não são reenviadas. Textos são renderizados como texto simples. Não são habilitados SQL gerado pelo modelo, execução de código, acesso livre à rede ou alteração de registros.
+A integração usa a API Interactions com funções permitidas explicitamente e `store: false`. O histórico do app fica no banco local. Apenas as perguntas recentes e os resultados das funções autorizadas da rodada são enviados ao Gemini; respostas antigas não são reenviadas. Textos e prévias são renderizados como texto simples. Não são habilitados SQL gerado pelo modelo, execução de código, acesso livre à rede ou execução de ações pelo modelo. A gravação dos registros usa endpoints autenticados separados e depende do botão de confirmação.
 
 ## Validação
 
-`PARALLEL_WORKERS=1 bin/rails test test/controllers/ai_assistants_controller_test.rb test/services/ai_assistant_tools_test.rb test/services/ai_assistant_queries_test.rb test/services/ai_assistant_daily_briefing_test.rb test/jobs/ai_assistant_job_test.rb`
+`PARALLEL_WORKERS=1 bin/rails test test/controllers/ai_assistants_controller_test.rb test/controllers/ai_assistant_actions_controller_test.rb test/controllers/ai_assistant_task_updates_test.rb test/services/ai_assistant_actions_test.rb test/services/ai_assistant_page_context_test.rb test/services/ai_assistant_tools_test.rb test/services/ai_assistant_queries_test.rb test/services/ai_assistant_daily_briefing_test.rb test/jobs/ai_assistant_job_test.rb test/jobs/ai_assistant_task_context_job_test.rb`
 
-Os testes cobrem autenticação, isolamento entre contas, matriz de setores/perfis, bloqueio por IDs e chamadas de funções não anunciadas, paginação, saldos e metas sobrepostas, resumo diário, ausência de dados/integrações, consultas sem escrita, privacidade das conversas, continuidade de funções, cancelamento e falhas do provedor. As chamadas externas são simuladas nos testes.
+Os testes cobrem autenticação, isolamento entre contas, matriz de setores/perfis, bloqueio por IDs e chamadas de funções não anunciadas, paginação, saldos e metas sobrepostas, resumo diário, ausência de dados/integrações, consultas sem escrita, privacidade das conversas, continuidade de funções, cancelamento e falhas do provedor. Também cobrem prévias sem gravação, confirmação explícita, repetição de requisições, expiração, revalidação de permissões/dados, rollback de planos e auditoria após limpar. As chamadas externas são simuladas nos testes.
+
+Os cenários de navegador usam `test/browser/ai_assistant_actions_setup.rb` / `ai_assistant_actions_test.cjs` para criação e `test/browser/ai_assistant_updates_setup.rb` / `ai_assistant_updates_test.cjs` para atualização, contra um servidor Rails de testes com assets. Verificam prévias em desktop/celular e temas claro/escuro, gravador, conteúdo escapado, ajuste, cancelamento, confirmação real no banco, persistência, links, contexto por aba, passagem da janela da tarefa ao assistente, comparação antes/depois e bloqueio de edição desatualizada, sem chamadas ao Gemini.

@@ -1,5 +1,10 @@
 Rails.application.routes.draw do
-  resource :ai_assistant, path: "assistente-ia", only: %i[show create destroy]
+  resource :ai_assistant, path: "assistente-ia", only: %i[show create destroy] do
+    resources :actions, path: "acoes", controller: "ai_assistant_actions", only: [] do
+      post :confirm, on: :member, path: "confirmar"
+      post :cancel, on: :member, path: "cancelar"
+    end
+  end
   resource :pcd, controller: :pcds, only: %i[show update] do
     post :preview_routing, path: 'importar'
   end

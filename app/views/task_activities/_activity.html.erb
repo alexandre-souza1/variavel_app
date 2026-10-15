@@ -1,3 +1,4 @@
+<% activity_metadata = activity.metadata || {} %>
 <div class="text-muted small mb-1 text-center" style="font-size: 0.7rem;">
   <i class="bi bi-clock-history small" style="font-size: 0.7rem;"></i>
 
@@ -12,7 +13,7 @@
   <% elsif activity.routine_value_changed? %>
     atualizou o preenchimento de origem do GEROT:
     <strong><%= activity.old_value.presence || 'vazio' %></strong> → <strong><%= activity.new_value.presence || 'vazio' %></strong>
-    <% if activity.metadata['status'] == 'success' %>
+    <% if activity_metadata['status'] == 'success' %>
       <span class="text-success">(dentro da meta)</span>
     <% end %>
 
@@ -32,9 +33,28 @@
   <% elsif activity.assignee_added? %>
     adicionou <strong><%= activity.new_value %></strong> como responsável pela tarefa
 
+  <% elsif activity.assignee_removed? %>
+    removeu <strong><%= activity.old_value %></strong> dos responsáveis pela tarefa
+
+  <% elsif activity.start_date_changed? %>
+    alterou o início para <strong><%= activity.new_value.present? ? l(activity.new_value.to_datetime, format: :dia_mes) : '-' %></strong>
+
+  <% elsif activity.description_changed? %>
+    alterou a descrição da tarefa
+
+  <% elsif activity.updated? && activity_metadata['field'] == 'title' %>
+    alterou o título para <strong><%= activity.new_value %></strong>
+
+  <% elsif activity.updated? && activity_metadata['field'] == 'reminder' %>
+    <%= ActiveModel::Type::Boolean.new.cast(activity.new_value) ? 'ativou' : 'desativou' %> o lembrete de vencimento
+
+  <% elsif activity.updated? %>
+    atualizou a tarefa
+
   <% end %>
 
   <span>
+    <%= '• via Assistente IA ' if activity_metadata['source'] == 'ai_assistant' %>
     • <%= time_ago_in_words(activity.created_at) %> atrás
   </span>
 </div>

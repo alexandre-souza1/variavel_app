@@ -11,6 +11,7 @@ module AiAssistant
         month = { month: S.call('Mês de referência YYYY-MM; respeita o fechamento de cada módulo') }
         sector = { sector: S.call('Setor autorizado; financeiro usa frota, rota, as, rh, seguranca, gestao, financeiro ou armazem; colaboradores usam du ou az') }
         [
+          entry('task_details', :tasks, 'Consulta os dados atuais de uma tarefa acessível: descrição, responsáveis com IDs, início, prazo, situação, lembrete e recorrência. Use antes de propor alterações.', task_id: I),
           entry('daily_briefing', :tasks, 'Resumo do dia de hoje, agenda e prioridades: tarefas pessoais, GEROT, saldo das metas financeiras do mês e alertas relevantes ao setor. Use para "o que tenho para hoje", "resuma meu dia" e "onde preciso ter atenção". Admin pode escolher outro setor ou all; demais usuários usam seu próprio setor.', sector: { type: 'string', enum: %w[fleet du warehouse hr safety finance planning all] }),
           entry('financial_summary', :finance, 'Gastos por período de emissão, categorias e fornecedores; totais exatos dentro dos setores autorizados.', **PERIOD, **sector),
           entry('list_invoices', :finance, 'Busca lançamentos/notas por fornecedor, categoria, centro de custo, código, vencimento ou emissão. Não determina se foram pagos.', **PAGE, **PERIOD, **sector, **query, category_id: I, cost_center_id: I, due_from: S.call('Vencimento inicial YYYY-MM-DD'), due_until: S.call('Vencimento final YYYY-MM-DD')),

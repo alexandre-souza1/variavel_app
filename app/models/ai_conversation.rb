@@ -4,6 +4,7 @@ class AiConversation < ApplicationRecord
 
   belongs_to :user
   has_many :ai_messages, dependent: :delete_all
+  has_many :ai_action_requests, dependent: :destroy
 
   def processing?
     request_token.present?
@@ -17,7 +18,7 @@ class AiConversation < ApplicationRecord
     end
   end
 
-  def ask!(question)
+  def ask!(question, page_context: {})
     token = nil
     message = nil
     with_lock do
@@ -28,7 +29,7 @@ class AiConversation < ApplicationRecord
       end
       raise RateLimited if usage_count >= 20
 
-      message = ai_messages.create!(role: "user", content: question)
+      message = ai_messages.create!(role: "user", content: question, page_context: page_context)
       token = SecureRandom.uuid
       update!(request_token: token, requested_at: Time.current, error_message: nil, usage_count: usage_count + 1)
     end
@@ -44,6 +45,7 @@ class AiConversation < ApplicationRecord
 
   def clear!
     with_lock do
+      ai_action_requests.pending.update_all(status: "cancelled", cancelled_at: Time.current, updated_at: Time.current)
       ai_messages.delete_all
       update!(request_token: nil, requested_at: nil, error_message: nil)
     end
@@ -53,7 +55,16 @@ class AiConversation < ApplicationRecord
     with_lock do
       return unless request_token == token
 
-      ai_messages.create!(role: "assistant", content: answer.fetch(:content), sources: answer.fetch(:sources)) if answer
+      if answer
+        message = ai_messages.create!(role: "assistant", content: answer.fetch(:content), sources: answer.fetch(:sources))
+        drafts = answer.fetch(:actions, [])
+        if drafts.any?
+          ai_action_requests.pending.update_all(status: "cancelled", cancelled_at: Time.current, updated_at: Time.current)
+          drafts.each do |draft|
+            message.ai_action_requests.create!(draft.merge(user: user, ai_conversation: self))
+          end
+        end
+      end
       update!(request_token: nil, error_message: error)
     end
   end

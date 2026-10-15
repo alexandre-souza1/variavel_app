@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_15_170000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_15_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -54,6 +54,29 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_15_170000) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "ai_action_requests", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "ai_conversation_id", null: false
+    t.bigint "ai_message_id"
+    t.string "kind", null: false
+    t.string "status", default: "pending", null: false
+    t.string "confirmation_token", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.jsonb "preview", default: {}, null: false
+    t.jsonb "result", default: {}, null: false
+    t.datetime "expires_at", null: false
+    t.datetime "executed_at"
+    t.datetime "cancelled_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ai_conversation_id", "status"], name: "index_ai_action_requests_on_ai_conversation_id_and_status"
+    t.index ["ai_conversation_id"], name: "index_ai_action_requests_on_ai_conversation_id"
+    t.index ["ai_message_id"], name: "index_ai_action_requests_on_ai_message_id"
+    t.index ["user_id"], name: "index_ai_action_requests_on_user_id"
+    t.check_constraint "kind::text = ANY (ARRAY['create_task'::character varying, 'create_plan'::character varying, 'update_task'::character varying]::text[])", name: "ai_action_requests_valid_kind"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'executed'::character varying, 'cancelled'::character varying]::text[])", name: "ai_action_requests_valid_status"
+  end
+
   create_table "ai_api_requests", force: :cascade do |t|
     t.string "model", null: false
     t.string "feature", null: false
@@ -94,6 +117,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_15_170000) do
     t.jsonb "sources", default: [], null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "page_context", default: {}, null: false
     t.index ["ai_conversation_id", "id"], name: "index_ai_messages_on_ai_conversation_id_and_id"
     t.index ["ai_conversation_id"], name: "index_ai_messages_on_ai_conversation_id"
     t.check_constraint "role::text = ANY (ARRAY['user'::character varying, 'assistant'::character varying]::text[])", name: "ai_messages_valid_role"
@@ -1359,6 +1383,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_15_170000) do
   add_foreign_key "action_plans", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ai_action_requests", "ai_conversations"
+  add_foreign_key "ai_action_requests", "ai_messages", on_delete: :nullify
+  add_foreign_key "ai_action_requests", "users"
   add_foreign_key "ai_api_requests", "users", on_delete: :nullify
   add_foreign_key "ai_conversations", "users"
   add_foreign_key "ai_messages", "ai_conversations"

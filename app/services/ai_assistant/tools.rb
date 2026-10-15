@@ -8,12 +8,14 @@ module AiAssistant
     include OperationsQueries
     include ManagementQueries
     include DailyBriefing
+    include ActionTools
 
-    attr_reader :sources
+    attr_reader :sources, :drafts
 
     def initialize(user)
       @user = user
       @sources = []
+      @drafts = []
       @access = Access.new(user)
     end
 
@@ -34,12 +36,13 @@ module AiAssistant
         function("navigation", "Obtém links e orientações de navegação de acordo com as permissões do usuário.")
       ]
       core.reject! { |entry| entry[:name] == 'fleet_status' && !@access.allowed?(:availability) }
-      core + Catalog.entries.values.filter_map { |entry| entry[:declaration] if @access.allowed?(entry[:area]) }
+      core + Catalog.entries.values.filter_map { |entry| entry[:declaration] if @access.allowed?(entry[:area]) } + action_declarations
     end
 
     def call(name, arguments)
       return { error: 'Seu acesso não está ativo.' } unless @user.reload.active?
       args = arguments.is_a?(Hash) ? arguments.stringify_keys : {}
+      return call_action(name, args) if ActionTools::ACTION_FUNCTIONS.include?(name)
       if (entry = Catalog.entries[name])
         return { error: 'Seu perfil não possui acesso a esta consulta.' } unless @access.allowed?(entry[:area])
         args = args.slice(*entry[:declaration][:parameters][:properties].keys.map(&:to_s))
@@ -51,7 +54,7 @@ module AiAssistant
       when "list_tasks" then list_tasks(args)
       when "fleet_status" then fleet_status(args)
       when "navigation" then navigation
-      else { error: "Função indisponível. O assistente realiza apenas consultas." }
+      else { error: "Função indisponível. Use apenas as funções anunciadas. Criações exigem uma prévia e confirmação por botão." }
       end
     rescue ActiveRecord::RecordNotFound
       { error: "Registro não encontrado ou sem acesso. Não presuma que ele exista." }
@@ -148,6 +151,23 @@ module AiAssistant
       result
     end
 
+    def task_details(args)
+      task = Task.accessible_to(@user).includes(:users, bucket: :action_plan).find(Integer(args.fetch("task_id")))
+      path = if task.inbox?
+               inbox_path(task_id: task.id)
+             elsif @user.mechanical?
+               mechanic_tasks_path(status: task.completed? ? "completed" : "open", q: task.title, anchor: "task_#{task.id}")
+             else
+               action_plan_path(task.bucket.action_plan_id, task_id: task.id)
+             end
+      source(task.title, path)
+      { id: task.id, title: task.title, description: task.description.to_s.truncate(4_000),
+        completed: task.completed?, start_at: task.start_at&.iso8601, due_at: task.due_at&.iso8601,
+        reminder: task.due_notification_enabled?, recurrence: task.recurrence, inbox: task.inbox?,
+        assignees: task.users.map { |user| { id: user.id, name: user.name.presence || "Usuário ##{user.id}" } },
+        plan_id: task.bucket.action_plan_id, plan: task.bucket.action_plan&.name, bucket_id: task.bucket_id, bucket: task.bucket.name }
+    end
+
     def fleet_status(args)
       return { error: "Seu perfil não tem acesso à consulta de frota." } unless can_view_nav_link?(:availability, @user)
 
@@ -199,7 +219,7 @@ module AiAssistant
         source(label, path)
       end
       { links: links, capabilities: declarations.map { |entry| { name: entry[:name], description: entry[:description] } },
-        note: 'As consultas respeitam o perfil, setor e acesso aos registros. Alterações devem ser feitas nas telas do app. Conversas pessoais permanecem privadas.' }
+        note: 'Consultas e propostas respeitam o perfil, setor e acesso aos registros. Criações disponíveis exigem confirmação da prévia por botão. Conversas pessoais permanecem privadas.' }
     end
 
     def source(label, path)

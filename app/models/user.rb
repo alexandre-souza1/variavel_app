@@ -21,6 +21,7 @@ class User < ApplicationRecord
   has_many :invoices, foreign_key: 'purchaser_id', dependent: :nullify
   has_many :action_plans, dependent: :destroy
   has_one :ai_conversation, dependent: :destroy
+  has_many :ai_action_requests, dependent: :destroy
   has_many :ai_api_requests, dependent: :nullify
   has_one :inbox_bucket, -> { where(inbox: true) }, class_name: "Bucket", dependent: :destroy
   has_many :hidden_action_plans, dependent: :destroy

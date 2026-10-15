@@ -20,12 +20,16 @@ class AiAssistantsController < ApplicationController
     end
 
     @conversation.expire_request!
-    @conversation.ask!(question)
+    reference = params[:page_context].is_a?(ActionController::Parameters) ? params[:page_context].permit(:type, :id).to_h : {}
+    page = AiAssistant::PageContext.new(user: current_user, reference: reference)
+    @conversation.ask!(question, page_context: page.reference)
     render_conversation(status: :accepted)
   rescue AiConversation::Busy
     render json: { error: "Aguarde a resposta da consulta em andamento." }, status: :conflict
   rescue AiConversation::RateLimited
     render json: { error: "Você atingiu 20 consultas nesta hora. Tente novamente mais tarde." }, status: :too_many_requests
+  rescue AiAssistant::PageContext::Unavailable
+    render json: { error: "A referência desta tela não está mais disponível. Remova o contexto ou abra o registro novamente." }, status: :unprocessable_entity
   rescue StandardError => error
     Rails.logger.error("Falha ao iniciar o assistente: #{error.class}")
     render json: { error: "Não foi possível iniciar a consulta. Tente novamente em instantes." }, status: :service_unavailable
@@ -48,10 +52,6 @@ class AiAssistantsController < ApplicationController
   end
 
   def render_conversation(status: :ok)
-    messages = @conversation.ai_messages.order(id: :desc).limit(60).to_a.reverse
-    render json: {
-      messages: messages.map { |message| message.as_json(only: %i[id role content sources]) },
-      processing: @conversation.processing?, error: @conversation.error_message
-    }, status: status
+    render json: AiAssistant::ConversationPayload.call(@conversation), status: status
   end
 end

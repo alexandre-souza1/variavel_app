@@ -114,4 +114,62 @@ class AiAssistantJobTest < ActiveJob::TestCase
   ensure
     ENV['GEMINI_API_KEY'] = previous
   end
+
+  test "provider prepares a persisted private preview without executing or receiving a confirmation token" do
+    requests = []
+    responses = [
+      { steps: [{ type: "function_call", id: "prepare-1", name: "prepare_task", arguments: {
+        title: "Inspecionar pneus", due_at: "2030-10-20", checklist: ["Conferir sulcos"]
+      } }] },
+      { steps: [{ type: "function_call", id: "execute-1", name: "confirm_action", arguments: { approved: true } }] },
+      { steps: [{ type: "model_output", content: [{ type: "text", text: "Confira a prévia e confirme pelo botão." }] }] }
+    ]
+    post = lambda do |_url, &block|
+      req = Struct.new(:headers, :options, :body).new({}, Struct.new(:timeout, :open_timeout).new)
+      block.call(req)
+      requests << JSON.parse(req.body)
+      Faraday::Response.new(status: 200, body: responses.shift.to_json)
+    end
+    previous = ENV["GEMINI_API_KEY"]
+    ENV["GEMINI_API_KEY"] = "test-key"
+    assert_no_difference ["Task.count", "ActionPlan.count", "Bucket.count", "Notification.count"] do
+      assert_difference "AiActionRequest.count", 1 do
+        Faraday.stub(:post, post) { AiAssistantJob.perform_now(@conversation.id, "request-1", @message.id) }
+      end
+    end
+    action = @conversation.ai_messages.last.ai_action_requests.sole
+    assert_equal users(:one).id, action.user_id
+    assert_equal "pending", action.status
+    assert_equal "Inspecionar pneus", action.payload["title"]
+    refute requests.any? { |request| request.to_json.include?(action.confirmation_token) }
+    function_results = requests.last["input"].select { |step| step["type"] == "function_result" }
+    assert_equal false, JSON.parse(function_results.first["result"].first["text"])["executed"]
+    assert JSON.parse(function_results.last["result"].first["text"])["error"]
+    assert_nil @conversation.reload.error_message
+  ensure
+    ENV["GEMINI_API_KEY"] = previous
+  end
+
+  test "a failed response after preparing a draft never leaves an actionable proposal" do
+    calls = 0
+    post = lambda do |_url, &block|
+      req = Struct.new(:headers, :options, :body).new({}, Struct.new(:timeout, :open_timeout).new)
+      block.call(req)
+      calls += 1
+      if calls == 1
+        Faraday::Response.new(status: 200, body: { steps: [{ type: "function_call", id: "draft-1", name: "prepare_task", arguments: { title: "Não deve ficar pendente" } }] }.to_json)
+      else
+        raise Faraday::TimeoutError
+      end
+    end
+    previous = ENV["GEMINI_API_KEY"]
+    ENV["GEMINI_API_KEY"] = "test-key"
+    assert_no_difference ["AiActionRequest.count", "Task.count"] do
+      Faraday.stub(:post, post) { AiAssistantJob.perform_now(@conversation.id, "request-1", @message.id) }
+    end
+    refute @conversation.reload.processing?
+    assert @conversation.error_message.present?
+  ensure
+    ENV["GEMINI_API_KEY"] = previous
+  end
 end

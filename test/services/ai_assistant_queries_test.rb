@@ -279,6 +279,7 @@ class AiAssistantQueriesTest < ActiveSupport::TestCase
     meeting.save!(validate: false)
     AiSetting.current
     arguments = {
+      'task_details' => { task_id: tasks(:one).id },
       'daily_briefing' => { sector: 'finance' },
       'invoice_details' => { invoice_id: invoice.id },
       'employee_details' => { employee_id: employee.id },
