@@ -192,12 +192,6 @@
     <% position_standard_plates = @fleet_dimensioning.fleet_dimensioning_standard_plates.select { |sp| sp.special_route.blank? } %>
 
     <div class="fleet-dimensioning-section__body">
-    <div class="fleet-dimensioning-profile-summary" role="status" aria-live="polite" aria-atomic="true">
-      <span class="text-body-secondary">Padrão + especiais</span>
-      <div class="fleet-dimensioning-profile-summary__counts" data-fleet-dimensioning-form-target="profileSummary">
-        <strong class="fleet-dimensioning-profile-summary__item">Total: 0</strong>
-      </div>
-    </div>
     <div class="fleet-dimensioning-board">
       <%# Lista de placas disponíveis %>
       <section class="fleet-dimensioning-board__column">
@@ -221,9 +215,19 @@
 
       <%# Slots das posições %>
       <section class="fleet-dimensioning-board__column">
-        <div class="fleet-dimensioning-board__heading">
-          <h3>Posições padrão</h3>
-          <span>Uma placa por posição</span>
+        <div class="fleet-dimensioning-board__heading fleet-dimensioning-board__heading--positions">
+          <div>
+            <h3>Posições padrão</h3>
+            <span>Uma placa por posição</span>
+          </div>
+          <div class="fleet-dimensioning-profile-summary"
+               role="status" aria-live="polite" aria-atomic="true"
+               aria-label="Perfis nas posições padrão e especiais"
+               title="Soma das placas nas posições padrão e especiais">
+            <div class="fleet-dimensioning-profile-summary__counts" data-fleet-dimensioning-form-target="profileSummary">
+              <strong class="fleet-dimensioning-profile-summary__item">Total: 0</strong>
+            </div>
+          </div>
         </div>
         <div class="fleet-dimensioning-slots">
           <div class="fleet-dimensioning-board__empty">

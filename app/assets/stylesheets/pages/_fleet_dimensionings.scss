@@ -125,7 +125,8 @@
     font-size: .74rem;
   }
 
-  .fleet-dimensioning-profile-summary { margin-bottom: .85rem; column-gap: .65rem; }
+  .fleet-dimensioning-profile-summary { flex: 1 1 14rem; min-width: 0; margin-left: auto; }
+  .fleet-dimensioning-profile-summary__counts { justify-content: flex-end; }
 
   .fleet-dimensioning-profile-summary__item {
     padding: .25rem .55rem;
@@ -148,6 +149,16 @@
 
     h3 { margin: 0 0 .2rem; font-size: .85rem; font-weight: 650; }
     span { color: var(--bs-secondary-color); font-size: .74rem; }
+  }
+
+  .fleet-dimensioning-board__heading--positions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+
+    > div:first-child { flex: 0 0 auto; }
   }
 
   .fleet-dimensioning-plate-list,
