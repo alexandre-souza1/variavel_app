@@ -41,6 +41,7 @@
 
   .fleet-dimensioning-form {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.25rem;
   }
 
@@ -113,6 +114,26 @@
     gap: .75rem;
 
     .form-control { font-size: 1.1rem; font-weight: 650; }
+  }
+
+  .fleet-dimensioning-profile-summary,
+  .fleet-dimensioning-profile-summary__counts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem;
+    font-size: .74rem;
+  }
+
+  .fleet-dimensioning-profile-summary { margin-bottom: .85rem; column-gap: .65rem; }
+
+  .fleet-dimensioning-profile-summary__item {
+    padding: .25rem .55rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 999px;
+    background: var(--fleet-dimensioning-inset);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 
   .fleet-dimensioning-board {

@@ -192,6 +192,12 @@
     <% position_standard_plates = @fleet_dimensioning.fleet_dimensioning_standard_plates.select { |sp| sp.special_route.blank? } %>
 
     <div class="fleet-dimensioning-section__body">
+    <div class="fleet-dimensioning-profile-summary" role="status" aria-live="polite" aria-atomic="true">
+      <span class="text-body-secondary">Padrão + especiais</span>
+      <div class="fleet-dimensioning-profile-summary__counts" data-fleet-dimensioning-form-target="profileSummary">
+        <strong class="fleet-dimensioning-profile-summary__item">Total: 0</strong>
+      </div>
+    </div>
     <div class="fleet-dimensioning-board">
       <%# Lista de placas disponíveis %>
       <section class="fleet-dimensioning-board__column">
@@ -204,6 +210,7 @@
           <% rota_plates.reject { |plate| selected_plate_ids.include?(plate.id) }.each do |plate| %>
             <div class="fleet-dimensioning-plate"
                  data-plate-id="<%= plate.id %>"
+                 data-plate-profile="<%= plate.perfil.presence || 'Sem perfil' %>"
                  data-plate-label="<%= plate.placa %>">
               <strong><%= plate.placa %></strong>
               <small class="d-block text-body-secondary"><%= plate.perfil.presence || plate.tipo.presence || "Ativa" %></small>
@@ -253,6 +260,7 @@
                 <% if plate.present? %>
                   <div class="fleet-dimensioning-plate"
                        data-plate-id="<%= plate.id %>"
+                       data-plate-profile="<%= plate.perfil.presence || 'Sem perfil' %>"
                        data-plate-label="<%= plate.placa %>">
                     <strong><%= plate.placa %></strong>
                     <small class="d-block text-body-secondary"><%= plate.perfil.presence || plate.tipo.presence || "Ativa" %></small>
@@ -311,6 +319,7 @@
                   <% if special_standard_plate.plate.present? %>
                     <div class="fleet-dimensioning-plate"
                          data-plate-id="<%= special_standard_plate.plate.id %>"
+                         data-plate-profile="<%= special_standard_plate.plate.perfil.presence || 'Sem perfil' %>"
                          data-plate-label="<%= special_standard_plate.plate.placa %>">
                       <strong><%= special_standard_plate.plate.placa %></strong>
                       <small class="d-block text-body-secondary"><%= special_standard_plate.plate.perfil.presence || special_standard_plate.plate.tipo.presence || "Ativa" %></small>

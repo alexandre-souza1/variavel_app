@@ -13,7 +13,8 @@ export default class extends Controller {
     "slotList",
     "plateInput",
     "destroyInput",
-    "copyButton"
+    "copyButton",
+    "profileSummary"
   ]
 
   connect() {
@@ -159,6 +160,37 @@ export default class extends Controller {
         placeholder.classList.toggle("d-none", Boolean(plate))
       }
     })
+
+    this.refreshProfileSummary()
+  }
+
+  refreshProfileSummary() {
+    const counts = new Map()
+    let total = 0
+
+    this.slotTargets.forEach(slot => {
+      if (slot.classList.contains("d-none")) return
+
+      const plate = slot.querySelector(".fleet-dimensioning-plate")
+      if (!plate) return
+
+      const profile = plate.dataset.plateProfile || "Sem perfil"
+      counts.set(profile, (counts.get(profile) || 0) + 1)
+      total += 1
+    })
+
+    const badges = [...counts.entries()]
+      .sort(([a], [b]) => a.localeCompare(b, "pt-BR"))
+      .map(([profile, count]) => {
+        const badge = document.createElement("span")
+        badge.className = "fleet-dimensioning-profile-summary__item"
+        badge.textContent = `${profile}: ${count}`
+        return badge
+      })
+    const totalBadge = document.createElement("strong")
+    totalBadge.className = "fleet-dimensioning-profile-summary__item"
+    totalBadge.textContent = `Total: ${total}`
+    this.profileSummaryTarget.replaceChildren(...badges, totalBadge)
   }
 
   activeSlotCount() {
