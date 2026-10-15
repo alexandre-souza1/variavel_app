@@ -13,7 +13,7 @@
     <% if tire_divergences_error %>
       <p class="text-muted small mb-0"><%= tire_divergences_error %> Não foi possível carregar o resumo.</p>
     <% elsif tire_divergences.any? %>
-      <div class="table-responsive dashboard-table-wrapper">
+      <div class="table-responsive dashboard-table-wrapper" tabindex="0" role="region" aria-label="Tabela de divergências de aferição">
         <table class="table align-middle dashboard-data-table dashboard-tire-table mb-0" aria-label="Divergências de aferição do mês">
           <thead><tr><th scope="col">Data</th><th scope="col">Placa</th><th scope="col">Nº de fogo</th><th scope="col">Vida</th><th scope="col">Aumento</th></tr></thead>
           <tbody>

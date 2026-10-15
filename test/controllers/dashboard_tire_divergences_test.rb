@@ -21,7 +21,7 @@ class DashboardTireDivergencesTest < ActiveSupport::TestCase
     assert_equal 10, rows.size
     assert_equal 13, rows.first[:current][:record]["id"]
     assert_equal 4, rows.last[:current][:record]["id"]
-    html = ApplicationController.render(partial: "dashboards/tire_divergences", assigns: controller.view_assigns)
+    html = ApplicationController.render(partial: "dashboards/tire_divergences", locals: { tire_divergences_error: nil }.merge(controller.view_assigns.symbolize_keys))
     assert_includes html, "Ver todas do mês"
     assert_includes html, "12 aumentos de sulco no mês"
   end
@@ -33,7 +33,7 @@ class DashboardTireDivergencesTest < ActiveSupport::TestCase
     Prolog::InspectionsClient.stub :new, client do
       controller.send(:load_tire_divergences)
     end
-    html = ApplicationController.render(partial: "dashboards/tire_divergences", assigns: controller.view_assigns)
+    html = ApplicationController.render(partial: "dashboards/tire_divergences", locals: controller.view_assigns.symbolize_keys)
     assert_includes html, "Não foi possível carregar o resumo"
     refute_includes html, "Nenhum aumento"
   end
