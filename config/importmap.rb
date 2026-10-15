@@ -1,6 +1,7 @@
 # Pin npm packages by running ./bin/importmap
 
 pin "application"
+pin "assistant_text"
 pin "task_move_stream"
 pin "leaflet", to: "leaflet.js"
 pin "@hotwired/turbo-rails", to: "turbo.min.js"

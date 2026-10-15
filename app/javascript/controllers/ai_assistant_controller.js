@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { renderAssistantText } from "assistant_text"
 
 export default class extends Controller {
   static targets = ["launcher", "panel", "messages", "welcome", "question", "send", "clear", "status", "error", "actionButton", "contextBar", "contextLabel", "contextButtons"]
@@ -145,8 +146,12 @@ export default class extends Controller {
       article.className = `ai-assistant__message ai-assistant__message--${message.role === "user" ? "user" : "assistant"}`
       const label = document.createElement("small")
       label.textContent = message.role === "user" ? "Você" : "Assistente IA"
-      const content = document.createElement("p")
-      content.textContent = message.content
+      const content = document.createElement(message.role === "user" ? "p" : "div")
+      if (message.role === "user") content.textContent = message.content
+      else {
+        content.className = "ai-assistant__content"
+        content.append(renderAssistantText(message.content))
+      }
       article.append(label, content)
       if (message.sources?.length) {
         const sources = document.createElement("div")
