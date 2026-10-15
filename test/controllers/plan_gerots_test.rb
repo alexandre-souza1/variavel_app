@@ -71,6 +71,9 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     assert_equal "danger", response.parsed_body["cell_status"]
     assert response.parsed_body["can_generate_task"]
 
+    commenter = users(:two)
+    commenter.update!(role: :admin)
+    sign_in commenter
     assert_difference(["Task.count", "RoutineComment.count", "Comment.count"], 1) do
       comment_on(value, "Revisar o processo de produção")
     end
@@ -78,11 +81,14 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     task = value.reload.generated_task
     assert response.parsed_body["generated_task_created"]
     assert_equal action_plan_path(@plan, task_id: task.id), response.parsed_body["generated_task_url"]
+    assert_equal "Investigar Refugo fora da meta — Revisar o processo de produção", task.title
     assert_includes task.description, "Comentário: Revisar o processo de produção"
     assert_equal "Revisar o processo de produção", task.comments.first.content
-    assert_equal @user, task.comments.first.user
+    assert_equal commenter, task.comments.first.user
+    assert_equal [commenter.id], task.user_ids
     assert_equal "Qualidade", task.bucket.name
 
+    sign_in @user
     assert_no_difference("Task.count") { save_value(value, "3") }
     assert_not response.parsed_body["generated_task_created"]
     assert_difference("Comment.count", 1) do
@@ -91,8 +97,10 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     assert_not response.parsed_body["generated_task_created"]
     assert_equal task.id, response.parsed_body["generated_task_id"]
     assert_not task.reload.completed?
+    assert_equal "Investigar Refugo fora da meta — Revisar o processo de produção", task.title
     assert_equal "success", task.task_activities.routine_value_changed.last.metadata["status"]
     assert_equal 2, task.comments.count
+    assert_equal [commenter.id], task.user_ids
 
     assert_no_difference("Task.count") { delete routine_value_routine_comment_path(value, value.routine_comments.first), as: :json }
     assert_equal 2, task.comments.count
@@ -134,6 +142,8 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     assert_difference(["Task.count", "TaskLabel.count"], 1) { save_value(value, "8") }
     assert_response :success
     assert_equal [label.id], value.reload.generated_task.label_ids
+    assert_empty value.generated_task.user_ids
+    assert_equal "Investigar Refugo fora da meta — #{value.reference_date.strftime('%d/%m/%Y')}", value.generated_task.title
   end
 
   test "normal blank manual and goal-less indicators never generate a task from comments" do
