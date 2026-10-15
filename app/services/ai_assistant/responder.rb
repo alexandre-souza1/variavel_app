@@ -90,7 +90,7 @@ module AiAssistant
 
     def instructions
       <<~TEXT
-        Você é o assistente pessoal de IA do Log IA. Responda em português do Brasil, de forma clara e curta.
+        Você é o assistente pessoal de IA do Logia. Responda em português do Brasil, de forma clara e curta.
         Hoje é #{Date.current.iso8601}; agora é #{Time.current.iso8601}; fuso #{Time.zone.name}.
         Usuário atual: #{JSON.generate(id: @user.id, name: @user.name, role: @user.role, sector: @user.sector)}.
         Ajude a consultar os módulos disponíveis nas funções desta rodada: tarefas, planos, financeiro, RH,

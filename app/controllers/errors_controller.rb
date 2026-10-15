@@ -25,7 +25,7 @@ class ErrorsController < ActionController::Base
 
   def build_report(exception)
     details = [
-      "Log IA - relatório de erro",
+      "Logia - relatório de erro",
       "Data: #{Time.current.iso8601}",
       "Request ID: #{request.request_id}",
       "Método: #{request.request_method}",

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Log IA</string>
-    <string name="push_channel">Avisos do Log IA</string>
+    <string name="app_name">Logia</string>
+    <string name="push_channel">Avisos do Logia</string>
     <string name="push_message">Você tem uma nova notificação no sistema.</string>
     <string name="back">Voltar</string>
     <string name="retry">Tentar novamente</string>
@@ -23,7 +23,7 @@
     <string name="print_file">Imprimir</string>
     <string name="hotwire_error_message">Não foi possível carregar a página</string>
     <string name="connection_retry">Confira a conexão e toque em Tentar novamente.</string>
-    <string name="update_title">Atualizar Log IA</string>
+    <string name="update_title">Atualizar Logia</string>
     <string name="update_installed_version">Versão instalada: %1$s</string>
     <string name="update_checking">Verificando atualizações…</string>
     <string name="update_current">Você está usando a versão mais recente disponível.</string>
@@ -33,6 +33,6 @@
     <string name="update_downloading">Baixando atualização: %1$d%%</string>
     <string name="update_ready">Atualização pronta. Toque em Instalar e confirme no Android.</string>
     <string name="update_install">Instalar atualização</string>
-    <string name="update_permission_needed">Autorize o Log IA a instalar aplicativos nesta tela e volte para continuar.</string>
-    <string name="update_install_failed">Não foi possível abrir a instalação. Verifique a permissão do Log IA e tente novamente.</string>
+    <string name="update_permission_needed">Autorize o Logia a instalar aplicativos nesta tela e volte para continuar.</string>
+    <string name="update_install_failed">Não foi possível abrir a instalação. Verifique a permissão do Logia e tente novamente.</string>
 </resources>

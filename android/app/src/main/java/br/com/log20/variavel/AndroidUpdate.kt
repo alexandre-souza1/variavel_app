@@ -22,7 +22,7 @@ internal data class AndroidUpdate(
     fun verifyPackage(installed: ApkIdentity, candidate: ApkIdentity) {
         if (candidate.applicationId != installed.applicationId || candidate.versionCode != versionCode ||
             candidate.versionCode <= installed.versionCode || candidate.versionName != versionName) {
-            throw IOException("O APK não corresponde à versão anunciada do Log IA.")
+            throw IOException("O APK não corresponde à versão anunciada do Logia.")
         }
         if (installed.signers.isEmpty() || candidate.signers != installed.signers) {
             throw IOException("A assinatura desta atualização é diferente da instalação atual. Contate o administrador.")

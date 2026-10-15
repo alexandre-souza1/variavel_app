@@ -45,7 +45,7 @@ class AndroidRelease < ApplicationRecord
     end
     self.sha256 = Digest::SHA256.file(upload.tempfile.path).hexdigest
     self.byte_size = upload.size
-    apk.attach(io: upload.tempfile, filename: "log-ia-#{channel}-#{version_code}.apk",
+    apk.attach(io: upload.tempfile, filename: "logia-#{channel}-#{version_code}.apk",
                content_type: "application/vnd.android.package-archive", identify: false)
   rescue Zip::Error, IOError, Errno::ENOENT
     errors.add(:apk, "não é um APK válido")

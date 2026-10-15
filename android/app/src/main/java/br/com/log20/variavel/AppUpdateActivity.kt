@@ -120,7 +120,7 @@ class AppUpdateActivity : AppCompatActivity() {
             val uri = FileProvider.getUriForFile(this, "$packageName.exports", ready.file)
             install.launch(Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, "application/vnd.android.package-archive")
-                clipData = ClipData.newUri(contentResolver, "Log IA", uri)
+                clipData = ClipData.newUri(contentResolver, "Logia", uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             })
         } catch (_: Exception) {

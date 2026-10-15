@@ -56,7 +56,7 @@ internal class AppUpdateViewModel(application: Application) : AndroidViewModel(a
                 val file = withContext(Dispatchers.IO) {
                     val folder = File(getApplication<Application>().cacheDir, "updates/${UUID.randomUUID()}")
                     check(folder.mkdirs())
-                    val destination = File(folder, "log-ia.apk")
+                    val destination = File(folder, "logia.apk")
                     try {
                         client.download(update, destination) { bytes ->
                             ensureActive()

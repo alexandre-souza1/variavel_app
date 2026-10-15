@@ -1,4 +1,4 @@
-# Atualização do Log IA pelo aplicativo
+# Atualização do Logia pelo aplicativo
 
 A versão Android **0.4.0, código 8**, habilita o atualizador. É necessário instalar esse APK uma vez pelo método anterior e publicar as alterações do Rails. As versões seguintes podem ser recebidas pelo próprio app.
 
@@ -22,7 +22,7 @@ O APK é compilado no computador ou no GitHub Actions. O atualizador do celular 
 
 Após o login, o app verifica atualizações ao abrir/retomar as telas, no máximo a cada seis horas por usuário e versão instalada. Uma falha de conexão é ignorada no uso normal e pode ser tentada novamente após cinco minutos com o app aberto. Não há download automático nem verificação em segundo plano.
 
-O aviso oferece **Atualizar** e **Agora não**. Também é possível consultar imediatamente pelo menu do usuário, em **Atualizar aplicativo**. Nessa tela, toque em **Atualizar** para baixar; após o download, toque em **Instalar atualização**. Se necessário, autorize o Log IA a instalar aplicativos na tela de configurações do Android e volte. O instalador do sistema pede a confirmação final. Cancelar permite tentar novamente.
+O aviso oferece **Atualizar** e **Agora não**. Também é possível consultar imediatamente pelo menu do usuário, em **Atualizar aplicativo**. Nessa tela, toque em **Atualizar** para baixar; após o download, toque em **Instalar atualização**. Se necessário, autorize o Logia a instalar aplicativos na tela de configurações do Android e volte. O instalador do sistema pede a confirmação final. Cancelar permite tentar novamente.
 
 Versões anteriores abrem uma página web de download ao tocar no menu. Alterações do Rails continuam chegando pelo servidor; recursos nativos precisam de APK novo.
 
