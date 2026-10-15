@@ -83,6 +83,7 @@
   }
 
   .fleet-dimensioning-section__description { flex: 1; min-width: 0; }
+  .fleet-dimensioning-copy-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
   .fleet-dimensioning-copy-button { flex: 0 0 auto; border-radius: 8px; }
 
   .fleet-dimensioning-copy-status {
@@ -242,7 +243,7 @@
     .fleet-dimensioning-section__header { padding: 1rem; }
     .fleet-dimensioning-section--plates .fleet-dimensioning-section__header { flex-wrap: wrap; }
     .fleet-dimensioning-section__description { flex-basis: calc(100% - 3rem); }
-    .fleet-dimensioning-copy-button { margin-left: 2.95rem; }
+    .fleet-dimensioning-copy-actions { margin-left: 2.95rem; }
     .fleet-dimensioning-section__body { padding: 1rem; }
     .fleet-dimensioning-board { grid-template-columns: 1fr; gap: 1.25rem; }
     .fleet-dimensioning-period-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); > div:last-child { grid-column: 1 / -1; } }

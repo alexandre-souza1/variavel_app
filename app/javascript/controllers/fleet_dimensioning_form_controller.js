@@ -12,10 +12,9 @@ export default class extends Controller {
     "slotList",
     "plateInput",
     "destroyInput",
-    "copyStatus"
+    "copyStatus",
+    "copyButton"
   ]
-
-  static values = { copyUrl: String }
 
   connect() {
     this.sortables = []
@@ -27,13 +26,13 @@ export default class extends Controller {
     this.refreshSlots()
   }
 
-  async copyPreviousMonth(event) {
-    const button = event.currentTarget
-    button.disabled = true
-    this.showCopyStatus("Buscando o dimensionamento do mês anterior…")
+  async copyPreviousPeriod(event) {
+    const buttons = this.copyButtonTargets
+    buttons.forEach(button => { button.disabled = true })
+    this.showCopyStatus(`Buscando o dimensionamento ${event.params.period}…`)
 
     try {
-      const url = new URL(this.copyUrlValue, window.location.origin)
+      const url = new URL(event.params.url, window.location.origin)
       const form = new FormData(this.element)
       for (const field of ["period_year", "period_month", "period_half"]) {
         const name = `fleet_dimensioning[${field}]`
@@ -58,7 +57,7 @@ export default class extends Controller {
     } catch (_error) {
       this.showCopyStatus("Não foi possível carregar o dimensionamento anterior. Tente novamente.", true)
     } finally {
-      button.disabled = false
+      buttons.forEach(button => { button.disabled = false })
     }
   }
 

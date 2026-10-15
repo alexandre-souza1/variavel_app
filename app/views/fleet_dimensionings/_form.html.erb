@@ -2,8 +2,7 @@
 <%= form_with model: @fleet_dimensioning,
               class: "fleet-dimensioning-form",
               data: {
-                controller: "fleet-dimensioning-form",
-                fleet_dimensioning_form_copy_url_value: copy_previous_month_fleet_dimensionings_path
+                controller: "fleet-dimensioning-form"
               },
               html: { novalidate: true } do |f| %>
   <% if @fleet_dimensioning.errors.any? %>
@@ -168,13 +167,28 @@
         </p>
       </div>
       <% if @fleet_dimensioning.new_record? %>
-        <button type="button"
-                class="btn btn-outline-primary btn-sm fleet-dimensioning-copy-button"
-                title="Carregar placas e quantidades da mesma quinzena do mês anterior"
-                data-action="fleet-dimensioning-form#copyPreviousMonth">
-          <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>
-          Puxar mês anterior
-        </button>
+        <div class="fleet-dimensioning-copy-actions">
+          <button type="button"
+                  class="btn btn-outline-primary btn-sm fleet-dimensioning-copy-button"
+                  title="Carregar placas e quantidades da mesma quinzena do mês anterior"
+                  data-fleet-dimensioning-form-target="copyButton"
+                  data-fleet-dimensioning-form-url-param="<%= copy_previous_month_fleet_dimensionings_path %>"
+                  data-fleet-dimensioning-form-period-param="do mês anterior"
+                  data-action="fleet-dimensioning-form#copyPreviousPeriod">
+            <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>
+            Puxar mês anterior
+          </button>
+          <button type="button"
+                  class="btn btn-outline-primary btn-sm fleet-dimensioning-copy-button"
+                  title="Carregar placas e quantidades da quinzena imediatamente anterior"
+                  data-fleet-dimensioning-form-target="copyButton"
+                  data-fleet-dimensioning-form-url-param="<%= copy_previous_half_fleet_dimensionings_path %>"
+                  data-fleet-dimensioning-form-period-param="da quinzena anterior"
+                  data-action="fleet-dimensioning-form#copyPreviousPeriod">
+            <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>
+            Puxar quinzena anterior
+          </button>
+        </div>
       <% end %>
     </div>
 

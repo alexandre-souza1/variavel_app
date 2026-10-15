@@ -211,6 +211,7 @@ Rails.application.routes.draw do
   end
   resources :fleet_dimensionings, except: :show do
     get :copy_previous_month, on: :collection
+    get :copy_previous_half, on: :collection
   end
 
   resources :action_plans do

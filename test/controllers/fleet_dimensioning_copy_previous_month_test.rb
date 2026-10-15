@@ -111,7 +111,92 @@ class FleetDimensioningCopyPreviousMonthTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_user_session_path
   end
 
+  test "new form offers both previous month and previous half" do
+    get new_fleet_dimensioning_path
+
+    assert_response :success
+    [copy_previous_month_fleet_dimensionings_path, copy_previous_half_fleet_dimensionings_path].each do |path|
+      assert_select "button[type='button'][data-fleet-dimensioning-form-url-param='#{path}']"
+    end
+  end
+
+  test "copies Q1 of the selected month into Q2 instead of the same half of the previous month" do
+    previous_half = FleetDimensioning.create!(
+      label: "Q1 FEVEREIRO 90", start_date: Date.new(2090, 2, 1), end_date: Date.new(2090, 2, 15),
+      route_quantity: 2, van_quantity: 0, vespertina_quantity: 0, as_quantity: 1
+    )
+    previous_half.fleet_dimensioning_standard_plates.create!(plate: plates(:two), position: 1)
+    previous_half.fleet_dimensioning_standard_plates.create!(plate: @special_plate, special_route: "as")
+    original_assignments = previous_half.fleet_dimensioning_standard_plates.map(&:attributes)
+
+    assert_no_difference ["FleetDimensioning.count", "FleetDimensioningStandardPlate.count"] do
+      get_previous_half_layout
+    end
+
+    assert_response :success
+    assert_select "form[action='#{fleet_dimensionings_path}'][method='post']"
+    assert_select "#fleet_dimensioning_period_year option[selected][value='2090']"
+    assert_select "#fleet_dimensioning_period_month option[selected][value='2']"
+    assert_select "#fleet_dimensioning_period_half option[selected][value='q2']"
+    assert_select "#fleet_dimensioning_route_quantity[value='2']"
+    assert_select "#fleet_dimensioning_as_quantity[value='1']"
+    assert_select "[data-position='1'] [data-fleet-dimensioning-form-target='plateInput'][value='#{plates(:two).id}']"
+    assert_select "[data-special-route='as'] [data-fleet-dimensioning-form-target='plateInput'][value='#{@special_plate.id}']"
+    assert_select "input[name$='[id]']", count: 0
+    assert_select "[data-fleet-dimensioning-form-target='copyStatus']", text: /Q1 FEVEREIRO 90/
+    assert_equal original_assignments, previous_half.reload.fleet_dimensioning_standard_plates.map(&:attributes)
+  end
+
+  test "copies Q2 of the previous month into Q1" do
+    get_previous_half_layout(period_half: "q1")
+
+    assert_response :success
+    assert_select "#fleet_dimensioning_period_month option[selected][value='2']"
+    assert_select "#fleet_dimensioning_period_half option[selected][value='q1']"
+    assert_select "#fleet_dimensioning_route_quantity[value='19']"
+    assert_select "[data-fleet-dimensioning-form-target='copyStatus']", text: /Q2 JANEIRO 90/
+  end
+
+  test "copies the previous half across the year change" do
+    @previous.update!(label: "Q2 DEZEMBRO 90", start_date: Date.new(2090, 12, 16), end_date: Date.new(2090, 12, 31))
+
+    get_previous_half_layout(period_year: 2091, period_month: 1, period_half: "q1")
+
+    assert_response :success
+    assert_select "#fleet_dimensioning_period_year option[selected][value='2091']"
+    assert_select "#fleet_dimensioning_period_month option[selected][value='1']"
+    assert_select "#fleet_dimensioning_period_half option[selected][value='q1']"
+    assert_select "[data-fleet-dimensioning-form-target='copyStatus']", text: /Q2 DEZEMBRO 90/
+  end
+
+  test "reports a missing previous half even when the previous month has a dimensioning" do
+    get_previous_half_layout
+
+    assert_response :not_found
+    assert_equal "Não há dimensionamento para a quinzena anterior.", response.parsed_body["error"]
+  end
+
+  test "rejects invalid period selections when copying the previous half" do
+    get_previous_half_layout(period_half: "invalid")
+
+    assert_response :unprocessable_entity
+    assert_match(/Selecione um ano/, response.parsed_body["error"])
+  end
+
+  test "copying the previous half requires authentication" do
+    sign_out :user
+
+    get_previous_half_layout
+
+    assert_redirected_to new_user_session_path
+  end
+
   private
+
+  def get_previous_half_layout(**period)
+    get copy_previous_half_fleet_dimensionings_path,
+        params: { fleet_dimensioning: { period_year: 2090, period_month: 2, period_half: "q2" }.merge(period) }
+  end
 
   def get_previous_layout(**period)
     get copy_previous_month_fleet_dimensionings_path,

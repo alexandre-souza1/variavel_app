@@ -16,42 +16,11 @@ class FleetDimensioningsController < ApplicationController
   end
 
   def copy_previous_month
-    period = selected_period
-    unless period
-      return render json: { error: "Selecione um ano, mês e quinzena válidos." },
-                    status: :unprocessable_entity
-    end
+    copy_previous_period
+  end
 
-    previous = FleetDimensioning.for_date(period[:start_date].prev_month)
-    unless previous
-      return render json: { error: "Não há dimensionamento para essa quinzena no mês anterior." },
-                    status: :not_found
-    end
-
-    @period_year = period[:start_date].year
-    @period_month = period[:start_date].month
-    @period_half = params.dig(:fleet_dimensioning, :period_half)
-    @fleet_dimensioning = FleetDimensioning.new(previous.attributes.slice(
-      "route_quantity", "van_quantity", "vespertina_quantity", "as_quantity"
-    ))
-    previous.fleet_dimensioning_standard_plates.includes(:plate).each do |assignment|
-      plate = assignment.plate
-      next unless plate&.active? && plate.setor == "ROTA"
-      if assignment.special_route.present?
-        next unless @fleet_dimensioning.special_routes.key?(assignment.special_route)
-      else
-        next unless assignment.position.to_i < @fleet_dimensioning.route_quantity.to_i
-      end
-
-      @fleet_dimensioning.fleet_dimensioning_standard_plates.build(
-        plate: plate, position: assignment.position, special_route: assignment.special_route
-      )
-    end
-    @fleet_dimensioning.build_standard_plate_slots(standard_plate_slot_quantity)
-    @fleet_dimensioning.build_special_route_slots
-    @copied_dimensioning_label = previous.label
-
-    render partial: "form"
+  def copy_previous_half
+    copy_previous_period(previous_half: true)
   end
 
   def create
@@ -109,6 +78,48 @@ class FleetDimensioningsController < ApplicationController
   end
 
   private
+
+  def copy_previous_period(previous_half: false)
+    period = selected_period
+    unless period
+      return render json: { error: "Selecione um ano, mês e quinzena válidos." },
+                    status: :unprocessable_entity
+    end
+
+    source_date = previous_half ? period[:start_date].prev_day : period[:start_date].prev_month
+    previous = FleetDimensioning.for_date(source_date)
+    unless previous
+      message = previous_half ? "Não há dimensionamento para a quinzena anterior." :
+                                "Não há dimensionamento para essa quinzena no mês anterior."
+      return render json: { error: message },
+                    status: :not_found
+    end
+
+    @period_year = period[:start_date].year
+    @period_month = period[:start_date].month
+    @period_half = params.dig(:fleet_dimensioning, :period_half)
+    @fleet_dimensioning = FleetDimensioning.new(previous.attributes.slice(
+      "route_quantity", "van_quantity", "vespertina_quantity", "as_quantity"
+    ))
+    previous.fleet_dimensioning_standard_plates.includes(:plate).each do |assignment|
+      plate = assignment.plate
+      next unless plate&.active? && plate.setor == "ROTA"
+      if assignment.special_route.present?
+        next unless @fleet_dimensioning.special_routes.key?(assignment.special_route)
+      else
+        next unless assignment.position.to_i < @fleet_dimensioning.route_quantity.to_i
+      end
+
+      @fleet_dimensioning.fleet_dimensioning_standard_plates.build(
+        plate: plate, position: assignment.position, special_route: assignment.special_route
+      )
+    end
+    @fleet_dimensioning.build_standard_plate_slots(standard_plate_slot_quantity)
+    @fleet_dimensioning.build_special_route_slots
+    @copied_dimensioning_label = previous.label
+
+    render partial: "form"
+  end
 
   def set_fleet_dimensioning
     @fleet_dimensioning = FleetDimensioning.find(params[:id])
