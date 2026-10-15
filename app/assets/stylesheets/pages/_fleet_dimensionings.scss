@@ -125,7 +125,7 @@
     font-size: .74rem;
   }
 
-  .fleet-dimensioning-profile-summary { flex: 1 1 14rem; min-width: 0; margin-left: auto; }
+  .fleet-dimensioning-profile-summary { flex: 1 1 14rem; min-width: 0; margin-left: auto; justify-content: flex-end; }
   .fleet-dimensioning-profile-summary__counts { justify-content: flex-end; }
 
   .fleet-dimensioning-profile-summary__item {
