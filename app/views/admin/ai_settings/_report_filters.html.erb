@@ -1,0 +1,21 @@
+<%= form_with url: edit_admin_ai_setting_path, method: :get, local: true, class: "app-panel ai-report-filters" do %>
+  <%= hidden_field_tag :tab, @tab %>
+  <div>
+    <%= label_tag :ai_report_period, "Período", class: "form-label" %>
+    <%= select_tag :period, options_for_select(GeminiUsageReport::PERIODS.map { |value, label| [label, value] }, @usage_report.period), id: :ai_report_period, class: "form-select" %>
+  </div>
+  <div>
+    <%= label_tag :ai_report_metric, "Comparar por", class: "form-label" %>
+    <%= select_tag :metric, options_for_select(GeminiUsageReport::METRICS.map { |value, label| [label, value] }, @usage_report.metric), id: :ai_report_metric, class: "form-select" %>
+  </div>
+  <div>
+    <%= label_tag :ai_report_model, "Modelo", class: "form-label" %>
+    <%= select_tag :model, options_for_select([["Todos os modelos", ""]] + AiSetting::MODELS.to_a, @usage_report.model), id: :ai_report_model, class: "form-select" %>
+  </div>
+  <div>
+    <%= label_tag :ai_report_feature, "Recurso", class: "form-label" %>
+    <%= select_tag :feature, options_for_select([["Todos os recursos", ""]] + AiApiRequest::FEATURES.map { |value, label| [label, value] }, @usage_report.feature), id: :ai_report_feature, class: "form-select" %>
+  </div>
+  <%= submit_tag "Aplicar filtros", name: nil, class: "btn btn-primary" %>
+<% end %>
+<p class="ai-report-period"><i class="bi bi-calendar3 me-1" aria-hidden="true"></i><%= l(@usage_report.start_at, format: "%d/%m/%Y") %> a <%= l(@usage_report.now.in_time_zone, format: "%d/%m/%Y") %> · Horário de Brasília · Dados registrados pelo app</p>

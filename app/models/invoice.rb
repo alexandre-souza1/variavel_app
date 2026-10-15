@@ -1,4 +1,10 @@
 class Invoice < ApplicationRecord
+  scope :visible_to, ->(user) do
+    return none if user.nil? || user.mechanical?
+    return all if user.admin? || user.sector_finance?
+
+    joins(:budget_category).where(budget_categories: { sector: user.budget_sectors })
+  end
   belongs_to :supplier
   belongs_to :purchaser, class_name: 'User', foreign_key: 'purchaser_id'
   has_many_attached :documents

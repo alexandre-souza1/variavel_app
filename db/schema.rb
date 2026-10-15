@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_14_130000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_15_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -54,11 +54,60 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_14_130000) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "ai_api_requests", force: :cascade do |t|
+    t.string "model", null: false
+    t.string "feature", null: false
+    t.string "credential_fingerprint", null: false
+    t.datetime "requested_at", null: false
+    t.integer "http_status"
+    t.integer "duration_ms", null: false
+    t.bigint "input_tokens"
+    t.bigint "output_tokens"
+    t.bigint "total_tokens"
+    t.datetime "retry_at"
+    t.bigint "user_id"
+    t.string "collaborator_type"
+    t.bigint "collaborator_id"
+    t.index ["collaborator_type", "collaborator_id"], name: "index_ai_api_requests_on_collaborator"
+    t.index ["credential_fingerprint", "requested_at"], name: "index_ai_api_requests_on_credential_and_time"
+    t.index ["model", "requested_at"], name: "index_ai_api_requests_on_model_and_requested_at"
+    t.index ["user_id"], name: "index_ai_api_requests_on_user_id"
+    t.check_constraint "collaborator_type IS NULL AND collaborator_id IS NULL OR collaborator_type IS NOT NULL AND (collaborator_type::text = ANY (ARRAY['Employee'::character varying, 'Driver'::character varying, 'Operator'::character varying, 'Ajudante'::character varying, 'AzAjudante'::character varying]::text[])) AND collaborator_id IS NOT NULL AND user_id IS NULL", name: "ai_api_requests_valid_collaborator"
+  end
+
+  create_table "ai_conversations", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "request_token"
+    t.datetime "requested_at"
+    t.text "error_message"
+    t.datetime "usage_window_at"
+    t.integer "usage_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_ai_conversations_on_user_id", unique: true
+  end
+
+  create_table "ai_messages", force: :cascade do |t|
+    t.bigint "ai_conversation_id", null: false
+    t.string "role", null: false
+    t.text "content", null: false
+    t.jsonb "sources", default: [], null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ai_conversation_id", "id"], name: "index_ai_messages_on_ai_conversation_id_and_id"
+    t.index ["ai_conversation_id"], name: "index_ai_messages_on_ai_conversation_id"
+    t.check_constraint "role::text = ANY (ARRAY['user'::character varying, 'assistant'::character varying]::text[])", name: "ai_messages_valid_role"
+  end
+
   create_table "ai_settings", force: :cascade do |t|
     t.string "primary_model", default: "gemini-3.6-flash", null: false
     t.integer "meeting_audio_max_minutes", default: 15, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "model_limits", default: {}, null: false
+    t.datetime "usage_tracking_started_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "user_usage_tracking_started_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "collaborator_usage_tracking_started_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
   end
 
   create_table "ajudantes", force: :cascade do |t|
@@ -1310,6 +1359,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_14_130000) do
   add_foreign_key "action_plans", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ai_api_requests", "users", on_delete: :nullify
+  add_foreign_key "ai_conversations", "users"
+  add_foreign_key "ai_messages", "ai_conversations"
   add_foreign_key "ajudantes", "employees"
   add_foreign_key "az_ajudantes", "employees"
   add_foreign_key "az_rv_imports", "users"

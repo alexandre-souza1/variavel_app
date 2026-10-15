@@ -1,0 +1,76 @@
+<section class="ai-usage" id="consumo-ia" aria-labelledby="ai-usage-title">
+  <div class="ai-usage__heading">
+    <div>
+      <h2 id="ai-usage-title"><i class="bi bi-speedometer2 me-2" aria-hidden="true"></i>Disponibilidade estimada por modelo</h2>
+      <p>Cotas atuais e consumo registrado no dia do Google para os modelos utilizados pelo aplicativo.</p>
+    </div>
+    <%= link_to "Configurar limites", ai_settings_tab_path("settings", anchor: "limites-modelos"), class: "btn btn-outline-primary btn-sm" %>
+  </div>
+
+  <div class="ai-usage__notice">
+    <p>Registro desta chave desde <strong><%= l(@usage_dashboard.tracked_since.in_time_zone, format: "%d/%m/%Y às %H:%M") %></strong>. O consumo anterior a esse momento não está incluído.</p>
+    <p>Janela diária do Google: <%= l(@usage_dashboard.day_start.in_time_zone, format: "%d/%m %H:%M") %> até <%= l(@usage_dashboard.day_end.in_time_zone, format: "%d/%m %H:%M") %> (horário de Brasília). Os valores por minuto consideram os últimos 60 segundos.</p>
+  </div>
+
+  <% if ENV["GEMINI_API_KEY"].blank? %>
+    <div class="alert alert-warning">A chave do Gemini ainda não está configurada no servidor.</div>
+  <% end %>
+
+  <div class="ai-usage__grid">
+    <% @usage_dashboard.cards.each do |card| %>
+      <% status, tone = ai_usage_status(card[:latest]) %>
+      <article class="app-panel info-card ai-usage-card" data-model="<%= card[:model] %>">
+        <div class="app-panel__header info-card-header ai-usage-card__heading">
+          <%= render "panel_heading", icon: "cpu", kicker: "Modelo Gemini", title: card[:label] %>
+          <% if card[:primary] %><span class="ai-usage-card__primary">Prioritário</span><% end %>
+        </div>
+        <div class="app-panel__body info-card-body">
+          <p class="ai-usage-card__status ai-usage-card__status--<%= tone %>"><%= status %></p>
+          <% if card[:latest] %>
+            <small class="ai-usage-card__time"><%= l(card[:latest].requested_at.in_time_zone, format: "%d/%m às %H:%M:%S") %></small>
+            <% if card[:latest].http_status == 429 && card[:latest].retry_at && card[:latest].retry_at > @usage_dashboard.now %>
+              <small class="ai-usage-card__retry">O Gemini sugeriu tentar após <%= l(card[:latest].retry_at.in_time_zone, format: "%H:%M:%S") %>.</small>
+            <% end %>
+          <% end %>
+
+          <div class="ai-usage-card__table-wrap">
+            <table class="ai-usage-card__table">
+              <caption class="visually-hidden">Uso e disponibilidade estimada de <%= card[:label] %></caption>
+              <thead><tr><th scope="col">Janela</th><th scope="col">Uso</th><th scope="col">Limite</th><th scope="col">Restante estimado</th></tr></thead>
+              <tbody>
+                <% card[:metrics].each do |metric| %>
+                  <tr>
+                    <th scope="row"><%= metric[:label] %></th>
+                    <td><%= ai_usage_number(metric[:used]) %></td>
+                    <td><%= ai_usage_number(metric[:limit]) %></td>
+                    <td class="ai-usage-card__remaining <%= 'is-empty' if metric[:remaining] == 0 %>">
+                      <% if metric[:remaining].nil? %>
+                        <small><%= metric[:limit].nil? ? "Defina o limite" : "Dados parciais" %></small>
+                      <% else %>
+                        ≈ <%= ai_usage_number(metric[:remaining]) %>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="ai-usage-card__totals">
+            <span><strong><%= ai_usage_number(card[:daily][:accepted]) %></strong> chamadas aceitas no dia</span>
+            <span><strong><%= ai_usage_number(card[:daily][:attempts] - card[:daily][:accepted]) %></strong> falhas · <strong><%= ai_usage_number(card[:daily][:rate_limited]) %></strong> por limite (429)</span>
+            <span>Tokens no dia: <strong><%= ai_usage_number(card[:daily][:input_tokens]) %></strong> entrada / <strong><%= ai_usage_number(card[:daily][:output_tokens]) %></strong> saída</span>
+            <% if card[:daily][:missing_input].positive? || card[:daily][:missing_output].positive? %>
+              <small>Tokens parciais: algumas respostas não informaram o consumo.</small>
+            <% end %>
+          </div>
+          <div class="ai-usage-card__features">
+            <% card[:features].each do |label, count| %><span><%= label %>: <%= ai_usage_number(count) %></span><% end %>
+          </div>
+        </div>
+      </article>
+    <% end %>
+  </div>
+  <p class="ai-usage__footnote">Estimativa calculada pelas chamadas aceitas e pelos tokens informados pelo Gemini. Uma pergunta pode gerar várias chamadas. Falhas sem consumo informado e registros anteriores à ativação podem afetar o saldo; o Google pode aplicar outros limites.</p>
+  <small class="ai-usage__updated">Atualizado em <%= l(@usage_dashboard.now.in_time_zone, format: "%d/%m/%Y às %H:%M:%S") %>.</small>
+</section>

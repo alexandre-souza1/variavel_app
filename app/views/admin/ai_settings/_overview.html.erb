@@ -1,0 +1,23 @@
+<%= render "report_summary" %>
+<div class="charts-grid ai-report-charts ai-report-charts--overview">
+  <section class="app-panel chart-card ai-report-chart">
+    <div class="app-panel__header chart-header ai-report-chart__heading">
+      <%= render "panel_heading", icon: "graph-up-arrow", kicker: "Tendência", title: "Evolução do uso", subtitle: "#{GeminiUsageReport::METRICS[@usage_report.metric]} por dia e recurso" %>
+    </div>
+    <div class="app-panel__body chart-body">
+      <%= line_chart @usage_report.daily_series, id: "ai-usage-evolution", height: "300px", discrete: true,
+        min: 0, round: 0, thousands: ".", decimal: ",", legend: "bottom", colors: ["#3368a0", "#ee7214", "#2d9596"],
+        empty: "Sem chamadas aceitas neste período", library: { scales: { y: { ticks: { precision: 0 } } } } %>
+    </div>
+  </section>
+  <section class="app-panel chart-card ai-report-chart">
+    <div class="app-panel__header chart-header ai-report-chart__heading">
+      <%= render "panel_heading", icon: "cpu", kicker: "Modelos", title: "Comparação entre modelos", subtitle: "#{GeminiUsageReport::METRICS[@usage_report.metric]} no período selecionado" %>
+    </div>
+    <div class="app-panel__body chart-body">
+      <%= bar_chart @usage_report.model_data, id: "ai-usage-models", height: "300px", min: 0, round: 0, thousands: ".", decimal: ",",
+        empty: "Sem chamadas aceitas neste período", library: { scales: { x: { ticks: { precision: 0 } } } } %>
+    </div>
+  </section>
+</div>
+<div class="ai-report-info"><i class="bi bi-info-circle" aria-hidden="true"></i><p>Uma pergunta pode gerar várias chamadas. Gráficos e totais usam os registros do aplicativo desde <%= l(@usage_dashboard.tracked_since.in_time_zone, format: "%d/%m/%Y às %H:%M") %>. <%= link_to "Ver disponibilidade e cotas dos modelos", ai_settings_tab_path("models") %>.</p></div>

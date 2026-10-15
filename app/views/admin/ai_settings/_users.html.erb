@@ -1,0 +1,61 @@
+<div class="ai-report-info ai-report-info--privacy"><i class="bi bi-shield-lock" aria-hidden="true"></i><p><strong>Estatísticas de uso, com conversas privadas.</strong> Este relatório mostra nomes e metadados de uso: contagens, tokens, recursos, falhas e horários. A identificação das contas começa em <%= l(@ai_setting.user_usage_tracking_started_at.in_time_zone, format: "%d/%m/%Y às %H:%M") %>. O uso dos colaboradores identificados por matrícula e nascimento passa a ser associado em <%= l(@ai_setting.collaborator_usage_tracking_started_at.in_time_zone, format: "%d/%m/%Y às %H:%M") %>. Registros antigos sem identificação permanecem no grupo “Sem usuário associado”.</p></div>
+<%= render "report_summary" %>
+<div class="charts-grid ai-report-charts">
+  <section class="app-panel chart-card ai-report-chart">
+    <div class="app-panel__header chart-header ai-report-chart__heading">
+      <%= render "panel_heading", icon: "people", kicker: "Participação", title: "Uso por pessoa", subtitle: "Até 10 contas ou colaboradores · #{GeminiUsageReport::METRICS[@usage_report.metric].downcase}" %>
+    </div>
+    <div class="app-panel__body chart-body">
+      <%= bar_chart @usage_report.user_chart, id: "ai-usage-users", height: "300px", min: 0, round: 0, thousands: ".", decimal: ",",
+        empty: "Sem chamadas aceitas neste período", library: { scales: { x: { ticks: { precision: 0 } } } } %>
+    </div>
+  </section>
+  <section class="app-panel chart-card ai-report-chart">
+    <div class="app-panel__header chart-header ai-report-chart__heading">
+      <%= render "panel_heading", icon: "pie-chart", kicker: "Recursos", title: "Recursos utilizados", subtitle: "Distribuição das chamadas aceitas no período" %>
+    </div>
+    <div class="app-panel__body chart-body">
+      <%= pie_chart @usage_report.feature_data, id: "ai-usage-features", height: "300px", donut: true, legend: "bottom", thousands: ".", decimal: ",", empty: "Sem chamadas aceitas neste período" %>
+    </div>
+  </section>
+</div>
+<section class="app-panel info-card ai-report-users">
+  <div class="app-panel__header info-card-header ai-report-users__heading">
+    <%= render "panel_heading", icon: "person-lines-fill", kicker: "Estatísticas", title: "Detalhamento por usuário", subtitle: "#{ai_usage_number(@user_usage[:total])} contas, colaboradores ou grupos de registros" %>
+    <%= form_with url: edit_admin_ai_setting_path, method: :get, local: true, class: "ai-report-user-search" do %>
+      <% @usage_report.filters.merge(tab: "users").each do |key, value| %><%= hidden_field_tag key, value %><% end %>
+      <%= label_tag :ai_user_query, "Buscar usuário", class: "visually-hidden" %>
+      <%= search_field_tag :user_query, params[:user_query].to_s.first(100), id: :ai_user_query, placeholder: "Buscar usuário pelo nome", maxlength: 100, class: "form-control" %>
+      <%= submit_tag "Buscar", name: nil, class: "btn btn-outline-primary" %>
+    <% end %>
+  </div>
+  <div class="app-panel__body info-card-body">
+    <% if @user_usage[:rows].empty? %>
+      <p class="ai-report-empty">Nenhum uso registrado para os filtros selecionados.</p>
+    <% else %>
+      <div class="table-responsive dashboard-table-wrapper ai-report-users__table-wrap">
+        <table class="table align-middle dashboard-data-table mb-0 ai-report-users__table">
+          <caption class="visually-hidden">Estatísticas de uso de IA por usuário</caption>
+          <thead><tr><th scope="col">Usuário</th><th scope="col">Chamadas aceitas</th><th scope="col">Tokens entrada / saída</th><th scope="col">Recursos utilizados</th><th scope="col">Falhas</th><th scope="col">Último uso</th></tr></thead>
+          <tbody>
+            <% @user_usage[:rows].each do |row| %>
+              <tr>
+                <th scope="row"><%= row[:label] %><% if row[:kind] %><small class="ai-report-user-kind"><%= row[:kind] %></small><% end %></th>
+                <td><strong><%= ai_usage_number(row[:accepted]) %></strong><small><%= ai_usage_number(row[:attempts]) %> tentativas<%= " · #{number_with_delimiter(row[:average_seconds], separator: ',')} s em média" if row[:average_seconds] %></small></td>
+                <td><%= ai_usage_number(row[:input_tokens]) %> / <%= ai_usage_number(row[:output_tokens]) %><% if row[:missing_input].positive? || row[:missing_output].positive? %><small>Dados parciais</small><% end %></td>
+                <td><div class="ai-report-user-features"><% row[:features].select { |_label, count| count.positive? }.each do |label, count| %><span><%= label %>: <%= ai_usage_number(count) %></span><% end %></div></td>
+                <td><%= ai_usage_number(row[:attempts] - row[:accepted]) %><small><%= ai_usage_number(row[:rate_limited]) %> por limite</small></td>
+                <td><%= l(row[:latest].in_time_zone, format: "%d/%m/%Y") %><small><%= l(row[:latest].in_time_zone, format: "%H:%M") %></small></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <nav class="ai-report-pagination" aria-label="Páginas do uso por usuário">
+        <span>Página <%= @user_usage[:page] %> de <%= @user_usage[:pages] %></span>
+        <% if @user_usage[:page] > 1 %><%= link_to "Anterior", ai_settings_tab_path("users", user_query: params[:user_query], page: @user_usage[:page] - 1), class: "btn btn-outline-primary btn-sm" %><% end %>
+        <% if @user_usage[:page] < @user_usage[:pages] %><%= link_to "Próxima", ai_settings_tab_path("users", user_query: params[:user_query], page: @user_usage[:page] + 1), class: "btn btn-outline-primary btn-sm" %><% end %>
+      </nav>
+    <% end %>
+  </div>
+</section>

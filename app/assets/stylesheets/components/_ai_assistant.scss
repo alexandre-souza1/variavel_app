@@ -1,0 +1,112 @@
+.ai-assistant {
+  --assistant-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  position: fixed;
+  right: calc(1.25rem + env(safe-area-inset-right, 0px));
+  bottom: var(--assistant-bottom);
+  z-index: 1040;
+
+  [hidden] { display: none !important; }
+
+  &__launcher {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: 48px;
+    padding: .75rem 1rem;
+    border: 1px solid rgba(var(--bs-primary-rgb), .25);
+    border-radius: 999px;
+    background: var(--bs-primary);
+    color: #fff;
+    font-size: .8rem;
+    font-weight: 700;
+    box-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .18);
+    i { font-size: 1.1rem; }
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+    max-width: calc(100vw - 2rem);
+    height: 580px;
+    max-height: calc(100dvh - var(--assistant-bottom) - 1rem);
+    overflow: hidden;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 20px;
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, .22);
+  }
+
+  &__header { display: flex; align-items: center; justify-content: space-between; padding: 1rem; border-bottom: 1px solid var(--bs-border-color); }
+  &__header .btn { color: var(--bs-body-color); }
+  &__identity { display: flex; align-items: center; gap: .65rem; min-width: 0; }
+  &__identity > i { color: var(--bs-primary); font-size: 1.5rem; }
+  &__identity strong { display: block; font-size: .9rem; }
+  &__identity small { display: block; color: var(--bs-secondary-color); font-size: .72rem; }
+  &__messages { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 1rem; }
+  &__message { padding: .75rem; margin-bottom: .75rem; border-radius: 12px; background: var(--bs-tertiary-bg); overflow-wrap: anywhere; }
+  &__message--user { margin-left: 1.5rem; background: rgba(var(--bs-primary-rgb), .1); }
+  &__message > small { display: block; margin-bottom: .3rem; font-size: .67rem; color: var(--bs-secondary-color); }
+  &__message p { font-size: .82rem; line-height: 1.55; white-space: pre-wrap; margin: 0; }
+  &__sources { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .65rem; }
+  &__sources a { border: 1px solid var(--bs-border-color); padding: .3rem .5rem; border-radius: 8px; font-size: .72rem; color: var(--bs-primary-text-emphasis); text-decoration: none; }
+  &__sources a:hover { text-decoration: underline; }
+  &__welcome { flex: 1; overflow-y: auto; padding: 1.5rem 1rem; }
+  &__welcome > strong { font-size: 1.1rem; }
+  &__welcome p { font-size: .82rem; color: var(--bs-secondary-color); margin: .5rem 0 1.25rem; }
+  &__welcome button { display: flex; align-items: center; justify-content: space-between; gap: .75rem; text-align: left; width: 100%; background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color); border-radius: 12px; color: var(--bs-body-color); font-size: .8rem; padding: .8rem; margin-top: .6rem; }
+  &__status, &__error { flex-shrink: 0; margin: 0; padding: .5rem 1rem; font-size: .76rem; }
+  &__status { color: var(--bs-secondary-color); }
+  &__error { color: var(--bs-danger-text-emphasis); background: rgba(var(--bs-danger-rgb), .08); }
+  &__form { display: flex; align-items: flex-end; gap: .5rem; border-top: 1px solid var(--bs-border-color); padding: .75rem 1rem; }
+  &__form textarea { resize: none; min-width: 0; font-size: .82rem; }
+  &__form button { flex-shrink: 0; min-height: 44px; min-width: 44px; }
+  &__footer { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: 0 1rem .75rem; background: transparent; }
+  &__footer small { font-size: .64rem; color: var(--bs-secondary-color); }
+  &__footer button { flex-shrink: 0; padding: .3rem 0; border: 0; background: transparent; color: var(--bs-secondary-color); font-size: .68rem; text-decoration: underline; }
+  button:focus-visible, a:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 3px; }
+}
+
+// O gravador continua no canto inferior; o assistente ocupa a posição acima dele.
+body:has(#meeting-recorder-widget) .ai-assistant,
+body:has(.public-variable-chat-widget) .ai-assistant {
+  --assistant-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+}
+
+// Aberto, o gravador deixa livre a faixa do botão do assistente.
+body:has(.ai-assistant) .meeting-recorder-widget:not(.is-collapsed) {
+  bottom: calc(9.25rem + env(safe-area-inset-bottom, 0px));
+
+  .meeting-recorder-widget__panel {
+    max-height: calc(100dvh - 10.25rem - env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 575.98px) {
+  .ai-assistant {
+    right: calc(1rem + env(safe-area-inset-right, 0px));
+    &__launcher { justify-content: center; width: 48px; padding: .7rem; }
+    &__launcher span { display: none; }
+    &__panel { width: calc(100vw - 2rem); }
+    &__footer { flex-wrap: wrap; gap: .2rem; }
+  }
+
+  // Botões compactos deixam a Entrada do plano livre no centro da tela.
+  body:has(.ai-assistant) .meeting-recorder-widget {
+    right: calc(1rem + env(safe-area-inset-right, 0px));
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+
+    &:not(.is-collapsed) { bottom: calc(9.25rem + env(safe-area-inset-bottom, 0px)); }
+
+    .meeting-recorder-widget__launcher {
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      span { display: none; }
+    }
+  }
+}
+
+@media print { .ai-assistant { display: none; } }

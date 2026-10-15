@@ -1,4 +1,11 @@
 class MeetingMinute < ApplicationRecord
+  scope :visible_to, ->(user) do
+    return none unless user && !user.mechanical?
+    return all if user.admin?
+
+    joins(:action_plan).where(action_plan_id: ActionPlan.visible_to(user).select(:id))
+      .where('meeting_minutes.creator_id = :id OR meeting_minutes.collaborator_id = :id OR action_plans.user_id = :id', id: user.id)
+  end
   belongs_to :action_plan
   belongs_to :creator, class_name: "User"
   belongs_to :collaborator, class_name: "User", optional: true

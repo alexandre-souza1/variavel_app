@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resource :ai_assistant, path: "assistente-ia", only: %i[show create destroy]
   resource :pcd, controller: :pcds, only: %i[show update] do
     post :preview_routing, path: 'importar'
   end

@@ -1,0 +1,24 @@
+<div class="ai-settings-section__content ai-settings-limits">
+  <p>Copie os limites ativos do seu projeto para calcular o restante estimado. Deixe em branco quando não souber; informe 0 quando o modelo não tiver cota.</p>
+  <%= link_to "Consultar limites no Google AI Studio", "https://aistudio.google.com/usage?tab=rate-limit", target: "_blank", rel: "noopener noreferrer", class: "ai-settings-studio-link" %>
+  <div class="ai-model-limits">
+    <% AiSetting::MODELS.each do |label, model| %>
+      <fieldset class="ai-model-limits__model">
+        <legend><%= label %></legend>
+        <div class="ai-model-limits__fields">
+          <% AiSetting::QUOTA_DIMENSIONS.each do |dimension, title| %>
+            <% input_id = "ai_limit_#{model.tr('-', '_')}_#{dimension}" %>
+            <div>
+              <%= label_tag input_id, class: "form-label", title: title do %>
+                <%= dimension.upcase %><span class="visually-hidden"> · <%= title %></span>
+              <% end %>
+              <%= number_field_tag "ai_setting[model_limits][#{model}][#{dimension}]",
+                @ai_setting.model_limits.dig(model, dimension), id: input_id, class: "form-control",
+                min: 0, max: 1_000_000_000_000, step: 1, placeholder: "Não informado", inputmode: "numeric" %>
+            </div>
+          <% end %>
+        </div>
+      </fieldset>
+    <% end %>
+  </div>
+</div>

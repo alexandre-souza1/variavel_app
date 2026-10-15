@@ -6,11 +6,12 @@ class PublicVariableChatService
   DEFAULT_FALLBACK_MODELS = %w[gemini-3.1-flash-lite gemini-3.5-flash-lite gemini-2.5-flash-lite].freeze
   MAX_ATTEMPTS = 2
 
-  def initialize(identity:, history:, question:, selected_period: nil)
+  def initialize(identity:, history:, question:, selected_period: nil, user: nil)
     @identity = identity
     @history = history
     @question = question
     @selected_period = selected_period
+    @user = user
   end
 
   def call
@@ -61,12 +62,15 @@ class PublicVariableChatService
     loop do
       attempts += 1
       begin
-        response = Faraday.post(ENDPOINT) do |request|
-          request.headers["x-goog-api-key"] = api_key
-          request.headers["Content-Type"] = "application/json"
-          request.body = JSON.generate(payload)
-          request.options.timeout = 45
-          request.options.open_timeout = 10
+        response = GeminiRequest.track(model: model, feature: "variable_chat", api_key: api_key,
+          user: @user, collaborator: @identity&.record) do
+          Faraday.post(ENDPOINT) do |request|
+            request.headers["x-goog-api-key"] = api_key
+            request.headers["Content-Type"] = "application/json"
+            request.body = JSON.generate(payload)
+            request.options.timeout = 45
+            request.options.open_timeout = 10
+          end
         end
       rescue Faraday::TimeoutError, Faraday::ConnectionFailed
         raise if attempts >= MAX_ATTEMPTS

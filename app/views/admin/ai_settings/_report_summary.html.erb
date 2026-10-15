@@ -1,0 +1,35 @@
+<% summary = @usage_report.summary %>
+<div class="kpi-grid ai-report-metrics">
+  <article class="kpi-card ai-report-metric">
+    <div class="kpi-icon bg-primary-soft"><i class="bi bi-lightning-charge text-primary" aria-hidden="true"></i></div>
+    <div class="kpi-info">
+      <span class="kpi-label">Chamadas aceitas</span>
+      <strong class="kpi-value"><%= ai_usage_number(summary[:accepted]) %></strong>
+      <small class="kpi-sub"><%= ai_usage_number(summary[:attempts]) %> tentativas no período</small>
+    </div>
+  </article>
+  <article class="kpi-card ai-report-metric">
+    <div class="kpi-icon bg-success-soft"><i class="bi bi-braces text-success" aria-hidden="true"></i></div>
+    <div class="kpi-info">
+      <span class="kpi-label">Tokens de entrada</span>
+      <strong class="kpi-value"><%= ai_usage_number(summary[:input_tokens]) %></strong>
+      <small class="kpi-sub"><%= ai_usage_number(summary[:output_tokens]) %> tokens de saída<%= " · Dados parciais" if summary[:missing_input].positive? || summary[:missing_output].positive? %></small>
+    </div>
+  </article>
+  <article class="kpi-card ai-report-metric">
+    <div class="kpi-icon bg-warning-soft"><i class="bi bi-people text-warning" aria-hidden="true"></i></div>
+    <div class="kpi-info">
+      <span class="kpi-label">Usuários ativos na IA</span>
+      <strong class="kpi-value"><%= ai_usage_number(summary[:active_users]) %></strong>
+      <small class="kpi-sub">Contas e colaboradores com chamadas aceitas</small>
+    </div>
+  </article>
+  <article class="kpi-card ai-report-metric">
+    <div class="kpi-icon bg-danger-soft"><i class="bi bi-exclamation-triangle text-danger" aria-hidden="true"></i></div>
+    <div class="kpi-info">
+      <span class="kpi-label">Falhas nas chamadas</span>
+      <strong class="kpi-value"><%= ai_usage_number(summary[:attempts] - summary[:accepted]) %></strong>
+      <small class="kpi-sub"><%= ai_usage_number(summary[:rate_limited]) %> por limite de uso (429)</small>
+    </div>
+  </article>
+</div>

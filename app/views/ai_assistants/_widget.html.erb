@@ -1,0 +1,45 @@
+<aside id="ai-assistant-<%= current_user.id %>" class="ai-assistant"
+       data-controller="ai-assistant" data-ai-assistant-url-value="<%= ai_assistant_path %>"
+       data-action="keydown.esc->ai-assistant#close meeting-recorder:opened@window->ai-assistant#close public-variable-chat:opened@window->ai-assistant#close turbo:before-cache@document->ai-assistant#beforeCache">
+  <button type="button" class="ai-assistant__launcher" data-ai-assistant-target="launcher"
+          data-action="ai-assistant#open" aria-controls="ai-assistant-panel" aria-expanded="false"
+          aria-label="Abrir meu assistente de IA" title="Meu assistente de IA">
+    <i class="bi bi-stars" aria-hidden="true"></i><span>Assistente IA</span>
+  </button>
+
+  <section id="ai-assistant-panel" class="ai-assistant__panel" data-ai-assistant-target="panel"
+           role="dialog" aria-labelledby="ai-assistant-title" hidden>
+    <header class="ai-assistant__header">
+      <div class="ai-assistant__identity">
+        <i class="bi bi-stars" aria-hidden="true"></i>
+        <div><strong id="ai-assistant-title">Meu assistente de IA</strong><small>Uma conversa só sua</small></div>
+      </div>
+      <button type="button" class="btn btn-sm btn-link" data-action="ai-assistant#close" aria-label="Minimizar assistente">
+        <i class="bi bi-dash-lg" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <div class="ai-assistant__messages" data-ai-assistant-target="messages" role="log" aria-live="polite" aria-label="Conversa com o assistente" hidden></div>
+    <div class="ai-assistant__welcome" data-ai-assistant-target="welcome">
+      <strong>Como posso ajudar?</strong>
+      <p>Consulte os dados dos módulos liberados para seu perfil e setor.</p>
+      <% ai_assistant_suggestions(current_user).each do |question| %>
+        <button type="button" data-action="ai-assistant#suggest" data-question="<%= question %>"><%= question %><i class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
+      <% end %>
+    </div>
+    <p class="ai-assistant__status" data-ai-assistant-target="status" role="status" hidden></p>
+    <p class="ai-assistant__error" data-ai-assistant-target="error" role="alert" hidden></p>
+    <form class="ai-assistant__form" data-action="submit->ai-assistant#send">
+      <label class="visually-hidden" for="ai-assistant-question">Sua pergunta</label>
+      <textarea id="ai-assistant-question" data-ai-assistant-target="question" class="form-control" rows="2"
+                maxlength="2000" required placeholder="Pergunte ao seu assistente…" data-action="keydown->ai-assistant#submitOnEnter"></textarea>
+      <button type="submit" class="btn btn-primary" data-ai-assistant-target="send" aria-label="Enviar pergunta">
+        <i class="bi bi-arrow-up" aria-hidden="true"></i>
+      </button>
+    </form>
+    <footer class="ai-assistant__footer">
+      <small>Confira as informações nos registros consultados.</small>
+      <button type="button" data-ai-assistant-target="clear" data-action="ai-assistant#clear">Limpar conversa</button>
+    </footer>
+  </section>
+</aside>

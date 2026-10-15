@@ -14,7 +14,7 @@ class MeetingMinuteGenerationJob < ApplicationJob
     job.mark_failed(job.arguments.first, error)
   end
 
-  def perform(meeting_id)
+  def perform(meeting_id, requested_by_id = nil)
     meeting = MeetingMinute.find(meeting_id)
 
     # A ata só pode ser assumida uma vez. Isso evita processamento duplicado
@@ -25,7 +25,9 @@ class MeetingMinuteGenerationJob < ApplicationJob
 
     return unless claimed == 1
 
-    result = GeminiMeetingService.new(meeting.reload).call
+    # Jobs já enfileirados sem ator continuam atribuídos ao criador da ata.
+    actor = requested_by_id ? User.find_by(id: requested_by_id) : meeting.creator
+    result = GeminiMeetingService.new(meeting.reload, user: actor).call
 
     meeting.update!(
       status: :completed,

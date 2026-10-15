@@ -20,7 +20,7 @@ class MeetingMinutesController < ApplicationController
     @meeting.status = :queued
 
     if @meeting.save
-      MeetingMinuteGenerationJob.perform_later(@meeting.id)
+      MeetingMinuteGenerationJob.perform_later(@meeting.id, current_user.id)
       redirect_to action_plan_meeting_minute_path(@action_plan, @meeting),
         notice: "A gravação foi recebida. A ata será gerada em segundo plano."
     else
@@ -100,7 +100,7 @@ class MeetingMinutesController < ApplicationController
     end
 
     @meeting.update!(status: :queued, error_message: nil)
-    MeetingMinuteGenerationJob.perform_later(@meeting.id)
+    MeetingMinuteGenerationJob.perform_later(@meeting.id, current_user.id)
     redirect_to action_plan_meeting_minute_path(@action_plan, @meeting),
       notice: "A gravação foi mantida. A ata será tentada novamente em segundo plano."
   end

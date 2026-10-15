@@ -243,7 +243,7 @@ class EmployeesController < ApplicationController
   helper_method :employee_navigation
 
   def visible_employees
-    current_user.employee_sectors.size == 2 ? Employee.all : Employee.in_current_or_last_sector(current_user.employee_sectors)
+    Employee.visible_to(current_user)
   end
 
   def visible_closings

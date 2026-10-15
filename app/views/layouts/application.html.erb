@@ -67,6 +67,7 @@
       data-reconnect-user-id-value="<%= current_user&.id %>">
   </div>
   <div id="modal-container"></div>
+  <%= render "ai_assistants/widget" if user_signed_in? %>
   <%= render 'shared/footer' %>
   </body>
 </html>

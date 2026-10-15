@@ -34,23 +34,25 @@ export default class extends Controller {
       "#7657a6", "#d977a8", "#198754", "#d6a72c"
     ]
 
-    Object.values(window.Chartkick.charts).forEach((wrapper) => {
+    Object.entries(window.Chartkick.charts).forEach(([chartId, wrapper]) => {
       const chart = wrapper.getChartObject?.()
       if (!chart) return
 
-      chart.options.color = muted
+      const aiComparison = document.getElementById(chartId)?.closest(".ai-settings-page")
+      const chartMuted = aiComparison ? color("--bs-secondary-color", muted) : muted
+      chart.options.color = chartMuted
 
       Object.values(chart.options.scales || {}).forEach((scale) => {
-        scale.ticks = { ...scale.ticks, color: muted }
+        scale.ticks = { ...scale.ticks, color: chartMuted }
         scale.grid = { ...scale.grid, color: border }
-        scale.title = { ...scale.title, color: muted }
+        scale.title = { ...scale.title, color: chartMuted }
       })
 
       if (chart.options.plugins?.legend?.labels) {
-        chart.options.plugins.legend.labels.color = muted
+        chart.options.plugins.legend.labels.color = chartMuted
       }
 
-      chart.data.datasets.forEach((dataset) => {
+      chart.data.datasets.forEach((dataset, datasetIndex) => {
         const chartType = chart.config?.type || wrapper.getType?.()
         const isMultiSegment = ["pie", "doughnut", "polarArea"].includes(chartType)
 
@@ -65,7 +67,7 @@ export default class extends Controller {
           return
         }
 
-        const seriesColor = primary
+        const seriesColor = aiComparison && chart.data.datasets.length > 1 ? segmentPalette[datasetIndex % segmentPalette.length] : primary
         dataset.borderColor = seriesColor
         dataset.backgroundColor = seriesColor
         dataset.pointBackgroundColor = seriesColor

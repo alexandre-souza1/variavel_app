@@ -17,12 +17,14 @@ export default class extends Controller {
     this.form?.addEventListener("turbo:submit-start", this.uploadStarted)
     this.form?.addEventListener("turbo:submit-end", this.uploadFinished)
     window.addEventListener("meeting-recorder:open", this.openFromEvent)
+    window.addEventListener("ai-assistant:opened", this.minimizeForAssistant)
     document.addEventListener("turbo:before-visit", this.confirmLeavingActionPlan)
     window.addEventListener("beforeunload", this.confirmBeforeUnload)
   }
 
   disconnect() {
     window.removeEventListener("meeting-recorder:open", this.openFromEvent)
+    window.removeEventListener("ai-assistant:opened", this.minimizeForAssistant)
     this.form?.removeEventListener("turbo:submit-start", this.uploadStarted)
     this.form?.removeEventListener("turbo:submit-end", this.uploadFinished)
     document.removeEventListener("turbo:before-visit", this.confirmLeavingActionPlan)
@@ -30,6 +32,7 @@ export default class extends Controller {
   }
 
   openFromEvent = () => this.open()
+  minimizeForAssistant = () => { if (this.hasPanelTarget) this.close() }
   uploadStarted = () => {
     this.submitting = true
     this.startTarget.disabled = true
@@ -82,6 +85,7 @@ export default class extends Controller {
     this.element.classList.remove("d-none")
     this.element.classList.remove("is-collapsed")
     this.panelTarget.setAttribute("aria-hidden", "false")
+    window.dispatchEvent(new CustomEvent("meeting-recorder:opened"))
   }
 
   close(event) {

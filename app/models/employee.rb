@@ -16,6 +16,12 @@ class Employee < ApplicationRecord
   validate :valid_registration_date
 
   scope :active, -> { where(active: true) }
+  scope :visible_to, ->(user) do
+    return none unless user&.can_view_employees?
+    return all if user.admin? || user.employee_sectors.size == 2
+
+    in_current_or_last_sector(user.employee_sectors)
+  end
   scope :archived, -> { where(active: false) }
   before_save do
     self.registration_aliases = (registration_aliases + [matricula_in_database, matricula]).compact.reject(&:blank?).uniq

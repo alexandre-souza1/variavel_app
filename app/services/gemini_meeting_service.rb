@@ -8,8 +8,9 @@ class GeminiMeetingService
   DEFAULT_MODEL = "gemini-3.6-flash"
   DEFAULT_FALLBACK_MODELS = %w[gemini-3.1-flash-lite gemini-3.5-flash-lite gemini-2.5-flash-lite].freeze
 
-  def initialize(meeting)
+  def initialize(meeting, user: nil)
     @meeting = meeting
+    @user = user
   end
 
   def call
@@ -21,12 +22,14 @@ class GeminiMeetingService
 
     model_candidates.each do |model|
       @model = model
-      response = Faraday.post(ENDPOINT) do |request|
-        request.headers["x-goog-api-key"] = api_key
-        request.headers["Content-Type"] = "application/json"
-        request.body = JSON.generate(payload)
-        request.options.timeout = 180
-        request.options.open_timeout = 15
+      response = GeminiRequest.track(model: model, feature: "meeting", api_key: api_key, user: @user) do
+        Faraday.post(ENDPOINT) do |request|
+          request.headers["x-goog-api-key"] = api_key
+          request.headers["Content-Type"] = "application/json"
+          request.body = JSON.generate(payload)
+          request.options.timeout = 180
+          request.options.open_timeout = 15
+        end
       end
 
       return parse_response(response.body) if response.success?

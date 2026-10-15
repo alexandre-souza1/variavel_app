@@ -477,6 +477,7 @@ class InvoicesController < ApplicationController
   end
 
   def apply_invoice_sector_filter(scope)
+    scope = scope.merge(Invoice.visible_to(current_user))
     sectors = if @can_filter_invoice_sector
       @invoice_sector_filter.present? ? [@invoice_sector_filter] : nil
     else

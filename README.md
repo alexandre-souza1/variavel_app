@@ -19,6 +19,12 @@ O fuso horário da aplicação é `Brasilia` e o timezone padrão do banco é UT
 
 ## Principais módulos
 
+### Assistente pessoal de IA
+
+Botão fixo para consultar tarefas, planos de ação e frota com Gemini, histórico privado por usuário e links para os registros consultados. Veja [configuração e uso](docs/assistente_ia.md).
+
+O admin acompanha consumo, cotas estimadas e estatísticas por usuário em uma tela com abas e gráficos, preservando o conteúdo das conversas. Veja [limites e acompanhamento](docs/consumo_ia.md).
+
 ### Operação e frota
 
 - Cadastro único de colaboradores DU/AZ, com cargos e turnos por vigência; controle de placas. Veja [colaboradores e regras por setor](docs/colaboradores_e_cargos.md).
