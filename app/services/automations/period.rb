@@ -1,7 +1,7 @@
 module Automations
   class Period
-    LABELS = { "today" => "Hoje", "yesterday" => "Ontem", "week" => "Semana atual", "last_week" => "Semana anterior", "month" => "Mês atual", "last_month" => "Mês anterior", "all" => "Todo o histórico" }.freeze
-    attr_reader :start_date, :end_date, :frequency, :anchor
+    LABELS = { "today" => "Hoje", "yesterday" => "Ontem", "week" => "Semana atual", "last_week" => "Semana anterior", "month" => "Mês atual", "month_to_yesterday" => "Mês até ontem", "last_month" => "Mês anterior", "all" => "Todo o histórico" }.freeze
+    attr_reader :start_date, :end_date, :frequency, :indicator_frequency, :anchor
 
     def initialize(key, now: Time.current)
       today = now.to_date
@@ -11,10 +11,14 @@ module Automations
       when "week" then [today.beginning_of_week, today, "weekly"]
       when "last_week" then [(today - 1.week).beginning_of_week, (today - 1.week).end_of_week, "weekly"]
       when "month" then [today.beginning_of_month, today, "monthly"]
+      when "month_to_yesterday"
+        end_date = today - 1
+        [end_date.beginning_of_month, end_date, "monthly"]
       when "last_month" then [today.prev_month.beginning_of_month, today.prev_month.end_of_month, "monthly"]
       when "all" then [nil, today, nil]
       else raise Invalid, "Período indisponível."
       end
+      @indicator_frequency = key == "month_to_yesterday" ? "daily" : @frequency
       @anchor = @end_date
     end
 
@@ -26,7 +30,7 @@ module Automations
     end
 
     def include_reference?(date)
-      case frequency
+      case indicator_frequency
       when "daily" then date == anchor
       when "weekly" then date.beginning_of_week == anchor.beginning_of_week
       when "monthly" then date.beginning_of_month == anchor.beginning_of_month

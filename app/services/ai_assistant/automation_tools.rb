@@ -89,7 +89,7 @@ module AiAssistant
           sectors: @access.allowed?(:finance) ? (@user.admin? || @user.sector_finance? ? BudgetCategory.sectors.keys : @user.budget_sectors) : [],
           task_statuses: Automations::Sources::Tasks::STATUSES, fleet_statuses: Automations::Sources::Fleet::STATUSES,
           defaults: { activate: false, overwrite_manual: false, task_destination: "Entrada pessoal do responsável" },
-          rules: ["Dados financeiros por emissão; não comprovam pagamento", "GEROT exige frequência do indicador igual ao período", "Sem GEROT aberto ou disponibilidade na data, a execução registra o motivo e não escreve",
+          rules: ["Dados financeiros por emissão; não comprovam pagamento", "GEROT exige frequência do indicador igual ao período, exceto mês até ontem que preenche indicador diário", "Sem GEROT aberto ou disponibilidade na data, a execução registra o motivo e não escreve",
             "Hora inteira em Brasília; dias 29–31 ajustados ao fim do mês", "Tarefas/avisos no máximo uma vez por período; todo o histórico uma única vez", "A confirmação salva a regra, sem executar a ação naquele momento"] }
       end
       scope, name_field = case group

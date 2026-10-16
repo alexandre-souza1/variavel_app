@@ -40,7 +40,7 @@ export default class extends Controller {
 
   filterIndicators() {
     const selected = this.indicatorTarget.value
-    const frequencies = { today: "daily", yesterday: "daily", week: "weekly", last_week: "weekly", month: "monthly", last_month: "monthly" }
+    const frequencies = { today: "daily", yesterday: "daily", week: "weekly", last_week: "weekly", month: "monthly", month_to_yesterday: "daily", last_month: "monthly" }
     const frequency = frequencies[this.periodTarget.value]
     const options = this.indicatorOptions.filter(option => !option.value ||
       (option.dataset.templateId === this.templateTarget.value && option.dataset.frequency === frequency))

@@ -20,6 +20,39 @@ class AutomationsTest < ActiveSupport::TestCase
     end
   end
 
+  test "month through yesterday includes the month's cumulative total up to yesterday" do
+    @indicator.update!(response_frequency: :daily)
+    create_automation_expense(100, date: Date.current.beginning_of_month)
+    create_automation_expense(50, date: Date.current - 1)
+    create_automation_expense(900, date: Date.current)
+    create_automation_expense(700, date: Date.current.prev_month.end_of_month)
+    rule = finance_rule(period: "month_to_yesterday")
+
+    preview = Automations::Preview.call(rule)
+
+    assert_equal Date.current.beginning_of_month, preview[:period].start_date
+    assert_equal Date.current - 1, preview[:period].end_date
+    assert_equal "daily", preview[:period].indicator_frequency
+    assert_equal BigDecimal("150"), preview[:result][:value]
+    assert_equal Date.current - 1, preview[:destination][:reference_date]
+    assert rule.valid?
+
+    assert_equal "success", run_automation(rule).status
+    target = @routine.routine_values.find_by!(routine_indicator: @indicator, reference_date: Date.current - 1)
+    assert_equal "150.0", target.value
+  end
+
+  test "month through yesterday on the first day covers the previous month" do
+    travel_to Time.zone.local(2026, 11, 1, 10)
+    period = Automations::Period.new("month_to_yesterday")
+
+    assert_equal Date.new(2026, 10, 1), period.start_date
+    assert_equal Date.new(2026, 10, 31), period.end_date
+    assert_equal "monthly", period.frequency
+    assert_equal "daily", period.indicator_frequency
+    assert period.include_reference?(Date.new(2026, 10, 31))
+  end
+
   test "execution replaces values without adding totals again and preserves GEROT audit" do
     rule = finance_rule
     create_automation_expense(100)

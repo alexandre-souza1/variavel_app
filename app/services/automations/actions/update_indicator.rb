@@ -8,7 +8,7 @@ module Automations
         unless template && indicator && indicator.routine_category.routine_template_id == template.id
           raise Invalid, "Selecione um modelo e um indicador ativo disponíveis para o responsável."
         end
-        expected = Period.new(rule.period).frequency
+        expected = Period.new(rule.period).indicator_frequency
         raise Invalid, "O período consultado deve acompanhar a frequência do indicador: dia, semana ou mês." unless expected == indicator.response_frequency
         types = rule.operation == "count" ? %w[integer decimal] : %w[currency decimal]
         raise Invalid, "Contagens exigem indicador inteiro ou decimal; valores financeiros exigem moeda ou decimal." unless types.include?(indicator.value_type)

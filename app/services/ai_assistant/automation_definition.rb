@@ -181,7 +181,7 @@ module AiAssistant
         if config["routine_template_id"] && indicator.routine_category.routine_template_id.to_s != config["routine_template_id"]
           raise ActionDraft::Invalid, "O indicador não pertence ao modelo escolhido."
         end
-        if data["period"] && Automations::Period.new(data["period"]).frequency != indicator.response_frequency
+        if data["period"] && Automations::Period.new(data["period"]).indicator_frequency != indicator.response_frequency
           raise ActionDraft::Invalid, "O período deve acompanhar a frequência do indicador."
         end
       end
