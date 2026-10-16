@@ -1,0 +1,31 @@
+<div class="dashboard-page automations-page" data-controller="automation-drawer">
+  <%= render "header", title: @rule.name, subtitle: "#{@rule.enabled? ? 'Ativa' : 'Pausada'} · #{automation_schedule_text(@rule)}" %>
+  <div class="automation-actions">
+    <%= button_tag "Editar regra", type: "button", class: "btn-outline", disabled: true, data: { action: "automation-drawer#open", automation_drawer_target: "trigger", drawer_url: edit_automation_rule_path(@rule), drawer_title: "Editar automação" } %>
+    <%= button_to "Executar agora", execute_automation_rule_path(@rule), class: "btn-primary-solid", form: { data: { turbo_confirm: "Executar esta regra com os dados atuais e realizar a ação configurada?" } } %>
+    <%= button_to(@rule.enabled? ? "Pausar automação" : "Ativar automação", toggle_automation_rule_path(@rule), method: :patch, class: "btn-outline") %>
+  </div>
+  <div class="automation-show-grid">
+    <section class="app-panel">
+      <h2><i class="bi bi-sliders"></i> Configuração</h2>
+      <% if @rule.description.present? %><p><%= @rule.description %></p><% end %>
+      <dl class="automation-details">
+        <div><dt>Origem</dt><dd><%= automation_source_label(@rule) %></dd></div>
+        <div><dt>Filtros</dt><dd><%= automation_filter_summary(@rule) %></dd></div>
+        <div><dt>Cálculo</dt><dd><%= Automations::Catalog::OPERATIONS[@rule.operation] %></dd></div>
+        <div><dt>Período</dt><dd><%= Automations::Period::LABELS[@rule.period] %></dd></div>
+        <div><dt>Condição</dt><dd><%= AutomationRule::CONDITIONS.key(@rule.condition_operator) %><%= " #{automation_value(@rule.condition_value, @rule.operation)}" unless @rule.condition_operator == "always" %></dd></div>
+        <div><dt>Ação</dt><dd><%= automation_action_label(@rule) %></dd></div>
+        <div><dt>Responsável</dt><dd><%= @rule.user.name.presence || @rule.user.email %></dd></div>
+        <div><dt>Próxima execução</dt><dd><%= @rule.next_run_at ? l(@rule.next_run_at, format: "%d/%m/%Y às %H:%M") : "Sem agendamento ativo" %></dd></div>
+      </dl>
+      <p class="automation-help">A execução segue as permissões atuais do responsável, inclusive quando iniciada por um administrador.</p>
+      <% if @rule.action_key != "update_indicator" %><p class="automation-help">Uma tarefa ou aviso por período consultado. Repetir a execução não duplica a ação.</p><% end %>
+    </section>
+    <%= render "preview" %>
+  </div>
+  <h2 class="automation-section-title">Histórico de execução</h2>
+  <p class="automation-help">Últimas 50 execuções. Pré-visualizações não executam ações e não entram no histórico.</p>
+  <%= render "history", runs: @runs %>
+  <%= render "drawer" %>
+</div>

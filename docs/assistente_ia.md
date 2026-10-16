@@ -50,6 +50,18 @@ A tabela `ai_action_requests` registra conta autora, tipo, dados aprovados, pré
 
 Exemplos: “Crie uma tarefa para inspecionar os pneus amanhã às 14h, com lembrete”, “No plano Revisão de Frota, crie uma tarefa para conferir o estepe e atribua à Ana”, “Prepare um plano de inspeção mensal com tarefas para pressão, sulcos e estepe”.
 
+## Montagem de automações pela conversa
+
+O assistente monta regras do módulo **Automações** com `automation_options`, `configure_automation` e `prepare_automation`. O passo a passo está disponível como sugestão no assistente. Na central, o painel recolhível **Crie uma automação com suas palavras** permite enviar uma descrição diretamente. A IA usa origens/ações do catálogo real, localiza registros permitidos e pergunta um dado por vez, preservando as escolhas privadas por até duas horas. Respostas curtas completam a montagem atual; mudar perfil/setor, expirar o estado ou limpar a conversa a descarta.
+
+Também aceita a regra inteira em texto livre no chat ou no campo **Crie uma automação com suas palavras** da central. **Gerar prévia com IA** envia a descrição ao assistente. Um pedido completo pode usar `prepare_automation` diretamente após localizar os IDs autorizados; perguntas adicionais são feitas somente para informações ausentes ou ambíguas.
+
+Regras financeiras aceitam uma lista `filters.budget_category_ids`. O assistente pode reunir várias categorias em um único indicador, como um pacote de manutenção, mantendo todas na prévia. Adicionar/remover categorias exige enviar a lista final completa; listas repetidas são normalizadas. Categorias são autorizadas individualmente e nenhuma é inferida apenas pelo nome do indicador. As regras antigas com filtro singular continuam aceitas.
+
+Uma regra completa vira uma proposta `create_automation` com configuração e estado de ativação explícitos. O padrão é **Salvar automação pausada**; ativação escolhida pelo usuário usa **Salvar e ativar automação**. São os mesmos controles de ajustar, cancelar, validade de 30 minutos, tokens de confirmação apenas no cliente, isolamento por conta e idempotência das outras propostas. Confirmar cria somente a regra, sem executar seus efeitos naquele momento. Permissões e nomes de destinos são revalidados ao confirmar. A confirmação é auditada em `AiActionRequest`, e o resultado aponta para a regra criada.
+
+A IA pode simular a consulta sem escrever. Falta de dados ou de GEROT aberto é relatada como indisponível; números da simulação podem mudar antes da execução e não são fixados pela confirmação. A ferramenta não executa nem altera regras existentes. O motor posterior de agendamento não chama IA. Consulte [automacoes.md](automacoes.md) para filtros, ações, períodos e proteções.
+
 ## Atualização e conclusão de tarefas
 
 `task_details` consulta os dados atuais da tarefa autorizada. `prepare_task_update` prepara mudanças somente nos campos solicitados: título, descrição, início, prazo, responsáveis, lembrete e situação. A prévia mostra **Antes** e **Depois**, com **Confirmar alterações**, **Ajustar** e **Cancelar**. Mensagens de texto não confirmam uma alteração.

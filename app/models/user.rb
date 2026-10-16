@@ -23,6 +23,7 @@ class User < ApplicationRecord
   has_one :ai_conversation, dependent: :destroy
   has_many :ai_action_requests, dependent: :destroy
   has_many :ai_api_requests, dependent: :nullify
+  has_many :automation_rules, dependent: :restrict_with_error
   has_one :inbox_bucket, -> { where(inbox: true) }, class_name: "Bucket", dependent: :destroy
   has_many :hidden_action_plans, dependent: :destroy
   has_many :task_assignments

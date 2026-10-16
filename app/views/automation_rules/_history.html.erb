@@ -1,0 +1,17 @@
+<div class="app-panel automation-history">
+  <% if runs.empty? %><p class="automation-help">Nenhuma execução registrada.</p><% end %>
+  <% runs.each do |run| %>
+    <article class="automation-run">
+      <div class="automation-run__heading"><strong class="automation-run__status automation-run__status--<%= run.status %>"><%= run.status_label %></strong><time><%= l(run.created_at, format: "%d/%m/%Y %H:%M") %></time></div>
+      <% if action_name == "index" %><h3><%= link_to run.automation_rule.name, run.automation_rule %></h3><% end %>
+      <p><%= run.message %></p>
+      <% if run.details["value"] %>
+        <p><strong><%= automation_value(run.details["value"], run.details["operation"]) %></strong> · <%= run.details["count"] %> registro(s) · <%= automation_period_text(run.details["period_start"], run.details["period_end"]) %></p>
+      <% end %>
+      <% destination = run.details["destination"] || {} %>
+      <% if destination["reference_date"].present? %><p>Célula: <%= l(destination["reference_date"].to_date) %> · <%= automation_value(destination["previous_value"], run.details["operation"]) %> → <%= automation_value(run.details["value"], run.details["operation"]) %></p><% end %>
+      <small><%= run.trigger == "scheduled" ? "Agendada" : "Manual" %><%= " · #{run.actor.name.presence || run.actor.email}" if run.actor %></small>
+      <% if destination["path"].present? %><%= link_to "Abrir destino", destination["path"], class: "automation-run__link" %><% end %>
+    </article>
+  <% end %>
+</div>

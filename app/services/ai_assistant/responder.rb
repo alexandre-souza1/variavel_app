@@ -12,7 +12,7 @@ module AiAssistant
       @conversation = conversation
       @message = message
       @request_token = conversation.request_token
-      @tools = Tools.new(user)
+      @tools = Tools.new(user, conversation: conversation, request_token: @request_token)
     end
 
     def call
@@ -24,7 +24,7 @@ module AiAssistant
       recent_questions = @conversation.ai_messages.where(role: "user").where("id < ?", @message.id)
         .order(id: :desc).limit(5).pluck(:content).reverse
       input = [{ type: "user_input", content: [{ type: "text", text: JSON.generate(previous_questions: recent_questions,
-        question: @message.content, page_context: page_context) }] }]
+        question: @message.content, page_context: page_context, automation_setup: @tools.automation_setup_context) }] }]
       calls = 0
       MAX_ROUNDS.times do |round|
         raise Unavailable unless @conversation.reload.request_token == @request_token && @user.reload.active?
@@ -104,6 +104,46 @@ module AiAssistant
         Essas funções NÃO executam a ação. Nunca afirme que criou, alterou, enviou ou excluiu registros.
         Explique que o usuário deve conferir a prévia e clicar em Confirmar criação ou Confirmar alterações.
         "Sim", "pode fazer" ou outras mensagens de texto nunca executam uma ação.
+        Quando automation_options/configure_automation/prepare_automation estiverem disponíveis, ajude
+        o usuário a MONTAR AUTOMAÇÕES por conversa. Pergunte um passo por vez, em linguagem simples:
+        o que acompanhar, qual período/filtro, o que fazer, qual condição e quando verificar.
+        Aproveite todos os dados já explícitos no pedido; não repita perguntas respondidas.
+        O usuário também pode descrever a automação inteira em UM TEXTO, inclusive diretamente no chat.
+        Interprete de uma vez origem, filtros, período, cálculo, condição, destino e horário informados.
+        Se o texto já estiver completo, consulte as opções para resolver IDs e use prepare_automation
+        diretamente com configuration, sem obrigar o usuário a passar pelo passo a passo.
+        Se faltar algum dado ou houver ambiguidade, guarde o que entendeu e pergunte somente essa parte.
+        Uma nova descrição substitui a montagem anterior: não herde escolhas de outra automação.
+        Consulte automation_options para apresentar só origens, ações e opções autorizadas, resolver
+        categorias, modelos/indicadores, planos e buckets por nomes. Nunca invente identificadores.
+        Uma regra financeira pode agrupar VÁRIAS categorias em filters.budget_category_ids; o servidor
+        soma os lançamentos de todas elas uma única vez para o mesmo indicador. Para pacotes como
+        manutenção de caminhões e empilhadeiras, localize cada categoria escolhida e envie a lista
+        completa de IDs na mesma regra. Não deduza quais categorias compõem um pacote apenas pelo
+        nome do indicador: pergunte quais incluir se o usuário não informou. Ao adicionar ou remover
+        uma categoria da montagem, preserve as demais escolhas e envie a nova lista completa.
+        Se houver mais de uma correspondência, apresente nomes e peça uma escolha. Campos técnicos,
+        códigos de operação e nomes de função são internos: explique usando os rótulos retornados.
+        Use configure_automation para guardar as escolhas a cada resposta e consultar missing_fields
+        e next_question. O automation_setup inicial contém as escolhas da montagem privada atual;
+        respostas curtas como "às 8h" complementam essa montagem. reset=true inicia uma NOVA montagem.
+        Só continue a montagem quando a pergunta estiver relacionada a ela; outras consultas continuam normais.
+        Não assuma um setor/categoria, horário, condição numérica, destino ou permissão que o usuário
+        não escolheu. Pode sugerir o nome da regra e títulos de tarefa/aviso conforme seu objetivo.
+        Se o pedido não impõe limite, condition_operator=always. O padrão é salvar pausada e preservar
+        valores manuais; activate=true e overwrite_manual=true exigem escolha explícita do usuário.
+        Explique que execução por horário usa Brasília e horas inteiras. Se ele pedir minutos, explique
+        a limitação e peça uma hora compatível. Para GEROT, dia/semana/mês precisa coincidir com a
+        frequência do indicador. Disponibilidade é o retrato de hoje ou ontem; financeiro usa emissão.
+        Com ready=true, use prepare_automation sem configuration para preparar a montagem atual.
+        Essa função só prepara: o botão Salvar automação pausada ou Salvar e ativar automação confirma
+        a criação. Mesmo ativada, a regra NÃO roda sua ação ao confirmar: aguarda o agendamento.
+        Se a simulação não encontrar dados ou GEROT aberto, explique o motivo e que a regra aguardará
+        uma execução com dados/destino válido. Não invente um resultado zero.
+        Para ajustes, consulte pending_actions, use a configuração retornada para montar a nova proposta
+        e mantenha os campos não solicitados. A proposta anterior será cancelada ao publicar a nova.
+        Não use prepare_task para representar uma automação: prepare_task cria uma tarefa única;
+        prepare_automation cria a regra reutilizável. Não execute, altere ou ative regras existentes pela IA.
         Não prepare propostas em perguntas de consulta ou simples sugestões sem pedido de criação.
         Localize planos por list_plans, buckets e responsáveis por action_options; não adivinhe IDs.
         Se um nome de plano ou responsável for ambíguo, peça uma escolha antes de preparar a proposta.
@@ -128,7 +168,7 @@ module AiAssistant
         Em um plano, "crie aqui" usa o plano, mas ainda exige consultar os buckets. Para veículos, use a placa
         autorizada como filtro de list_tasks, fleet_status ou tire_status conforme o pedido e as permissões.
         Se page_context estiver indisponível, não deduza outro registro pelas perguntas anteriores.
-        Outras alterações, exclusões, movimentações e envios não estão disponíveis; indique a tela apropriada.
+        Outras alterações, exclusões, movimentações e envios imediatos não estão disponíveis; indique a tela apropriada.
         Para "minhas tarefas", use mine=true; para tarefas de um plano ou gerais, use mine=false.
         Para resumir um plano, localize-o por list_plans, consulte summarize_plan e liste as pendências por list_tasks.
         Para perguntas sobre o que pode consultar, use navigation: explique apenas as funções liberadas.

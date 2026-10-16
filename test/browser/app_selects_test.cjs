@@ -22,6 +22,7 @@ const fs = require('node:fs');
     assert.equal(await page.locator('#initial_sector + .app-select').evaluate(element => element.classList.contains('is-invalid')), false, 'valid selects must not start with an error');
 
     const choose = async (selector, value) => {
+      await page.keyboard.press("Escape");
       const wrapper = page.locator(`${selector} + .app-select`);
       await wrapper.locator('.ts-control').click();
       const id = await page.locator(selector).evaluate(element => element.tomselect.dropdown_content.id);
@@ -139,6 +140,46 @@ const fs = require('node:fs');
     assert.equal(await page.locator('#dependent-select + .app-select .item').textContent(), 'Fixo');
     await page.locator('#select-contracts').evaluate(element => element.remove());
     await page.waitForFunction(() => ![...document.querySelectorAll('.app-select-menu')].some(element => element.querySelector('#dependent-select-ts-dropdown')));
+    // Prompt labels and previously selected labels must not look like editable search text.
+    await page.goto(`${base}/invoices/new`);
+    await page.evaluate(() => {
+      const select = document.createElement('select');
+      select.id = 'prompt-search-select';
+      select.name = 'supplier_id';
+      select.className = 'form-select';
+      select.innerHTML = '<option value="">Selecione o fornecedor</option>' + Array.from({ length: 15 }, (_, i) => `<option value="supplier-${i}">Fornecedor ${i}</option>`).join('');
+      const fixture = document.createElement('form');
+      fixture.id = 'prompt-search-form';
+      fixture.style.cssText = 'margin:24px;max-width:700px';
+      fixture.append(select);
+      const blurTarget = document.createElement('textarea');
+      blurTarget.id = 'prompt-search-blur';
+      fixture.append(blurTarget);
+      document.querySelector('.app-content').prepend(fixture);
+    });
+    await page.waitForFunction(() => document.querySelector('#prompt-search-select').tomselect);
+    const searchWrapper = page.locator('#prompt-search-select + .app-select');
+    await searchWrapper.locator('.ts-control').click();
+    await page.waitForFunction(() => document.querySelector('#prompt-search-select').tomselect.isFocused);
+    assert.equal(await searchWrapper.locator('input').inputValue(), '');
+    assert.equal(await searchWrapper.locator('.item:visible').count(), 0);
+    await page.keyboard.type('Fornecedor 12');
+    assert.equal(await searchWrapper.locator('input').inputValue(), 'Fornecedor 12');
+    assert.equal(await page.locator('#prompt-search-select').inputValue(), '');
+    assert.equal(await page.locator('#prompt-search-select').evaluate(el => new FormData(el.form).get('supplier_id')), '');
+    await page.locator('.app-select-menu:visible .option[data-value="supplier-12"]').click();
+    await page.locator('#prompt-search-blur').click();
+    assert.equal(await searchWrapper.locator('.item:visible').textContent(), 'Fornecedor 12');
+    await searchWrapper.locator('.ts-control').click();
+    await page.waitForFunction(() => document.querySelector('#prompt-search-select').tomselect.isFocused);
+    await page.keyboard.type('Fornecedor 3');
+    assert.equal(await searchWrapper.locator('input').inputValue(), 'Fornecedor 3');
+    assert.equal(await searchWrapper.locator('.item:visible').count(), 0);
+    await page.keyboard.press('Escape');
+    await page.locator('#prompt-search-blur').click();
+    assert.equal(await page.locator('#prompt-search-select').inputValue(), 'supplier-12');
+    assert.equal(await searchWrapper.locator('.item:visible').textContent(), 'Fornecedor 12');
+
     assert.deepEqual(errors, []);
     console.log('PASS: common menus; real dependent fields; native values/events/order/metadata/groups; silent programmatic updates; dynamic options and disabled states; required validation; long-list search; multiple selection/removal; form reset; viewport positioning; textarea resizing; Turbo cleanup and reconnection.');
   } finally { await browser.close(); }

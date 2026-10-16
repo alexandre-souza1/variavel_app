@@ -13,14 +13,8 @@
       </div>
     </div>
   </header>
-  <nav class="ai-settings-tabs" aria-label="Seções de inteligência artificial">
-    <% Admin::AiSettingsController::TABS.each do |key, label| %>
-      <%= link_to ai_settings_tab_path(key), class: "ai-settings-tabs__link #{'is-active' if @tab == key}", aria: { current: @tab == key ? "page" : nil } do %>
-        <i class="bi bi-<%= { 'overview' => 'grid-1x2', 'models' => 'cpu', 'users' => 'people', 'settings' => 'sliders' }.fetch(key) %>" aria-hidden="true"></i>
-        <%= label %>
-      <% end %>
-    <% end %>
-  </nav>
+  <%= render "shared/page_tabs", label: "Seções de inteligência artificial", nav_class: "ai-settings-tabs", link_class: "ai-settings-tabs__link", current: @tab,
+    tabs: Admin::AiSettingsController::TABS.map { |key, label| { key: key, label: label, path: ai_settings_tab_path(key), icon: { 'overview' => 'bi-grid-1x2', 'models' => 'bi-cpu', 'users' => 'bi-people', 'settings' => 'bi-sliders' }.fetch(key) } } %>
   <div class="ai-settings-panel" id="ai-tab-<%= @tab %>">
     <% if @tab == "overview" %>
       <%= render "report_filters" %>

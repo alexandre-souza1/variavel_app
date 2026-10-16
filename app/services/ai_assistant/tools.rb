@@ -9,11 +9,13 @@ module AiAssistant
     include ManagementQueries
     include DailyBriefing
     include ActionTools
+    include AutomationTools
 
     attr_reader :sources, :drafts
 
-    def initialize(user)
+    def initialize(user, conversation: nil, request_token: nil)
       @user = user
+      @conversation, @request_token = conversation, request_token
       @sources = []
       @drafts = []
       @access = Access.new(user)
@@ -36,12 +38,13 @@ module AiAssistant
         function("navigation", "Obtém links e orientações de navegação de acordo com as permissões do usuário.")
       ]
       core.reject! { |entry| entry[:name] == 'fleet_status' && !@access.allowed?(:availability) }
-      core + Catalog.entries.values.filter_map { |entry| entry[:declaration] if @access.allowed?(entry[:area]) } + action_declarations
+      core + Catalog.entries.values.filter_map { |entry| entry[:declaration] if @access.allowed?(entry[:area]) } + action_declarations + automation_declarations
     end
 
     def call(name, arguments)
       return { error: 'Seu acesso não está ativo.' } unless @user.reload.active?
       args = arguments.is_a?(Hash) ? arguments.stringify_keys : {}
+      return call_automation(name, args) if AutomationTools::FUNCTIONS.include?(name)
       return call_action(name, args) if ActionTools::ACTION_FUNCTIONS.include?(name)
       if (entry = Catalog.entries[name])
         return { error: 'Seu perfil não possui acesso a esta consulta.' } unless @access.allowed?(entry[:area])
@@ -196,6 +199,7 @@ module AiAssistant
     def navigation
       links = [{ label: "Minhas tarefas e planos de ação", path: @user.mechanical? ? mechanic_tasks_path : action_plans_path,
                  help: "Abra um plano para consultar tarefas, responsáveis, prazos e pendências." }]
+      links << { label: "Automações", path: automation_rules_path, help: "Monte uma regra comigo, confira a prévia e confirme para salvar pausada ou ativa." } if ActionDraft.allowed?(@user)
       if can_view_nav_link?(:availability, @user)
         links << { label: "Disponibilidade de frota", path: fleet_availabilities_path, help: "Selecione a data para consultar os veículos." }
       end

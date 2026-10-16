@@ -1,0 +1,106 @@
+<%= form_with model: @rule, class: "automation-form", data: { controller: "automation-form", turbo: turbo_frame_request? } do |f| %>
+  <% if @rule.errors.any? %><div class="alert alert-danger" role="alert"><%= @rule.errors.full_messages.to_sentence %></div><% end %>
+  <section class="app-panel">
+    <h2><span class="automation-step">1</span> Identifique sua regra</h2>
+    <div class="automation-fields">
+      <div class="automation-field"><%= f.label :name, "Nome da automação" %><%= f.text_field :name, class: "form-control", required: true, maxlength: 120, placeholder: "Atualizar despesas no GEROT" %></div>
+      <div class="automation-field"><%= f.label :description, "Descrição (opcional)" %><%= f.text_field :description, class: "form-control", maxlength: 2000, placeholder: "O que esta regra resolve?" %></div>
+    </div>
+  </section>
+  <section class="app-panel">
+    <h2><span class="automation-step">2</span> Consulte os dados</h2>
+    <div class="automation-fields">
+      <div class="automation-field"><%= f.label :source_key, "Origem" %><%= f.select :source_key, @sources.map { |key, info| [info[:label], key] }, {}, data: { automation_form_target: "source", action: "change->automation-form#refresh" } %></div>
+      <div class="automation-field"><%= f.label :operation, "Cálculo" %><%= f.select :operation, Automations::Catalog::OPERATIONS.map { |key, label| [label, key] }, {}, data: { automation_form_target: "operation", action: "change->automation-form#refresh" } %></div>
+      <div class="automation-field"><%= f.label :period, "Período dos dados" %><%= f.select :period, Automations::Period::LABELS.map { |key, label| [label, key] }, {}, data: { automation_form_target: "period", action: "change->automation-form#refresh" } %></div>
+    </div>
+    <%= f.fields_for :filters, @rule.filters do |fields| %>
+      <fieldset data-automation-form-source="invoices">
+        <div class="automation-fields">
+          <div class="automation-field"><%= fields.label :sector, "Setor financeiro" %><%= fields.select :sector, @sectors.map { |sector| [BudgetCategory.sectors[sector], sector] }, { include_blank: "Todos os setores permitidos", selected: @rule.filters["sector"] } %></div>
+          <div class="automation-field">
+            <label for="automation-categories">Categorias financeiras</label>
+            <% selected_ids = Automations::Configuration.category_ids(@rule.filters) %>
+            <%= hidden_field_tag "automation_rule[filters][budget_category_ids][]", "", id: nil %>
+            <%= select_tag "automation_rule[filters][budget_category_ids][]",
+              options_for_select(@categories.map { |category| ["#{category.name} · #{BudgetCategory.sectors[category.sector]}", category.id] }, selected_ids),
+              multiple: true, id: "automation-categories", class: "form-control automation-category-select",
+              aria: { describedby: "automation-categories-help" },
+              data: { placeholder: "Buscar e selecionar categorias…", automation_form_target: "categories", action: "change->automation-form#updateCategories" } %>
+            <small data-automation-form-target="categoryCount" aria-live="polite"><%= selected_ids.any? ? "#{selected_ids.size} categoria(s) selecionada(s)" : "Todas as categorias permitidas" %></small>
+            <p class="automation-help" id="automation-categories-help">Selecione uma ou mais categorias para compor o total. Sem seleção, serão usadas todas as categorias permitidas.</p>
+          </div>
+        </div>
+        <p class="automation-help">Usa a data de emissão dos lançamentos e as permissões do responsável. O total representa despesas lançadas, sem confirmar pagamento.</p>
+      </fieldset>
+      <fieldset data-automation-form-source="tasks">
+        <div class="automation-fields">
+          <div class="automation-field"><%= fields.label :task_status, "Situação das tarefas" %><%= fields.select :status, Automations::Sources::Tasks::STATUSES.map { |key, label| [label, key] }, { selected: @rule.filters["status"] }, id: "automation_rule_filters_task_status" %></div>
+          <div class="automation-field"><%= fields.label :action_plan_id, "Plano de ação" %><%= fields.select :action_plan_id, @plans.map { |plan| [plan.name, plan.id] }, { include_blank: "Todos os planos permitidos e Entrada", selected: @rule.filters["action_plan_id"] } %></div>
+        </div>
+        <label class="automation-checkbox"><%= fields.check_box :only_mine, checked: @rule.filters["only_mine"] == "1" %><span>Somente tarefas atribuídas a mim e da minha Entrada</span></label>
+        <p class="automation-help">Pendentes e vencidas usam o prazo; concluídas usam a data de conclusão. Todo o histórico também inclui pendências sem prazo.</p>
+      </fieldset>
+      <fieldset data-automation-form-source="fleet">
+        <div class="automation-field"><%= fields.label :fleet_status, "Situação dos veículos" %><%= fields.select :status, Automations::Sources::Fleet::STATUSES.map { |key, label| [label, key] }, { selected: @rule.filters["status"] }, id: "automation_rule_filters_fleet_status" %></div>
+        <p class="automation-help">Consulta o retrato da disponibilidade do dia escolhido. Se ela ainda não existir, a regra registra a ausência de dados.</p>
+      </fieldset>
+    <% end %>
+  </section>
+  <section class="app-panel">
+    <h2><span class="automation-step">3</span> Defina a condição</h2>
+    <div class="automation-fields">
+      <div class="automation-field"><%= f.label :condition_operator, "Executar a ação quando o resultado for" %><%= f.select :condition_operator, AutomationRule::CONDITIONS, {}, data: { automation_form_target: "condition", action: "change->automation-form#refresh" } %></div>
+      <div class="automation-field" data-automation-form-target="threshold"><%= f.label :condition_value, "Valor de comparação" %><%= f.number_field :condition_value, class: "form-control", step: "0.0001", placeholder: "Ex.: 5000", data: { automation_form_target: "thresholdInput" } %></div>
+    </div>
+  </section>
+  <section class="app-panel">
+    <h2><span class="automation-step">4</span> Escolha o que fazer</h2>
+    <div class="automation-field"><%= f.label :action_key, "Ação" %><%= f.select :action_key, Automations::Catalog::ACTIONS.map { |key, info| [info[:label], key] }, {}, data: { automation_form_target: "actionKind", action: "change->automation-form#refresh" } %></div>
+    <%= f.fields_for :action_config, @rule.action_config do |fields| %>
+      <fieldset data-automation-form-action="update_indicator">
+        <div class="automation-fields">
+          <div class="automation-field"><%= fields.label :routine_template_id, "Modelo de GEROT" %><%= fields.select :routine_template_id, @templates.map { |template| [template.name, template.id] }, { include_blank: "Selecione o modelo", selected: @rule.action_config["routine_template_id"] }, data: { automation_form_target: "template", action: "change->automation-form#filterIndicators" } %></div>
+          <div class="automation-field"><%= fields.label :routine_indicator_id, "Indicador" %><%= fields.select :routine_indicator_id, automation_indicator_options, { include_blank: "Selecione o indicador", selected: @rule.action_config["routine_indicator_id"] }, data: { automation_form_target: "indicator" } %></div>
+        </div>
+        <p class="automation-help">O período deve acompanhar o indicador: dia → diário, semana → semanal, mês → mensal. A regra localiza o GEROT aberto de cada período e atualiza a mesma célula, sem acumular o valor novamente. Sem lançamentos financeiros, preserva o preenchimento.</p>
+        <label class="automation-checkbox"><%= fields.check_box :overwrite_manual, checked: @rule.action_config["overwrite_manual"] == "1" %><span>Permitir substituir preenchimentos manuais deste indicador</span></label>
+        <p class="automation-help">Preenchimentos de outra automação sempre ficam protegidos. O GEROT mantém suas regras de metas e geração de tarefas por desvio.</p>
+      </fieldset>
+      <fieldset data-automation-form-action="create_task notify">
+        <div class="automation-fields">
+          <div class="automation-field automation-field--wide"><%= fields.label :title, "Título da tarefa ou do aviso" %><%= fields.text_field :title, class: "form-control", value: @rule.action_config["title"], maxlength: 200, placeholder: "Revisar {{valor}} pendências" %></div>
+          <div class="automation-field automation-field--wide"><%= fields.label :body, "Descrição ou mensagem (opcional)" %><%= fields.text_area :body, class: "form-control", value: @rule.action_config["body"], rows: 3, maxlength: 2000 %></div>
+        </div>
+        <p class="automation-help">Variáveis disponíveis: <code>{{valor}}</code>, <code>{{periodo}}</code> e <code>{{automacao}}</code>. Cada regra cria no máximo uma tarefa ou um aviso por período consultado. Em Todo o histórico, a ação acontece uma única vez.</p>
+      </fieldset>
+      <fieldset data-automation-form-action="create_task">
+        <div class="automation-fields">
+          <div class="automation-field"><%= fields.label :bucket_id, "Onde criar a tarefa" %><%= fields.select :bucket_id, @buckets.map { |bucket| ["#{bucket.action_plan.name} / #{bucket.name}", bucket.id] }, { include_blank: "Minha Entrada pessoal", selected: @rule.action_config["bucket_id"] } %></div>
+          <div class="automation-field"><%= fields.label :due_in_days, "Prazo em dias após a execução (opcional)" %><%= fields.number_field :due_in_days, class: "form-control", value: @rule.action_config["due_in_days"], min: 0, max: 365 %></div>
+        </div>
+        <p class="automation-help">A tarefa será atribuída ao responsável pela automação. Em um plano, ela seguirá a visibilidade desse plano.</p>
+      </fieldset>
+    <% end %>
+  </section>
+  <section class="app-panel">
+    <h2><span class="automation-step">5</span> Quando verificar</h2>
+    <div class="automation-fields">
+      <div class="automation-field"><%= f.label :schedule, "Gatilho de execução" %><%= f.select :schedule, AutomationRule::SCHEDULES, {}, data: { automation_form_target: "schedule", action: "change->automation-form#refresh" } %></div>
+      <div class="automation-field" data-automation-form-target="hour"><%= f.label :execution_hour, "Horário de Brasília" %><%= f.select :execution_hour, (0..23).map { |hour| ["#{format('%02d', hour)}:00", hour] } %></div>
+      <div class="automation-field" data-automation-form-target="weekday"><%= f.label :weekday, "Dia da semana" %><%= f.select :weekday, Routine::WEEKDAY_LABELS.map { |day, label| [label, day] } %></div>
+      <div class="automation-field" data-automation-form-target="monthDay"><%= f.label :month_day, "Dia do mês" %><%= f.number_field :month_day, class: "form-control", min: 1, max: 31 %></div>
+    </div>
+    <p class="automation-help">Regras novas ou alteradas ficam pausadas até você ativar. Dias 29, 30 e 31 são ajustados ao último dia de meses mais curtos.</p>
+  </section>
+  <div class="automation-actions automation-form__actions">
+    <% if turbo_frame_request? %>
+      <button type="button" class="automation-form__cancel" data-bs-dismiss="offcanvas">Cancelar</button>
+    <% else %>
+      <%= link_to "Cancelar", automation_rules_path, class: "automation-form__cancel" %>
+    <% end %>
+    <%= f.button name: "intent", value: "preview", class: "btn-outline" do %><i class="bi bi-eye" aria-hidden="true"></i> Testar prévia<% end %>
+    <%= f.submit "Salvar automação pausada", class: "btn-primary-solid" %>
+  </div>
+<% end %>
+<%= render "preview" if @preview || @preview_error %>

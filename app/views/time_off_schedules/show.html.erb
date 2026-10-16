@@ -33,14 +33,8 @@
     </details>
   <% end %>
 
-  <nav class="time-off-tabs" aria-label="Seções da escala de folgas">
-    <% [['calendar', 'Calendário', 'bi-calendar3'], ['day', 'Escala do dia', 'bi-person-check'], ['extras', 'Extras', 'bi-calendar-plus'], ['history', 'Histórico', 'bi-clock-history']].each do |tab, label, icon| %>
-      <%= link_to time_off_tab_path(tab), class: "time-off-tab #{'is-active' if @tab == tab}", aria: { current: @tab == tab ? 'page' : nil } do %>
-        <i class="bi <%= icon %>" aria-hidden="true"></i>
-        <span><%= label %></span>
-      <% end %>
-    <% end %>
-  </nav>
+  <%= render "shared/page_tabs", label: "Seções da escala de folgas", nav_class: "time-off-tabs", link_class: "time-off-tab", current: @tab,
+    tabs: [['calendar', 'Calendário', 'bi-calendar3'], ['day', 'Escala do dia', 'bi-person-check'], ['extras', 'Extras', 'bi-calendar-plus'], ['history', 'Histórico', 'bi-clock-history']].map { |key, label, icon| { key: key, label: label, icon: icon, path: time_off_tab_path(key) } } %>
 
   <% if %w[day extras].include?(@tab) %>
     <%= form_with url: time_off_schedule_path, method: :get, class: 'time-off-filters' do |form| %>

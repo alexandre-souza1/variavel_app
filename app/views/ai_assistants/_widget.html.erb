@@ -1,7 +1,7 @@
 <aside id="ai-assistant-<%= current_user.id %>" class="ai-assistant"
        data-controller="ai-assistant" data-ai-assistant-url-value="<%= ai_assistant_path %>"
        data-ai-assistant-page-value="<%= ai_assistant_page_context.to_json %>"
-       data-action="keydown.esc->ai-assistant#close ai-assistant:context@window->ai-assistant#openWithContext meeting-recorder:opened@window->ai-assistant#close public-variable-chat:opened@window->ai-assistant#close turbo:before-cache@document->ai-assistant#beforeCache">
+       data-action="keydown.esc->ai-assistant#close ai-assistant:context@window->ai-assistant#openWithContext ai-assistant:automation@window->ai-assistant#startAutomation meeting-recorder:opened@window->ai-assistant#close public-variable-chat:opened@window->ai-assistant#close turbo:before-cache@document->ai-assistant#beforeCache">
   <button type="button" class="ai-assistant__launcher" data-ai-assistant-target="launcher"
           data-action="ai-assistant#open" aria-controls="ai-assistant-panel" aria-expanded="false"
           aria-label="Abrir meu assistente de IA" title="Meu assistente de IA">
@@ -31,7 +31,7 @@
     <div class="ai-assistant__messages" data-ai-assistant-target="messages" role="log" aria-live="polite" aria-label="Conversa com o assistente" hidden></div>
     <div class="ai-assistant__welcome" data-ai-assistant-target="welcome">
       <strong>Como posso ajudar?</strong>
-      <p>Consulte os dados liberados para seu perfil e setor. Atualize suas tarefas com uma prévia antes de confirmar.<%= " Você também pode criar tarefas e planos de ação." if AiAssistant::ActionDraft.allowed?(current_user) %></p>
+      <p>Consulte os dados liberados para seu perfil e setor. Atualize suas tarefas com uma prévia antes de confirmar.<%= " Você também pode criar tarefas, planos e montar automações passo a passo." if AiAssistant::ActionDraft.allowed?(current_user) %></p>
       <% ai_assistant_suggestions(current_user).each do |question| %>
         <button type="button" data-action="ai-assistant#suggest" data-question="<%= question %>"><%= question %><i class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
       <% end %>

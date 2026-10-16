@@ -1,0 +1,9 @@
+<nav class="<%= class_names('app-tabs', local_assigns[:nav_class]) %>" aria-label="<%= label %>">
+  <% tabs.each do |tab| %>
+    <% active = tab.fetch(:key).to_s == current.to_s %>
+    <%= link_to tab.fetch(:path), class: class_names('app-tabs__link', local_assigns[:link_class], 'is-active' => active), aria: { current: active ? 'page' : nil } do %>
+      <% if tab[:icon].present? %><i class="bi <%= tab[:icon] %>" aria-hidden="true"></i><% end %>
+      <span><%= tab.fetch(:label) %></span>
+    <% end %>
+  <% end %>
+</nav>

@@ -28,6 +28,7 @@ module AiAssistantsHelper
                    end
     suggestions << 'O que posso consultar com meu perfil?'
     suggestions << 'Quero criar uma tarefa.' if AiAssistant::ActionDraft.allowed?(user)
+    suggestions << 'Quero montar uma automação passo a passo.' if AiAssistant::ActionDraft.allowed?(user)
     suggestions << 'Quero atualizar uma tarefa.' if AiAssistant::ActionDraft.allowed?(user, kind: "update_task")
     suggestions
   end

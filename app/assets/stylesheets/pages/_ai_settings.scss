@@ -6,33 +6,7 @@
   max-width: none;
   padding: 1rem 0 3rem;
 
-  .ai-settings-tabs {
-    display: flex;
-    gap: .4rem;
-    overflow-x: auto;
-    padding: .4rem;
-    margin-bottom: 1.5rem;
-    background: var(--bs-body-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: 12px;
-  }
-
-  .ai-settings-tabs__link {
-    align-items: center;
-    display: inline-flex;
-    flex-shrink: 0;
-    gap: .5rem;
-    padding: .65rem 1rem;
-    border-radius: 8px;
-    color: var(--bs-secondary-color);
-    font-size: .82rem;
-    font-weight: 600;
-    text-decoration: none;
-
-    &:hover { background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
-    &.is-active { background: rgba(var(--bs-primary-rgb), .1); color: var(--bs-primary-text-emphasis); }
-    &:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: -2px; }
-  }
+  .app-tabs { --app-tabs-margin-bottom: 1.5rem; }
 
   .ai-report-filters {
     display: grid;
@@ -149,7 +123,6 @@
     .ai-report-charts, .ai-report-charts--overview { grid-template-columns: minmax(0, 1fr); }
   }
   @media (max-width: 600px) {
-    .ai-settings-tabs__link { padding: .6rem .75rem; font-size: .78rem; }
     .ai-report-users__heading { flex-direction: column; align-items: stretch; }
     .ai-report-user-search .form-control { min-width: 0; }
     .ai-report-user-search .btn { flex-shrink: 0; }

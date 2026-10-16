@@ -1,0 +1,25 @@
+<section class="app-panel automation-preview" id="automation-preview" aria-label="Prévia da automação">
+  <h2><i class="bi bi-eye"></i> Prévia da regra</h2>
+  <p class="automation-help">Esta consulta não executa ações nem salva a configuração.</p>
+  <% if @preview_error %>
+    <p class="automation-notice" role="status"><%= @preview_error %></p>
+  <% else %>
+    <dl class="automation-details">
+      <div><dt>Origem</dt><dd><%= automation_source_label(@rule) %></dd></div>
+      <div><dt>Período consultado</dt><dd><%= automation_period_text(@preview[:period].start_date, @preview[:period].end_date) %></dd></div>
+      <div><dt>Registros encontrados</dt><dd><%= @preview[:result][:count] %></dd></div>
+      <div><dt>Resultado</dt><dd class="automation-result"><%= automation_value(@preview[:result][:value], @rule.operation) %></dd></div>
+      <div><dt>Condição</dt><dd><%= @preview[:condition_met] ? "Atendida" : "Não atendida" %></dd></div>
+      <div><dt>Destino</dt><dd><%= @preview[:destination][:label] %></dd></div>
+      <% if @preview[:destination][:reference_date] %>
+        <div><dt>Célula de referência</dt><dd><%= l(@preview[:destination][:reference_date]) %></dd></div>
+        <div><dt>Valor atual</dt><dd><%= automation_value(@preview[:destination][:previous_value], @rule.operation) %></dd></div>
+      <% end %>
+      <% if @preview[:destination][:title] %><div><dt>Título que será usado</dt><dd><%= @preview[:destination][:title] %></dd></div><% end %>
+    </dl>
+    <% if !@preview[:result][:available] %><p class="automation-notice">Sem dados neste período. A ação será preservada.</p>
+    <% elsif @preview[:destination][:protected] %><p class="automation-notice">O preenchimento está protegido. O valor atual será preservado.</p>
+    <% elsif !@preview[:condition_met] %><p class="automation-notice">A regra está válida, mas a condição não permite executar a ação agora.</p><% end %>
+    <p class="automation-help"><%= @preview[:result][:note] %></p>
+  <% end %>
+</section>

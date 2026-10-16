@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  resources :automation_rules, path: "automacoes", except: :destroy do
+    post :execute, on: :member, path: "executar"
+    patch :toggle, on: :member, path: "ativacao"
+  end
   resource :ai_assistant, path: "assistente-ia", only: %i[show create destroy] do
     resources :actions, path: "acoes", controller: "ai_assistant_actions", only: [] do
       post :confirm, on: :member, path: "confirmar"

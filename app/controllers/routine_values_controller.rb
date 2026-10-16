@@ -12,7 +12,8 @@ class RoutineValuesController < ApplicationController
     @routine_value.with_lock do
       @routine_value.assign_attributes(
         normalized_routine_value_params.merge(
-          updated_by: current_user
+          updated_by: current_user,
+          automation_rule_id: nil
         )
       )
 

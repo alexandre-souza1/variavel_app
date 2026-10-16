@@ -1,0 +1,50 @@
+// Navegação entre seções: um único padrão para páginas com abas.
+html:root body.app-shell {
+  .app-tabs {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0 0 var(--app-tabs-margin-bottom, 0);
+    padding: .35rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 12px;
+    background: var(--bs-card-bg, var(--bs-body-bg));
+  }
+
+  .app-tabs__link {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 44px;
+    padding: .6rem 1rem;
+    border-radius: 8px;
+    color: var(--bs-secondary-color);
+    font-size: .82rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow-wrap: normal;
+    transition: background-color .15s ease, color .15s ease;
+
+    > i { width: 1rem; flex-shrink: 0; text-align: center; }
+    &:hover { background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
+    &.is-active { background: rgba(var(--bs-primary-rgb), .12); color: var(--bs-primary-text-emphasis); }
+    &:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: -2px; }
+  }
+}
+
+@media (max-width: 600px) {
+  html:root body.app-shell .app-tabs__link { padding-inline: .8rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:root body.app-shell .app-tabs__link { transition: none; }
+}

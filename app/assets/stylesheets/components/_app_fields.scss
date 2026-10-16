@@ -212,6 +212,10 @@ html:root body.app-shell {
     input { min-width: 0; }
   }
 
+  // O valor selecionado (inclusive a opção de orientação) não deve aparecer
+  // junto do texto digitado no campo de busca dos selects simples.
+  .app-select--searchable.input-active .ts-control > .item { display: none; }
+
   .app-select-menu[popover] {
     inset: auto;
     margin: 0;

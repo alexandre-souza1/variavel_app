@@ -28,6 +28,23 @@ export default class extends Controller {
     if (this.alive && !this.panelTarget.hidden) this.questionTarget.focus()
   }
 
+  async startAutomation(event) {
+    const question = typeof event?.detail?.question === "string" ? event.detail.question :
+      "Quero criar uma nova automação. Me ajude a montar passo a passo, perguntando um dado por vez."
+    await this.open()
+    if (!this.alive) return
+    if (!question.trim() || question.length > 2000) {
+      this.showError(new Error("Descreva a automação em até 1800 caracteres."))
+      return
+    }
+    this.questionTarget.value = question
+    if (this.processing || this.requesting) {
+      this.showError(new Error("Aguarde a resposta em andamento. Sua descrição ficou no campo de mensagem para enviar depois."))
+      return
+    }
+    await this.send()
+  }
+
   close(event) {
     this.panelTarget.hidden = true
     this.launcherTarget.hidden = false
@@ -250,7 +267,13 @@ export default class extends Controller {
       card.append(item)
     }
     const updating = action.kind === "update_task"
-    const status = this.paragraph((updating ? {
+    const automation = action.kind === "create_automation"
+    const status = this.paragraph((automation ? {
+      pending: "Confira a regra e o estado de ativação. Ela só será salva ao confirmar. Esta proposta vale por 30 minutos.",
+      executed: action.result?.enabled ? "Automação salva e ativada após sua confirmação." : "Automação salva pausada após sua confirmação.",
+      cancelled: "Proposta cancelada. Nenhuma automação foi criada por esta proposta.",
+      expired: "Proposta expirada. Peça uma nova ao assistente."
+    } : updating ? {
       pending: "Confira as alterações. Elas só serão salvas ao confirmar. Esta proposta vale por 30 minutos.",
       executed: "Alterações salvas após sua confirmação.",
       cancelled: "Proposta cancelada. Nenhuma alteração foi aplicada por esta proposta.",

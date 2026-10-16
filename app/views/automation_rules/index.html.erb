@@ -1,0 +1,56 @@
+<div class="dashboard-page automations-page" data-controller="automation-drawer">
+  <%= render "header", title: "Automações", subtitle: "Escolha o que acompanhar, quando agir e o que o app deve fazer por você." %>
+  <% unless params[:tab] == "history" %>
+    <details class="app-panel automation-description">
+      <summary>
+        <h2><i class="bi bi-stars" aria-hidden="true"></i> Crie uma automação com suas palavras</h2>
+        <%= disclosure_arrow %>
+      </summary>
+      <form data-controller="ai-automation-launch" data-action="submit->ai-automation-launch#generate" data-turbo="false">
+        <label for="automation-description" class="visually-hidden">Descreva a automação</label>
+        <textarea id="automation-description" class="form-control" rows="3" maxlength="1800" required
+                  aria-describedby="automation-description-help" data-ai-automation-launch-target="description"
+                  placeholder="Ex.: Todo dia às 8h, some os gastos com abastecimento do mês e atualize o indicador de combustível no GEROT da Frota."></textarea>
+        <div class="automation-description__footer">
+          <p id="automation-description-help">Escreva do seu jeito. A IA pergunta só o que faltar e mostra a regra para você confirmar.</p>
+          <button type="submit" class="btn-primary-solid"><i class="bi bi-stars" aria-hidden="true"></i> Gerar prévia com IA</button>
+        </div>
+      </form>
+    </details>
+  <% end %>
+  <div class="kpi-grid automation-stats">
+    <% [["Regras cadastradas", @total_count, "bi-lightning-charge", "primary"], ["Ativas", @active_count, "bi-play-circle", "success"], ["Pausadas", @total_count - @active_count, "bi-pause-circle", "warning"]].each do |label, value, icon, color| %>
+      <div class="kpi-card"><div class="kpi-icon bg-<%= color %>-soft"><i class="bi <%= icon %> text-<%= color %>"></i></div><div class="kpi-info"><span class="kpi-label"><%= label %></span><strong class="kpi-value"><%= value %></strong></div></div>
+    <% end %>
+  </div>
+  <%= render "shared/page_tabs", label: "Seções das automações", nav_class: "automation-tabs", current: params[:tab] == "history" ? "history" : "rules", tabs: [
+    { key: "rules", label: "Regras", icon: "bi-grid", path: automation_rules_path },
+    { key: "history", label: "Histórico recente", icon: "bi-clock-history", path: automation_rules_path(tab: "history") }
+  ] %>
+  <% if params[:tab] == "history" %>
+    <%= render "history", runs: @runs %>
+  <% elsif @rules.any? %>
+    <div class="automation-grid">
+      <% @rules.each do |rule| %>
+        <article class="app-panel automation-card">
+          <div class="automation-card__heading"><span class="automation-state <%= 'is-active' if rule.enabled? %>"><%= rule.enabled? ? "Ativa" : "Pausada" %></span><i class="bi bi-lightning-charge"></i></div>
+          <h2><%= link_to rule.name, rule %></h2>
+          <p><%= rule.description.presence || "#{automation_source_label(rule)} → #{automation_action_label(rule)}" %></p>
+          <div class="automation-flow"><span><i class="bi <%= Automations::Catalog::SOURCES.dig(rule.source_key, :icon) %>"></i> <%= automation_source_label(rule) %></span><i class="bi bi-arrow-right"></i><span><%= automation_action_label(rule) %></span></div>
+          <small><%= automation_schedule_text(rule) %></small>
+          <% if current_user.admin? %><small>Responsável: <%= rule.user.name.presence || rule.user.email %></small><% end %>
+          <div class="automation-actions"><%= link_to "Ver regra e prévia", rule, class: "btn-outline" %></div>
+        </article>
+      <% end %>
+    </div>
+    <% if @total_count > 100 %><p class="automation-help">Exibindo as 100 regras mais recentes.</p><% end %>
+  <% else %>
+    <div class="app-panel automation-empty"><i class="bi bi-lightning-charge"></i><h2>Transforme rotinas em regras</h2><p>Combine uma origem, uma condição e uma ação. Você configura uma vez e acompanha cada execução.</p><%= button_tag "Criar minha primeira automação", type: "button", class: "btn-primary-solid", disabled: true, data: { action: "automation-drawer#open", automation_drawer_target: "trigger", drawer_url: new_automation_rule_path, drawer_title: "Nova automação" } %></div>
+    <div class="automation-grid automation-examples">
+      <% [["Financeiro → GEROT", "Some uma categoria de despesas e preencha um indicador mensal."], ["Tarefas → Aviso", "Receba um aviso quando a quantidade de pendências passar do limite."], ["Frota → Tarefa", "Crie uma tarefa de revisão quando houver veículos indisponíveis."]].each do |title, body| %>
+        <article class="app-panel"><h3><%= title %></h3><p><%= body %></p></article>
+      <% end %>
+    </div>
+  <% end %>
+  <%= render "drawer" %>
+</div>

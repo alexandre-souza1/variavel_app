@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_15_190000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_16_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -73,7 +73,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_15_190000) do
     t.index ["ai_conversation_id"], name: "index_ai_action_requests_on_ai_conversation_id"
     t.index ["ai_message_id"], name: "index_ai_action_requests_on_ai_message_id"
     t.index ["user_id"], name: "index_ai_action_requests_on_user_id"
-    t.check_constraint "kind::text = ANY (ARRAY['create_task'::character varying, 'create_plan'::character varying, 'update_task'::character varying]::text[])", name: "ai_action_requests_valid_kind"
+    t.check_constraint "kind::text = ANY (ARRAY['create_task'::character varying, 'create_plan'::character varying, 'update_task'::character varying, 'create_automation'::character varying]::text[])", name: "ai_action_requests_valid_kind"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'executed'::character varying, 'cancelled'::character varying]::text[])", name: "ai_action_requests_valid_status"
   end
 
@@ -107,6 +107,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_15_190000) do
     t.integer "usage_count", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "automation_setup", default: {}, null: false
     t.index ["user_id"], name: "index_ai_conversations_on_user_id", unique: true
   end
 
@@ -161,6 +162,47 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_15_190000) do
     t.datetime "updated_at", null: false
     t.index ["channel", "version_code"], name: "index_android_releases_on_channel_and_version_code", unique: true
     t.check_constraint "version_code > 0 AND byte_size > 0", name: "android_releases_positive_values"
+  end
+
+  create_table "automation_rules", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.string "source_key", null: false
+    t.string "operation", default: "count", null: false
+    t.string "period", default: "today", null: false
+    t.jsonb "filters", default: {}, null: false
+    t.string "condition_operator", default: "always", null: false
+    t.decimal "condition_value", precision: 18, scale: 4
+    t.string "action_key", null: false
+    t.jsonb "action_config", default: {}, null: false
+    t.string "schedule", default: "manual", null: false
+    t.integer "execution_hour", default: 8, null: false
+    t.integer "weekday", default: 1, null: false
+    t.integer "month_day", default: 1, null: false
+    t.boolean "enabled", default: false, null: false
+    t.datetime "next_run_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "((action_config ->> 'routine_template_id'::text)), ((action_config ->> 'routine_indicator_id'::text))", name: "idx_enabled_automation_indicator", unique: true, where: "((enabled = true) AND ((action_key)::text = 'update_indicator'::text))"
+    t.index ["next_run_at"], name: "index_automation_rules_on_next_run_at", where: "(enabled = true)"
+    t.index ["user_id"], name: "index_automation_rules_on_user_id"
+  end
+
+  create_table "automation_runs", force: :cascade do |t|
+    t.bigint "automation_rule_id", null: false
+    t.bigint "actor_id"
+    t.string "trigger", null: false
+    t.string "status", null: false
+    t.string "message", null: false
+    t.string "effect_key"
+    t.jsonb "details", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.index ["actor_id"], name: "index_automation_runs_on_actor_id"
+    t.index ["automation_rule_id", "created_at"], name: "index_automation_runs_on_automation_rule_id_and_created_at"
+    t.index ["automation_rule_id", "effect_key"], name: "idx_unique_automation_effect", unique: true, where: "(effect_key IS NOT NULL)"
+    t.index ["automation_rule_id"], name: "index_automation_runs_on_automation_rule_id"
+    t.check_constraint "status::text = ANY (ARRAY['success'::character varying, 'unchanged'::character varying, 'skipped'::character varying, 'failed'::character varying]::text[])", name: "automation_runs_valid_status"
   end
 
   create_table "autonomies", force: :cascade do |t|
@@ -1073,6 +1115,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_15_190000) do
     t.bigint "updated_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "automation_rule_id"
+    t.index ["automation_rule_id"], name: "index_routine_values_on_automation_rule_id"
     t.index ["routine_id", "routine_indicator_id", "reference_date"], name: "idx_unique_routine_value", unique: true
     t.index ["routine_id"], name: "index_routine_values_on_routine_id"
     t.index ["routine_indicator_id"], name: "index_routine_values_on_routine_indicator_id"
@@ -1390,6 +1434,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_15_190000) do
   add_foreign_key "ai_conversations", "users"
   add_foreign_key "ai_messages", "ai_conversations"
   add_foreign_key "ajudantes", "employees"
+  add_foreign_key "automation_rules", "users"
+  add_foreign_key "automation_runs", "automation_rules"
+  add_foreign_key "automation_runs", "users", column: "actor_id", on_delete: :nullify
   add_foreign_key "az_ajudantes", "employees"
   add_foreign_key "az_rv_imports", "users"
   add_foreign_key "az_rv_on_demand_activities", "az_rv_imports"
@@ -1474,6 +1521,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_15_190000) do
   add_foreign_key "routine_indicators", "routine_categories"
   add_foreign_key "routine_indicators", "routine_indicators", column: "source_indicator_id", on_delete: :nullify
   add_foreign_key "routine_templates", "action_plans"
+  add_foreign_key "routine_values", "automation_rules", on_delete: :nullify
   add_foreign_key "routine_values", "routine_indicators"
   add_foreign_key "routine_values", "routines"
   add_foreign_key "routine_values", "users", column: "updated_by_id"

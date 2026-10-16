@@ -71,7 +71,7 @@
                         inputmode: "decimal",
                         placeholder: "Valor",
                         aria: { label: "Valor da NF" },
-                        data: { action: "input->invoice-numbers#calculate" } %>
+                        data: { action: "focus->invoice-numbers#selectZero click->invoice-numbers#selectZero input->invoice-numbers#calculate" } %>
                   <%= nf_form.check_box :_destroy, style: "display: none" %>
                   <button type="button" class="icon-btn danger" title="Remover NF" data-action="click->invoice-numbers#remove">
                     <i class="bi bi-trash3"></i>
@@ -89,7 +89,7 @@
                     <option value="<%= cost_center.id %>"><%= cost_center.name %></option>
                   <% end %>
                 </select>
-                <input class="form-control" type="text" inputmode="decimal" value="0,00" placeholder="Valor" aria-label="Valor da NF" name="invoice[invoice_numbers_attributes][NEW_RECORD][amount]" data-action="input->invoice-numbers#calculate">
+                <input class="form-control" type="text" inputmode="decimal" value="0,00" placeholder="Valor" aria-label="Valor da NF" name="invoice[invoice_numbers_attributes][NEW_RECORD][amount]" data-action="focus->invoice-numbers#selectZero click->invoice-numbers#selectZero input->invoice-numbers#calculate">
                 <input type="hidden" name="invoice[invoice_numbers_attributes][NEW_RECORD][_destroy]" value="false">
                 <button type="button" class="icon-btn danger" title="Remover NF" data-action="click->invoice-numbers#remove">
                   <i class="bi bi-trash3"></i>

@@ -33,6 +33,12 @@ module NavbarHelper
       label: 'GEROT',
       sectors: [:fleet, :du, :warehouse, :hr, :finance, :planning, :safety]
     },
+    automations: {
+      path: :automation_rules_path,
+      icon: 'bi-lightning-charge',
+      label: 'Automações',
+      sectors: [:fleet, :du, :warehouse, :hr, :finance, :planning, :safety]
+    },
     stress_test: {
       path: :placas_por_setor_path,
       icon: 'bi-speedometer2',

@@ -13,6 +13,9 @@
         </p>
       </div>
       <div class="header-actions">
+        <% unless current_user.mechanical? %>
+          <%= link_to "Automações", automation_rules_path, class: "btn-outline" %>
+        <% end %>
         <%= link_to dashboard_path, class: "btn-outline" do %>
           <i class="bi bi-arrow-left me-1"></i>
           Voltar

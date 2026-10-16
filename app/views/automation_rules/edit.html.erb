@@ -1,0 +1,10 @@
+<% if turbo_frame_request? %>
+  <%= turbo_frame_tag "automation-form-drawer" do %>
+    <%= render "form" %>
+  <% end %>
+<% else %>
+<div class="dashboard-page automations-page">
+  <%= render "header", title: "Editar automação", subtitle: @rule.name %>
+  <%= render "form" %>
+</div>
+<% end %>

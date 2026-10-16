@@ -1,0 +1,13 @@
+<div class="offcanvas offcanvas-end automation-drawer" tabindex="-1" id="automation-drawer"
+     aria-labelledby="automation-drawer-title" data-automation-drawer-target="panel">
+  <div class="offcanvas-header">
+    <div>
+      <h2 class="offcanvas-title" id="automation-drawer-title" data-automation-drawer-target="title">Nova automação</h2>
+      <p class="automation-help">Configure, confira a prévia e salve sua regra.</p>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar formulário"></button>
+  </div>
+  <div class="offcanvas-body">
+    <%= turbo_frame_tag "automation-form-drawer", data: { automation_drawer_target: "frame", action: "turbo:frame-load->automation-drawer#loaded turbo:frame-missing->automation-drawer#redirected" } %>
+  </div>
+</div>

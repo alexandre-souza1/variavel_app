@@ -6,7 +6,7 @@ class AiActionRequest < ApplicationRecord
   belongs_to :ai_conversation
   belongs_to :ai_message, optional: true
 
-  validates :kind, inclusion: { in: %w[create_task create_plan update_task] }
+  validates :kind, inclusion: { in: %w[create_task create_plan update_task create_automation] }
   validates :status, inclusion: { in: %w[pending executed cancelled] }
   validates :confirmation_token, :expires_at, presence: true
   validate :same_account
@@ -43,6 +43,7 @@ class AiActionRequest < ApplicationRecord
       with_lock do
         raise Conflict, "Esta ação já foi executada e não pode ser cancelada aqui." if status == "executed"
         update!(status: "cancelled", cancelled_at: Time.current) if status == "pending"
+        ai_conversation.update!(automation_setup: {}) if kind == "create_automation"
       end
     end
   end
@@ -88,5 +89,6 @@ class AiActionRequest < ApplicationRecord
     end
     outcome = draft.execute!(request_id: id)
     update!(status: "executed", executed_at: Time.current, result: outcome)
+    ai_conversation.update!(automation_setup: {}) if kind == "create_automation"
   end
 end

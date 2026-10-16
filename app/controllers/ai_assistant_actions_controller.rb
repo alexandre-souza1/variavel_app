@@ -18,6 +18,8 @@ class AiAssistantActionsController < ApplicationController
     render json: { error: error.message }, status: :conflict
   rescue ActiveRecord::RecordInvalid
     render json: { error: "Não foi possível salvar os registros. Confira os dados e solicite uma nova proposta." }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordNotUnique
+    render json: { error: "Outra automação já ocupa esse indicador. Solicite uma nova prévia." }, status: :conflict
   end
 
   def cancel

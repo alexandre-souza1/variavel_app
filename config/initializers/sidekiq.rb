@@ -9,3 +9,10 @@ if redis_url.present?
     config.redis = { url: redis_url }
   end
 end
+
+Sidekiq.configure_server do |config|
+  scheduler = nil
+  config.on(:startup) { scheduler = Automations::Scheduler.new; scheduler.start }
+  config.on(:quiet) { scheduler&.stop }
+  config.on(:shutdown) { scheduler&.stop }
+end

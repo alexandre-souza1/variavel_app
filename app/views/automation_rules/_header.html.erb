@@ -1,0 +1,14 @@
+<header class="dashboard-header">
+  <div class="header-content">
+    <div>
+      <p class="dashboard-eyebrow"><i class="bi bi-lightning-charge me-1"></i> Gestão · Regras e ações</p>
+      <h1><i class="bi bi-lightning-charge"></i> <%= title %></h1>
+      <p class="subtitle"><%= subtitle %></p>
+    </div>
+    <div class="header-actions">
+      <%= link_to "GEROTs", routines_path, class: "btn-outline" %>
+      <%= link_to "Automações", automation_rules_path, class: "btn-outline" unless action_name == "index" %>
+      <%= button_tag "Nova automação", type: "button", class: "btn-primary-solid", disabled: true, data: { action: "automation-drawer#open", automation_drawer_target: "trigger", drawer_url: new_automation_rule_path, drawer_title: "Nova automação" } if action_name.in?(%w[index show]) %>
+    </div>
+  </div>
+</header>

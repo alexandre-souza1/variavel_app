@@ -85,6 +85,8 @@ export default class extends Controller {
     const state = { element, select, label, labelFor, descriptors: new Map(), syncing: false, pending: false }
     this.controls.set(element, state)
     select.wrapper.classList.add("app-select")
+    // Oculta o valor exibido durante a busca sem apagar a seleção do formulário.
+    select.wrapper.classList.toggle("app-select--searchable", !element.multiple && select.control.contains(select.control_input))
     if (!element.matches(".form-select, .form-control, .form-control-custom, .position-select")) {
       Object.assign(select.wrapper.style, { fontSize: style.fontSize, lineHeight: style.lineHeight, minHeight: style.minHeight })
     }

@@ -23,6 +23,11 @@ export default class extends Controller {
     this.calculate()
   }
 
+  selectZero(event) {
+    const input = event.currentTarget
+    if (/^0+(?:[.,]0+)?$/.test(input.value.trim())) input.select()
+  }
+
   calculate() {
     const total = [...this.containerTarget.querySelectorAll("input[name*='[amount]']")]
       .filter((input) => input.closest(".nested-fields")?.style.display !== "none")

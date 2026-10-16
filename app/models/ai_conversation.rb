@@ -47,7 +47,7 @@ class AiConversation < ApplicationRecord
     with_lock do
       ai_action_requests.pending.update_all(status: "cancelled", cancelled_at: Time.current, updated_at: Time.current)
       ai_messages.delete_all
-      update!(request_token: nil, requested_at: nil, error_message: nil)
+      update!(request_token: nil, requested_at: nil, error_message: nil, automation_setup: {})
     end
   end
 

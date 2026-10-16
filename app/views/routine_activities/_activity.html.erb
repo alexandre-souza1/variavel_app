@@ -21,6 +21,9 @@
           <span class="text-muted">
             alterou um valor
           </span>
+          <% if activity.metadata["source"] == "automation" %>
+            <small class="text-muted">via automação <%= activity.metadata["automation_name"] %></small>
+          <% end %>
 
         </div>
 
