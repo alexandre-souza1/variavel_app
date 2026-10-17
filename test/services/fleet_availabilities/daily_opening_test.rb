@@ -15,13 +15,46 @@ class FleetAvailabilities::DailyOpeningTest < ActiveSupport::TestCase
     )
   end
 
-  test "does not open a monday availability on saturday" do
+  test "opens monday on saturday without creating a sunday availability" do
+    assert_difference "FleetAvailability.count", 1 do
+      result = FleetAvailabilities::DailyOpening.call(
+        user: users(:one),
+        now: Time.zone.local(2026, 7, 25, 8, 0)
+      )
+
+      assert_nil result.skipped_reason
+      assert_equal Date.new(2026, 7, 27), result.availability.date
+    end
+
+    assert_not FleetAvailability.exists?(date: Date.new(2026, 7, 26))
+  end
+
+  test "does not open monday before the configured opening time on saturday" do
+    FleetAvailabilitySetting.current.update!(auto_open_time: "09:00")
+
+    assert_no_difference "FleetAvailability.count" do
+      result = FleetAvailabilities::DailyOpening.call(
+        user: users(:one),
+        now: Time.zone.local(2026, 7, 25, 8, 0)
+      )
+
+      assert_equal :before_opening, result.skipped_reason
+    end
+  end
+
+  test "reuses monday availability on repeated saturday and sunday executions" do
     result = FleetAvailabilities::DailyOpening.call(
       user: users(:one),
-      now: Time.zone.local(2026, 8, 29, 8, 0)
+      now: Time.zone.local(2026, 7, 25, 8, 0)
     )
 
-    assert_equal :sunday, result.skipped_reason
+    assert_no_difference "FleetAvailability.count" do
+      [Time.zone.local(2026, 7, 25, 9, 0), Time.zone.local(2026, 7, 26, 8, 0)].each do |now|
+        repeated = FleetAvailabilities::DailyOpening.call(user: users(:one), now: now)
+
+        assert_equal result.availability.id, repeated.availability.id
+      end
+    end
   end
 
   test "is idempotent when the next day is already open" do

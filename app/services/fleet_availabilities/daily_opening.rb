@@ -25,10 +25,10 @@ module FleetAvailabilities
       return skipped_result(locked_count, :missing_user) unless @user
 
       next_date = @now.to_date.next_day
+      next_date = next_date.next_day if next_date.sunday?
       setting = FleetAvailabilitySetting.current
 
       return skipped_result(locked_count, :before_opening) unless opening_time_reached?(setting)
-      return skipped_result(locked_count, :sunday) if next_date.sunday?
 
       dimensioning = FleetAvailability.dimensioning_period_for(next_date)
 
