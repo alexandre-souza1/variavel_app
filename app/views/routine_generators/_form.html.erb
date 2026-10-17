@@ -131,7 +131,7 @@
             <% Routine::TASK_GENERATION_LABELS.each do |mode, label| %>
               <label class="plan-gerot-task-settings__option" for="task-generation-<%= mode %>">
                 <%= radio_button_tag :task_generation_mode, mode, selected_mode == mode, id: "task-generation-#{mode}", class: "form-check-input" %>
-                <span><strong><%= label %></strong><small><%= mode == 'commented_deviation' ? 'O comentário descreve a ação e gera a tarefa. Apenas preencher um desvio não cria tarefas.' : 'Gera a tarefa assim que o indicador fica fora da meta, mesmo sem comentário.' %></small></span>
+                <span><strong><%= label %></strong><small><%= mode == 'commented_deviation' ? 'Cada comentário descreve um motivo e gera uma tarefa separada. Apenas preencher um desvio não cria tarefas.' : 'Gera a tarefa assim que o indicador fica fora da meta. Cada comentário no desvio gera outra tarefa.' %></small></span>
               </label>
             <% end %>
           </fieldset>

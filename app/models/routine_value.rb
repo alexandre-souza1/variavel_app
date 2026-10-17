@@ -3,7 +3,7 @@ class RoutineValue < ApplicationRecord
 
   belongs_to :routine_indicator
   belongs_to :automation_rule, optional: true
-  has_one :generated_task, class_name: "Task", dependent: :nullify
+  has_many :generated_tasks, class_name: "Task", dependent: :nullify
 
   belongs_to :updated_by,
              class_name: "User",

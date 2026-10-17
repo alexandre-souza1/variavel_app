@@ -89,18 +89,14 @@ export default class extends Controller {
     this.broadcastCount(data.count)
     if (data.generated_task_created) {
       showFlash("Comentário salvo e tarefa criada no plano.", { url: data.generated_task_url })
-      this.taskHintTarget.textContent = "Novos comentários desta célula serão adicionados à mesma tarefa."
-    } else if (data.generated_task_id) {
-      showFlash("Comentário adicionado à tarefa existente.", { url: data.generated_task_url })
+      this.taskHintTarget.textContent = "Cada novo comentário desta célula vai gerar uma tarefa separada no bucket da categoria."
     }
   }
 
   updateTaskHint(data) {
     if (!data.can_generate_task) return
-    if (data.generated_task_id) {
-      this.taskHintTarget.textContent = "Este comentário também será adicionado à tarefa vinculada."
-    } else if (data.cell_status === "danger" && data.task_generation_mode === "commented_deviation") {
-      this.taskHintTarget.textContent = "O indicador está fora da meta. Este comentário vai gerar uma tarefa no bucket da categoria."
+    if (data.cell_status === "danger") {
+      this.taskHintTarget.textContent = "O indicador está fora da meta. Cada comentário vai gerar uma tarefa separada no bucket da categoria."
     } else {
       this.taskHintTarget.textContent = "O comentário fica registrado no GEROT. Uma tarefa só é gerada para indicadores fora da meta."
     }

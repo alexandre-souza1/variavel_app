@@ -13,8 +13,7 @@ class RoutineCommentsController < ApplicationController
         value: @routine_value.value,
         goal: @routine_value.routine_indicator.target_for(@routine_value.reference_date)&.goal
       ),
-      can_generate_task: @routine_value.routine.action_plan.present? && @routine_value.routine.open?,
-      generated_task_id: @routine_value.generated_task&.id
+      can_generate_task: @routine_value.routine.action_plan.present? && @routine_value.routine.open?
     }
   end
 

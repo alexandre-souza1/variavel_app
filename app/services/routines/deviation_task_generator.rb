@@ -10,17 +10,19 @@ module Routines
         goal = indicator.target_for(routine_value.reference_date)&.goal
         status = GoalEvaluation.call(indicator: indicator, value: routine_value.value, goal: goal)
 
-        if (task = routine_value.generated_task)
-          if comment
-            task.comments.create!(user: actor, content: comment.body)
-          else
+        if comment
+          task = routine_value.generated_tasks.find_by(routine_comment_id: comment.id)
+          next task if task
+        else
+          tasks = routine_value.generated_tasks.to_a
+          tasks.each do |task|
             TaskActivityService.log(
               task: task, user: actor, activity_type: :routine_value_changed,
               old_value: previous_value, new_value: routine_value.value,
               metadata: { reference_date: routine_value.reference_date, goal: goal, status: status }
             )
           end
-          next task
+          next tasks.first if tasks.any?
         end
         next unless status == :danger
         next unless routine.task_generation_deviation? || comment&.body.present?
@@ -28,6 +30,7 @@ module Routines
         bucket = indicator.routine_category.bucket || routine.action_plan.routine_category_buckets.find_by!(routine_category: indicator.routine_category).bucket
         task = bucket.tasks.create!(
           routine_value: routine_value,
+          routine_comment: comment,
           creator: actor,
           users: comment ? [comment.user] : [],
           labels: indicator.labels.to_a,

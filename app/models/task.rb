@@ -4,6 +4,7 @@ class Task < ApplicationRecord
   belongs_to :creator, class_name: "User"
   validates :title, presence: true
   belongs_to :routine_value, optional: true
+  belongs_to :routine_comment, optional: true
   validate :routine_source_matches_plan
   validate :inbox_belongs_to_creator
   validate :bucket_transition_allowed

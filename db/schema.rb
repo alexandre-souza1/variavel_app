@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_16_190000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_17_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -1254,11 +1254,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_16_190000) do
     t.boolean "clone_tasklist_on_recurrence", default: false, null: false
     t.datetime "early_due_notification_sent_at"
     t.bigint "routine_value_id"
+    t.bigint "routine_comment_id"
     t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
     t.index ["bucket_id"], name: "index_tasks_on_bucket_id"
     t.index ["creator_id"], name: "index_tasks_on_creator_id"
     t.index ["due_notification_enabled", "due_notification_sent_at", "due_at"], name: "index_tasks_on_due_notification_status"
-    t.index ["routine_value_id"], name: "index_tasks_on_routine_value_id", unique: true
+    t.index ["routine_comment_id"], name: "index_tasks_on_routine_comment_id", unique: true
+    t.index ["routine_value_id"], name: "index_tasks_on_routine_value_id"
   end
 
   create_table "time_off_changes", force: :cascade do |t|
@@ -1540,6 +1542,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_16_190000) do
   add_foreign_key "tasklist_items", "tasklists", on_delete: :cascade
   add_foreign_key "tasklists", "tasks", on_delete: :cascade
   add_foreign_key "tasks", "buckets"
+  add_foreign_key "tasks", "routine_comments", on_delete: :nullify
   add_foreign_key "tasks", "routine_values", on_delete: :nullify
   add_foreign_key "tasks", "users", column: "assignee_id"
   add_foreign_key "tasks", "users", column: "creator_id"

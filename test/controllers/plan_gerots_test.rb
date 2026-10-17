@@ -57,7 +57,7 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     assert_select "input[name=period_start][value='2025-02-01']"
   end
 
-  test "tasks default to a comment on an out of goal cell and subsequent comments reuse the task" do
+  test "each comment on an out of goal cell creates its own investigation task" do
     post action_plan_gerot_generator_path(@plan), params: {
       routine_template_id: @template.id, period_start: "2026-01-01", period_end: "2026-01-31"
     }
@@ -72,13 +72,13 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     assert response.parsed_body["can_generate_task"]
 
     commenter = users(:two)
-    commenter.update!(role: :admin)
+    commenter.update!(name: "Analista", role: :admin)
     sign_in commenter
     assert_difference(["Task.count", "RoutineComment.count", "Comment.count"], 1) do
       comment_on(value, "Revisar o processo de produção")
     end
     assert_response :created
-    task = value.reload.generated_task
+    task = value.reload.generated_tasks.first
     assert response.parsed_body["generated_task_created"]
     assert_equal action_plan_path(@plan, task_id: task.id), response.parsed_body["generated_task_url"]
     assert_equal "Investigar Refugo fora da meta — Revisar o processo de produção", task.title
@@ -89,21 +89,59 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     assert_equal "Qualidade", task.bucket.name
 
     sign_in @user
+    assert_difference(["Task.count", "RoutineComment.count", "Comment.count"], 1) do
+      comment_on(value, "Verificar a matéria-prima")
+    end
+    assert_response :created
+    second_task = Task.find(response.parsed_body["generated_task_id"])
+    assert response.parsed_body["generated_task_created"]
+    assert_not_equal task.id, second_task.id
+    assert_equal action_plan_path(@plan, task_id: second_task.id), response.parsed_body["generated_task_url"]
+    assert_equal "Investigar Refugo fora da meta — Verificar a matéria-prima", second_task.title
+    assert_includes second_task.description, "Comentário: Verificar a matéria-prima"
+    assert_equal ["Verificar a matéria-prima"], second_task.comments.pluck(:content)
+    assert_equal [@user.id], second_task.user_ids
+    assert_equal task.bucket, second_task.bucket
+    assert_equal value.routine_comments.last, second_task.routine_comment
+    assert_equal ["Revisar o processo de produção"], task.comments.pluck(:content)
+    assert_equal 2, value.generated_tasks.count
+
+    get action_plan_path(@plan, view: "gerot_actions", routine_id: routine.id)
+    assert_response :success
+    [task, second_task].each { |action| assert_select "[data-task-id='#{action.id}']" }
+
     assert_no_difference("Task.count") { save_value(value, "3") }
     assert_not response.parsed_body["generated_task_created"]
-    assert_difference("Comment.count", 1) do
-      assert_no_difference("Task.count") { comment_on(value, "Processo ajustado; acompanhar amanhã") }
+    [task, second_task].each do |action|
+      assert_not action.reload.completed?
+      assert_equal "success", action.task_activities.routine_value_changed.last.metadata["status"]
     end
-    assert_not response.parsed_body["generated_task_created"]
-    assert_equal task.id, response.parsed_body["generated_task_id"]
-    assert_not task.reload.completed?
-    assert_equal "Investigar Refugo fora da meta — Revisar o processo de produção", task.title
-    assert_equal "success", task.task_activities.routine_value_changed.last.metadata["status"]
-    assert_equal 2, task.comments.count
-    assert_equal [commenter.id], task.user_ids
+    assert_no_difference(["Task.count", "Comment.count"]) do
+      comment_on(value, "Processo ajustado; acompanhar amanhã")
+    end
+    assert_nil response.parsed_body["generated_task_id"]
 
-    assert_no_difference("Task.count") { delete routine_value_routine_comment_path(value, value.routine_comments.first), as: :json }
-    assert_equal 2, task.comments.count
+    assert_no_difference("Task.count") do
+      delete routine_value_routine_comment_path(value, task.routine_comment), as: :json
+    end
+    assert_nil task.reload.routine_comment_id
+    assert_equal value, task.routine_value
+    assert_equal ["Revisar o processo de produção"], task.comments.pluck(:content)
+  end
+
+  test "retrying generation for the same comment does not duplicate its task" do
+    create_gerot("2026-01-01", "2026-01-31", task_generation_mode: "commented_deviation")
+    value = Routine.last.routine_values.first
+    save_value(value, "8")
+    comment_on(value, "Investigar a causa")
+    task = Task.find(response.parsed_body["generated_task_id"])
+
+    assert_no_difference(["Task.count", "Comment.count", "TaskActivity.count"]) do
+      generated = Routines::DeviationTaskGenerator.call(
+        routine_value: value, actor: @user, comment: task.routine_comment
+      )
+      assert_equal task, generated
+    end
   end
 
   test "tasks generated from a deviation comment inherit all indicator labels at creation" do
@@ -120,16 +158,18 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
       assert_difference("TaskLabel.count", 2) { comment_on(value, "Verificar a conformidade") }
     end
     assert_response :created
-    task = value.reload.generated_task
+    task = value.reload.generated_tasks.first
     assert_equal labels.map(&:id).sort, task.label_ids.sort
     assert_equal @plan.id, task.bucket.action_plan_id
 
     manual_label = @plan.labels.create!(name: "Acompanhamento", color: "#228833")
     task.update!(labels: [labels.first, manual_label])
     @indicator.update!(labels: [labels.last])
-    assert_no_difference(["Task.count", "TaskLabel.count"]) { comment_on(value, "Acompanhando a correção") }
+    assert_difference(["Task.count", "TaskLabel.count"], 1) { comment_on(value, "Acompanhando a correção") }
     assert_response :created
-    assert_equal task.id, response.parsed_body["generated_task_id"]
+    second_task = Task.find(response.parsed_body["generated_task_id"])
+    assert_not_equal task.id, second_task.id
+    assert_equal [labels.last.id], second_task.label_ids
     assert_equal [labels.first.id, manual_label.id].sort, task.reload.label_ids.sort
   end
 
@@ -141,9 +181,9 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
 
     assert_difference(["Task.count", "TaskLabel.count"], 1) { save_value(value, "8") }
     assert_response :success
-    assert_equal [label.id], value.reload.generated_task.label_ids
-    assert_empty value.generated_task.user_ids
-    assert_equal "Investigar Refugo fora da meta — #{value.reference_date.strftime('%d/%m/%Y')}", value.generated_task.title
+    assert_equal [label.id], value.reload.generated_tasks.first.label_ids
+    assert_empty value.generated_tasks.first.user_ids
+    assert_equal "Investigar Refugo fora da meta — #{value.reference_date.strftime('%d/%m/%Y')}", value.generated_tasks.first.title
   end
 
   test "normal blank manual and goal-less indicators never generate a task from comments" do
@@ -197,8 +237,14 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     assert_redirected_to routine
     assert routine.reload.task_generation_deviation?
     assert_difference("Task.count", 1) { save_value(value, "9") }
-    assert_no_difference("Task.count") { comment_on(value, "Investigar a causa") }
-    assert_equal "Investigar a causa", value.reload.generated_task.comments.first.content
+    initial_task = value.generated_tasks.first
+    assert_difference("Task.count", 1) { comment_on(value, "Investigar a causa") }
+    comment_task = Task.find(response.parsed_body["generated_task_id"])
+    assert_not_equal initial_task.id, comment_task.id
+    assert_equal "Investigar a causa", comment_task.comments.first.content
+    assert_empty initial_task.comments
+    assert_no_difference("Task.count") { save_value(value, "10") }
+    assert_equal 2, value.generated_tasks.count
   end
 
   test "tasks tab restores the responsive default view" do
@@ -214,12 +260,12 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     january = Routine.last
     january_values = january.routine_values.order(:reference_date).first(2)
     january_values.each { |value| save_value(value, "8") }
-    open_task, done_task = january_values.map { |value| value.reload.generated_task }
+    open_task, done_task = january_values.map { |value| value.reload.generated_tasks.first }
     done_task.update!(completed: true)
     create_gerot("2026-02-01", "2026-02-28")
     february = Routine.last
     save_value(february.routine_values.first, "8")
-    february_task = february.routine_values.first.generated_task
+    february_task = february.routine_values.first.generated_tasks.first
     ordinary_task = open_task.bucket.tasks.create!(creator: @user, title: "Ação independente", completed: true)
 
     get action_plan_path(@plan, view: "gerot_actions", routine_id: january.id)
@@ -348,7 +394,7 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
 
     assert_difference("Task.count", 1) { save_value(value, "8") }
     assert_response :success
-    task = value.reload.generated_task
+    task = value.reload.generated_tasks.first
     assert_equal @plan, task.bucket.action_plan
     assert_equal "Qualidade", task.bucket.name
     assert_equal @user, task.creator
@@ -404,7 +450,7 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     routine = Routine.last
     value = routine.routine_values.first
     save_value(value, "8")
-    task = value.reload.generated_task
+    task = value.reload.generated_tasks.first
 
     patch close_routine_path(routine)
     assert routine.reload.closed?
@@ -427,7 +473,7 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     create_gerot("2026-01-01", "2026-01-31")
     value = Routine.last.routine_values.first
     save_value(value, "8")
-    task = value.reload.generated_task
+    task = value.reload.generated_tasks.first
     other = @user.action_plans.create!(name: "Outro plano")
     assert_not task.update(bucket: other.buckets.first)
     assert task.update(bucket: @plan.buckets.find_by!(name: "Em Andamento"))
@@ -439,13 +485,13 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     routine = Routine.last
     first, second = routine.routine_values.order(:reference_date).first(2)
     save_value(first, "8")
-    original_bucket = first.reload.generated_task.bucket
+    original_bucket = first.reload.generated_tasks.first.bucket
     patch action_plan_bucket_path(@plan, original_bucket), params: { bucket: { name: "Qualidade da produção" } }
     assert_response :success
     assert_equal "Qualidade da produção", @category.reload.name
     save_value(second, "8")
-    assert_equal original_bucket, second.reload.generated_task.bucket
-    assert_equal original_bucket, first.reload.generated_task.bucket
+    assert_equal original_bucket, second.reload.generated_tasks.first.bucket
+    assert_equal original_bucket, first.reload.generated_tasks.first.bucket
   end
 
   test "deleting a gerot preserves its generated tasks" do
@@ -453,11 +499,16 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     routine = Routine.last
     value = routine.routine_values.first
     save_value(value, "8")
-    task = value.reload.generated_task
+    task = value.reload.generated_tasks.first
+    comment_on(value, "Falha no processo")
+    comment_task = Task.find(response.parsed_body["generated_task_id"])
 
-    delete routine_path(routine)
-    assert_nil task.reload.routine_value_id
-    assert_includes task.description, routine.title
+    assert_no_difference("Task.count") { delete routine_path(routine) }
+    [task, comment_task].each do |action|
+      assert_nil action.reload.routine_value_id
+      assert_nil action.routine_comment_id
+      assert_includes action.description, routine.title
+    end
   end
 
   test "plans and buckets with gerot links cannot be deleted accidentally" do

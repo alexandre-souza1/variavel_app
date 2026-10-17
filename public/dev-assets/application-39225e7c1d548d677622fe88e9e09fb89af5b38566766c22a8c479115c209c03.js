@@ -1,0 +1,10 @@
+// Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
+import "@hotwired/turbo-rails"
+import "task_move_stream"
+import "controllers"
+import "channels"
+import "chartkick"
+import "Chart.bundle"
+import "controllers/chart_theme_controller"
+import "@popperjs/core"
+import "bootstrap";

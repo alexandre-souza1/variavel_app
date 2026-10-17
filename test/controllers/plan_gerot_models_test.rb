@@ -172,7 +172,7 @@ class PlanGerotModelsTest < ActionDispatch::IntegrationTest
       Routines::PlanLinker.call(routine: routine, action_plan: @plan, bucket_ids: { @category.id.to_s => bucket.id })
     end
     assert_equal @plan.reload.gerot_template, routine.reload.routine_template
-    assert_equal task, value.reload.generated_task
+    assert_equal task, value.reload.generated_tasks.first
     assert_equal value, task.reload.routine_value
     assert_equal bucket, task.bucket
     assert_equal comment, task.comments.first
