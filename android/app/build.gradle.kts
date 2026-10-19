@@ -36,8 +36,8 @@ android {
         applicationId = "br.com.log20.variavel"
         minSdk = 28
         targetSdk = 35
-        versionCode = 8
-        versionName = "0.4.0"
+        versionCode = 9
+        versionName = "0.4.1"
         buildConfigField("String", "APP_URL", "\"${endpoint.toASCIIString()}\"")
     }
 

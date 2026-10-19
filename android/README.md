@@ -2,7 +2,9 @@
 
 Aplicativo Kotlin/Hotwire Native 1.3.1 para Android 9 (API 28) ou superior. Usa o Rails em `https://workstation-app-foz-f23ff3447c33.herokuapp.com/` e precisa de internet. Inclui notificações push com Firebase Cloud Messaging; não implementa operação offline.
 
-O nome exibido é **Logia**. O ícone utiliza `app/assets/images/icon-512x512.png`, derivado do símbolo fornecido em `app/assets/images/logo-new.png`, e tem versão adaptativa com fundo branco para o launcher. O identificador `br.com.log20.variavel` e a URL atual do Heroku foram mantidos para preservar a instalação e o acesso ao servidor.
+O nome exibido é **Logia**. O ícone adaptativo usa um desenho vetorial com fundo branco, derivado da marca existente, com margem para os recortes do launcher. A fonte está em `app/assets/images/launcher-icon.svg`; `python3 bin/generate_app_icons` gera o drawable Android e os ícones web (requer `python3-gi`, `gir1.2-rsvg-2.0` e ImageMagick; execute na raiz do repositório). O identificador `br.com.log20.variavel` e a URL atual do Heroku foram mantidos para preservar a instalação e o acesso ao servidor.
+
+A versão **0.4.1, código 9**, atualiza o ícone, com bordas nítidas e o símbolo inteiro nos recortes circular e arredondado. É necessário instalar o APK novo para atualizar o ícone no celular.
 
 As telas web usam apenas a navbar do Rails: a barra de título adicional do Hotwire foi removida. O botão Voltar do Android continua disponível. O contêiner respeita barra de status, recortes de tela, navegação do sistema e teclado. Não há barra inferior de atalhos nesta versão; os menus existentes continuam seguindo as permissões do usuário.
 

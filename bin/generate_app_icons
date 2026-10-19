@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""Generate launcher assets. Requires python3-gi, librsvg and ImageMagick."""
+
+from pathlib import Path
+import subprocess
+import tempfile
+import xml.etree.ElementTree as ET
+
+import gi
+
+gi.require_version("Rsvg", "2.0")
+from gi.repository import Rsvg
+
+
+ROOT = Path(__file__).resolve().parent.parent
+SOURCE = ROOT / "app/assets/images/launcher-icon.svg"
+SVG_NS = "{http://www.w3.org/2000/svg}"
+ANDROID_NS = "http://schemas.android.com/apk/res/android"
+ET.register_namespace("android", ANDROID_NS)
+
+
+def rasterize(source, target, size):
+    image = ET.parse(source)
+    image.getroot().set("width", str(size * 4))
+    image.getroot().set("height", str(size * 4))
+    handle = Rsvg.Handle.new_from_data(ET.tostring(image.getroot()))
+    with tempfile.TemporaryDirectory() as directory:
+        rendered = Path(directory) / "rendered.png"
+        handle.get_pixbuf().savev(str(rendered), "png", [], [])
+        subprocess.run([
+            "convert", str(rendered), "-resize", f"{size}x{size}",
+            "-strip", f"PNG32:{ROOT / target}",
+        ], check=True)
+
+
+svg = ET.parse(SOURCE)
+symbol = svg.find(f"{SVG_NS}g[@id='symbol']")
+vector = ET.Element("vector", {
+    f"{{{ANDROID_NS}}}width": "108dp",
+    f"{{{ANDROID_NS}}}height": "108dp",
+    f"{{{ANDROID_NS}}}viewportWidth": "108",
+    f"{{{ANDROID_NS}}}viewportHeight": "108",
+})
+for path in symbol:
+    ET.SubElement(vector, "path", {
+        f"{{{ANDROID_NS}}}fillColor": path.attrib["fill"],
+        f"{{{ANDROID_NS}}}pathData": path.attrib["d"],
+    })
+ET.indent(vector, space="    ")
+ET.ElementTree(vector).write(
+    ROOT / "android/app/src/main/res/drawable/launcher_foreground.xml",
+    encoding="utf-8", xml_declaration=True,
+)
+
+for size in (192, 512):
+    rasterize(SOURCE, f"app/assets/images/icon-{size}x{size}.png", size)
+    rasterize(SOURCE, f"public/icons/logia-{size}.png", size)
+    # Existing URLs remain usable by previously installed web apps.
+    rasterize(SOURCE, f"public/icons/log-ia-{size}.png", size)
+for name in ("apple-touch-icon.png", "apple-touch-icon-precomposed.png"):
+    rasterize(SOURCE, f"public/{name}", 180)
+
+with tempfile.TemporaryDirectory() as directory:
+    # Maskable web icons use the complete 108-unit canvas, matching Android.
+    svg.getroot().set("viewBox", "0 0 108 108")
+    maskable = Path(directory) / "maskable.svg"
+    svg.write(maskable, encoding="unicode")
+    for size in (192, 512):
+        rasterize(maskable, f"public/icons/logia-maskable-{size}.png", size)

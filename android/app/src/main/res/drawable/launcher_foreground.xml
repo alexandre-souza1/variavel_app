@@ -1,4 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
-<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="10%">
-    <bitmap android:src="@drawable/workstation_icon" android:gravity="fill" />
-</inset>
+<?xml version='1.0' encoding='utf-8'?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#0B2942" android:pathData="M52 28H60Q63 28 65 30L80 47H61Q59 47 58 44Z" />
+    <path android:fillColor="#0B2942" android:pathData="M44 32H47Q49 32 49 34V37Q49 39 47 39H44Q42 39 42 37V34Q42 32 44 32Z" />
+    <path android:fillColor="#0BA6A6" android:pathData="M36 41L44 49L42.5 50.5L34.5 42.5Z" />
+    <path android:fillColor="#0BA6A6" android:pathData="M33 37H36Q39 37 39 40V43Q39 46 36 46H33Q30 46 30 43V40Q30 37 33 37Z" />
+    <path android:fillColor="#087EF5" android:pathData="M45 53L46.5 54.5L38 63L36.5 61.5Z" />
+    <path android:fillColor="#087EF5" android:pathData="M28 49H32Q35 49 35 52V56Q35 59 32 59H28Q25 59 25 56V52Q25 49 28 49Z" />
+    <path android:fillColor="#087EF5" android:pathData="M36 60H39Q41 60 41 62V65Q41 67 39 67H36Q34 67 34 65V62Q34 60 36 60Z" />
+    <path android:fillColor="#087EF5" android:pathData="M45 45H51Q53 45 54 48L56 53H79Q83 53 83 57V61Q83 65 81 68C79 62 75 60 70 60C65 60 61 63 59 67H54Q51 67 50 64L47 57H44Q41 57 41 54V49Q41 45 45 45Z" />
+    <path android:fillColor="#087EF5" android:pathData="M76.5 71A6.5 6.5 0 1 1 63.5 71A6.5 6.5 0 1 1 76.5 71Z" />
+</vector>

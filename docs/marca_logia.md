@@ -1,5 +1,22 @@
 # Marca Logia
 
+## Ícone do aplicativo
+
+Fonte vetorial: `app/assets/images/launcher-icon.svg`, redesenhada a partir do
+símbolo existente, com azul, azul-marinho e verde, sem textura rasterizada.
+O desenho Android usa canvas de 108 × 108 e mantém o símbolo dentro da área
+central de 66 × 66, com fundo branco separado, para evitar cortes no launcher.
+Referência: [ícones adaptativos do Android](https://developer.android.com/develop/ui/compose/system/icon_design_adaptive).
+
+Execute `python3 bin/generate_app_icons` na raiz (requer `python3-gi`,
+`gir1.2-rsvg-2.0` e ImageMagick) para regenerar o
+drawable vetorial Android, PNGs web e ícones Apple. O manifesto web oferece
+versões `any` e `maskable` separadas, com margem própria para cada uso.
+O SVG usa o recorte de 72 × 72 para os ícones comuns; a versão `maskable`
+usa o canvas completo de 108 × 108.
+
+## Nome e palavra da marca
+
 Nome exibido: **Logia**, com L maiúsculo e as demais letras minúsculas, sem espaço.
 
 Imagem aplicada na barra: `app/assets/images/logo-logia-texto.png`.
