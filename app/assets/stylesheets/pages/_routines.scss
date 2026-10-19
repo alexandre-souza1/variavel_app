@@ -660,7 +660,8 @@
 
   // The select menu grows inside its floating box, outside the modal layout.
   .ts-dropdown { position: static; }
-  .users-field .ts-dropdown-content { max-height: unquote("min(160px, 25dvh)"); }
+  // Keep min() inside calc() so SassC's compression pass leaves the units to the browser.
+  .users-field .ts-dropdown-content { max-height: calc(min(160px, 25dvh)); }
   .ts-wrapper { margin-bottom: .5rem; }
 }
 
