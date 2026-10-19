@@ -1,0 +1,7 @@
+<%= turbo_frame_tag "invoice-import-settings-form" do %>
+  <% if local_assigns[:saved] %>
+    <div class="alert alert-success small" role="status">Configuração salva com sucesso.</div>
+  <% end %>
+  <%= render "invoice_email_import_settings/form", setting: @setting, purchasers: @purchasers,
+                     budget_categories: @budget_categories, cost_centers: @cost_centers, embedded: true %>
+<% end %>

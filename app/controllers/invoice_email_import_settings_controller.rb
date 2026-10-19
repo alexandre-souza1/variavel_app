@@ -5,12 +5,17 @@ class InvoiceEmailImportSettingsController < ApplicationController
   def edit
     @setting = InvoiceEmailImportSetting.current
     load_options
+    render partial: "embedded" if turbo_frame_request?
   end
 
   def update
     @setting = InvoiceEmailImportSetting.current
 
-    if @setting.update(setting_params)
+    saved = @setting.update(setting_params)
+    if turbo_frame_request?
+      load_options
+      render partial: "embedded", locals: { saved: saved }, status: saved ? :ok : :unprocessable_entity
+    elsif saved
       redirect_to edit_invoice_email_import_setting_path,
                   notice: "Configuração da importação por e-mail salva com sucesso."
     else

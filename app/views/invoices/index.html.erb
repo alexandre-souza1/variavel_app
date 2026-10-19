@@ -1,33 +1,69 @@
 
 <div class="invoice-index-page">
   <header class="invoice-index-header">
-    <div>
+    <div class="invoice-index-heading">
+      <%= link_to variaveis_path, class: "invoice-index-back-link" do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar ao início<% end %>
       <p class="invoice-index-eyebrow"><i class="bi bi-wallet2 me-1"></i> Financeiro · Controle de lançamentos</p>
       <h1><i class="bi bi-receipt me-2"></i>Notas fiscais e boletos</h1>
       <p>Consulte, confira e acompanhe os lançamentos financeiros cadastrados.</p>
     </div>
     <div class="invoice-index-actions">
-      <%= link_to variaveis_path, class: "invoice-index-back-link" do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar ao início<% end %>
       <%= link_to dashboard_invoices_path, class: "az-report-btn" do %><i class="bi bi-bar-chart"></i> Dashboard<% end %>
       <% if current_user.admin? || current_user.sector_finance? %>
-        <%= link_to edit_invoice_email_import_setting_path, class: "az-report-btn", title: "Configurar importação por e-mail" do %>
-          <i class="bi bi-sliders"></i> Configurar importação
-        <% end %>
-        <%= form_with url: import_abastecimento_invoices_path, method: :post,
-                      class: "d-flex flex-wrap align-items-center gap-2",
-                      data: { turbo_confirm: "Consultar as notas de abastecimento recebidas na data selecionada?" } do |form| %>
-          <%= form.label :import_date, "Recebidos em", class: "small text-nowrap", for: "abastecimento_import_date" %>
-          <%= form.date_field :import_date, id: "abastecimento_import_date",
-                              value: params[:import_date].presence || Time.zone.yesterday.to_date,
-                              required: true, class: "form-control w-auto" %>
-          <%= form.button class: "az-report-btn" do %>
-            <i class="bi bi-envelope-arrow-down"></i> Consultar abastecimento
-          <% end %>
-        <% end %>
+        <button type="button" class="az-report-btn" data-bs-toggle="offcanvas"
+                data-bs-target="#invoice-import-drawer" aria-controls="invoice-import-drawer">
+          <i class="bi bi-envelope-arrow-down" aria-hidden="true"></i> Abastecimento
+        </button>
       <% end %>
       <%= link_to new_invoice_path(return_to: request.fullpath), class: "az-report-btn az-report-btn--primary" do %><i class="bi bi-plus-lg"></i> Novo lançamento<% end %>
     </div>
   </header>
+
+  <% if current_user.admin? || current_user.sector_finance? %>
+    <div class="offcanvas offcanvas-end invoice-import-drawer" tabindex="-1"
+         id="invoice-import-drawer" aria-labelledby="invoice-import-title">
+      <div class="offcanvas-header">
+        <h2 class="offcanvas-title" id="invoice-import-title">
+          <i class="bi bi-envelope-arrow-down" aria-hidden="true"></i> Abastecimento por e-mail
+        </h2>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
+      </div>
+      <div class="offcanvas-body">
+        <p class="invoice-import-description">Selecione a data de recebimento dos e-mails para consultar as notas de abastecimento.</p>
+        <%= form_with url: import_abastecimento_invoices_path, method: :post,
+                      class: "invoice-import-form",
+                      data: { turbo_confirm: "Consultar as notas de abastecimento recebidas na data selecionada?" } do |form| %>
+          <div class="invoice-import-date">
+            <%= form.label :import_date, "Recebidos em", for: "abastecimento_import_date" %>
+            <%= form.date_field :import_date, id: "abastecimento_import_date",
+                                value: params[:import_date].presence || Time.zone.yesterday.to_date,
+                                required: true, class: "form-control" %>
+          </div>
+          <%= form.button class: "az-report-btn az-report-btn--primary invoice-import-submit" do %>
+            <i class="bi bi-search" aria-hidden="true"></i> Consultar notas
+          <% end %>
+        <% end %>
+        <div class="accordion invoice-import-settings-accordion">
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#invoice-import-settings-panel" aria-expanded="false"
+                      aria-controls="invoice-import-settings-panel" aria-label="Configurar importação">
+                <i class="bi bi-sliders me-2" aria-hidden="true"></i> Configurar importação
+              </button>
+            </h3>
+            <div id="invoice-import-settings-panel" class="accordion-collapse collapse">
+              <div class="accordion-body">
+                <%= turbo_frame_tag "invoice-import-settings-form", src: edit_invoice_email_import_setting_path, loading: :lazy do %>
+                  <p class="small text-muted" role="status">Carregando configurações…</p>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
 
   <% if params[:import_notification_id].present? %>
     <div data-controller="invoice-import-progress"
