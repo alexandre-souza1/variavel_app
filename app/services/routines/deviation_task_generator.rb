@@ -28,11 +28,13 @@ module Routines
         next unless routine.task_generation_deviation? || comment&.body.present?
 
         bucket = indicator.routine_category.bucket || routine.action_plan.routine_category_buckets.find_by!(routine_category: indicator.routine_category).bucket
+        assignees = indicator.users.to_a
+        assignees = [comment.user] if assignees.empty? && comment
         task = bucket.tasks.create!(
           routine_value: routine_value,
           routine_comment: comment,
           creator: actor,
-          users: comment ? [comment.user] : [],
+          users: assignees,
           labels: indicator.labels.to_a,
           title: "Investigar #{indicator.name} fora da meta — #{comment&.body.presence || routine_value.reference_date.strftime('%d/%m/%Y')}",
           description: [

@@ -585,6 +585,8 @@
   align-items: stretch;
   flex-direction: column;
 
+  [hidden] { display: none !important; }
+
   textarea {
     resize: vertical;
   }
@@ -599,6 +601,67 @@
     font-size: .8rem;
     line-height: 1.5;
   }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+  }
+
+  &__assignee-status:empty { display: none; }
+}
+
+.routine-comments-assignees {
+  min-width: 0;
+
+  &__trigger {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem;
+    padding: .3rem 0;
+    background: transparent;
+    border: 0;
+    color: var(--bs-secondary-color);
+    font-size: .8rem;
+    text-align: left;
+
+    &:disabled { cursor: default; opacity: 1; }
+    &:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 3px; border-radius: .25rem; }
+  }
+
+  .avatar-circle-sm { flex-shrink: 0; border: 1px solid var(--bs-modal-bg); }
+
+  &__add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 50%;
+  }
+}
+
+.routine-comments-assignee-picker {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  width: 340px;
+  max-width: calc(100vw - 24px);
+  overflow: auto;
+  padding: .75rem;
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  border: 1px solid var(--bs-border-color);
+  border-radius: .5rem;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .2);
+
+  // The select menu grows inside its floating box, outside the modal layout.
+  .ts-dropdown { position: static; }
+  .users-field .ts-dropdown-content { max-height: unquote("min(160px, 25dvh)"); }
+  .ts-wrapper { margin-bottom: .5rem; }
 }
 
 .routine-comment {

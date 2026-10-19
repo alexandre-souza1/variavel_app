@@ -4,6 +4,9 @@ class RoutineCommentsController < ApplicationController
   before_action :set_comment, only: :destroy
 
   def index
+    indicator = @routine_value.routine_indicator
+    template = @routine_value.routine.routine_template
+    can_manage_assignees = template.action_plan.present? && template.manageable_by?(current_user)
     render json: {
       comments: serialized_comments,
       count: @routine_value.routine_comments.size,
@@ -13,7 +16,11 @@ class RoutineCommentsController < ApplicationController
         value: @routine_value.value,
         goal: @routine_value.routine_indicator.target_for(@routine_value.reference_date)&.goal
       ),
-      can_generate_task: @routine_value.routine.action_plan.present? && @routine_value.routine.open?
+      can_generate_task: @routine_value.routine.action_plan.present? && @routine_value.routine.open?,
+      indicator_assignees: indicator.users.order(:name, :id).map { |user| { id: user.id, name: routine_comment_user_name(user) } },
+      available_assignees: can_manage_assignees ? User.order(:name, :id).map { |user| { id: user.id, name: routine_comment_user_name(user) } } : [],
+      can_manage_assignees: can_manage_assignees,
+      has_action_plan: template.action_plan.present?
     }
   end
 

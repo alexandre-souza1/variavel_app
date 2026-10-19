@@ -13,11 +13,16 @@
         <%= link_to edit_invoice_email_import_setting_path, class: "az-report-btn", title: "Configurar importação por e-mail" do %>
           <i class="bi bi-sliders"></i> Configurar importação
         <% end %>
-        <%= button_to import_abastecimento_invoices_path,
-                      method: :post,
-                      class: "az-report-btn",
-                      form: { data: { turbo_confirm: "Consultar as notas de abastecimento recebidas ontem?" } } do %>
-          <i class="bi bi-envelope-arrow-down"></i> Consultar abastecimento
+        <%= form_with url: import_abastecimento_invoices_path, method: :post,
+                      class: "d-flex flex-wrap align-items-center gap-2",
+                      data: { turbo_confirm: "Consultar as notas de abastecimento recebidas na data selecionada?" } do |form| %>
+          <%= form.label :import_date, "Recebidos em", class: "small text-nowrap", for: "abastecimento_import_date" %>
+          <%= form.date_field :import_date, id: "abastecimento_import_date",
+                              value: params[:import_date].presence || Time.zone.yesterday.to_date,
+                              required: true, class: "form-control w-auto" %>
+          <%= form.button class: "az-report-btn" do %>
+            <i class="bi bi-envelope-arrow-down"></i> Consultar abastecimento
+          <% end %>
         <% end %>
       <% end %>
       <%= link_to new_invoice_path(return_to: request.fullpath), class: "az-report-btn az-report-btn--primary" do %><i class="bi bi-plus-lg"></i> Novo lançamento<% end %>

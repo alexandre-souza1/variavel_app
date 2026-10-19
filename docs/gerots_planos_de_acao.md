@@ -17,6 +17,8 @@ Cada comentário em uma célula fora da meta de um GEROT aberto gera uma tarefa 
 
 Use **Ações deste GEROT** para consultar as tarefas daquele período. Na aba anual, o resumo de ações abertas leva às ações de todos os GEROTs do plano, com filtro pelo período de origem. A visão padrão é Kanban no desktop e lista no celular, também nessa consulta. Encerrar ou arquivar um GEROT preserva suas tarefas pendentes e interrompe a geração de novas tarefas.
 
+No modal de comentários, **Responsáveis** aparece à esquerda de **Comentar**, com as mesmas bolinhas de iniciais dos cards de tarefas. O proprietário do plano e administradores podem buscar, selecionar ou remover responsáveis; a seleção é salva automaticamente no indicador e compartilhada entre datas e períodos que usam esse indicador. Os demais usuários podem visualizar a seleção. As próximas tarefas, tanto por comentário quanto por preenchimento, recebem esses responsáveis. Sem responsáveis fixos, tarefas por comentário continuam atribuídas ao autor do comentário; tarefas por preenchimento ficam sem responsáveis. Alterar a seleção não modifica tarefas anteriores.
+
 A regra pode ser alterada em **Configurações do GEROT**. A migração aplica o padrão de comentário aos GEROTs existentes, preservando todas as tarefas anteriores. Alterar a regra não gera tarefas retroativas.
 
 No modelo do plano, a categoria corresponde ao bucket e seu nome e posição acompanham os dele. A edição de categorias é feita pelos buckets. Um bucket com preenchimentos de GEROT não pode ser excluído, para preservar o histórico; buckets sem preenchimentos podem ser removidos junto com sua categoria.

@@ -1,5 +1,6 @@
 // Task editor controls share the compact surfaces used by the task composer.
-.task-detail-modal {
+.task-detail-modal,
+.routine-comments-assignee-picker {
   .ts-wrapper .ts-control,
   .labels-field .ts-wrapper.multi .ts-control {
     min-height: 40px !important;

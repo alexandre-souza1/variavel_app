@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_17_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_19_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -1054,6 +1054,15 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_17_120000) do
     t.index ["user_id"], name: "index_routine_comments_on_user_id"
   end
 
+  create_table "routine_indicator_assignments", force: :cascade do |t|
+    t.bigint "routine_indicator_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["routine_indicator_id", "user_id"], name: "idx_on_routine_indicator_id_user_id_cb3182f4a7", unique: true
+    t.index ["user_id"], name: "index_routine_indicator_assignments_on_user_id"
+  end
+
   create_table "routine_indicator_labels", force: :cascade do |t|
     t.bigint "routine_indicator_id", null: false
     t.bigint "label_id", null: false
@@ -1517,6 +1526,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_17_120000) do
   add_foreign_key "routine_category_buckets", "routine_categories"
   add_foreign_key "routine_comments", "routine_values"
   add_foreign_key "routine_comments", "users"
+  add_foreign_key "routine_indicator_assignments", "routine_indicators"
+  add_foreign_key "routine_indicator_assignments", "users"
   add_foreign_key "routine_indicator_labels", "labels"
   add_foreign_key "routine_indicator_labels", "routine_indicators"
   add_foreign_key "routine_indicator_targets", "routine_indicators"

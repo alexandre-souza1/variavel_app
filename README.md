@@ -184,6 +184,23 @@ Os padrões da importação (remetente, pasta, responsável, categoria, centro d
 custo fallback e horário) podem ser alterados em **Invoices → Configurar
 importação**. O servidor IMAP e as credenciais continuam nas variáveis de ambiente.
 
+A importação lê e valida cada e-mail separadamente e reúne as notas válidas em
+um único lançamento, com o PDF consolidado apenas desses e-mails. Uma falha não
+impede a importação dos demais: a notificação informa o assunto, o UID do e-mail,
+os anexos e o motivo do erro. Avisos de cancelamento identificados pelo assunto
+ou pelo evento de cancelamento no XML são contabilizados como ignorados.
+Ao repetir a consulta, os e-mails já importados são ignorados e os que falharam
+podem ser processados novamente.
+
+Quando há XML de NF-e, número, emitente, data, valor e placa são lidos diretamente
+do XML, sem chamar o Textract. O Textract é usado apenas na ausência de XML.
+Um XML inválido é informado como erro, sem acionar o serviço pago. Os XMLs válidos
+também ficam anexados ao lançamento; e-mails somente com XML são aceitos.
+
+Em **Invoices**, escolha a data no campo **Recebidos em** e clique em
+**Consultar abastecimento** para reprocessar um dia específico. O padrão é ontem;
+a data corresponde ao recebimento do e-mail, não à emissão da nota.
+
 ### Microsoft Graph / OneDrive
 
 ```text
@@ -287,9 +304,15 @@ aplicação:
 bundle exec rails invoices:import_abastecimento
 ```
 
-Esse processo busca as mensagens do dia anterior, consolida os anexos, salva o
-documento no Active Storage/S3, processa-o com o Textract e evita reimportações
-por meio do `Message-ID` do e-mail.
+Esse processo busca as mensagens do dia anterior, lê os XMLs (ou usa o Textract
+quando não há XML), consolida os anexos válidos e salva os documentos no Active
+Storage/S3. Evita reimportações por meio do `Message-ID` do e-mail.
+
+Para consultar outra data pelo terminal, após publicar a atualização:
+
+```bash
+heroku run bundle exec rails 'invoices:import_abastecimento[2026-10-17]' --app workstation-app-foz
+```
 
 Recomenda-se uma frequência de 10 minutos ou menor. O horário exibido pelo Scheduler pode estar em UTC, mas a aplicação interpreta o fechamento no fuso `Brasilia`.
 

@@ -8,6 +8,9 @@ class RoutineIndicator < ApplicationRecord
   has_many :routine_indicator_labels, dependent: :destroy
   has_many :labels, through: :routine_indicator_labels
 
+  has_many :routine_indicator_assignments, dependent: :destroy
+  has_many :users, through: :routine_indicator_assignments
+
   has_many :routine_indicator_targets,
            dependent: :destroy
 

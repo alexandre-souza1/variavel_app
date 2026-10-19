@@ -187,6 +187,7 @@ Rails.application.routes.draw do
               controller: :routine_activities
   end
   resources :routine_values, only: :update do
+    resource :indicator_assignees, only: :update, controller: :routine_indicator_assignees
     resources :routine_comments,
               only: %i[index create destroy]
   end

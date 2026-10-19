@@ -27,6 +27,7 @@ class User < ApplicationRecord
   has_one :inbox_bucket, -> { where(inbox: true) }, class_name: "Bucket", dependent: :destroy
   has_many :hidden_action_plans, dependent: :destroy
   has_many :task_assignments
+  has_many :routine_indicator_assignments, dependent: :destroy
   has_many :tasks, through: :task_assignments
   has_many :stress_test_imports, dependent: :destroy
   has_many :fleet_availabilities, dependent: :destroy

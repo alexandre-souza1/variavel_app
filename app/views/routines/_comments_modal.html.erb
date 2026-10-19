@@ -4,7 +4,8 @@
   tabindex="-1"
   aria-labelledby="routineCommentsModalLabel"
   aria-hidden="true"
-  data-controller="routine-comments">
+  data-controller="routine-comments"
+  data-action="pointerdown@document->routine-comments#outsideAssignees keydown.esc@document->routine-comments#escapeAssignees:capture resize@window->routine-comments#positionAssigneePicker hide.bs.modal->routine-comments#hideAssignees shown.bs.modal->routine-comments#positionAssigneePicker">
 
   <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
@@ -56,12 +57,35 @@
 
         <p class="routine-comments-form__task-hint d-none" data-routine-comments-target="taskHint" role="status"></p>
 
-        <button
-          type="submit"
-          class="btn btn-primary"
-          data-routine-comments-target="submit">
-          Comentar
-        </button>
+        <div class="routine-comments-assignee-picker" data-routine-comments-target="assigneePicker" id="routine-comment-assignee-picker"
+          popover="manual" role="dialog" aria-label="Responsáveis do indicador" hidden>
+          <div class="users-field">
+            <label for="routine-comment-assignees" class="form-label">Responsáveis do indicador</label>
+            <select id="routine-comment-assignees" class="form-control" multiple
+              data-controller="tom-select-users" data-routine-comments-target="assigneeSelect"
+              data-action="change->routine-comments#saveAssignees"></select>
+          </div>
+          <p class="small text-muted mb-0">A seleção é salva no indicador e será usada nas próximas tarefas.</p>
+          <p class="routine-comments-form__assignee-status small mb-0" role="status" data-routine-comments-target="assigneeStatus"></p>
+        </div>
+
+        <div class="routine-comments-form__actions">
+          <div class="routine-comments-assignees" data-routine-comments-target="assigneeSection" hidden>
+            <button type="button" class="routine-comments-assignees__trigger"
+              aria-label="Selecionar responsáveis do indicador" aria-expanded="false" aria-controls="routine-comment-assignee-picker"
+              data-routine-comments-target="assigneeTrigger" data-action="click->routine-comments#toggleAssignees">
+              <span class="avatar-group" data-routine-comments-target="assigneeAvatars"></span>
+              <span class="routine-comments-assignees__add" data-routine-comments-target="assigneeAdd" aria-hidden="true"><i class="bi bi-person-plus"></i></span>
+              <span class="routine-comments-assignees__label">Responsáveis</span>
+            </button>
+          </div>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            data-routine-comments-target="submit">
+            Comentar
+          </button>
+        </div>
       </form>
     </div>
   </div>

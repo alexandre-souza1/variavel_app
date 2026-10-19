@@ -9,7 +9,9 @@ export default class extends Controller {
     "empty",
     "body",
     "submit",
-    "taskHint"
+    "taskHint",
+    "assigneeSection", "assigneeTrigger", "assigneeAvatars", "assigneeAdd",
+    "assigneePicker", "assigneeSelect", "assigneeStatus"
   ]
 
   connect() {
@@ -17,17 +19,35 @@ export default class extends Controller {
     this.open = this.open.bind(this)
 
     document.addEventListener("routine-comments:open", this.open)
+    this.repositionAssignees = this.positionAssigneePicker.bind(this)
+    document.addEventListener("scroll", this.repositionAssignees, true)
+    window.visualViewport?.addEventListener("resize", this.repositionAssignees)
+    window.visualViewport?.addEventListener("scroll", this.repositionAssignees)
+    this.assigneeResizeObserver = new ResizeObserver(this.repositionAssignees)
+    this.assigneeResizeObserver.observe(this.assigneePickerTarget)
   }
 
   disconnect() {
     document.removeEventListener("routine-comments:open", this.open)
+    this.loadRequest?.abort()
+    this.hideAssignees()
+    this.assigneeResizeObserver.disconnect()
+    document.removeEventListener("scroll", this.repositionAssignees, true)
+    window.visualViewport?.removeEventListener("resize", this.repositionAssignees)
+    window.visualViewport?.removeEventListener("scroll", this.repositionAssignees)
   }
 
   async open(event) {
+    this.openVersion = (this.openVersion || 0) + 1
     this.routineValueId = event.detail.routineValueId
     this.subtitleTarget.textContent = this.subtitle(event.detail)
     this.bodyTarget.value = ""
     this.taskHintTarget.classList.add("d-none")
+    this.assigneeSectionTarget.hidden = true
+    this.hideAssignees()
+    this.assigneeStatusTarget.textContent = ""
+    this.assigneeTriggerTarget.setAttribute("aria-expanded", "false")
+    this.submitTarget.disabled = true
     this.setLoading()
 
     this.modal.show()
@@ -36,60 +56,75 @@ export default class extends Controller {
   }
 
   async loadComments() {
-    const response = await fetch(this.commentsPath, {
-      headers: {
-        "Accept": "application/json"
+    this.loadRequest?.abort()
+    this.loadRequest = new AbortController()
+    const version = this.openVersion
+    try {
+      const response = await fetch(this.commentsPath, {
+        signal: this.loadRequest.signal,
+        headers: {
+          "Accept": "application/json"
+        }
+      })
+
+      if (version !== this.openVersion) return
+      if (!response.ok) {
+        this.showError("Não foi possível carregar os comentários.")
+        return
       }
-    })
 
-    if (!response.ok) {
-      this.showError("Não foi possível carregar os comentários.")
-      return
+      const data = await response.json()
+      if (version !== this.openVersion) return
+      this.renderComments(data.comments)
+      this.broadcastCount(data.count)
+      this.updateTaskHint(data)
+      this.configureAssignees(data)
+      this.submitTarget.disabled = false
+    } catch (error) {
+      if (error.name !== "AbortError" && version === this.openVersion) this.showError("Não foi possível carregar os comentários.")
     }
-
-    const data = await response.json()
-    this.renderComments(data.comments)
-    this.broadcastCount(data.count)
-    this.updateTaskHint(data)
   }
 
   async create(event) {
     event.preventDefault()
+    if (this.submitTarget.disabled) return
 
     const body = this.bodyTarget.value.trim()
     if (body === "") return
 
+    const version = this.openVersion
     this.submitTarget.disabled = true
+    this.setAssigneeControlsDisabled(true)
 
-    const response = await fetch(this.commentsPath, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": this.csrfToken,
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({
-        routine_comment: {
-          body: body
-        }
+    try {
+      const response = await fetch(this.commentsPath, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": this.csrfToken,
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({ routine_comment: { body: body } })
       })
-    })
+      if (!response.ok) throw new Error("save failed")
 
-    this.submitTarget.disabled = false
-
-    if (!response.ok) {
-      this.showError("Não foi possível salvar o comentário.")
-      return
-    }
-
-    const data = await response.json()
-    this.bodyTarget.value = ""
-    this.appendComment(data.comment)
-    this.updateEmptyState()
-    this.broadcastCount(data.count)
-    if (data.generated_task_created) {
-      showFlash("Comentário salvo e tarefa criada no plano.", { url: data.generated_task_url })
-      this.taskHintTarget.textContent = "Cada novo comentário desta célula vai gerar uma tarefa separada no bucket da categoria."
+      const data = await response.json()
+      if (version !== this.openVersion) return
+      this.bodyTarget.value = ""
+      this.appendComment(data.comment)
+      this.updateEmptyState()
+      this.broadcastCount(data.count)
+      if (data.generated_task_created) {
+        showFlash("Comentário salvo e tarefa criada no plano.", { url: data.generated_task_url })
+        this.taskHintTarget.textContent = "Cada novo comentário desta célula vai gerar uma tarefa separada no bucket da categoria."
+      }
+    } catch {
+      if (version === this.openVersion) this.showError("Não foi possível salvar o comentário.")
+    } finally {
+      if (version === this.openVersion) {
+        this.submitTarget.disabled = false
+        this.setAssigneeControlsDisabled(false)
+      }
     }
   }
 
@@ -101,6 +136,141 @@ export default class extends Controller {
       this.taskHintTarget.textContent = "O comentário fica registrado no GEROT. Uma tarefa só é gerada para indicadores fora da meta."
     }
     this.taskHintTarget.classList.remove("d-none")
+  }
+
+  configureAssignees(data) {
+    this.assignees = data.available_assignees
+    this.selectedAssignees = data.indicator_assignees
+    this.canManageAssignees = data.can_manage_assignees
+    this.assigneeSectionTarget.hidden = !data.has_action_plan
+    this.assigneeTriggerTarget.disabled = !this.canManageAssignees
+    this.assigneeTriggerTarget.setAttribute("aria-label", this.canManageAssignees ? "Selecionar responsáveis do indicador" : "Responsáveis do indicador")
+    this.assigneeAddTarget.hidden = !this.canManageAssignees
+    const select = this.assigneeSelectTarget.tomselect
+    const users = this.canManageAssignees ? this.assignees : this.selectedAssignees
+    select.clear(true)
+    select.clearOptions()
+    select.addOptions(users.map(user => ({ value: String(user.id), text: user.name })))
+    select.setValue(this.selectedAssignees.map(user => String(user.id)), true)
+    this.setAssigneeControlsDisabled(false)
+    this.renderAssigneeAvatars()
+  }
+
+  assigneeAvatar(user) {
+    const avatar = document.createElement("span")
+    avatar.className = "avatar-circle-sm"
+    avatar.textContent = user.name.trim().charAt(0).toLocaleUpperCase("pt-BR")
+    avatar.title = user.name
+    return avatar
+  }
+
+  renderAssigneeAvatars() {
+    const users = this.selectedAssignees
+    this.assigneeAvatarsTarget.replaceChildren(...users.slice(0, 3).map(user => this.assigneeAvatar(user)))
+    if (users.length > 3) {
+      const extra = document.createElement("span")
+      extra.className = "avatar-circle-sm extra"
+      extra.textContent = `+${users.length - 3}`
+      extra.title = users.slice(3).map(user => user.name).join(", ")
+      this.assigneeAvatarsTarget.append(extra)
+    }
+    this.assigneeTriggerTarget.title = users.length ? users.map(user => user.name).join(", ") : "Sem responsáveis fixos. A tarefa será atribuída ao autor do comentário."
+  }
+
+  toggleAssignees() {
+    if (!this.canManageAssignees) return
+    if (!this.assigneePickerTarget.hidden) {
+      this.hideAssignees()
+      this.assigneeTriggerTarget.focus({ preventScroll: true })
+      return
+    }
+    this.assigneePickerTarget.hidden = false
+    this.assigneePickerTarget.showPopover()
+    this.assigneeTriggerTarget.setAttribute("aria-expanded", "true")
+    this.positionAssigneePicker()
+    this.assigneeSelectTarget.tomselect.focus()
+    this.assigneeSelectTarget.tomselect.open()
+    this.positionAssigneePicker()
+  }
+
+  hideAssignees() {
+    this.assigneeSelectTarget.tomselect?.close()
+    this.assigneePickerTarget.hidePopover()
+    this.assigneePickerTarget.hidden = true
+    this.assigneeTriggerTarget.setAttribute("aria-expanded", "false")
+  }
+
+  outsideAssignees(event) {
+    if (!this.assigneePickerTarget.hidden && !this.assigneePickerTarget.contains(event.target) && !this.assigneeTriggerTarget.contains(event.target)) this.hideAssignees()
+  }
+
+  escapeAssignees(event) {
+    if (this.assigneePickerTarget.hidden) return
+    event.preventDefault()
+    event.stopPropagation()
+    this.hideAssignees()
+    this.assigneeTriggerTarget.focus({ preventScroll: true })
+  }
+
+  positionAssigneePicker(event) {
+    const panel = this.assigneePickerTarget
+    if (panel.hidden || (event?.type === "scroll" && event.target instanceof Node && panel.contains(event.target))) return
+    const anchor = this.assigneeTriggerTarget.getBoundingClientRect()
+    const viewport = window.visualViewport
+    const width = viewport?.width || window.innerWidth
+    const height = viewport?.height || window.innerHeight
+    const top = viewport?.offsetTop || 0
+    const left = viewport?.offsetLeft || 0
+    const gap = 8
+    const below = top + height - anchor.bottom - gap - 12
+    const above = anchor.top - top - gap - 12
+    const upwards = below < 320 && above > below
+    panel.style.width = `${Math.min(340, width - 24)}px`
+    panel.style.maxHeight = `${Math.max(0, Math.min(380, height - 24, upwards ? above : below))}px`
+    panel.style.left = `${Math.max(left + 12, Math.min(anchor.left, left + width - panel.offsetWidth - 12))}px`
+    const panelTop = upwards ? anchor.top - panel.offsetHeight - gap : anchor.bottom + gap
+    panel.style.top = `${Math.max(top + 12, Math.min(panelTop, top + height - panel.offsetHeight - 12))}px`
+  }
+
+  setAssigneeControlsDisabled(disabled) {
+    this.assigneeTriggerTarget.disabled = disabled || !this.canManageAssignees
+    const select = this.assigneeSelectTarget.tomselect
+    if (disabled || !this.canManageAssignees) select.disable()
+    else select.enable()
+  }
+
+  async saveAssignees() {
+    const valueId = this.routineValueId
+    const version = this.openVersion
+    const select = this.assigneeSelectTarget.tomselect
+    const ids = select.getValue().map(Number)
+    select.disable()
+    this.submitTarget.disabled = true
+    this.assigneeStatusTarget.classList.remove("text-danger")
+    this.assigneeStatusTarget.textContent = "Salvando responsáveis…"
+    try {
+      const response = await fetch(`/routine_values/${valueId}/indicator_assignees`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Accept": "application/json", "X-CSRF-Token": this.csrfToken },
+        body: JSON.stringify({ routine_indicator: { user_ids: ids } })
+      })
+      if (!response.ok) throw new Error("save failed")
+      const data = await response.json()
+      if (version !== this.openVersion) return
+      this.selectedAssignees = this.assignees.filter(user => data.user_ids.includes(user.id))
+      this.renderAssigneeAvatars()
+      this.assigneeStatusTarget.textContent = "Responsáveis salvos no indicador."
+    } catch {
+      if (version !== this.openVersion) return
+      select.setValue(this.selectedAssignees.map(user => String(user.id)), true)
+      this.assigneeStatusTarget.classList.add("text-danger")
+      this.assigneeStatusTarget.textContent = "Não foi possível salvar os responsáveis. Tente novamente."
+    } finally {
+      if (version === this.openVersion) {
+        select.enable()
+        this.submitTarget.disabled = false
+      }
+    }
   }
 
   async destroy(event) {

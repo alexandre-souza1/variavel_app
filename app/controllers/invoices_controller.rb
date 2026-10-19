@@ -109,14 +109,17 @@ class InvoicesController < ApplicationController
   end
 
   def import_abastecimento
+    date = params[:import_date].present? ? Date.iso8601(params[:import_date]) : Time.zone.yesterday.to_date
     progress = Notification.create!(
       user: current_user,
       kind: "abastecimento_email_import_progress",
       title: "Importação de abastecimento iniciada",
-      body: "Preparando a consulta dos e-mails..."
+      body: "Preparando a consulta dos e-mails recebidos em #{date.strftime('%d/%m/%Y')}..."
     )
-    AbastecimentoEmailImportJob.perform_later(progress.id)
-    redirect_to invoices_path(import_notification_id: progress.id), notice: "Consulta de notas de abastecimento iniciada."
+    AbastecimentoEmailImportJob.perform_later(progress.id, date)
+    redirect_to invoices_path(import_notification_id: progress.id, import_date: date.iso8601), notice: "Consulta de notas de abastecimento de #{date.strftime('%d/%m/%Y')} iniciada."
+  rescue Date::Error
+    redirect_to invoices_path, alert: "Informe uma data válida para consultar os e-mails de abastecimento."
   rescue StandardError => error
     Rails.logger.error("Falha ao iniciar importação manual de abastecimento: #{error.message}")
     redirect_to invoices_path, alert: "Não foi possível iniciar a consulta das notas de abastecimento."

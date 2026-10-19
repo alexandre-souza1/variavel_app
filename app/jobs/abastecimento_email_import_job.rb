@@ -8,13 +8,7 @@ class AbastecimentoEmailImportJob < ApplicationJob
     end
     result = AbastecimentoEmailImporter.call(date: date.to_date, progress: progress)
     if progress_notification_id
-      title = result.errors.empty? ? "Importação de abastecimento finalizada" : "Erro na importação de abastecimento"
-      body = if result.errors.empty?
-               "Importados: #{result.processed}. Ignorados: #{result.skipped}."
-             else
-               "Erros: #{result.errors.join(' | ')}"
-             end
-      Notification.where(id: progress_notification_id).update_all(kind: "abastecimento_email_import_finished", title: title, body: body, updated_at: Time.current)
+      Notification.where(id: progress_notification_id).update_all(kind: "abastecimento_email_import_finished", title: result.title, body: result.summary, updated_at: Time.current)
     end
     Rails.logger.info(
       "[AbastecimentoEmailImportJob] date=#{result.date} " \
