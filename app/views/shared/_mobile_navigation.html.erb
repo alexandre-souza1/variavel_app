@@ -3,7 +3,7 @@
      data-action="click->mobile-navigation#navigate resize@window->mobile-navigation#resize turbo:before-cache@document->mobile-navigation#beforeCache show.bs.offcanvas->mobile-navigation#rememberBody">
   <div class="offcanvas-header">
     <div class="app-mobile-offcanvas__identity">
-      <%= image_tag "logo-log-ia.png", alt: "", width: 40, height: 40 %>
+      <span class="app-brand-logo" aria-hidden="true"></span>
       <div>
         <h2 class="offcanvas-title" id="mobileNavOffcanvasLabel">Sua área de trabalho</h2>
         <span class="app-mobile-offcanvas__subtitle">Logia · <%= current_user.admin? ? "Administrador" : (User::USER_SECTORS.invert[current_user.sector&.to_sym] || "Minha conta") %></span>

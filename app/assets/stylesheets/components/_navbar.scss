@@ -48,7 +48,19 @@
 // NAVBAR PRINCIPAL
 // ============================================================
 
+// Use the original transparent silhouette so the mark follows the palette.
+.app-brand-logo {
+  display: block;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background-color: var(--app-brand-logo-color, var(--bs-primary-text-emphasis));
+  -webkit-mask: image-url("logo-log-ia.png") center / contain no-repeat;
+  mask: image-url("logo-log-ia.png") center / contain no-repeat;
+}
+
 .app-navbar {
+  --app-brand-logo-color: color-mix(in srgb, var(--app-soft, #66a3bf) 60%, #fff);
   background: var(--bs-navbar-bg, #3f8efc);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 0.5rem 0;
@@ -56,21 +68,6 @@
 
   .navbar-brand {
     color: var(--bs-navbar-color, #172033);
-
-    .app-brand-logo {
-      display: block;
-      flex-shrink: 0;
-      width: 40px;
-      height: 40px;
-      object-fit: contain;
-      // O contorno acompanha o símbolo e mantém o fundo transparente.
-      filter:
-        drop-shadow(1px 0 0 rgba(255, 255, 255, .65))
-        drop-shadow(-1px 0 0 rgba(255, 255, 255, .65))
-        drop-shadow(0 1px 0 rgba(255, 255, 255, .65))
-        drop-shadow(0 -1px 0 rgba(255, 255, 255, .65))
-        drop-shadow(0 2px 3px rgba(0, 0, 0, .14));
-    }
 
     .brand-text {
       font-size: 1.2rem;
@@ -375,8 +372,6 @@
     align-items: center;
     gap: .65rem;
     min-width: 0;
-
-    > img { flex-shrink: 0; object-fit: contain; }
   }
 
   .offcanvas-title { color: var(--bs-body-color); font-size: 1rem; font-weight: 700; margin: 0; }
