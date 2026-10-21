@@ -1,0 +1,167 @@
+<div class="offcanvas offcanvas-start app-mobile-offcanvas d-lg-none" tabindex="-1" id="mobileNavOffcanvas" aria-labelledby="mobileNavOffcanvasLabel"
+     data-controller="mobile-navigation"
+     data-action="click->mobile-navigation#navigate resize@window->mobile-navigation#resize turbo:before-cache@document->mobile-navigation#beforeCache show.bs.offcanvas->mobile-navigation#rememberBody">
+  <div class="offcanvas-header">
+    <div class="app-mobile-offcanvas__identity">
+      <%= image_tag "logo-log-ia.png", alt: "", width: 40, height: 40 %>
+      <div>
+        <h2 class="offcanvas-title" id="mobileNavOffcanvasLabel">Sua área de trabalho</h2>
+        <span class="app-mobile-offcanvas__subtitle">Logia · <%= current_user.admin? ? "Administrador" : (User::USER_SECTORS.invert[current_user.sector&.to_sym] || "Minha conta") %></span>
+      </div>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar menu de navegação"></button>
+  </div>
+
+  <nav class="offcanvas-body" aria-label="Navegação da suíte">
+    <section class="app-mobile-shortcuts" aria-labelledby="mobileShortcutsLabel">
+      <h3 class="app-mobile-nav-label" id="mobileShortcutsLabel">Acesso rápido</h3>
+      <div class="app-mobile-shortcuts__grid">
+        <%= link_to variaveis_path, class: "app-mobile-nav-link" do %>
+          <i class="bi bi-house-door" aria-hidden="true"></i> Início
+        <% end %>
+        <% if current_user.mechanical? %>
+          <%= link_to mechanic_tasks_path, class: "app-mobile-nav-link" do %>
+            <i class="bi bi-list-check" aria-hidden="true"></i> Minhas tarefas
+          <% end %>
+        <% end %>
+        <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS, :finance, :du).each do |key, link| %>
+          <% if can_view_nav_link?(key, current_user) %>
+            <%= link_to send(link[:path]), class: "app-mobile-nav-link" do %>
+              <i class="bi <%= link[:icon] %>" aria-hidden="true"></i> <%= link[:label] %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+
+    <h3 class="app-mobile-nav-label" id="mobileModulesLabel">Módulos da suíte</h3>
+    <div class="app-mobile-modules" id="mobileNavModules" aria-labelledby="mobileModulesLabel">
+      <% if can_view_du_menu?(current_user) %>
+        <div class="app-mobile-nav-section">
+          <button class="app-mobile-nav-section__title w-100 text-start"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#mobileDuCollapse" aria-controls="mobileDuCollapse"
+                  aria-expanded="false">
+            <i class="bi bi-truck" aria-hidden="true"></i>
+            <span><strong>Distribuição urbana</strong><small>DU · Equipe, mapas e consumo</small></span>
+          </button>
+          <div class="collapse" id="mobileDuCollapse" data-bs-parent="#mobileNavModules">
+            <%= link_to 'Colaboradores', employees_path(employee_sector: 'du'), class: 'app-mobile-nav-link' %>
+
+            <%= link_to 'Escala de folgas', time_off_schedule_path, class: 'app-mobile-nav-link' %>
+            <%= link_to 'PCD', pcd_path, class: 'app-mobile-nav-link' %>
+            <%= link_to 'Mapas', mapas_todos_path, class: 'app-mobile-nav-link' %>
+            <%= link_to 'Dashboard de Mapas', dashboard_mapas_path, class: 'app-mobile-nav-link' %>
+            <%= link_to 'Consumo', fuel_consumptions_path, class: 'app-mobile-nav-link' %>
+            <%= link_to 'Importar 2Art', mapas_path, class: 'app-mobile-nav-link' %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if can_view_az_menu?(current_user) %>
+        <div class="app-mobile-nav-section">
+          <button class="app-mobile-nav-section__title w-100 text-start"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#mobileAzCollapse" aria-controls="mobileAzCollapse"
+                  aria-expanded="false">
+            <i class="bi bi-box-seam" aria-hidden="true"></i>
+            <span><strong>Armazém</strong><small>AZ · Equipe e resultados</small></span>
+          </button>
+          <div class="collapse" id="mobileAzCollapse" data-bs-parent="#mobileNavModules">
+            <%= link_to 'Colaboradores', employees_path(employee_sector: 'az'), class: 'app-mobile-nav-link' %>
+
+            <% if current_user.can_access_az_dashboard? %>
+              <%= link_to 'Dashboard de Metas AZ', dashboard_az_path, class: 'app-mobile-nav-link' %>
+            <% end %>
+            <%= link_to 'Resultados Diários', az_mapas_path, class: 'app-mobile-nav-link' %>
+            <%= link_to 'Resultados WMS', wms_tasks_path, class: 'app-mobile-nav-link' %>
+            <%= link_to 'Importação', az_consultas_import_path, class: 'app-mobile-nav-link' %>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="app-mobile-nav-section">
+        <button class="app-mobile-nav-section__title w-100 text-start" type="button"
+                data-bs-toggle="collapse" data-bs-target="#mobileRhCollapse"
+                aria-controls="mobileRhCollapse" aria-expanded="false">
+          <i class="bi bi-people" aria-hidden="true"></i>
+          <span><strong>Recursos humanos</strong><small>RH · Pessoas e escalas</small></span>
+        </button>
+        <div class="collapse" id="mobileRhCollapse" data-bs-parent="#mobileNavModules">
+          <%= link_to "Colaboradores", employees_path, class: "app-mobile-nav-link" %>
+          <% if current_user.can_view_du_operations? %>
+            <%= link_to "Escala de folgas", time_off_schedule_path, class: "app-mobile-nav-link" %>
+          <% end %>
+          <%= link_to "Importar Ciclo de Gente", people_cycle_feedbacks_path, class: "app-mobile-nav-link" %>
+        </div>
+      </div>
+
+      <% if NavbarHelper::FLEET_LINK_KEYS.any? { |key| can_view_nav_link?(key, current_user) } %>
+        <div class="app-mobile-nav-section">
+          <button class="app-mobile-nav-section__title w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#mobileFleetCollapse" aria-expanded="false" aria-controls="mobileFleetCollapse">
+            <i class="bi bi-truck-front" aria-hidden="true"></i>
+            <span><strong>Frota</strong><small>Disponibilidade e indicadores</small></span>
+          </button>
+          <div class="collapse" id="mobileFleetCollapse" data-bs-parent="#mobileNavModules">
+            <% NavbarHelper::FLEET_LINK_KEYS.each do |key| %>
+              <% if can_view_nav_link?(key, current_user) %>
+                <% link = NavbarHelper::NAVBAR_LINKS.fetch(key) %>
+                <%= link_to link[:label], send(link[:path]), class: "app-mobile-nav-link" %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if can_view_nav_link?(:finance, current_user) %>
+        <div class="app-mobile-nav-section">
+          <button class="app-mobile-nav-section__title w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#mobileFinanceCollapse" aria-expanded="false" aria-controls="mobileFinanceCollapse">
+            <i class="bi bi-coin" aria-hidden="true"></i>
+            <span><strong>Financeiro</strong><small>Lançamentos e gestão de custos</small></span>
+          </button>
+          <div class="collapse" id="mobileFinanceCollapse" data-bs-parent="#mobileNavModules">
+            <% NavbarHelper::FINANCE_LINKS.each do |link| %>
+              <%= link_to link[:label], send(link[:path]), class: "app-mobile-nav-link" %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if can_view_registration_dropdown?(current_user) %>
+        <div class="app-mobile-nav-section">
+          <button class="app-mobile-nav-section__title w-100 text-start"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#mobileRegCollapse" aria-controls="mobileRegCollapse"
+                  aria-expanded="false">
+            <i class="bi bi-database" aria-hidden="true"></i>
+            <span><strong>Cadastros</strong><small>Dados e configurações da operação</small></span>
+          </button>
+          <div class="collapse" id="mobileRegCollapse" data-bs-parent="#mobileNavModules">
+            <%
+              visible_items = NavbarHelper::REGISTRATION_SUBITEMS.select do |key, sub|
+                can_view_subitem?(key, current_user)
+              end
+              grouped = visible_items.group_by { |_key, sub| sub[:group] }
+            %>
+            <% NavbarHelper::GROUP_ORDER.each do |group_name| %>
+              <% items = grouped[group_name] %>
+              <% next if items.blank? %>
+              <div class="app-mobile-nav-group"><%= group_name %></div>
+              <% items.each do |_key, sub| %>
+                <%= link_to sub[:label], send(sub[:path]), class: 'app-mobile-nav-link' %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </nav>
+  <%= link_to admin_users_path(edit_user_id: current_user.id), class: "app-mobile-offcanvas__footer" do %>
+    <i class="bi bi-person-circle" aria-hidden="true"></i>
+    <span><%= current_user.name.presence || current_user.email %></span>
+    <span class="app-mobile-offcanvas__footer-label">Minha conta</span>
+  <% end %>
+</div>

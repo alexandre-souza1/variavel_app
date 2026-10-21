@@ -1,5 +1,10 @@
-<nav class="navbar navbar-expand-lg app-navbar app-admin-nav shadow-sm sticky-top" data-controller="theme">
+<nav class="navbar navbar-expand-lg app-navbar app-admin-nav shadow-sm sticky-top <%= 'app-navbar--signed-in' if user_signed_in? %>" data-controller="theme">
   <div class="container-fluid px-3 px-md-4">
+    <% if user_signed_in? %>
+      <button class="btn app-mobile-menu-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNavOffcanvas" aria-controls="mobileNavOffcanvas" aria-label="Abrir menu de navegação">
+        <i class="bi bi-list" aria-hidden="true"></i>
+      </button>
+    <% end %>
     <!-- Logo -->
     <%= link_to variaveis_path,
                 class: "navbar-brand d-flex align-items-center gap-2",
@@ -120,7 +125,7 @@
     </div>
 
     <!-- Lado direito: informações do usuário + avatar -->
-    <div class="d-flex align-items-center gap-2 gap-md-3 ms-auto">
+    <div class="app-navbar__actions d-flex align-items-center gap-2 gap-md-3 ms-auto">
       <% if user_signed_in? %>
         <%= turbo_stream_from "notifications_user_#{current_user.id}" %>
         <%= render "notifications/menu", user: current_user %>
@@ -168,7 +173,7 @@
           <% end %>
         </div>
 
-        <ul class="navbar-nav">
+        <ul class="navbar-nav app-navbar__account">
           <li class="nav-item dropdown">
             <button class="nav-link p-0 avatar-btn" id="navbarDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir menu do usuário">
               <% if current_user.photo.attached? %>
@@ -180,7 +185,7 @@
               <% end %>
             </button>
 
-            <div class="dropdown-menu dropdown-menu-end app-dropdown-menu shadow-lg" aria-labelledby="navbarDropdown">
+            <div class="dropdown-menu dropdown-menu-end app-dropdown-menu app-user-menu shadow-lg" aria-labelledby="navbarDropdown">
               <% if current_user.mechanical? %>
                 <h6 class="dropdown-header">Módulos</h6>
                 <%= link_to mechanic_tasks_path, class: "dropdown-item app-dropdown-item fw-bold text-primary" do %>
@@ -263,10 +268,6 @@
             </div>
           </li>
         </ul>
-
-        <button class="btn app-mobile-menu-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNavOffcanvas" aria-controls="mobileNavOffcanvas" aria-label="Abrir menu">
-          <i class="bi bi-grid-3x3-gap"></i>
-        </button>
       <% else %>
         <div class="d-flex align-items-center gap-2">
           <div class="dropdown">
@@ -289,144 +290,4 @@
   </div>
 </nav>
 
-<!-- ========== OFF CANVAS MOBILE ========== -->
-<% if user_signed_in? %>
-  <div class="offcanvas offcanvas-start app-mobile-offcanvas d-lg-none" tabindex="-1" id="mobileNavOffcanvas" aria-labelledby="mobileNavOffcanvasLabel">
-    <div class="offcanvas-header">
-      <div>
-        <h5 class="offcanvas-title" id="mobileNavOffcanvasLabel">Menu</h5>
-        <span class="app-mobile-offcanvas__subtitle">Logia</span>
-      </div>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
-    </div>
-
-    <div class="offcanvas-body">
-      <% if current_user.mechanical? %>
-        <div class="app-mobile-nav-section">
-          <%= link_to mechanic_tasks_path, class: "app-mobile-nav-link fw-bold text-primary" do %>
-            <i class="bi bi-list-check me-2"></i> Minhas tarefas
-          <% end %>
-        </div>
-      <% end %>
-
-      <!-- ACORDEÃO DU -->
-      <% if can_view_du_menu?(current_user) %>
-        <div class="app-mobile-nav-section">
-          <button class="app-mobile-nav-section__title w-100 text-start"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#mobileDuCollapse"
-                  aria-expanded="false">
-            <i class="bi bi-truck"></i> DU
-          </button>
-          <div class="collapse" id="mobileDuCollapse">
-            <%= link_to 'Colaboradores', employees_path(employee_sector: 'du'), class: 'app-mobile-nav-link' %>
-
-            <%= link_to 'Escala de folgas', time_off_schedule_path, class: 'app-mobile-nav-link' %>
-            <%= link_to 'PCD', pcd_path, class: 'app-mobile-nav-link' %>
-            <%= link_to 'Mapas', mapas_todos_path, class: 'app-mobile-nav-link' %>
-            <%= link_to 'Dashboard de Mapas', dashboard_mapas_path, class: 'app-mobile-nav-link' %>
-            <%= link_to 'Consumo', fuel_consumptions_path, class: 'app-mobile-nav-link' %>
-            <%= link_to 'Importar 2Art', mapas_path, class: 'app-mobile-nav-link' %>
-          </div>
-        </div>
-      <% end %>
-
-      <!-- ACORDEÃO AZ -->
-      <% if can_view_az_menu?(current_user) %>
-        <div class="app-mobile-nav-section">
-          <button class="app-mobile-nav-section__title w-100 text-start"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#mobileAzCollapse"
-                  aria-expanded="false">
-            <i class="bi bi-house-door"></i> AZ
-          </button>
-          <div class="collapse" id="mobileAzCollapse">
-            <%= link_to 'Colaboradores', employees_path(employee_sector: 'az'), class: 'app-mobile-nav-link' %>
-
-            <% if current_user&.can_access_az_dashboard? %><%= link_to 'Dashboard de Metas AZ', dashboard_az_path, class: 'app-mobile-nav-link' %><% end %>
-            <%= link_to 'Resultados Diários', az_mapas_path, class: 'app-mobile-nav-link' %>
-            <%= link_to 'Resultados WMS', wms_tasks_path, class: 'app-mobile-nav-link' %>
-            <%= link_to 'Importação', az_consultas_import_path, class: 'app-mobile-nav-link' %>
-          </div>
-        </div>
-      <% end %>
-
-      <div class="app-mobile-nav-section">
-        <button class="app-mobile-nav-section__title w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#mobileRhCollapse" aria-expanded="false"><i class="bi bi-people"></i> RH</button>
-        <div class="collapse" id="mobileRhCollapse"><%= link_to "Colaboradores", employees_path, class: "app-mobile-nav-link" %><% if current_user.can_view_du_operations? %><%= link_to "Escala de folgas", time_off_schedule_path, class: "app-mobile-nav-link" %><% end %><%= link_to "Importar Ciclo de Gente", people_cycle_feedbacks_path, class: "app-mobile-nav-link" %></div>
-      </div>
-
-      <% if NavbarHelper::FLEET_LINK_KEYS.any? { |key| can_view_nav_link?(key, current_user) } %>
-        <div class="app-mobile-nav-section">
-          <button class="app-mobile-nav-section__title w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#mobileFleetCollapse" aria-expanded="false" aria-controls="mobileFleetCollapse"><i class="bi bi-truck-front"></i> FROTA</button>
-          <div class="collapse" id="mobileFleetCollapse">
-            <% NavbarHelper::FLEET_LINK_KEYS.each do |key| %>
-              <% if can_view_nav_link?(key, current_user) %>
-                <% link = NavbarHelper::NAVBAR_LINKS.fetch(key) %>
-                <%= link_to link[:label], send(link[:path]), class: "app-mobile-nav-link" %>
-              <% end %>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
-
-      <% if can_view_nav_link?(:finance, current_user) %>
-        <div class="app-mobile-nav-section">
-          <button class="app-mobile-nav-section__title w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#mobileFinanceCollapse" aria-expanded="false" aria-controls="mobileFinanceCollapse">
-            <i class="bi bi-coin"></i> Financeiro
-          </button>
-          <div class="collapse" id="mobileFinanceCollapse">
-            <% NavbarHelper::FINANCE_LINKS.each do |link| %>
-              <%= link_to link[:label], send(link[:path]), class: "app-mobile-nav-link" %>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
-
-      <!-- ATALHOS (estático, sem collapse) -->
-      <div class="app-mobile-nav-section">
-        <div class="app-mobile-nav-section__title-static">
-          <i class="bi bi-compass"></i> Atalhos
-        </div>
-        <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS, :finance).each do |key, link| %>
-          <% if can_view_nav_link?(key, current_user) %>
-            <%= link_to send(link[:path]), class: "app-mobile-nav-link" do %>
-              <i class="bi <%= link[:icon] %>"></i> <%= link[:label] %>
-            <% end %>
-          <% end %>
-        <% end %>
-      </div>
-
-      <!-- ACORDEÃO CADASTROS -->
-      <% if can_view_registration_dropdown?(current_user) %>
-        <div class="app-mobile-nav-section">
-          <button class="app-mobile-nav-section__title w-100 text-start"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#mobileRegCollapse"
-                  aria-expanded="false">
-            <i class="bi bi-database"></i> Cadastros
-          </button>
-          <div class="collapse" id="mobileRegCollapse">
-            <%
-              visible_items = NavbarHelper::REGISTRATION_SUBITEMS.select do |key, sub|
-                can_view_subitem?(key, current_user)
-              end
-              grouped = visible_items.group_by { |_key, sub| sub[:group] }
-            %>
-            <% NavbarHelper::GROUP_ORDER.each do |group_name| %>
-              <% items = grouped[group_name] %>
-              <% next if items.blank? %>
-              <div class="app-mobile-nav-group"><%= group_name %></div>
-              <% items.each do |_key, sub| %>
-                <%= link_to sub[:label], send(sub[:path]), class: 'app-mobile-nav-link' %>
-              <% end %>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
-    </div>
-  </div>
-<% end %>
+<%= render "shared/mobile_navigation" if user_signed_in? %>
