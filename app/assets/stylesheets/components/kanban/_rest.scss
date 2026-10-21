@@ -1560,7 +1560,6 @@ main.app-main:has(.action-plan-show) {
 
 // Lista mobile e ajustes de layout para telas estreitas.
 @media (max-width: 767.98px) {
-  .app-content:has(> .action-plan-show) { margin: 0 !important; }
   .action-plan-show.dashboard-page {
     padding: 1rem 0.75rem 1.5rem;
   }

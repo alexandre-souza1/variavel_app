@@ -1,6 +1,5 @@
 // Reuses dashboards/index surfaces, KPI cards, headings and tables.
 // Only layout and controls specific to the AI administration live here.
-.app-content:has(.ai-settings-page) { margin: 1.5rem !important; }
 
 .dashboard-page.ai-settings-page {
   max-width: none;
@@ -132,8 +131,4 @@
     .ai-model-limits__fields .form-label { min-height: 0; }
     .ai-usage-card__table th, .ai-usage-card__table td { padding-inline: .15rem; }
   }
-}
-
-@media (max-width: 600px) {
-  .app-content:has(.ai-settings-page) { margin: 1rem !important; }
 }

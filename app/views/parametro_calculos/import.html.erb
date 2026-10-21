@@ -1,17 +1,17 @@
-<div class="container py-4">
-  <h1 class="h3 mb-4">Importar Parâmetros via CSV</h1>
-
-  <%= form_with url: import_csv_parametro_calculos_path, local: true, html: { multipart: true }, class: "card p-4 shadow-sm" do |form| %>
-    <div class="mb-3">
-      <%= form.label :file, "Selecione o arquivo CSV", class: "form-label" %>
-      <%= form.file_field :file, class: "form-control" %>
+<div class="app-page calculation-parameters-page">
+  <%= link_to parametro_calculos_path, class: 'parameters-back' do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Parâmetros de cálculo<% end %>
+  <header class="app-page-header">
+    <div><p class="app-page-eyebrow">Cadastros · Remuneração variável</p><h1><i class="bi bi-upload" aria-hidden="true"></i> Importar parâmetros</h1><p>Adicione os valores de referência a partir de um arquivo CSV.</p></div>
+  </header>
+  <section class="app-panel parameters-upload" aria-labelledby="parameterUploadTitle">
+    <div class="app-panel__header"><div><span class="app-panel__kicker">Importação de dados</span><h2 class="app-panel__title" id="parameterUploadTitle">Selecione o arquivo</h2></div></div>
+    <div class="app-panel__body">
+      <%= form_with url: import_csv_parametro_calculos_path, local: true, html: { multipart: true } do |form| %>
+        <%= form.label :file, 'Arquivo CSV', class: 'form-label' %>
+        <%= form.file_field :file, class: 'form-control', accept: '.csv,text/csv', required: true, aria: { describedby: 'parameterCsvHelp' } %>
+        <p class="form-text" id="parameterCsvHelp">Use as colunas <code>nome</code>, <code>categoria</code> e <code>valor</code>, separadas por ponto e vírgula (;).</p>
+        <div class="parameters-upload-actions"><%= link_to 'Cancelar', parametro_calculos_path, class: 'btn btn-outline-secondary' %><%= form.submit 'Importar parâmetros', class: 'btn btn-primary' %></div>
+      <% end %>
     </div>
-
-    <%= form.submit "Importar", class: "btn btn-primary" %>
-  <% end %>
-
-  <div class="mt-3">
-    <%= link_to "Voltar para parâmetros", parametro_calculos_path, class: "btn btn-outline-secondary" %>
-    <%= link_to "Ver Todos os Parâmetros", parametro_calculos_path, class: "btn btn-outline-info" %>
-  </div>
+  </section>
 </div>

@@ -142,9 +142,7 @@
 @media (prefers-reduced-motion: reduce) {
   .employees-disclosure__chevron { transition: none; }
 }
-@media (max-width: 650px) {
-  .app-content:has(> .employees-page) { margin: 0 !important; }
-}
+
 .employees-duplicate-link { display: block; margin-top: .35rem; color: var(--bs-primary); font-size: .75rem; font-weight: 600; text-decoration: none; }
 .employees-duplicate-link:hover { text-decoration: underline; }
 .employees-duplicates { margin-bottom: 1.5rem; scroll-margin-top: 6rem; }

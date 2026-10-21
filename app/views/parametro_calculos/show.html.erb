@@ -1,6 +1,39 @@
-<h1><%= @parametro_calculo.nome.humanize %></h1>
-
-<p><strong>Valor:</strong> <%= number_with_precision(@parametro_calculo.valor, precision: 2) %></p>
-
-<%= link_to 'Editar', edit_parametro_calculo_path(@parametro_calculo) %> |
-<%= link_to 'Voltar', parametro_calculos_path %>
+<div class="app-page calculation-parameters-page">
+  <%= link_to parametro_calculos_path, class: 'parameters-back' do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Parâmetros de cálculo<% end %>
+  <header class="app-page-header">
+    <div>
+      <p class="app-page-eyebrow">Remuneração variável · Parâmetro</p>
+      <h1><i class="bi bi-sliders" aria-hidden="true"></i> <%= @parametro_calculo.nome.humanize %></h1>
+      <p>Consulte o valor cadastrado e as datas de aplicação.</p>
+    </div>
+    <% if current_user.admin? || current_user.supervisor? %>
+      <div class="app-page-actions"><%= link_to edit_parametro_calculo_path(@parametro_calculo), class: 'btn btn-primary' do %><i class="bi bi-pencil-square" aria-hidden="true"></i> Alterar valor<% end %></div>
+    <% end %>
+  </header>
+  <section class="app-panel" aria-labelledby="parameterDetailsTitle">
+    <div class="app-panel__header"><h2 class="app-panel__title" id="parameterDetailsTitle">Dados do parâmetro</h2></div>
+    <div class="app-panel__body">
+      <dl class="parameters-overview">
+        <div><dt>Valor cadastrado</dt><dd class="parameters-value"><%= number_to_currency(@parametro_calculo.valor, unit: 'R$ ') %></dd></div>
+        <div><dt>Categoria</dt><dd><%= @parametro_calculo.categoria.presence&.titleize || 'Sem categoria' %></dd></div>
+        <div><dt>Última atualização</dt><dd><%= l(@parametro_calculo.updated_at.to_date, format: :default) %></dd></div>
+      </dl>
+    </div>
+  </section>
+  <section class="app-panel parameters-history" aria-labelledby="parameterHistoryTitle">
+    <div class="app-panel__header"><div><span class="app-panel__kicker">Histórico</span><h2 class="app-panel__title" id="parameterHistoryTitle">Valores e vigências</h2></div></div>
+    <% if @rate_versions.any? %>
+      <div class="app-table-shell"><table class="table app-table mb-0">
+        <thead><tr><th scope="col">Válido a partir de</th><th scope="col">Valor</th></tr></thead>
+        <tbody>
+          <% @rate_versions.each do |version| %>
+            <tr><td><%= version.effective_on ? l(version.effective_on, format: :default) : 'Sem data definida' %></td><td class="parameters-value"><%= number_to_currency(version.valor, unit: 'R$ ') %></td></tr>
+          <% end %>
+        </tbody>
+      </table></div>
+    <% else %>
+      <div class="app-panel__body"><p class="parameters-filter-note">Este parâmetro ainda não possui vigências registradas.</p></div>
+    <% end %>
+  </section>
+  <div class="parameters-note"><i class="bi bi-info-circle" aria-hidden="true"></i><p>Cada valor se aplica a partir da data informada na vigência. Os fechamentos registrados preservam os valores usados na apuração.</p></div>
+</div>

@@ -5,6 +5,10 @@
 // pelos componentes e facilitar ajustes futuros.
 
 :root {
+  // Original RH lateral spacing: the old m-5 plus the app-page fluid inset.
+  --app-page-gutter: calc(3rem + clamp(1.5rem, 4vw, 4.5rem));
+  --app-page-spacing: 3rem;
+
   --app-routine-day-width: 80px;
   --app-routine-cell-min-height: 64px;
   --app-routine-label-width: 280px;
@@ -25,4 +29,14 @@
   --app-field-radius-sm: 9px 9px 9px 4px;
   --app-field-radius-lg: 15px 15px 15px 6px;
   --app-field-duration: 160ms;
+}
+
+@media (max-width: 767.98px) {
+  :root {
+    --app-page-spacing: 1rem;
+  }
+}
+
+@media (max-width: 650px) {
+  :root { --app-page-gutter: 1rem; }
 }

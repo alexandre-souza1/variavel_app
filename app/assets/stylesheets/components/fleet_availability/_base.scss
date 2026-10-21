@@ -1471,17 +1471,6 @@
 
 // ─── Responsivo ──────────────────────────────────────────────────
 @media (max-width: $md-max) {
-  // O layout global adiciona `m-5` ao app-content. No mobile isso reduz
-  // desnecessariamente o módulo para uma coluna estreita e comprime seus
-  // cards, tabelas e ações. Remova a margem somente nestas telas do módulo.
-  .app-content:has(> .fleet-availability-page),
-  .app-content:has(> .fleet-availability-index),
-  .app-content:has(> .fleet-dimensionings-index),
-  .app-content:has(> .fleet-dimensioning-page) {
-    width: 100%;
-    margin: 0 !important;
-  }
-
   .fleet-dimensionings-index {
     .table-responsive {
       overflow: visible;

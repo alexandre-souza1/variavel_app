@@ -32,11 +32,28 @@ class ParametroCalculosController < ApplicationController
 
   # GET /parametro_calculos
   def index
-    @parametro_calculos_por_categoria = ParametroCalculo.all.group_by(&:categoria)
+    @categorias = ParametroCalculo.where.not(categoria: [nil, ""]).distinct.order(:categoria).pluck(:categoria)
+    @total_parametros = ParametroCalculo.count
+    @query = params[:q].to_s.strip
+    @categoria = params[:categoria].to_s.strip
+    parametros = ParametroCalculo.order(:categoria, :nome, :id)
+    parametros = parametros.where(categoria: @categoria) if @categoria.present?
+    if @query.present?
+      parametros = parametros.where(
+        "nome ILIKE :query OR REPLACE(nome, '_', ' ') ILIKE :query OR " \
+        "categoria ILIKE :query OR REPLACE(categoria, '_', ' ') ILIKE :query",
+        query: "%#{ParametroCalculo.sanitize_sql_like(@query)}%"
+      )
+    end
+    @parametro_calculos_por_categoria = parametros.group_by(&:categoria)
+    @parametros_exibidos = @parametro_calculos_por_categoria.values.sum(&:size)
   end
 
   # GET /parametro_calculos/1
   def show
+    @rate_versions = CalculationRateVersion.where(
+      categoria: @parametro_calculo.categoria, nome: @parametro_calculo.nome
+    ).order(Arel.sql("effective_on DESC NULLS LAST, id DESC"))
   end
 
   # GET /parametro_calculos/new

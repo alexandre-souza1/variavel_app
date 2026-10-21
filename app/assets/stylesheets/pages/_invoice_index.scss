@@ -181,7 +181,14 @@
   .invoice-results-section tbody tr:hover { background: rgba(var(--bs-primary-rgb), .045); }
   .invoice-code-link { color: var(--bs-primary); font-weight: 700; text-decoration: none; }
   .invoice-code-link:hover { text-decoration: underline; }
-  .invoice-index-page .pagination { --bs-pagination-border-radius: 8px; }
+  .invoice-results-pagination {
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    > div { min-width: 0; max-width: 100%; }
+    > div:last-child { margin-left: auto; }
+    .pagination { --bs-pagination-border-radius: 8px; flex-wrap: wrap; }
+  }
 
   @media (max-width: 900px) {
     .invoice-index-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }

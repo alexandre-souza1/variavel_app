@@ -28,6 +28,21 @@ para "organizar" os arquivos: a ordem pode resolver conflitos de cascata.
 
 ## Indices
 
+- `components/_app_layout.scss`: largura e espaçamento externos das telas,
+  compartilhados pelo layout `application`. Usa a ocupação lateral original
+  de `rh/colaboradores`: `3rem + clamp(1.5rem, 4vw, 4.5rem)` nas laterais,
+  reunindo a antiga margem do layout e o recuo da página. Até 650px, usa
+  1rem por lado, como o RH original. O espaçamento vertical segue em 3rem,
+  reduzido para 1rem abaixo de 768px.
+  Os valores ficam em `--app-page-gutter` e `--app-page-spacing`, em
+  `custom/_tokens.scss`. A reserva de espaço da barra de rolagem em desktop
+  evita saltos entre telas curtas e longas; no celular a barra sobreposta
+  preserva a largura completa da tela e a centralização da marca.
+  Novas páginas podem usar `.app-page-frame`; os contêineres existentes são
+  normalizados nessa mesma camada. Não adicionar margens a `.app-content`
+  nem largura máxima ou padding externo nos wrappers de página. Limites
+  internos de leitura, campos, modais e rolagem de tabelas/quadros continuam
+  nos componentes correspondentes.
 - `components/_index.scss`: importa `alert`, `avatar`, `navbar`,
   `notifications`, cards de consultas, `footer`, `comments`, `kanban`,
   `tasks`, disponibilidade de frota, cards customizados, paineis e modais.
@@ -99,6 +114,8 @@ arquivos com o mesmo nome de uma pasta sao entrypoints que importam uma base e,
 quando necessario, uma camada responsiva.
 
 - `_home.scss`: `.workstation-home`, hero, cards de acesso e ajuda.
+- `_calculation_parameters.scss`: busca e filtro de parâmetros, painéis por
+  categoria, registros compactos no celular, detalhe de vigências e importação.
 - `_consultas.scss`: formulario, mapa, lista, tabela e paginacao de consultas.
 - `_consultas_show.scss`: relatorio de motorista, periodo, totais,
   parametros, tabelas e alertas.

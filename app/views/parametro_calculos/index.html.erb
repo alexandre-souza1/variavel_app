@@ -1,56 +1,100 @@
-<div class="driver-report-container">
-  <div class="container p-3">
-    <div class="row align-items-center">
-      <div class="col-md-8">
-        <h1 class="mb-0"><i class="bi bi-card-list"> </i>Parâmetros de Cálculo</h1>
-      </div>
-      <div class="col-md-4 text-md-end d-flex flex-row-reverse">
-        <p class="font-weight-light">LOG20 - Foz do Iguaçu</p>
-      </div>
+<div class="app-page calculation-parameters-page">
+  <header class="app-page-header">
+    <div>
+      <p class="app-page-eyebrow">Cadastros · Remuneração variável</p>
+      <h1><i class="bi bi-sliders" aria-hidden="true"></i> Parâmetros de cálculo</h1>
+      <p>Consulte os valores usados na apuração e organize os parâmetros por categoria.</p>
     </div>
-  </div>
+    <div class="app-page-actions">
+      <%= link_to import_parametro_calculos_path, class: 'btn btn-outline-secondary' do %>
+        <i class="bi bi-upload" aria-hidden="true"></i> Importar CSV
+      <% end %>
+      <% if current_user.admin? || current_user.supervisor? %>
+        <%= link_to new_parametro_calculo_path, class: 'btn btn-primary' do %>
+          <i class="bi bi-plus-lg" aria-hidden="true"></i> Novo parâmetro
+        <% end %>
+      <% end %>
+    </div>
+  </header>
 
-<div class="container">
-  <div class="row">
-    <% @parametro_calculos_por_categoria.each do |categoria, parametros| %>
-      <div class="col-md-6 mb-4 d-flex">
-        <div class="card shadow-sm w-100 h-100">
-          <div class="card-header bg-light border-bottom">
-            <h5 class="mb-0"><i class="bi bi-people-fill"></i> <%= categoria.titleize %></h5>
+  <section class="app-panel parameters-filter" aria-labelledby="parameterSearchTitle">
+    <div class="app-panel__header">
+      <div>
+        <span class="app-panel__kicker">Valores de referência</span>
+        <h2 class="app-panel__title" id="parameterSearchTitle">Encontre um parâmetro</h2>
+      </div>
+      <span class="parameters-count"><%= pluralize(@total_parametros, 'cadastrado', 'cadastrados') %></span>
+    </div>
+    <div class="app-panel__body">
+      <%= form_with url: parametro_calculos_path, method: :get, local: true do |form| %>
+        <div class="parameters-field parameters-field--search">
+          <%= form.label :q, 'Buscar por nome ou categoria' %>
+          <%= form.search_field :q, value: @query, class: 'form-control', placeholder: 'Digite o nome do parâmetro' %>
+        </div>
+        <div class="parameters-field">
+          <%= form.label :categoria, 'Categoria' %>
+          <%= form.select :categoria, @categorias.map { |categoria| [categoria.titleize, categoria] }, { include_blank: 'Todas as categorias', selected: @categoria }, class: 'form-select' %>
+        </div>
+        <div class="parameters-filter-actions">
+          <%= form.submit 'Buscar', class: 'btn btn-primary' %>
+          <% if @query.present? || @categoria.present? %>
+            <%= link_to 'Limpar', parametro_calculos_path, class: 'btn btn-outline-secondary' %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <% if @parametro_calculos_por_categoria.any? %>
+    <p class="parameters-filter-note mb-3" role="status">
+      <strong><%= @parametros_exibidos %></strong> de <%= pluralize(@total_parametros, 'parâmetro', 'parâmetros') %>
+      · <%= pluralize(@parametro_calculos_por_categoria.size, 'categoria', 'categorias') %>
+    </p>
+    <div class="parameters-grid">
+      <% @parametro_calculos_por_categoria.each_with_index do |(categoria, parametros), index| %>
+        <section class="app-panel parameters-category" aria-labelledby="parameterCategory<%= index %>">
+          <div class="app-panel__header">
+            <h2 class="app-panel__title" id="parameterCategory<%= index %>">
+              <i class="bi bi-collection" aria-hidden="true"></i> <%= categoria.presence&.titleize || 'Sem categoria' %>
+            </h2>
+            <span class="parameters-count"><%= parametros.size %></span>
           </div>
-          <div class="card-body">
-            <div class="app-table-shell"><table class="table app-table app-table--compact mb-0">
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Valor</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
+          <div class="app-table-shell">
+            <table class="table app-table parameters-table mb-0">
+              <caption class="visually-hidden">Parâmetros de <%= categoria.presence&.titleize || 'categoria não definida' %></caption>
+              <thead><tr><th scope="col">Parâmetro</th><th scope="col">Valor</th><th scope="col" class="text-end">Ações</th></tr></thead>
               <tbody>
-                <% parametros.each do |param| %>
+                <% parametros.each do |parametro| %>
                   <tr>
-                    <td><%= param.nome.humanize %></td>
-                    <td><%= number_to_currency(param.valor, unit: "R$ ") %></td>
+                    <td class="parameters-name"><%= link_to parametro.nome.humanize, parametro_calculo_path(parametro) %></td>
+                    <td class="parameters-value"><span class="parameters-value__label">Valor cadastrado</span><%= number_to_currency(parametro.valor, unit: 'R$ ') %></td>
                     <td>
-                      <%= link_to parametro_calculo_path(param), class: "icon-btn", title: "Ver parâmetro", aria: { label: "Ver parâmetro" } do %>
-                        <i class="bi bi-eye" aria-hidden="true"></i>
-                      <% end %>
-                      <%= link_to edit_parametro_calculo_path(param), class: "icon-btn", title: "Editar parâmetro", aria: { label: "Editar parâmetro" } do %>
-                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                      <% end %>
+                      <div class="parameters-actions">
+                        <%= link_to parametro_calculo_path(parametro), class: 'icon-btn', title: 'Ver parâmetro e vigências', aria: { label: "Ver #{parametro.nome.humanize}" } do %><i class="bi bi-eye" aria-hidden="true"></i><% end %>
+                        <% if current_user.admin? || current_user.supervisor? %>
+                          <%= link_to edit_parametro_calculo_path(parametro), class: 'icon-btn', title: 'Alterar valor e vigência', aria: { label: "Editar #{parametro.nome.humanize}" } do %><i class="bi bi-pencil-square" aria-hidden="true"></i><% end %>
+                        <% end %>
+                      </div>
                     </td>
                   </tr>
                 <% end %>
               </tbody>
-            </table></div>
+            </table>
           </div>
-        </div>
-      </div>
-    <% end %>
-  </div>
-
-  <div class="mt-4">
-    <%= link_to "Voltar ao início", variaveis_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
-  </div>
+        </section>
+      <% end %>
+    </div>
+    <div class="parameters-note"><i class="bi bi-info-circle" aria-hidden="true"></i><p>Ao alterar um valor, informe a nova vigência. Os fechamentos registrados preservam os valores usados na apuração.</p></div>
+  <% else %>
+    <section class="app-panel parameters-empty">
+      <i class="bi bi-<%= @total_parametros.zero? ? 'sliders' : 'search' %>" aria-hidden="true"></i>
+      <h2><%= @total_parametros.zero? ? 'Nenhum parâmetro cadastrado' : 'Nenhum parâmetro encontrado' %></h2>
+      <p><%= @total_parametros.zero? ? 'Importe um arquivo CSV para começar a organizar os valores de referência.' : 'Tente outro nome ou remova o filtro de categoria.' %></p>
+      <% if @query.present? || @categoria.present? %>
+        <%= link_to 'Limpar filtros', parametro_calculos_path, class: 'btn btn-outline-secondary' %>
+      <% else %>
+        <%= link_to 'Importar parâmetros', import_parametro_calculos_path, class: 'btn btn-primary' %>
+      <% end %>
+    </section>
+  <% end %>
 </div>

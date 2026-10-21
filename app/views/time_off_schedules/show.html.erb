@@ -1,11 +1,13 @@
 <div class="time-off-page" data-controller="time-off group-dialog" data-action="turbo:before-cache@document->group-dialog#reset" data-time-off-settings-open-value="<%= @settings_open %>" data-time-off-editable-value="<%= @tab == 'day' && can_edit? && @schedule.covers?(@date) && !@date.sunday? %>">
-  <header class="time-off-heading">
+  <header class="app-page-header">
     <div>
-      <span class="time-off-eyebrow">OPERAÇÃO · PILOTO 5×2</span>
-      <h1>Escala de folgas</h1>
+      <p class="app-page-eyebrow">Operação · Piloto 5×2</p>
+      <h1><i class="bi bi-calendar-week" aria-hidden="true"></i> Escala de folgas</h1>
       <p>Rodízio por grupo e acompanhamento diário de motoristas e ajudantes.</p>
     </div>
-    <% if can_edit? %><button type="button" class="btn btn-outline-primary" data-action="time-off#openSettings" aria-controls="time-off-settings" aria-label="Configuração"><i class="bi bi-gear" aria-hidden="true"></i> Configuração</button><% end %>
+    <% if can_edit? %>
+      <div class="app-page-actions"><button type="button" class="btn btn-outline-primary" data-action="time-off#openSettings" aria-controls="time-off-settings" aria-label="Configuração"><i class="bi bi-gear" aria-hidden="true"></i> Configuração</button></div>
+    <% end %>
   </header>
 
   <% if @unassigned_people.any? %>

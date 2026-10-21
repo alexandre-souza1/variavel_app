@@ -1,5 +1,19 @@
 <div class="pcd-page">
-  <header class="pcd-heading"><div><span class="time-off-eyebrow">DU · ROTEIRIZAÇÃO</span><h1>PCD</h1><p>Saídas, mapas, placas e equipes do dia.</p></div><div class="pcd-heading-actions"><%= link_to 'Escala de folgas', time_off_schedule_path(tab: 'day', date: @date), class: 'btn btn-sm btn-outline-secondary' %><% if @plan %><%= link_to pcd_path(date: @date, format: :pdf), class: 'btn btn-sm btn-outline-primary', target: '_blank', rel: 'noopener', data: { turbo: false } do %><i class="bi bi-printer" aria-hidden="true"></i> Imprimir PCD SALAS<% end %><% end %></div></header>
+  <header class="app-page-header">
+    <div>
+      <p class="app-page-eyebrow">DU · Roteirização</p>
+      <h1><i class="bi bi-signpost-split" aria-hidden="true"></i> PCD</h1>
+      <p>Saídas, mapas, placas e equipes do dia.</p>
+    </div>
+    <div class="app-page-actions">
+      <%= link_to 'Escala de folgas', time_off_schedule_path(tab: 'day', date: @date), class: 'btn btn-sm btn-outline-secondary' %>
+      <% if @plan %>
+        <%= link_to pcd_path(date: @date, format: :pdf), class: 'btn btn-sm btn-outline-primary', target: '_blank', rel: 'noopener', data: { turbo: false } do %>
+          <i class="bi bi-printer" aria-hidden="true"></i> Imprimir PCD SALAS
+        <% end %>
+      <% end %>
+    </div>
+  </header>
   <div class="pcd-date-bar"><%= link_to '‹', pcd_path(date: @date - 1, tab: @tab), class: 'time-off-day-arrow', aria: { label: 'Dia anterior' }, rel: 'prev' %><h2><%= l(@date, format: '%A, %d de %B').capitalize %></h2><%= link_to '›', pcd_path(date: @date + 1, tab: @tab), class: 'time-off-day-arrow', aria: { label: 'Próximo dia' }, rel: 'next' %><%= form_with url: pcd_path, method: :get do |f| %><%= f.hidden_field :tab, value: @tab %><%= f.date_field :date, value: @date, class: 'form-control form-control-sm', aria: { label: 'Data do PCD' } %><%= f.submit 'Exibir', class: 'btn btn-sm btn-outline-secondary' %><% end %></div>
   <%= render "shared/page_tabs", label: "Seções do PCD", nav_class: "time-off-tabs", link_class: "time-off-tab", current: @tab,
     tabs: [['board', 'Roteirização', 'bi-signpost-split'], ['imports', 'Importações', 'bi-cloud-arrow-up'], ['history', 'Histórico', 'bi-clock-history']].map { |key, label, icon| { key: key, label: label, icon: icon, path: pcd_path(date: @date, tab: key) } } %>

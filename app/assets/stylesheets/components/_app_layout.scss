@@ -1,0 +1,73 @@
+// The application owns the page width. Tables, boards and form fields keep
+// their own internal layout; these aliases only normalize page-level wrappers.
+html { scrollbar-gutter: stable; }
+
+// Phone browsers use overlay scrollbars; keep the header centered on the screen.
+@media (max-width: 767.98px) {
+  html { scrollbar-gutter: auto; }
+}
+
+.app-main { min-width: 0; }
+
+.app-main > .app-content {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: var(--app-page-spacing) var(--app-page-gutter);
+
+  > :is(
+    .app-page-frame,
+    .container,
+    .container-fluid,
+    .app-page,
+    .dashboard-page,
+    .dashboard-tasks,
+    .dashboard-finance,
+    .templates-page,
+    .template-show-page,
+    .routine-module-page,
+    .plan-gerots,
+    .az-operator-report-page,
+    .az-helper-report-page,
+    .az-consultas-new-page,
+    .consultas-new-page,
+    .invoice-index-page,
+    .admin-catalog-page,
+    .catalog-form-page,
+    .supplier-show-page,
+    .fleet-email-settings-page,
+    .fleet-dimensioning-page,
+    .downloads-page,
+    .mechanic-tasks-page,
+    .meeting-minute-page,
+    .parking-page,
+    .pcd-page,
+    .rotogramas,
+    .mapas-dashboard-page,
+    .public-variable-chat-page,
+    .time-off-page,
+    .workstation-home
+  ) {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    // These also replace Bootstrap's page-level p-*/m-* utilities.
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  // A few older screens put the page container one wrapper further in.
+  > :is(.bg-light, .driver-report-container) > .container,
+  > div:not([class]) > .container,
+  > .container > .container,
+  > .routine-module-page > .container,
+  > .workstation-home > .workstation-home__inner,
+  > .dashboard-tasks > .action-plan-form-page,
+  > .invoice-entry-page > .invoice-entry-content {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}

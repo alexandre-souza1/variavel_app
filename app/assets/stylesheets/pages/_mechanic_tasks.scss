@@ -222,7 +222,6 @@
   .mechanic-task-stat { padding: .85rem; gap: .65rem; > i { flex-basis: 36px; height: 36px; } }
 }
 @media (max-width: 767px) {
-  .app-content:has(> .mechanic-tasks-page) { margin: 1rem .75rem !important; }
   .mechanic-tasks-page { padding: .5rem 0 2rem; }
   .mechanic-tasks-page :is(.form-control, .form-select) { font-size: 16px; }
   .mechanic-tasks-header { margin-bottom: 1.1rem; &__scope { display: none; } &__intro { gap: .75rem; } &__icon { width: 48px; height: 48px; flex-basis: 48px; border-radius: 13px; font-size: 1.35rem; } p:not(.mechanic-tasks-eyebrow) { font-size: .8rem; line-height: 1.5; } }

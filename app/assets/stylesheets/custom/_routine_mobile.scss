@@ -1,8 +1,6 @@
 // These overrides are deliberately restricted to phones. Desktop keeps its
 // existing layout, and the routine grid keeps a single set of editable cells.
 @media (max-width: 767.98px) {
-  .app-content:has(> .routine-module-page) { margin: 0 !important; }
-
   .routine-module-page {
     width: 100%;
     min-width: 0;

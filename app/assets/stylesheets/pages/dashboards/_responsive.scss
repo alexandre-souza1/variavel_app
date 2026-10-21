@@ -414,11 +414,6 @@
 }
 
 @media (max-width: $md-max) {
-  // O m-5 do layout global consumia 96px da largura disponível no celular.
-  .app-content:has(> .fleet-dashboard-page) {
-    margin: 0 !important;
-  }
-
   .dashboard-page.fleet-dashboard-page {
     padding: 1rem;
 
