@@ -13,6 +13,7 @@
           <div class="checklist-tracking__source">
             <% if @accessible_history_task_ids.include?(task.id) %>
               <%= link_to action_plan_path(task.bucket.action_plan, task_id: task.id), class: "checklist-tracking__action-link" do %><span><%= task.title %></span><i class="bi bi-arrow-up-right" aria-hidden="true"></i><% end %>
+              <%= render "task_labels", task: task %>
               <small><%= task.bucket.action_plan.name %> · <%= task.completed? ? 'Concluída' : 'Aberta' %><%= " · GEROT: #{task.routine_value.routine.title}" if task.routine_value %></small>
             <% else %>
               <strong>Ação de origem #<%= task.id %></strong>

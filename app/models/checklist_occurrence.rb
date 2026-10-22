@@ -25,12 +25,23 @@ class ChecklistOccurrence < ApplicationRecord
     conditions: -> { active }, message: "já registrado nesta tarefa, data e tipo" }, if: -> { cancelled_at.nil? }
   validates :cancellation_reason, :cancelled_by, presence: true, if: :cancelled_at?
   validate :task_has_plan
+  validate :role_allows_checklist, on: :create, unless: :cancelled_at?
 
   def kind_label
     KINDS.fetch(checklist_kind)
   end
 
+  def role_restriction_reason
+    return if employee.nil? || occurred_on.nil? || !KINDS.key?(checklist_kind)
+    ChecklistTracking::Eligibility.new(employee: employee, date: occurred_on).reason(checklist_kind)
+  end
+
   private
+
+  def role_allows_checklist
+    reason = role_restriction_reason
+    errors.add(:base, reason) if reason
+  end
 
   def inherit_justified_exclusion
     return if cancelled_at? || employee_id.blank? || occurred_on.blank? || checklist_kind.blank?

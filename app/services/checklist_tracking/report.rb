@@ -5,7 +5,7 @@ module ChecklistTracking
     def initialize(scope:, year:)
       @year = year
       records = scope.active.where(occurred_on: Date.new(year, 1, 1)..Date.new(year, 12, 31))
-        .includes(:employee, :recorded_by, task: [:users, { bucket: :action_plan }, { routine_value: :routine }]).to_a
+        .includes(:recorded_by, employee: :employee_roles, task: [:users, :labels, { bucket: :action_plan }, { routine_value: :routine }]).to_a.reject { |record| record.role_restriction_reason.present? }
       # Several actions may investigate the same missed checklist.
       @events = records.group_by { |record| [record.employee_id, record.occurred_on, record.checklist_kind] }.map do |_, sources|
         { employee: sources.first.employee, date: sources.first.occurred_on,

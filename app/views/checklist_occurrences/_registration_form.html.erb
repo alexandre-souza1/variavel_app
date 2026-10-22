@@ -23,7 +23,7 @@
     <div>
       <%= form.label :checklist_kind, "Tipo de checklist", for: "occurrence-kind-#{task.id}" %>
       <%= form.select :checklist_kind, ChecklistOccurrence::KINDS.map { |value, label| [label, value] },
-        { selected: values.fetch("checklist_kind", source.suggested_kind) }, id: "occurrence-kind-#{task.id}", class: "form-select" %>
+        { selected: values.fetch("checklist_kind", source.suggested_kind(employees)) }, id: "occurrence-kind-#{task.id}", class: "form-select" %>
     </div>
   </div>
   <%= form.label :notes, "Observação (opcional)", for: "occurrence-notes-#{task.id}" %>

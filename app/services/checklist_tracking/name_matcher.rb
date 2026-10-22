@@ -15,11 +15,12 @@ module ChecklistTracking
       end
     end
 
-    def call(name: nil, text: nil)
-      return resolve_name(EmployeeName.normalize(name)) if name.present?
+    def call(name: nil, text: nil, eligible_ids: nil)
+      entries = eligible_ids ? @entries.select { |employee, _| eligible_ids.include?(employee.id) } : @entries
+      return resolve_name(EmployeeName.normalize(name), entries) if name.present?
 
       normalized = EmployeeName.normalize(text)
-      matches = @entries.select { |_, candidate| candidate.present? && " #{normalized} ".include?(" #{candidate} ") }
+      matches = entries.select { |_, candidate| candidate.present? && " #{normalized} ".include?(" #{candidate} ") }
       people = matches.map(&:first).uniq(&:id)
       return ambiguous if people.many?
       if people.one?
@@ -32,10 +33,10 @@ module ChecklistTracking
 
     private
 
-    def resolve_name(name)
+    def resolve_name(name, entries)
       wanted = tokens(name)
       return missing if wanted.empty?
-      matches = @entries.select do |_, candidate|
+      matches = entries.select do |_, candidate|
         candidate_tokens = tokens(candidate)
         candidate == name || (wanted.first == candidate_tokens.first && ordered_subset?(wanted, candidate_tokens))
       end.map(&:first).uniq(&:id)
@@ -45,7 +46,7 @@ module ChecklistTracking
           reason: wanted.size >= 2 ? "Nome e sobrenome identificados sem ambiguidade" : "Primeiro nome único; confira a identidade")
       end
 
-      ranked = @entries.map do |employee, candidate|
+      ranked = entries.map do |employee, candidate|
         [employee, distance(wanted.join, tokens(candidate).join), [wanted.join.length, tokens(candidate).join.length].max]
       end.group_by { |employee, _, _| employee.id }.map { |_, rows| rows.min_by { |_, score, _| score } }.sort_by { |_, score, _| score }
       first, second = ranked.first(2)

@@ -21,6 +21,19 @@ class ChecklistOccurrencesControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "Sugerir com Gemini"
   end
 
+  test "review queue displays badges while collapsed and prefills the job inferred checklist" do
+    @employee.change_role!({ cargo: "operador", sector: "az", turno: 0, starts_on: "2026-01-01", reason: "Admissão" }, user: @user)
+    @employee.update!(nome: "Rafael de Souza")
+    @task.update!(title: "Aplicar matriz ao operador Rafael por não realização do Checklist no dia 16/05/2026")
+    @task.labels << @task.bucket.action_plan.labels.create!(name: "AZ", color: "#00aa55")
+    get checklist_occurrences_path(year: 2026, display: "review")
+    assert_response :success
+    assert_select ".checklist-tracking__candidate summary .task-label-badge", text: "AZ"
+    assert_select "select[name='checklist_occurrence[employee_id]'] option[selected][value='#{@employee.id}']"
+    assert_select "select[name='checklist_occurrence[checklist_kind]'] option[selected][value='empilhadeira']"
+    assert_select "form[action=?] input[type=submit], form[action=?] button", identify_checklist_occurrences_path, identify_checklist_occurrences_path, text: /Registrar 1 identificada/
+  end
+
   test "tabs display only their own content and preserve filters" do
     @employee.change_role!({ cargo: "motorista", sector: "du", promax: "TABS-DU", starts_on: "2026-01-01", reason: "Admissão" }, user: @user)
     @task.checklist_occurrences.create!(@attributes.merge(recorded_by: @user))
@@ -142,7 +155,7 @@ class ChecklistOccurrencesControllerTest < ActionDispatch::IntegrationTest
     other_employee = Employee.create!(nome: "Pessoa de Outro Setor", matricula: "OCC-AZ")
     other_employee.change_role!({ cargo: "operador", sector: "az", turno: 0, starts_on: "2026-01-01", reason: "Admissão" }, user: @user)
     @task.checklist_occurrences.create!(@attributes.merge(recorded_by: @user))
-    @task.checklist_occurrences.create!(@attributes.merge(employee_id: other_employee.id, recorded_by: @user))
+    @task.checklist_occurrences.create!(@attributes.merge(employee_id: other_employee.id, checklist_kind: "empilhadeira", recorded_by: @user))
     outsider = users(:two)
     outsider.update!(role: :user, sector: :warehouse)
     private_plan = outsider.action_plans.create!(name: "Histórico Privado", sector: :warehouse, public: false)
@@ -182,7 +195,7 @@ class ChecklistOccurrencesControllerTest < ActionDispatch::IntegrationTest
     az = Employee.create!(nome: "Operador AZ", matricula: "FILTER-AZ")
     az.change_role!({ cargo: "operador", sector: "az", turno: 0, starts_on: "2026-01-01", reason: "Admissão" }, user: @user)
     @task.checklist_occurrences.create!(@attributes.merge(recorded_by: @user))
-    @task.checklist_occurrences.create!(@attributes.merge(employee_id: az.id, checklist_kind: "paleteira", recorded_by: @user))
+    @task.checklist_occurrences.create!(@attributes.merge(employee_id: az.id, checklist_kind: "empilhadeira", recorded_by: @user))
     get checklist_occurrences_path(year: 2026, employee_sector: "az")
     assert_response :success
     assert_select ".checklist-tracking__ranking tbody tr", count: 1
@@ -262,7 +275,7 @@ class ChecklistOccurrencesControllerTest < ActionDispatch::IntegrationTest
 
   test "exclusion requires justification for other reasons and respects employee sectors" do
     @employee.change_role!({ cargo: "operador", sector: "az", turno: 0, starts_on: "2026-01-01", reason: "Admissão" }, user: @user)
-    record = @task.checklist_occurrences.create!(@attributes.merge(recorded_by: @user))
+    record = @task.checklist_occurrences.create!(@attributes.merge(checklist_kind: "empilhadeira", recorded_by: @user))
     patch exclude_checklist_occurrence_path(record), params: { exclusion: { reason: "other", details: "" } }, as: :json
     assert_response :unprocessable_entity
     assert_nil record.reload.cancelled_at

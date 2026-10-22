@@ -22,20 +22,36 @@ module ChecklistTracking
       dates.one? ? dates.first : task.routine_value&.reference_date || task.start_at&.to_date || task.created_at.to_date
     end
 
-    def suggested_kind
-      kinds.first || kinds_in(text).first || "outro"
+    def suggested_kind(employees = nil)
+      return kinds.first if kinds.any?
+      return "empilhadeira" if occupation_hint == "operador"
+      if employees && (employee = name_match(employees).employee)
+        allowed = eligibility(employee).allowed_kinds
+        return allowed.first if allowed&.one?
+      end
+      kinds_in(text).first || "outro"
     end
 
     def name_match(employees, matcher: nil)
       matcher ||= NameMatcher.new(employees)
-      match = matcher.call(name: mentioned_name, text: evidence)
-      return match unless match.confidence == :missing && mentioned_name.blank?
-      if gerot_checklist_deviation? && gerot_name.present?
-        gerot_match = matcher.call(name: gerot_name)
-        return gerot_match unless gerot_match.confidence == :missing
+      name = mentioned_name.presence
+      original = matcher.call(name: name, text: evidence)
+      if name.blank? && original.confidence == :missing && gerot_checklist_deviation? && gerot_name.present?
+        name = gerot_name
+        original = matcher.call(name: name)
       end
-      contextual = matcher.call(text: text)
-      return match unless contextual.employee
+      return original if name.blank? && original.confidence == :ambiguous
+      eligible_ids = employees.select { |employee| context_allows?(employee) }.map(&:id).to_set
+      match = matcher.call(name: name, text: evidence, eligible_ids: eligible_ids)
+      if match.employee && match.confidence == :partial && name.present? &&
+          name.split.size == 1 && eligibility(match.employee).role && (occupation_hint || kinds.one? || label_sectors.one?)
+        match = NameMatcher::Match.new(employee: match.employee, confidence: :certain,
+          reason: "Nome único entre os colaboradores compatíveis com as etiquetas, o cargo e o checklist")
+      end
+      return match unless match.confidence == :missing
+      return original unless original.confidence == :missing && name.blank?
+      contextual = matcher.call(text: text, eligible_ids: eligible_ids)
+      return original unless contextual.employee
       NameMatcher::Match.new(employee: contextual.employee, confidence: :partial, reason: "Nome no contexto da ação; confira a identidade")
     end
 
@@ -45,16 +61,25 @@ module ChecklistTracking
 
     def automatic_attributes(employees, matcher: nil)
       match = name_match(employees, matcher: matcher)
-      return unless match.certain? && missing_checklist? && certain_date && kinds.one?
-      { employee_id: match.employee.id, occurred_on: certain_date, checklist_kind: kinds.first }
+      return unless match.certain? && missing_checklist? && certain_date && label_sectors.size <= 1
+      return unless context_allows?(match.employee)
+      resolved = resolved_kinds(match.employee)
+      return unless resolved.one? && eligibility(match.employee).allows?(resolved.first)
+      { employee_id: match.employee.id, occurred_on: certain_date, checklist_kind: resolved.first }
     end
 
     def review_reason(employees, matcher: nil)
       match = name_match(employees, matcher: matcher)
+      return "As etiquetas indicam DU e AZ; confira a área da ocorrência." if label_sectors.many?
+      if match.employee
+        allowed = eligibility(match.employee).allowed_kinds
+        return eligibility(match.employee).reason(kinds.first || "outro") if allowed == [] || (kinds.one? && !eligibility(match.employee).allows?(kinds.first))
+        return "As etiquetas ou o cargo informado não correspondem à função do colaborador na data da falta." unless context_allows?(match.employee)
+      end
       return match.reason unless match.certain?
       return "O texto não confirma um checklist não realizado" unless missing_checklist?
       return "A data da falta está ausente ou há várias datas" unless certain_date
-      return "O tipo de checklist está ausente ou há vários tipos" unless kinds.one?
+      return "O tipo de checklist está ausente ou há vários tipos" unless resolved_kinds(match.employee).one?
       return "Nome, tipo e data identificados na ação e na origem no GEROT" if gerot_checklist_deviation?
       "Nome, data e tipo identificados; pronto para registro automático"
     end
@@ -95,6 +120,46 @@ module ChecklistTracking
     end
 
     private
+
+    def label_sectors
+      @label_sectors ||= task.labels.flat_map do |label|
+        tokens = normalize(label.name).split
+        [].tap do |sectors|
+          sectors << "du" if tokens.include?("du") || normalize(label.name).match?(/\bdistribuicao urbana\b/)
+          sectors << "az" if tokens.include?("az") || tokens.include?("armazem")
+        end
+      end.uniq
+    end
+
+    def occupation_hint
+      name = normalize(evidence)
+      return "operador" if name.match?(/\boperador(?:a)?\b/)
+      return "motorista" if name.match?(/\bmotorista\b/)
+      return "ajudante" if name.match?(/\bajudante\b/)
+    end
+
+    def eligibility(employee)
+      @eligibility ||= {}
+      @eligibility[employee.id] ||= Eligibility.new(employee: employee, date: certain_date || suggested_date)
+    end
+
+    def context_allows?(employee)
+      context = eligibility(employee)
+      role = context.role
+      return true unless role
+      return false if context.allowed_kinds == []
+      return false if label_sectors.one? && role.sector != label_sectors.first
+      return false if occupation_hint && role.cargo != occupation_hint
+      kinds.empty? || kinds.any? { |kind| context.allows?(kind) }
+    end
+
+    def resolved_kinds(employee)
+      return kinds if kinds.any?
+      return %w[empilhadeira] if occupation_hint == "operador" && eligibility(employee).allows?("empilhadeira")
+      allowed = eligibility(employee).allowed_kinds
+      allowed&.one? ? allowed : []
+    end
+
 
     def mentioned_name
       normalize(evidence)[/(?:motorista|operador(?:a)?|colaborador(?:a)?|ajudante)\s+(.+?)\s+(?:por\s+nao|nao\s+realiz)/, 1]

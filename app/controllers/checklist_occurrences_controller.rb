@@ -8,8 +8,7 @@ class ChecklistOccurrencesController < ApplicationController
     prepare_report_filters
     @report = ChecklistTracking::Report.new(scope: @occurrence_scope, year: @year)
     @calendar_events = @report.events.select { |event| !@employee || event[:employee] == @employee }.group_by { |event| event[:date] }
-    @excluded_count = history_scope.group(:employee_id, :occurred_on, :checklist_kind)
-      .having("COUNT(*) FILTER (WHERE cancelled_at IS NULL) = 0").count.size
+    @excluded_count = ChecklistTracking::History.new(scope: history_scope).events.count { |event| event[:excluded] }
     @events = @report.events.select do |event|
       (!@employee || event[:employee] == @employee) && (!@month || event[:date].month == @month) && (!@day || event[:date] == @day)
     end
@@ -23,7 +22,7 @@ class ChecklistOccurrencesController < ApplicationController
     tasks = tasks.where(bucket_id: @plan.bucket_ids) if @plan
     @candidates = ChecklistTracking::TaskSource.candidates(tasks)
       .where.not(id: ChecklistOccurrence.select(:task_id))
-      .includes(:comments, :routine_comment, :checklist_occurrences, bucket: :action_plan, routine_value: :routine_indicator)
+      .includes(:labels, :comments, :routine_comment, :checklist_occurrences, bucket: :action_plan, routine_value: :routine_indicator)
       .order(created_at: :desc).map { |task| ChecklistTracking::TaskSource.new(task) }
       .select do |source|
         person = source.name_match(@all_tracking_employees, matcher: @name_matcher).employee
@@ -100,8 +99,8 @@ class ChecklistOccurrencesController < ApplicationController
     @plan = @plans.find(params[:action_plan_id]) if params[:action_plan_id].present?
     @year = selected_year
     @employee_sector = selected_employee_sector
-    @all_tracking_employees = Employee.for_checklist_tracking(current_user).includes(:employee_names).order(:nome).to_a
-    @employees = tracking_employees.includes(:employee_names).order(:nome).to_a
+    @all_tracking_employees = Employee.for_checklist_tracking(current_user).includes(:employee_names, :employee_roles).order(:nome).to_a
+    @employees = tracking_employees.includes(:employee_names, :employee_roles).order(:nome).to_a
     @name_matcher = ChecklistTracking::NameMatcher.new(@all_tracking_employees)
     @employee = @employees.find { |employee| employee.id.to_s == params[:employee_id] }
     raise ActiveRecord::RecordNotFound if params[:employee_id].present? && !@employee && !@all_tracking_employees.any? { |employee| employee.id.to_s == params[:employee_id] }

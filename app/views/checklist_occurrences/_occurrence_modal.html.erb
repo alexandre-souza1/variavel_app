@@ -13,17 +13,12 @@
               <div><h3><%= event[:employee].nome %></h3><p><%= l(event[:date]) %> · Checklist de <%= event[:kind].downcase %></p></div>
               <span class="badge <%= event[:excluded] ? 'text-bg-secondary' : 'text-bg-danger' %>"><%= event[:excluded] ? 'Não entra na contagem' : 'Entra na contagem' %></span>
             </div>
+            <% if event[:role_restriction].present? %><p class="checklist-tracking__justification"><%= event[:role_restriction] %> O registro foi preservado no histórico.</p><% end %>
             <% event[:sources].each do |record| %>
               <div class="checklist-tracking__source">
                 <% if @accessible_history_task_ids.include?(record.task_id) %>
                   <%= link_to action_plan_path(record.task.bucket.action_plan, task_id: record.task_id), class: "checklist-tracking__action-link" do %><span><%= record.task.title %></span><i class="bi bi-arrow-up-right" aria-hidden="true"></i><% end %>
-                  <% if record.task.labels.any? %>
-                    <div class="d-flex flex-wrap gap-2 my-2" aria-label="Etiquetas da tarefa">
-                      <% record.task.labels.each do |label| %>
-                        <span class="badge task-label-badge action-plan-color-badge" style="--task-label-color: <%= label.color %>"><%= label.name %></span>
-                      <% end %>
-                    </div>
-                  <% end %>
+                  <%= render "task_labels", task: record.task %>
                 <% else %><strong>Ação de origem #<%= record.task_id %></strong><% end %>
                 <% if record.notes.present? %><p><%= record.notes %></p><% end %>
                 <small>Registrada por <%= record.recorded_by.name %> em <%= l(record.created_at, format: :short) %></small>

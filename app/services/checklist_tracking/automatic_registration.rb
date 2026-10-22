@@ -9,13 +9,13 @@ module ChecklistTracking
     def call
       result = Result.new(created: 0, pending: 0, preserved: 0)
       return result unless @user.can_view_checklist_tracking?
-      employees = Employee.for_checklist_tracking(@user).includes(:employee_names).to_a
+      employees = Employee.for_checklist_tracking(@user).includes(:employee_names, :employee_roles).to_a
       return result if @employee_sector && !@user.employee_sectors.include?(@employee_sector)
       selected_ids = @employee_sector ? Employee.for_checklist_tracking(@user).in_current_or_last_sector(@employee_sector).pluck(:id).to_set : nil
       matcher = NameMatcher.new(employees)
       accessible_ids = Task.accessible_to(@user).select(:id)
       TaskSource.candidates(@tasks.where(id: accessible_ids))
-        .includes(:comments, :routine_comment, :checklist_occurrences, routine_value: :routine_indicator).find_each do |task|
+        .includes(:labels, :comments, :routine_comment, :checklist_occurrences, routine_value: :routine_indicator).find_each do |task|
         source = TaskSource.new(task)
         next unless source.suggested_date.year == @year
         matched = source.name_match(employees, matcher: matcher).employee

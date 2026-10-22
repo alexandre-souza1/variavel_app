@@ -26,6 +26,21 @@ Ao salvar, os cartões, a tabela, o histórico e o calendário são atualizados.
 
 O módulo permite justificar ocorrências dos colaboradores que o usuário pode acompanhar, mesmo quando os detalhes da tarefa de origem são privados. O acesso aos detalhes da tarefa continua respeitando suas próprias permissões.
 
+## Área e função do colaborador
+
+As etiquetas aparecem também nas ações para conferir, inclusive com a ação recolhida. Etiquetas com DU, AZ ou Armazém ajudam a restringir a área; etiquetas de ambas as áreas exigem conferência. Elas não alteram as permissões de acesso.
+
+A identificação usa a função vigente **na data da ocorrência**:
+
+- Ajudante AZ: checklist de paleteira.
+- Operador AZ: checklist de empilhadeira.
+- Motorista DU: checklist de saída ou retorno. O cargo sozinho não distingue os dois.
+- Ajudante DU: não realiza checklist e não entra na contagem de faltas.
+
+Um primeiro nome só pode entrar no lote se houver uma única pessoa compatível com o nome e o contexto de área, cargo ou tipo. Homônimos compatíveis, informações conflitantes e grafia apenas semelhante continuam para conferência. Sem histórico de cargo, o sistema não usa uma função presumida para desempatar nomes.
+
+A regra vale também para registros manuais. Registros antigos incompatíveis com a função ficam fora dos totais, preservados no histórico com o motivo. Promoções e transferências posteriores não mudam a função usada para uma falta antiga.
+
 ## Regra de contagem
 
 Cada combinação de **colaborador + data + tipo de checklist** representa uma falta. Várias ações sobre a mesma combinação contam uma vez e aparecem juntas no histórico. Saída e retorno no mesmo dia contam duas faltas. Os tipos disponíveis são saída, retorno, empilhadeira, paleteira, segurança e outro.
