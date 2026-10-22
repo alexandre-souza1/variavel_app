@@ -29,6 +29,11 @@ module AiAssistant
       date_range(args, default_from: last.prev_month.change(day: closing_day + 1), default_to: last)
     end
 
+    def calendar_range(args)
+      month = query_month(args['month'])
+      date_range(args, default_from: month, default_to: month.end_of_month)
+    end
+
     def array_page(records, args)
       current = Integer(args.fetch('page', 1)).clamp(1, 500)
       { total: records.size, page: current, has_more: records.size > current * 20,
@@ -62,6 +67,16 @@ module AiAssistant
         scope = scope.joins(:budget_category).where(budget_categories: { sector: sector })
       end
       scope
+    end
+
+    def financial_sectors(args)
+      sectors = @user.admin? || @user.sector_finance? ? BudgetCategory.sectors.keys : @user.budget_sectors
+      sectors &= [BudgetCategory.sectors.key(args['sector']) || args['sector']] if args['sector'].present?
+      sectors
+    end
+
+    def financial_goal_scope(args, month)
+      InvoiceGoal.where(reference_month: month, sector: financial_sectors(args)).includes(:budget_categories).order(:sector, :name, :id)
     end
 
     def checklist_scope

@@ -4,6 +4,8 @@ module AiAssistant
     include NavbarHelper
     include QuerySupport
     include FinanceQueries
+    include FinancialAnalysis
+    include FleetQueries
     include PeopleQueries
     include OperationsQueries
     include ManagementQueries
@@ -174,7 +176,7 @@ module AiAssistant
     def fleet_status(args)
       return { error: "Seu perfil não tem acesso à consulta de frota." } unless can_view_nav_link?(:availability, @user)
 
-      date = args["date"].present? ? Date.iso8601(args["date"]) : Date.current
+      date = query_date(args["date"])
       fleet = FleetAvailability.find_by(date: date)
       return { date: date.iso8601, available: false, message: "Não há disponibilidade cadastrada nesta data." } unless fleet
 
@@ -188,7 +190,7 @@ module AiAssistant
       current = Integer(args.fetch("page", 1)).clamp(1, 500)
       source("Disponibilidade de #{I18n.l(date)}", fleet_availability_path(fleet))
       { date: date.iso8601, available: true, updated_at: fleet.updated_at.iso8601,
-        agreed_quantity: fleet.agreed_quantity, counts: counts, total: filtered.size,
+        agreed_quantity: fleet.agreed_quantity, counts: counts, fleet_total: items.size, filtered_total: filtered.size, total: filtered.size,
         page: current, has_more: filtered.size > current * 20,
         records: filtered.slice((current - 1) * 20, 20).to_a.map do |item|
           { plate: item.plate.placa, status: item.status_label, reason: item.unavailable? ? item.reason_label : nil,

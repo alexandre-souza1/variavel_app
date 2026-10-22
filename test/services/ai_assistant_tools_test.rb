@@ -52,6 +52,17 @@ class AiAssistantToolsTest < ActiveSupport::TestCase
     assert_equal [@private_task.id], result[:records].map { |task| task[:id] }
   end
 
+  test "a filtered daily count is distinct from the full fleet total" do
+    fleet = FleetAvailability.create!(user: @user, date: Date.current, agreed_quantity: 1)
+    FleetAvailabilityItem.create!(fleet_availability: fleet, plate: plates(:one), status: :available, position: 0)
+    FleetAvailabilityItem.create!(fleet_availability: fleet, plate: plates(:two), status: :exchange, position: 1)
+    result = @tools.call('fleet_status', { status: 'available' })
+    assert_equal 1, result[:total]
+    assert_equal 1, result[:filtered_total]
+    assert_equal 2, result[:fleet_total]
+    assert_equal({ 'available' => 1, 'exchange' => 1 }, result[:counts])
+  end
+
   test "fleet respects the requested date sector restrictions and invalid filters" do
     assert_equal false, @tools.call("fleet_status", { date: "2040-01-02" })[:available]
     assert @tools.call("fleet_status", { date: "invalid" })[:error]
@@ -70,6 +81,8 @@ class AiAssistantToolsTest < ActiveSupport::TestCase
     FleetAvailabilityItem.create!(fleet_availability: fleet, plate: plates(:two), status: :unavailable, position: 2)
     result = @tools.call("fleet_status", { date: Date.current.iso8601, status: "unavailable" })
     assert_equal 1, result[:total]
+    assert_equal 1, result[:fleet_total]
+    assert_equal 1, result[:filtered_total]
     assert_equal({ "unavailable" => 1 }, result[:counts])
     assert_equal "Manutenção", result[:records].first[:reason]
     assert_equal "TEST-1234", result[:records].first[:plate]

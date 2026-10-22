@@ -11,12 +11,12 @@ O catálogo de funções enviado ao Gemini é montado para o perfil atual. O ser
 | Área | Consultas |
 | --- | --- |
 | Tarefas e planos | Tarefas pessoais, abertas, vencidas e concluídas; responsáveis, prazos, busca e resumo de planos. |
-| Financeiro | Lançamentos, fornecedores, categorias, centros de custo, valores por emissão ou vencimento, totais, metas do mês e saldo por meta. Vencimento não comprova pagamento ou atraso. |
+| Financeiro | Lançamentos, fornecedores, categorias, centros de custo, valores por emissão ou vencimento, totais, metas do mês, desvios por meta, possíveis ofensores e comparação com o mês anterior. Vencimento não comprova pagamento ou atraso. |
 | RH e colaboradores | Diretório autorizado, cargos, turnos, setores, histórico de funções, últimas revisões dos fechamentos, prévias de variável e feedbacks do Ciclo de Gente. Não envia CPF ou nascimento nessas consultas. |
 | DU | Mapas, caixas, PDVs, recargas e devolução; consumo Gasola, médias, metas, emissões e comparações por motorista/placa. |
 | Armazém | Indicadores e remuneração por cargo no período e turno, pelos mesmos relatórios do dashboard AZ. |
 | Folgas e PCD | Escala pessoal/equipe, folga, DSR e férias; PCD SALAS salvo ou prévia, equipes, placas, salas e horários. |
-| Frota | Disponibilidade, motivos, observações, cadastro de placas, dimensionamento, pneus no limite de recape/instalados e eventos de stress test. |
+| Frota | Disponibilidade diária e média por mês/período, cobertura dos registros, dias abaixo da meta, motivos, observações, cadastro de placas, dimensionamento, pneus no limite de recape/instalados e eventos de stress test. |
 | GEROT | Rotinas autorizadas, indicadores, metas, resultados calculados, preenchimentos por data e pendências. A consulta não gera valores faltantes. |
 | Atas | Busca, resumo, decisões e pendências das atas autorizadas. Não consulta áudio nem conversas do assistente. |
 | Documentos e recursos | Catálogo de padrões, LUPs, matrizes, rotogramas e distribuição de placas no pátio. Não lê PDFs/anexos nem inventa procedimentos pelo título. |
@@ -27,6 +27,18 @@ As permissões usam `User`, `NavbarHelper` e os escopos dos registros. Financeir
 Administradores podem consultar os módulos de todos os setores. As conversas pessoais e as credenciais continuam privadas. Mecânicos mantêm seu fluxo de tarefas atribuídas e Entrada pessoal, além dos checklists próprios e recursos públicos; o setor gravado no cadastro não amplia seu acesso.
 
 Resultados são paginados em 20 registros e incluem os totais completos. Os links dos registros são gerados pelo Rails.
+
+## Análises por período
+
+Perguntas como **“Qual a média de carros disponíveis em outubro?”** usam `fleet_analysis`, com mês civil (`month: YYYY-MM`) ou intervalo (`from/to`, até 366 dias de diferença). A média é calculada no servidor sobre todos os retratos diários cadastrados até hoje, com o mesmo peso por dia, independentemente da paginação. Dias sem registro e futuros ficam fora do denominador; o resultado informa dias registrados, ausentes e futuros, período observado e se é parcial. Um retrato cadastrado sem veículos participa com contagem zero. Sem retratos no período, a média é indisponível.
+
+O relatório separa disponíveis, em troca, indisponíveis e rotas especiais; inclui média do dimensionamento acordado, mínimo/máximo, dias abaixo da meta e motivos de indisponibilidade em veículos-dia. Uma placa retirada depois do dia consultado continua entrando naquele histórico, usando `Plate.active_on?`, como na consulta diária. São retratos salvos, possivelmente editados, e não uma média de todas as mudanças ao longo de cada dia. `fleet_status` continua consultando uma data exata e distingue o total do retrato (`fleet_total`) da quantidade filtrada (`filtered_total`/`total`).
+
+Perguntas como **“Quero um panorama financeiro de setembro, comparando gastos com metas e possíveis ofensores”** usam `financial_analysis`. Em uma consulta, o servidor reúne total por emissão no mês civil, categorias ordenadas por gasto, fornecedores e lançamentos de maior valor, comparação com o mês anterior e todas as metas cadastradas naquele mês, ordenadas pelo excesso em reais. Cada meta informa realizado, saldo, excesso, percentual utilizado e até cinco categorias, cinco fornecedores e três lançamentos que contribuíram para o gasto; os rankings gerais mostram até dez fornecedores e dez lançamentos. Categorias e metas têm páginas de 20 registros, com contadores e totais calculados sobre o conjunto completo.
+
+Metas sobrepostas não são somadas. Gastos de categorias sem meta são identificados e continuam sendo analisados mesmo sem qualquer orçamento cadastrado. Metas existentes aparecem mesmo sem lançamentos. Meses sem registros anteriores não viram uma base zero para calcular variação percentual, e metas de outro mês não são reutilizadas. Os contribuintes de maior valor são possíveis ofensores, sem comprovar a causa do desvio. Valores lançados não comprovam pagamento.
+
+Sem setor explícito na pergunta, a análise financeira usa todos os setores autorizados pela conta, como na tela; não restringe administradores ou contas de Financeiro ao setor do cadastro. `financial_summary` e `list_invoices` também aceitam `month`, além dos intervalos explícitos. O mês solicitado é preservado em todas essas consultas. Sem ano informado, o assistente usa o atual, salvo contexto explícito, e informa o ano considerado. As funções analíticas são somente leitura e conferem novamente as permissões a cada chamada.
 
 ## Criação de tarefas e planos com confirmação
 
@@ -121,7 +133,7 @@ A integração usa a API Interactions com funções permitidas explicitamente e 
 
 ## Validação
 
-`PARALLEL_WORKERS=1 bin/rails test test/controllers/ai_assistants_controller_test.rb test/controllers/ai_assistant_actions_controller_test.rb test/controllers/ai_assistant_task_updates_test.rb test/services/ai_assistant_actions_test.rb test/services/ai_assistant_page_context_test.rb test/services/ai_assistant_tools_test.rb test/services/ai_assistant_queries_test.rb test/services/ai_assistant_daily_briefing_test.rb test/jobs/ai_assistant_job_test.rb test/jobs/ai_assistant_task_context_job_test.rb`
+`PARALLEL_WORKERS=1 bin/rails test test/controllers/ai_assistants_controller_test.rb test/controllers/ai_assistant_actions_controller_test.rb test/controllers/ai_assistant_task_updates_test.rb test/services/ai_assistant_actions_test.rb test/services/ai_assistant_page_context_test.rb test/services/ai_assistant_tools_test.rb test/services/ai_assistant_queries_test.rb test/services/ai_assistant_analytics_test.rb test/services/ai_assistant_daily_briefing_test.rb test/jobs/ai_assistant_job_test.rb test/jobs/ai_assistant_analytics_job_test.rb test/jobs/ai_assistant_task_context_job_test.rb`
 
 Os testes cobrem autenticação, isolamento entre contas, matriz de setores/perfis, bloqueio por IDs e chamadas de funções não anunciadas, paginação, saldos e metas sobrepostas, resumo diário, ausência de dados/integrações, consultas sem escrita, privacidade das conversas, continuidade de funções, cancelamento e falhas do provedor. Também cobrem prévias sem gravação, confirmação explícita, repetição de requisições, expiração, revalidação de permissões/dados, rollback de planos e auditoria após limpar. As chamadas externas são simuladas nos testes.
 

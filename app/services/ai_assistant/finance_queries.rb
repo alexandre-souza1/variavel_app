@@ -3,7 +3,7 @@ module AiAssistant
     private
 
     def financial_summary(args)
-      first, last = date_range(args)
+      first, last = calendar_range(args)
       scope = finance_scope(args).where(date_issued: first..last)
       source('Dashboard financeiro', dashboard_invoices_path(month: first.month, year: first.year))
       categories = scope.joins(:budget_category).group('budget_categories.name').sum('invoices.total')
@@ -14,9 +14,9 @@ module AiAssistant
     end
 
     def list_invoices(args)
-      first, last = date_range(args)
+      first, last = calendar_range(args)
       by_due_date = args['due_from'].present? || args['due_until'].present?
-      filter_emission = !by_due_date || args['from'].present? || args['to'].present?
+      filter_emission = !by_due_date || args['from'].present? || args['to'].present? || args['month'].present?
       scope = finance_scope(args)
       scope = scope.where(date_issued: first..last) if filter_emission
       scope = scope.where(budget_category_id: Integer(args['category_id'])) if args['category_id'].present?
@@ -57,9 +57,7 @@ module AiAssistant
     def financial_goals(args)
       month = query_month(args['month'])
       scope = finance_scope(args)
-      sectors = @user.admin? || @user.sector_finance? ? BudgetCategory.sectors.keys : @user.budget_sectors
-      sectors &= [BudgetCategory.sectors.key(args['sector']) || args['sector']] if args['sector'].present?
-      goals = InvoiceGoal.where(reference_month: month, sector: sectors).includes(:budget_categories).order(:sector, :name, :id)
+      goals = financial_goal_scope(args, month)
       result = paginate(goals, args)
       result[:month] = month.strftime('%Y-%m')
       result[:records] = result[:records].map do |goal|
