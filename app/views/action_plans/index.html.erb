@@ -12,6 +12,9 @@
         <p class="subtitle">Acompanhamento das suas tarefas e planos</p>
       </div>
       <div class="header-actions">
+        <% if current_user.can_view_checklist_tracking? %>
+          <%= link_to "Faltas de checklist", checklist_occurrences_path, class: "btn-outline" %>
+        <% end %>
         <%= link_to inbox_path, class: "btn-outline" do %>
           <i class="bi bi-inbox"></i>
           <span>Minha Entrada</span>

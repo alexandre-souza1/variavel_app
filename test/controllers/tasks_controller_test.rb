@@ -78,7 +78,7 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
     get action_plan_bucket_task_url(@task.bucket.action_plan, @task.bucket, @task)
     assert_response :success
     assert_select "input[type=hidden][name='task[due_at]']"
-    assert_select "select[data-controller=task-select]", count: 2
+    assert_select "select[data-controller=task-select][name^=\"task[\"]", count: 2
     assert_select ".task-datetime__trigger", count: 2
     patch action_plan_bucket_task_url(@task.bucket.action_plan, @task.bucket, @task),
       params: { task: { due_at: "2026-11-05T14:35" } }, as: :turbo_stream

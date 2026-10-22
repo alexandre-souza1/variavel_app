@@ -1,0 +1,14 @@
+<% source = ChecklistTracking::TaskSource.new(task) %>
+<div id="task-checklist-occurrences-<%= task.id %>" class="checklist-tracking__candidate">
+  <details <%= 'open' if local_assigns[:expanded] %>>
+    <summary><strong><%= task.title %></strong><small><%= task.bucket.action_plan.name %> · <%= l(source.suggested_date) %> · <%= task.completed? ? 'Concluída' : 'Aberta' %></small></summary>
+    <p class="checklist-tracking__explanation"><%= task.checklist_occurrences.any? ? 'Esta ação já tem histórico de registros. A identificação automática preserva as correções anteriores.' : source.review_reason(employees) %></p>
+    <% if local_assigns[:message] %><p class="alert alert-warning" role="status"><%= message %></p><% end %>
+    <% if task.description.present? %><p class="checklist-tracking__description"><%= task.description %></p><% end %>
+    <div class="d-flex flex-wrap align-items-center gap-3 my-2">
+      <%= link_to "Abrir ação e comentários", action_plan_path(task.bucket.action_plan, task_id: task.id), class: "btn btn-outline-secondary btn-sm checklist-tracking__link" %>
+    </div>
+    <%= render "checklist_occurrences/registration_form", task: task, employees: employees, year: year, dashboard: true,
+      plan_id: local_assigns[:plan_id], employee_sector: local_assigns[:employee_sector], form_values: local_assigns[:form_values] %>
+  </details>
+</div>

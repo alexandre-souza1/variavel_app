@@ -1,0 +1,35 @@
+<% employees = Employee.for_checklist_tracking(current_user).includes(:employee_names).order(:nome).to_a %>
+<% occurrences = task.checklist_occurrences.where(employee_id: employees.map(&:id)).includes(:employee, :recorded_by, :cancelled_by).order(:occurred_on, :id) %>
+<section id="task-checklist-occurrences-<%= task.id %>" class="checklist-tracking checklist-tracking__task-panel">
+  <div class="checklist-tracking__heading">
+    <div><h3>Faltas de checklist</h3><p>Registre quem deixou de fazer e em qual data.</p></div>
+    <%= link_to "Ver painel anual", checklist_occurrences_path(action_plan_id: task.bucket.action_plan_id), class: "btn btn-outline-secondary btn-sm checklist-tracking__link", data: { turbo_frame: "_top" } %>
+  </div>
+  <% if local_assigns[:message] %>
+    <p class="alert <%= local_assigns[:error] ? 'alert-danger' : 'alert-success' %>" role="status"><%= message %></p>
+  <% end %>
+  <% occurrences.each do |occurrence| %>
+    <div class="checklist-tracking__record <%= 'is-cancelled' if occurrence.cancelled_at? %>">
+      <strong><%= occurrence.employee.nome %></strong>
+      <span><%= l(occurrence.occurred_on) %> · <%= occurrence.kind_label %></span>
+      <% if occurrence.notes.present? %><p><%= occurrence.notes %></p><% end %>
+      <small>Registrado por <%= occurrence.recorded_by.name %> em <%= l(occurrence.created_at, format: :short) %></small>
+      <% if occurrence.cancelled_at? %>
+        <small>Desconsiderada por <%= occurrence.cancelled_by.name %> em <%= l(occurrence.cancelled_at, format: :short) %>: <%= occurrence.cancellation_reason %></small>
+      <% else %>
+        <details class="mt-2">
+          <summary>Desconsiderar registro</summary>
+          <%= form_with url: cancel_task_checklist_occurrence_path(task, occurrence), method: :patch, class: "d-flex gap-2 mt-2" do %>
+            <%= label_tag "cancel-reason-#{occurrence.id}", "Motivo da correção", class: "visually-hidden" %>
+            <%= text_field_tag :cancellation_reason, nil, id: "cancel-reason-#{occurrence.id}", required: true, class: "form-control", placeholder: "Motivo da correção" %>
+            <%= submit_tag "Desconsiderar", class: "btn btn-outline-danger" %>
+          <% end %>
+        </details>
+      <% end %>
+    </div>
+  <% end %>
+  <details <%= 'open' if local_assigns[:error] %>>
+    <summary>Adicionar ocorrência</summary>
+    <%= render "checklist_occurrences/registration_form", task: task, employees: employees %>
+  </details>
+</section>

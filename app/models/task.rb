@@ -19,6 +19,7 @@ class Task < ApplicationRecord
   has_many :task_labels, dependent: :destroy
   has_many :labels, through: :task_labels
   has_many :task_activities, dependent: :destroy
+  has_many :checklist_occurrences, dependent: :restrict_with_error
   include ActionView::RecordIdentifier
 
   scope :visible_for, ->(user) do
@@ -230,6 +231,10 @@ class Task < ApplicationRecord
     return unless persisted? && will_save_change_to_bucket_id?
 
     previous_bucket = Bucket.find_by(id: bucket_id_in_database)
+    if inbox? && checklist_occurrences.exists?
+      errors.add(:bucket, "deve preservar o plano das ocorrências de checklist")
+      return
+    end
     return if previous_bucket.nil? || previous_bucket.inbox? || inbox?
     return if previous_bucket.action_plan_id == bucket&.action_plan_id
 

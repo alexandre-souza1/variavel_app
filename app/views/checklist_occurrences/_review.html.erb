@@ -1,0 +1,19 @@
+  <% if @ready_count.positive? %>
+  <section class="app-panel checklist-tracking__card" aria-label="Identificação automática">
+    <div class="checklist-tracking__heading">
+      <p class="checklist-tracking__explanation"><%= pluralize(@ready_count, "ação identificada", "ações identificadas") %> com nome, data e tipo claros. Registre todas de uma vez. Casos incompletos ou ambíguos continuam para conferência.</p>
+      <%= button_to "Registrar #{pluralize(@ready_count, 'identificada', 'identificadas')}", identify_checklist_occurrences_path,
+        params: { year: @year, action_plan_id: @plan&.id, employee_sector: @employee_sector, display: "review" }, class: "btn btn-primary", disabled: @ready_count.zero?, data: { turbo: false } %>
+    </div>
+  </section>
+  <% end %>
+
+  <section id="tracking-review" class="app-panel checklist-tracking__card" aria-labelledby="tracking-review-title">
+    <div class="checklist-tracking__heading"><div><h2 id="tracking-review-title">Ações para conferir</h2><p><%= pluralize(@candidate_count, "ação", "ações") %> de <%= @year %> sem ocorrência vinculada. Sugestões pelo título, comentário e origem no GEROT.</p></div></div>
+    <p class="checklist-tracking__explanation">Registre de uma vez as ações identificadas. Casos com nomes ambíguos ou dados incompletos ficam para conferência.</p>
+    <% if @candidates.empty? %><p class="checklist-tracking__empty">Nenhuma ação para conferir neste ano.</p><% end %>
+    <% @candidates.each do |source| %>
+      <%= render "candidate", task: source.task, employees: @employees, year: @year, plan_id: @plan&.id, employee_sector: @employee_sector %>
+    <% end %>
+    <%= render "pagination", current_page: @candidate_page, total_count: @candidate_count, per_page: 15, page_key: :candidate_page, filters: filters, anchor: 'tracking-review', label: 'Páginas das ações para conferir' %>
+  </section>

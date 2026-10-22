@@ -24,7 +24,7 @@
             <i class="bi bi-list-check" aria-hidden="true"></i> Minhas tarefas
           <% end %>
         <% end %>
-        <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS, :finance, :du).each do |key, link| %>
+        <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS, :finance, :du, :checklist_tracking).each do |key, link| %>
           <% if can_view_nav_link?(key, current_user) %>
             <%= link_to send(link[:path]), class: "app-mobile-nav-link" do %>
               <i class="bi <%= link[:icon] %>" aria-hidden="true"></i> <%= link[:label] %>
@@ -48,6 +48,7 @@
           </button>
           <div class="collapse" id="mobileDuCollapse" data-bs-parent="#mobileNavModules">
             <%= link_to 'Colaboradores', employees_path(employee_sector: 'du'), class: 'app-mobile-nav-link' %>
+            <%= link_to 'Faltas de checklist', checklist_occurrences_path(employee_sector: 'du'), class: 'app-mobile-nav-link' %>
 
             <%= link_to 'Escala de folgas', time_off_schedule_path, class: 'app-mobile-nav-link' %>
             <%= link_to 'PCD', pcd_path, class: 'app-mobile-nav-link' %>
@@ -71,6 +72,7 @@
           </button>
           <div class="collapse" id="mobileAzCollapse" data-bs-parent="#mobileNavModules">
             <%= link_to 'Colaboradores', employees_path(employee_sector: 'az'), class: 'app-mobile-nav-link' %>
+            <%= link_to 'Faltas de checklist', checklist_occurrences_path(employee_sector: 'az'), class: 'app-mobile-nav-link' %>
 
             <% if current_user.can_access_az_dashboard? %>
               <%= link_to 'Dashboard de Metas AZ', dashboard_az_path, class: 'app-mobile-nav-link' %>
@@ -91,6 +93,7 @@
         </button>
         <div class="collapse" id="mobileRhCollapse" data-bs-parent="#mobileNavModules">
           <%= link_to "Colaboradores", employees_path, class: "app-mobile-nav-link" %>
+          <% if current_user.can_view_checklist_tracking? %><%= link_to "Faltas de checklist", checklist_occurrences_path, class: "app-mobile-nav-link" %><% end %>
           <% if current_user.can_view_du_operations? %>
             <%= link_to "Escala de folgas", time_off_schedule_path, class: "app-mobile-nav-link" %>
           <% end %>
@@ -105,6 +108,7 @@
             <span><strong>Frota</strong><small>Disponibilidade e indicadores</small></span>
           </button>
           <div class="collapse" id="mobileFleetCollapse" data-bs-parent="#mobileNavModules">
+            <% if current_user.can_view_checklist_tracking? %><%= link_to "Faltas de checklist", checklist_occurrences_path, class: "app-mobile-nav-link" %><% end %>
             <% NavbarHelper::FLEET_LINK_KEYS.each do |key| %>
               <% if can_view_nav_link?(key, current_user) %>
                 <% link = NavbarHelper::NAVBAR_LINKS.fetch(key) %>

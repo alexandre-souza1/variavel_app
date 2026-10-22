@@ -42,6 +42,11 @@
   <% elsif activity.description_changed? %>
     alterou a descrição da tarefa
 
+  <% elsif activity.updated? && activity_metadata['field'] == 'checklist_occurrence' %>
+    <%= activity_metadata['action'] == 'cancelled' ? 'desconsiderou a falta de checklist' : 'registrou a falta de checklist' %>:
+    <strong><%= activity.new_value %></strong>
+    <% if activity_metadata['reason'].present? %><span> · <%= activity_metadata['reason'] %></span><% end %>
+
   <% elsif activity.updated? && activity_metadata['field'] == 'title' %>
     alterou o título para <strong><%= activity.new_value %></strong>
 

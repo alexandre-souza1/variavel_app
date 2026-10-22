@@ -27,6 +27,7 @@
               </button>
               <ul class="dropdown-menu app-dropdown-menu">
                 <li><%= link_to 'Colaboradores', employees_path(employee_sector: 'du'), class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Faltas de checklist', checklist_occurrences_path(employee_sector: 'du'), class: 'dropdown-item app-dropdown-item' %></li>
 
                 <li><%= link_to 'Escala de folgas', time_off_schedule_path, class: 'dropdown-item app-dropdown-item' %></li>
                 <li><%= link_to 'PCD', pcd_path, class: 'dropdown-item app-dropdown-item' %></li>
@@ -45,6 +46,7 @@
               </button>
               <ul class="dropdown-menu app-dropdown-menu">
                 <li><%= link_to 'Colaboradores', employees_path(employee_sector: 'az'), class: 'dropdown-item app-dropdown-item' %></li>
+                <li><%= link_to 'Faltas de checklist', checklist_occurrences_path(employee_sector: 'az'), class: 'dropdown-item app-dropdown-item' %></li>
 
                 <% if current_user&.can_access_az_dashboard? %><li><%= link_to 'Dashboard de Metas AZ', dashboard_az_path, class: 'dropdown-item app-dropdown-item' %></li><% end %>
                 <li><%= link_to 'Resultados Diários', az_mapas_path, class: 'dropdown-item app-dropdown-item' %></li>
@@ -56,13 +58,15 @@
 
           <li class="nav-item dropdown">
             <button class="nav-link dropdown-toggle app-dropdown-toggle" id="rhDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-people me-1"></i> RH</button>
-            <ul class="dropdown-menu app-dropdown-menu"><li><%= link_to "Colaboradores", employees_path, class: "dropdown-item app-dropdown-item" %></li><% if current_user.can_view_du_operations? %><li><%= link_to "Escala de folgas", time_off_schedule_path, class: "dropdown-item app-dropdown-item" %></li><% end %><li><%= link_to "Importar Ciclo de Gente", people_cycle_feedbacks_path, class: "dropdown-item app-dropdown-item" %></li></ul>
+            <ul class="dropdown-menu app-dropdown-menu"><li><%= link_to "Colaboradores", employees_path, class: "dropdown-item app-dropdown-item" %></li>
+              <% if current_user.can_view_checklist_tracking? %><li><%= link_to "Faltas de checklist", checklist_occurrences_path, class: "dropdown-item app-dropdown-item" %></li><% end %><% if current_user.can_view_du_operations? %><li><%= link_to "Escala de folgas", time_off_schedule_path, class: "dropdown-item app-dropdown-item" %></li><% end %><li><%= link_to "Importar Ciclo de Gente", people_cycle_feedbacks_path, class: "dropdown-item app-dropdown-item" %></li></ul>
           </li>
 
           <% if NavbarHelper::FLEET_LINK_KEYS.any? { |key| can_view_nav_link?(key, current_user) } %>
             <li class="nav-item dropdown">
               <button class="nav-link dropdown-toggle app-dropdown-toggle" id="fleetDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-truck-front me-1"></i> FROTA</button>
               <ul class="dropdown-menu app-dropdown-menu" aria-labelledby="fleetDropdown">
+                <% if current_user.can_view_checklist_tracking? %><li><%= link_to "Faltas de checklist", checklist_occurrences_path, class: "dropdown-item app-dropdown-item" %></li><% end %>
                 <% NavbarHelper::FLEET_LINK_KEYS.each do |key| %>
                   <% if can_view_nav_link?(key, current_user) %>
                     <% link = NavbarHelper::NAVBAR_LINKS.fetch(key) %>
@@ -87,7 +91,7 @@
           <% end %>
 
           <!-- Links rápidos (exceto Cadastros) -->
-          <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS, :finance).each do |key, link| %>
+          <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS, :finance, :checklist_tracking).each do |key, link| %>
             <% if can_view_nav_link?(key, current_user) %>
               <%= link_to send(link[:path]), class: "nav-link app-nav-link" do %>
                 <i class="bi <%= link[:icon] %> me-1"></i> <%= link[:label] %>

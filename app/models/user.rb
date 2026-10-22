@@ -104,6 +104,10 @@ class User < ApplicationRecord
     !mechanical? && (can_manage_employees? || sector_du? || sector_warehouse? || sector_safety? || sector_planning?)
   end
 
+  def can_view_checklist_tracking?
+    can_view_employees? || sector_fleet?
+  end
+
   def can_view_du_operations?
     !mechanical? && (admin? || supervisor? || sector_du? || sector_fleet? || sector_hr? || sector_safety? || sector_planning?)
   end

@@ -1,0 +1,50 @@
+<% filters = { year: @year, action_plan_id: @plan&.id, employee_id: @employee&.id, month: @month, employee_sector: @employee_sector, display: @display, day: @day&.iso8601 }.compact %>
+<% months = I18n.t('date.abbr_month_names')[1..12] %>
+<div class="app-page checklist-tracking" data-controller="checklist-occurrence-modal" data-checklist-occurrence-modal-details-url-value="<%= details_checklist_occurrences_path %>" data-action="turbo:before-cache@document->checklist-occurrence-modal#close">
+  <header class="app-page-header">
+    <div>
+      <p class="app-page-eyebrow"><i class="bi bi-people me-1" aria-hidden="true"></i> Gestão · Colaboradores</p>
+      <h1><i class="bi bi-person-exclamation me-2" aria-hidden="true"></i>Faltas de checklist</h1>
+      <p>Acompanhamento anual de faltas por colaborador</p>
+    </div>
+    <div class="app-page-actions"><%= link_to(@plan ? "Voltar ao plano" : "Início", @plan ? action_plan_path(@plan) : variaveis_path, class: "btn btn-outline-secondary") %></div>
+  </header>
+
+  <%= form_with url: checklist_occurrences_path, method: :get, class: "checklist-tracking__filters" do %>
+    <%= hidden_field_tag :display, @display %>
+    <div><%= label_tag :year, "Ano da ocorrência" %><%= number_field_tag :year, @year, min: 1900, max: 9999, class: "form-control" %></div>
+    <div class="checklist-tracking__sector-field"><%= label_tag :employee_sector, "Área do colaborador" %><%= select_tag :employee_sector, options_for_select(current_user.employee_sectors.map { |sector| [sector.upcase, sector] }, @employee_sector), include_blank: current_user.employee_sectors.many? ? "DU e AZ" : false, class: "form-select" %></div>
+    <div><%= label_tag :action_plan_id, "Plano de origem" %><%= select_tag :action_plan_id, options_from_collection_for_select(@plans, :id, :name, @plan&.id), include_blank: "Todas as origens", class: "form-select" %></div>
+    <div><%= label_tag :employee_id, "Colaborador" %><%= select_tag :employee_id, options_for_select(@employees.map { |employee| ["#{employee.nome} · #{employee.matricula}", employee.id] }, @employee&.id), include_blank: "Todos os colaboradores", class: "form-select", data: { controller: "task-select" } %></div>
+    <div><%= label_tag :month, @display == "calendar" ? "Mês do calendário" : "Mês das ocorrências" %><%= select_tag :month, options_for_select(months.each_with_index.map { |name, index| [name, index + 1] }, @month), include_blank: "Ano inteiro", class: "form-select" %></div>
+    <%= submit_tag "Filtrar", class: "btn btn-primary" %>
+  <% end %>
+
+  <div id="tracking-summary">
+  <div class="checklist-tracking__metrics">
+    <% [[@report.total, 'Faltas no ano', 'calendar-x'], [@report.rows.size, 'Colaboradores com registro', 'people'], [@report.recurring_count, 'Com mais de uma falta', 'arrow-repeat'], [@report.pending_count, 'Com ações abertas', 'hourglass-split']].each do |value, label, icon| %>
+      <div class="app-panel"><i class="bi bi-<%= icon %>" aria-hidden="true"></i><strong><%= value %></strong><span><%= label %></span></div>
+    <% end %>
+  </div>
+  <p class="checklist-tracking__explanation">A contagem usa a data da falta. Mesmo colaborador, data e tipo contam uma vez, ainda que existam várias ações. Concluir a ação preserva a ocorrência. Os totais anuais abrangem <%= @plan ? @plan.name : 'todas as origens dos colaboradores acessíveis' %><%= " · Área #{@employee_sector.upcase}" if @employee_sector %>.</p>
+
+  </div>
+
+  <div id="tracking-navigation">
+    <% tabs = [["annual", "Anual", "bi-table"], ["calendar", "Calendário mensal", "bi-calendar3"], ["history", "Histórico", "bi-clock-history"], ["review", "Ações para conferir (#{@candidate_count})", "bi-list-check"]].map do |display, label, icon|
+      tab_filters = filters.except(:day).merge(display: display)
+      tab_filters[:month] ||= Date.current.month if display == "calendar"
+      { key: display, label: label, icon: icon, path: checklist_occurrences_path(tab_filters) }
+    end %>
+    <%= render "shared/page_tabs", label: "Visualização das faltas", tabs: tabs, current: @display %>
+  </div>
+
+  <% if @display == "history" %>
+    <%= render "history", filters: filters, months: months %>
+  <% elsif @display == "review" %>
+    <%= render "review", filters: filters %>
+  <% else %>
+    <%= render "overview", filters: filters, months: months %>
+  <% end %>
+  <div data-checklist-occurrence-modal-target="container"></div>
+</div>

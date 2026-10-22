@@ -2,6 +2,7 @@ class Employee < ApplicationRecord
   CARGO_NIVEL = { 'ajudante' => 0, 'van' => 1, 'motorista' => 2 }.freeze
 
   has_many :employee_roles, dependent: :restrict_with_exception
+  has_many :checklist_occurrences, dependent: :restrict_with_exception
   has_many :employee_career_events, dependent: :restrict_with_exception
   has_many :variable_closings, dependent: :restrict_with_exception
   has_many :drivers, dependent: :restrict_with_exception
@@ -21,6 +22,9 @@ class Employee < ApplicationRecord
     return all if user.admin? || user.employee_sectors.size == 2
 
     in_current_or_last_sector(user.employee_sectors)
+  end
+  scope :for_checklist_tracking, ->(user) do
+    user&.sector_fleet? ? all : visible_to(user)
   end
   scope :archived, -> { where(active: false) }
   before_save do

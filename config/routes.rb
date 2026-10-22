@@ -1,4 +1,14 @@
 Rails.application.routes.draw do
+  resources :checklist_occurrences, path: "ocorrencias-checklist", only: :index do
+    post :identify, on: :collection
+    get :details, on: :collection
+    patch :exclude, on: :member
+  end
+  resources :tasks, only: [] do
+    resources :checklist_occurrences, only: :create do
+      patch :cancel, on: :member
+    end
+  end
   resources :automation_rules, path: "automacoes", except: :destroy do
     post :execute, on: :member, path: "executar"
     patch :toggle, on: :member, path: "ativacao"

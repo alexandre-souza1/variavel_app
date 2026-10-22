@@ -1,0 +1,29 @@
+  <section id="tracking-history" class="app-panel checklist-tracking__card" aria-labelledby="tracking-history-title">
+    <div class="checklist-tracking__heading"><div><h2 id="tracking-history-title">Histórico<%= " de #{@employee.nome}" if @employee %></h2><p><%= pluralize(@event_count, "falta", "faltas") %><%= " · #{months[@month - 1]}" if @month %> · <%= @year %><%= " · Dia #{@day.day}" if @day %></p></div><% if @employee || @month || @day %><%= link_to "Ver todo o ano", checklist_occurrences_path(filters.except(:employee_id, :month, :day).merge(display: "history")), class: "btn btn-outline-secondary btn-sm checklist-tracking__link" %><% end %></div>
+    <div class="checklist-tracking__history-actions">
+      <%= link_to "Ver ocorrências", checklist_occurrences_path(filters.merge(anchor: 'tracking-history')), class: 'btn btn-outline-secondary btn-sm checklist-tracking__link', data: { action: 'click->checklist-occurrence-modal#open' } %>
+      <% if @excluded_count.positive? %><%= link_to "Desconsideradas (#{@excluded_count})", checklist_occurrences_path(filters.merge(status: 'excluded', anchor: 'tracking-history')), class: 'btn btn-outline-secondary btn-sm checklist-tracking__link', data: { action: 'click->checklist-occurrence-modal#open' } %><% end %>
+    </div>
+    <% if @events.empty? %><p class="checklist-tracking__empty">Nenhuma ocorrência nos filtros selecionados.</p><% end %>
+    <% @events.each do |event| %>
+      <article class="checklist-tracking__event">
+        <div class="checklist-tracking__heading"><div><strong><%= event[:employee].nome %></strong><p><%= l(event[:date]) %> · Checklist de <%= event[:kind].downcase %></p></div><span class="badge <%= event[:completed] ? 'text-bg-success' : 'text-bg-warning' %>"><%= event[:completed] ? 'Ações concluídas' : 'Ação em aberto' %></span></div>
+        <% event[:sources].each do |occurrence| %>
+          <% task = occurrence.task %>
+          <div class="checklist-tracking__source">
+            <% if @accessible_history_task_ids.include?(task.id) %>
+              <%= link_to action_plan_path(task.bucket.action_plan, task_id: task.id), class: "checklist-tracking__action-link" do %><span><%= task.title %></span><i class="bi bi-arrow-up-right" aria-hidden="true"></i><% end %>
+              <small><%= task.bucket.action_plan.name %> · <%= task.completed? ? 'Concluída' : 'Aberta' %><%= " · GEROT: #{task.routine_value.routine.title}" if task.routine_value %></small>
+            <% else %>
+              <strong>Ação de origem #<%= task.id %></strong>
+              <small><%= task.completed? ? 'Concluída' : 'Aberta' %> · Detalhes disponíveis para quem tem acesso à ação.</small>
+            <% end %>
+            <% if occurrence.notes.present? %><p><%= occurrence.notes %></p><% end %>
+            <small>Registro por <%= occurrence.recorded_by.name %> em <%= l(occurrence.created_at, format: :short) %></small>
+          </div>
+        <% end %>
+      </article>
+    <% end %>
+    <%= render "pagination", current_page: @page, total_count: @event_count, per_page: 20, page_key: :page, filters: filters, anchor: 'tracking-history', label: 'Páginas do histórico' %>
+  </section>
+

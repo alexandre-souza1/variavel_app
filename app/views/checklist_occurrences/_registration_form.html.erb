@@ -1,0 +1,35 @@
+<% source = ChecklistTracking::TaskSource.new(task) %>
+<% values = local_assigns[:form_values] || {} %>
+<% suggested_employee = source.suggested_employee(employees) %>
+<%= form_with url: task_checklist_occurrences_path(task), scope: :checklist_occurrence, class: "checklist-tracking__registration", data: { turbo: !local_assigns[:dashboard] } do |form| %>
+  <% if local_assigns[:dashboard] %>
+    <%= hidden_field_tag :tracking_dashboard, "1" %>
+    <%= hidden_field_tag :display, "review" %>
+    <%= hidden_field_tag :tracking_plan_id, local_assigns.fetch(:plan_id, @plan&.id) %>
+  <% end %>
+  <%= hidden_field_tag :employee_sector, local_assigns.fetch(:employee_sector, @employee_sector) %>
+  <%= hidden_field_tag :year, local_assigns[:year] || source.suggested_date.year %>
+  <div class="checklist-tracking__fields">
+    <div class="checklist-tracking__person-field">
+      <%= form.label :employee_id, "Colaborador que não fez", for: "occurrence-employee-#{task.id}" %>
+      <%= form.select :employee_id, employees.map { |employee| ["#{employee.nome} · #{employee.matricula}#{' · Inativo' unless employee.active?}", employee.id] },
+        { include_blank: "Selecione o colaborador", selected: values.fetch("employee_id", suggested_employee&.id) },
+        id: "occurrence-employee-#{task.id}", required: true, class: "form-select", data: { controller: "task-select", task_select_placeholder_value: "Buscar nome ou matrícula..." } %>
+    </div>
+    <div>
+      <%= form.label :occurred_on, "Data da falta", for: "occurrence-date-#{task.id}" %>
+      <%= form.date_field :occurred_on, value: values.fetch("occurred_on", source.suggested_date), required: true, id: "occurrence-date-#{task.id}", class: "form-control" %>
+    </div>
+    <div>
+      <%= form.label :checklist_kind, "Tipo de checklist", for: "occurrence-kind-#{task.id}" %>
+      <%= form.select :checklist_kind, ChecklistOccurrence::KINDS.map { |value, label| [label, value] },
+        { selected: values.fetch("checklist_kind", source.suggested_kind) }, id: "occurrence-kind-#{task.id}", class: "form-select" %>
+    </div>
+  </div>
+  <%= form.label :notes, "Observação (opcional)", for: "occurrence-notes-#{task.id}" %>
+  <%= form.text_field :notes, id: "occurrence-notes-#{task.id}", class: "form-control", placeholder: "Contexto da ocorrência" %>
+  <div class="checklist-tracking__form-footer">
+    <small>Confira nome, data e tipo sugeridos antes de registrar. Para outra pessoa ou data, adicione um novo registro.</small>
+    <%= form.submit "Registrar ocorrência", class: "btn btn-primary" %>
+  </div>
+<% end %>

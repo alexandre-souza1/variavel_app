@@ -1,0 +1,58 @@
+<section id="tracking-overview" class="app-panel checklist-tracking__overview" aria-labelledby="tracking-ranking">
+  <div class="app-panel__header">
+    <div>
+      <span class="app-panel__kicker"><%= @display == 'calendar' ? 'Acompanhamento mensal' : 'Acompanhamento anual' %></span>
+      <h2 id="tracking-ranking" class="app-panel__title"><%= @display == 'calendar' ? 'Calendário de faltas' : "Por colaborador em #{@year}" %></h2>
+    </div>
+    <% unless @display == 'calendar' %><span class="employees-badge"><%= pluralize(@report.rows.size, 'colaborador', 'colaboradores') %></span><% end %>
+  </div>
+  <div class="app-panel__body">
+    <p class="app-panel__subtitle"><%= @display == 'calendar' ? 'Selecione um dia para conferir suas ocorrências.' : 'Selecione o colaborador ou um total para conferir as ocorrências.' %></p>
+    <% if @display == 'calendar' %><%= render "calendar", filters: filters %><% end %>
+  </div>
+  <% unless @display == 'calendar' %>
+    <% if @report.rows.empty? %>
+      <div class="checklist-tracking__empty"><i class="bi bi-person-check" aria-hidden="true"></i><p>Nenhuma falta confirmada neste ano.</p><span>Use a aba Ações para conferir para vincular as ações ao colaborador e incluí-las na contagem.</span></div>
+    <% else %>
+      <div class="app-table-shell">
+        <table class="table app-table app-table--data employees-table checklist-tracking__ranking">
+          <caption class="visually-hidden">Faltas de checklist por colaborador e mês em <%= @year %>. Selecione um colaborador ou total para abrir as ocorrências.</caption>
+          <thead><tr><th scope="col">Colaborador</th><th scope="col">Matrícula</th><th scope="col">Total</th><% months.each do |month| %><th scope="col"><%= month %></th><% end %></tr></thead>
+          <tbody>
+            <% @report.rows.each do |row| %>
+              <% employee = row[:employee] %>
+              <% employee_history_path = checklist_occurrences_path(filters.merge(employee_id: employee.id, month: nil, display: 'history', anchor: 'tracking-history')) %>
+              <tr>
+                <td>
+                  <%= link_to employee_history_path, class: 'employees-person', data: { action: 'click->checklist-occurrence-modal#open' } do %>
+                    <span class="employees-avatar" aria-hidden="true"><%= employee.nome.split.first(2).map(&:first).join %></span>
+                    <span><strong><%= employee.nome %></strong><small>Ver ocorrências</small></span>
+                  <% end %>
+                </td>
+                <td><span class="employees-code"><%= employee.matricula %></span></td>
+                <td><%= link_to row[:total], employee_history_path, class: "btn btn-outline-danger btn-sm checklist-tracking__total", data: { action: "click->checklist-occurrence-modal#open" }, aria: { label: "#{employee.nome}: #{row[:total]} faltas em #{@year}" } %></td>
+                <% row[:months].each_with_index do |count, index| %>
+                  <td>
+                    <% if count.positive? %>
+                      <%= link_to count, checklist_occurrences_path(filters.merge(employee_id: employee.id, month: index + 1, display: 'history', anchor: 'tracking-history')), class: 'btn btn-outline-danger btn-sm', data: { action: "click->checklist-occurrence-modal#open" }, aria: { label: "#{employee.nome}, #{months[index]}: #{count} faltas" } %>
+                    <% else %><span class="text-muted">–</span><% end %>
+                  </td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row"><strong>Total de faltas</strong><small><%= @year %> · <%= pluralize(@report.rows.size, 'colaborador', 'colaboradores') %></small></th>
+              <td></td>
+              <td class="checklist-tracking__annual-total"><strong><%= @report.total %></strong></td>
+              <% @report.monthly_counts.each do |count| %>
+                <td><% if count.positive? %><strong><%= count %></strong><% else %><span class="text-muted" aria-label="Nenhuma falta">–</span><% end %></td>
+              <% end %>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    <% end %>
+  <% end %>
+</section>

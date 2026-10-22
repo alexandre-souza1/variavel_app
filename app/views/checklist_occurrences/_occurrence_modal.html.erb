@@ -1,0 +1,55 @@
+<div class="modal fade app-modal checklist-tracking-modal" id="checklistOccurrencesModal" tabindex="-1" aria-labelledby="checklistOccurrencesModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div><h2 class="modal-title fs-5" id="checklistOccurrencesModalTitle">Ocorrências<%= " de #{@employee.nome}" if @employee %></h2><p class="mb-0 small text-muted"><%= @year %><%= " · #{I18n.t('date.month_names')[@month]}" if @month %><%= " · Dia #{@day.day}" if @day %><%= " · #{@employee_sector.upcase}" if @employee_sector %> · <%= pluralize(@history_events.count { |event| !event[:excluded] }, 'na contagem', 'na contagem') %> · <%= pluralize(@history_events.count { |event| event[:excluded] }, 'desconsiderada', 'desconsideradas') %></p></div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body checklist-tracking">
+        <% if @history_events.empty? %><p class="checklist-tracking__empty">Nenhuma ocorrência neste período.</p><% end %>
+        <% @history_events.each do |event| %>
+          <article class="app-panel checklist-tracking__modal-event <%= 'is-excluded' if event[:excluded] %>">
+            <div class="checklist-tracking__heading">
+              <div><h3><%= event[:employee].nome %></h3><p><%= l(event[:date]) %> · Checklist de <%= event[:kind].downcase %></p></div>
+              <span class="badge <%= event[:excluded] ? 'text-bg-secondary' : 'text-bg-danger' %>"><%= event[:excluded] ? 'Não entra na contagem' : 'Entra na contagem' %></span>
+            </div>
+            <% event[:sources].each do |record| %>
+              <div class="checklist-tracking__source">
+                <% if @accessible_history_task_ids.include?(record.task_id) %>
+                  <%= link_to action_plan_path(record.task.bucket.action_plan, task_id: record.task_id), class: "checklist-tracking__action-link" do %><span><%= record.task.title %></span><i class="bi bi-arrow-up-right" aria-hidden="true"></i><% end %>
+                  <% if record.task.labels.any? %>
+                    <div class="d-flex flex-wrap gap-2 my-2" aria-label="Etiquetas da tarefa">
+                      <% record.task.labels.each do |label| %>
+                        <span class="badge task-label-badge action-plan-color-badge" style="--task-label-color: <%= label.color %>"><%= label.name %></span>
+                      <% end %>
+                    </div>
+                  <% end %>
+                <% else %><strong>Ação de origem #<%= record.task_id %></strong><% end %>
+                <% if record.notes.present? %><p><%= record.notes %></p><% end %>
+                <small>Registrada por <%= record.recorded_by.name %> em <%= l(record.created_at, format: :short) %></small>
+                <% if record.cancelled_at? %><p class="checklist-tracking__justification"><i class="bi bi-info-circle me-1" aria-hidden="true"></i><strong>Desconsiderada:</strong> <%= record.cancellation_reason %><small>Por <%= record.cancelled_by.name %> em <%= l(record.cancelled_at, format: :short) %></small></p><% end %>
+              </div>
+            <% end %>
+            <% unless event[:excluded] %>
+              <% record = event[:sources].find { |source| !source.cancelled_at? } %>
+              <details class="checklist-tracking__exclusion">
+                <summary><i class="bi bi-shield-check me-1" aria-hidden="true"></i> Não contar esta ocorrência</summary>
+                <%= form_with url: exclude_checklist_occurrence_path(record), scope: :exclusion, method: :patch,
+                  data: { action: "submit->checklist-occurrence-modal#exclude" }, class: "mt-3" do |form| %>
+                  <%= hidden_field_tag :employee_sector, @employee_sector %>
+                  <p class="checklist-tracking__explanation">A falta sai dos totais e a justificativa fica no histórico. Se houver várias ações sobre esta mesma falta, todas recebem a justificativa.</p>
+                  <div class="checklist-tracking__fields">
+                    <div><%= form.label :reason, "Motivo", for: "exclusion-reason-#{record.id}" %><%= form.select :reason, ChecklistOccurrence::EXCLUSION_REASONS.map { |value, label| [label, value] }, { include_blank: 'Selecione o motivo' }, id: "exclusion-reason-#{record.id}", required: true, class: "form-select" %></div>
+                    <div class="checklist-tracking__person-field"><%= form.label :details, "Justificativa (obrigatória em Outro motivo)", for: "exclusion-details-#{record.id}" %><%= form.text_field :details, id: "exclusion-details-#{record.id}", class: "form-control", maxlength: 1000, placeholder: "Descreva o que aconteceu" %></div>
+                  </div>
+                  <%= form.submit "Desconsiderar e salvar justificativa", class: "btn btn-outline-primary" %>
+                <% end %>
+              </details>
+            <% end %>
+          </article>
+        <% end %>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button></div>
+    </div>
+  </div>
+</div>

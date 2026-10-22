@@ -182,6 +182,9 @@
 
 
       <% end %>
+      <% if !task.inbox? && current_user.can_view_checklist_tracking? %>
+        <%= render "checklist_occurrences/task_panel", task: task %>
+      <% end %>
     </div>
 
     <!-- COLUNA DIREITA (COMENTÁRIOS) -->

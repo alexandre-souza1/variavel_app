@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_19_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_22_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -381,6 +381,28 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_19_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["checklist_template_id"], name: "index_checklist_items_on_checklist_template_id"
+  end
+
+  create_table "checklist_occurrences", force: :cascade do |t|
+    t.bigint "task_id", null: false
+    t.bigint "employee_id", null: false
+    t.bigint "recorded_by_id", null: false
+    t.date "occurred_on", null: false
+    t.string "checklist_kind", null: false
+    t.text "notes"
+    t.datetime "cancelled_at"
+    t.bigint "cancelled_by_id"
+    t.text "cancellation_reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "exclusion_category"
+    t.index ["cancelled_by_id"], name: "index_checklist_occurrences_on_cancelled_by_id"
+    t.index ["employee_id", "occurred_on", "checklist_kind"], name: "index_justified_checklist_occurrences", where: "(exclusion_category IS NOT NULL)"
+    t.index ["employee_id"], name: "index_checklist_occurrences_on_employee_id"
+    t.index ["occurred_on", "employee_id"], name: "index_checklist_occurrences_on_occurred_on_and_employee_id"
+    t.index ["recorded_by_id"], name: "index_checklist_occurrences_on_recorded_by_id"
+    t.index ["task_id", "employee_id", "occurred_on", "checklist_kind"], name: "index_active_checklist_occurrences", unique: true, where: "(cancelled_at IS NULL)"
+    t.index ["task_id"], name: "index_checklist_occurrences_on_task_id"
   end
 
   create_table "checklist_photos", force: :cascade do |t|
@@ -1460,6 +1482,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_19_120000) do
   add_foreign_key "buckets", "users"
   add_foreign_key "checklist_defects", "checklists"
   add_foreign_key "checklist_items", "checklist_templates"
+  add_foreign_key "checklist_occurrences", "employees"
+  add_foreign_key "checklist_occurrences", "tasks"
+  add_foreign_key "checklist_occurrences", "users", column: "cancelled_by_id"
+  add_foreign_key "checklist_occurrences", "users", column: "recorded_by_id"
   add_foreign_key "checklist_photos", "checklists"
   add_foreign_key "checklist_responses", "checklist_items"
   add_foreign_key "checklist_responses", "checklists"

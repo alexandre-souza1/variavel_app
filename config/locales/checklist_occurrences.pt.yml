@@ -1,0 +1,14 @@
+pt:
+  activerecord:
+    models:
+      checklist_occurrence: "Ocorrência de checklist"
+    attributes:
+      checklist_occurrence:
+        task: "Tarefa"
+        employee: "Colaborador"
+        employee_id: "Colaborador"
+        occurred_on: "Data da falta"
+        checklist_kind: "Tipo de checklist"
+        recorded_by: "Autor do registro"
+        cancelled_by: "Responsável pela correção"
+        cancellation_reason: "Motivo da correção"

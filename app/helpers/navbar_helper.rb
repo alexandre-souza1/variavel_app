@@ -21,6 +21,12 @@ module NavbarHelper
       label: 'Tarefas',
       sectors: [:fleet, :warehouse, :hr, :finance, :planning, :du, :safety]
     },
+    checklist_tracking: {
+      path: :checklist_occurrences_path,
+      icon: 'bi-person-exclamation',
+      label: 'Faltas de checklist',
+      sectors: [:fleet, :du, :warehouse, :hr, :safety, :planning]
+    },
     availability: {
       path: :fleet_availabilities_path,
       icon: 'bi-truck',
@@ -117,6 +123,7 @@ module NavbarHelper
   def can_view_nav_link?(link_key, user)
     return false if user.mechanical?
     return true if user.admin?
+    return user.can_view_checklist_tracking? if link_key == :checklist_tracking
     link = NAVBAR_LINKS[link_key]
     return false unless link
     link[:sectors].include?(user.sector&.to_sym)

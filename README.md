@@ -52,6 +52,10 @@ Calendário por grupo, rodízio contínuo A–F e cartões compactos de disponib
 - GEROTs por período dentro dos planos de ação anuais, com um modelo por plano e categorias correspondentes aos buckets. GEROTs independentes usam seus próprios modelos e podem ser adaptados a um plano preservando o histórico. Por padrão, um comentário em indicador fora da meta cria a tarefa. Veja [preparação e uso](docs/gerots_planos_de_acao.md).
 - Notificações de atribuição e vencimento.
 
+### Faltas de checklist
+
+Módulo próprio nos menus DU, AZ, Frota e RH, com filtro de área, totais por colaborador, calendário mensal e modal para consultar e justificar ocorrências que não devem entrar na contagem. Mantém o rastreio nas ações. Inclui identificação por nome e pelos indicadores de aderência do GEROT, com registro em lote dos casos claros. Veja [regras, acesso e uso](docs/faltas_de_checklist.md).
+
 ### Financeiro
 
 - Invoices, notas fiscais, fornecedores, centros de custo e categorias orçamentárias.
