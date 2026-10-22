@@ -1,16 +1,27 @@
 <% current_role = @employee.role_on(Date.current) %>
-<% displayed_role = current_role || (@employee.initial_role if @employee.awaiting_function_start?) %>
+<% displayed_role = current_role || (@employee.initial_role if @employee.awaiting_function_start? || @employee.historical_only?) %>
 <div class="app-page employees-page">
   <%= link_to employees_path(employee_navigation), class: 'employees-back' do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Colaboradores<% end %>
   <header class="app-page-header">
-    <div><p class="app-page-eyebrow">Gestão de pessoas · RH</p><h1><%= @employee.nome %></h1><p>Matrícula <%= @employee.matricula %> <span aria-hidden="true">·</span> Cadastro #<%= @employee.id %></p></div>
-    <div class="app-page-actions"><% if current_user.can_manage_employees? %><%= link_to "Editar dados", edit_employee_path(@employee, employee_navigation), class: "btn btn-outline-primary" %><%= button_to(@employee.active? ? "Inativar" : "Reativar", @employee.active? ? retire_employee_path(@employee, employee_navigation) : reactivate_employee_path(@employee, employee_navigation), method: :patch, class: "btn btn-outline-secondary", data: { turbo_confirm: "Confirmar a alteração de situação deste colaborador?" }) %><% end %><%= link_to consulta_path(matricula: @employee.matricula, categoria: 'colaborador', employee_sector: current_role&.sector), class: 'btn btn-primary' do %><i class="bi bi-bar-chart" aria-hidden="true"></i> Consultar variável<% end %></div>
+    <div><p class="app-page-eyebrow">Gestão de pessoas · RH</p><h1><%= @employee.nome %></h1><p>Matrícula <%= @employee.matricula.presence || 'não informada' %> <span aria-hidden="true">·</span> Cadastro #<%= @employee.id %></p></div>
+    <div class="app-page-actions">
+      <% if current_user.can_manage_employees? %>
+        <%= link_to "Editar dados", edit_employee_path(@employee, employee_navigation), class: "btn btn-outline-primary" %>
+        <% unless @employee.historical_only? %>
+          <%= button_to(@employee.active? ? "Inativar" : "Reativar", @employee.active? ? retire_employee_path(@employee, employee_navigation) : reactivate_employee_path(@employee, employee_navigation), method: :patch, class: "btn btn-outline-secondary", data: { turbo_confirm: "Confirmar a alteração de situação deste colaborador?" }) %>
+        <% end %>
+      <% end %>
+      <% unless @employee.historical_only? %>
+        <%= link_to consulta_path(matricula: @employee.matricula, categoria: 'colaborador', employee_sector: current_role&.sector), class: 'btn btn-primary' do %><i class="bi bi-bar-chart" aria-hidden="true"></i> Consultar variável<% end %>
+      <% end %>
+    </div>
   </header>
+  <% if @employee.historical_only? %><p class="alert alert-info">Cadastro histórico de ex-colaborador, mantido inativo para vincular ocorrências antigas. Datas não informadas permanecem desconhecidas.</p><% end %>
   <% if @duplicate_employees.any? && @roles.any? %>
     <%= render 'duplicate_registrations', employee: @employee, duplicate_employees: @duplicate_employees %>
   <% end %>
   <section class="employees-overview" aria-label="Resumo do colaborador">
-    <div class="app-panel employees-stat"><span><i class="bi bi-briefcase" aria-hidden="true"></i> <%= current_role || !@employee.awaiting_function_start? ? 'Cargo atual' : 'Cargo previsto' %></span><strong><%= displayed_role&.label || 'Sem vigência' %></strong></div>
+    <div class="app-panel employees-stat"><span><i class="bi bi-briefcase" aria-hidden="true"></i> <%= @employee.historical_only? ? 'Cargo histórico' : (current_role || !@employee.awaiting_function_start? ? 'Cargo atual' : 'Cargo previsto') %></span><strong><%= displayed_role&.label || 'Sem vigência' %></strong></div>
     <div class="app-panel employees-stat"><span><i class="bi bi-calendar-check" aria-hidden="true"></i> Início na função</span><strong><%= displayed_role&.starts_on ? l(displayed_role.starts_on) : 'Não informado' %></strong></div>
     <div class="app-panel employees-stat"><span><i class="bi bi-calendar3" aria-hidden="true"></i> Registro na carteira</span><strong><%= @employee.registered_on ? l(@employee.registered_on) : 'Não informado' %></strong></div>
     <div class="app-panel employees-stat"><span><i class="bi bi-person-badge" aria-hidden="true"></i> Código / turno</span><strong><%= displayed_role&.az? ? "Turno #{displayed_role.shift_label || 'não informado'}" : (displayed_role&.promax || '—') %></strong></div>
@@ -24,9 +35,9 @@
         <% if @roles.any? %>
           <ol class="employees-timeline">
             <% @roles.each do |role| %>
-              <li class="employees-timeline__item <%= 'employees-timeline__item--current' if role.covers?(Date.current) %>">
-                <div class="employees-timeline__heading"><h3><%= role.label %> · <%= role.sector_label %></h3><% if role.pending_start? %><span class="employees-badge">Em integração</span><% elsif role.covers?(Date.current) %><span class="employees-badge employees-badge--accent">Atual</span><% elsif role.starts_on && role.starts_on > Date.current %><span class="employees-badge">Agendado</span><% end %></div>
-                <p class="employees-timeline__period"><i class="bi bi-calendar3" aria-hidden="true"></i> <%= role.starts_on ? l(role.starts_on) : (role.pending_start? ? 'Aguardando início na função' : 'Início desconhecido') %> <span>→</span> <%= role.ends_on ? l(role.ends_on) : 'Em aberto' %></p>
+              <li class="employees-timeline__item <%= 'employees-timeline__item--current' if !@employee.historical_only? && role.covers?(Date.current) %>">
+                <div class="employees-timeline__heading"><h3><%= role.label %> · <%= role.sector_label %></h3><% if role.pending_start? %><span class="employees-badge">Em integração</span><% elsif !@employee.historical_only? && role.covers?(Date.current) %><span class="employees-badge employees-badge--accent">Atual</span><% elsif role.starts_on && role.starts_on > Date.current %><span class="employees-badge">Agendado</span><% end %></div>
+                <p class="employees-timeline__period"><i class="bi bi-calendar3" aria-hidden="true"></i> <%= role.starts_on ? l(role.starts_on) : (role.pending_start? ? 'Aguardando início na função' : 'Início desconhecido') %> <span>→</span> <%= role.ends_on ? l(role.ends_on) : (@employee.historical_only? ? 'Fim desconhecido' : 'Em aberto') %></p>
                 <p><span class="employees-badge"><%= role.az? ? "Turno #{role.shift_label || 'a definir'}" : "Promax #{role.promax.presence || 'a definir'}" %></span></p>
                 <p class="employees-timeline__reason"><%= role.reason %></p>
                 <small><i class="bi bi-person" aria-hidden="true"></i> <%= role.created_by&.email || 'Migração do cadastro' %></small>
@@ -76,7 +87,7 @@
   </div>
 
   <div class="app-page-actions mb-3">
-    <% (@roles.map(&:sector) + @closings.map(&:sector)).uniq.each do |sector| %>
+    <% (@employee.historical_only? ? [] : (@roles.map(&:sector) + @closings.map(&:sector)).uniq).each do |sector| %>
       <%= link_to "Consultar variável #{sector.upcase}", consulta_path(matricula: @employee.matricula, employee_sector: sector), class: 'btn btn-outline-primary' %>
     <% end %>
     <% if @employee.eligible_for?(:time_off) %><%= link_to 'Escala 5×2', time_off_schedule_path, class: 'btn btn-outline-secondary' %><% end %>

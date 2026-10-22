@@ -11,8 +11,10 @@ class Employee < ApplicationRecord
   has_many :az_ajudantes, dependent: :restrict_with_exception
   has_many :employee_names, dependent: :restrict_with_exception
   has_many :time_off_memberships, dependent: :restrict_with_exception
-  validates :nome, :matricula, presence: true
-  validates :matricula, uniqueness: true, on: :create
+  validates :nome, presence: true
+  validates :matricula, presence: true, unless: :historical_only?
+  validates :matricula, uniqueness: true, on: :create, allow_blank: true
+  validate :historical_identity
   validate :unique_registration_change, on: :update
   validate :valid_registration_date
 
@@ -73,6 +75,7 @@ class Employee < ApplicationRecord
   end
 
   def operational_autonomy
+    return false if historical_only? || matricula.blank?
     Employees::Registry.autonomy_record(matricula)&.autonomy || false
   end
 
@@ -82,9 +85,17 @@ class Employee < ApplicationRecord
   end
 
   def unique_registration_change
-    if will_save_change_to_matricula? && self.class.where(matricula: matricula).where.not(id: id).exists?
+    if matricula.present? && will_save_change_to_matricula? && self.class.where(matricula: matricula).where.not(id: id).exists?
       errors.add(:matricula, 'já pertence a outro colaborador; revise os vínculos no RH')
     end
+  end
+
+  def historical_identity
+    errors.add(:base, 'Cadastro histórico de ex-colaborador deve permanecer inativo.') if historical_only? && active?
+  end
+
+  def checklist_identity_label
+    [nome, matricula.presence || 'Sem matrícula', historical_only? ? 'Ex-colaborador' : ('Inativo' unless active?)].compact.join(' · ')
   end
 
   def valid_registration_date

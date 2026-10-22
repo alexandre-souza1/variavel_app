@@ -3,7 +3,7 @@
 <% month_events = @calendar_events.select { |date, _| date.month == @calendar_date.month }.values.flatten %>
 <div class="checklist-tracking__calendar">
   <div class="checklist-tracking__calendar-toolbar">
-    <div><h3><%= l(@calendar_date, format: '%B de %Y').capitalize %></h3><p><%= pluralize(month_events.size, 'falta', 'faltas') %> no mês · <%= pluralize(month_events.map { |event| event[:employee].id }.uniq.size, 'colaborador', 'colaboradores') %></p></div>
+    <div><h3><%= l(@calendar_date, format: '%B de %Y').capitalize %></h3><p><%= pluralize(month_events.size, 'falta', 'faltas') %> no mês · <%= pluralize(month_events.map { |event| event[:subject_key] }.uniq.size, @spot_mode ? 'placa' : 'colaborador', @spot_mode ? 'placas' : 'colaboradores') %></p></div>
     <div class="checklist-tracking__calendar-navigation">
       <% if previous_month.year >= 1900 %><%= link_to checklist_occurrences_path(filters.except(:day).merge(year: previous_month.year, month: previous_month.month, anchor: 'tracking-ranking')), class: 'btn btn-outline-secondary btn-sm checklist-tracking__page-link', aria: { label: 'Mês anterior' } do %><i class="bi bi-chevron-left" aria-hidden="true"></i><% end %><% end %>
       <%= link_to 'Hoje', checklist_occurrences_path(filters.except(:day).merge(year: Date.current.year, month: Date.current.month, anchor: 'tracking-ranking')), class: 'btn btn-outline-secondary btn-sm checklist-tracking__page-link' %>
@@ -17,10 +17,10 @@
         <div class="checklist-tracking__calendar-day is-outside" aria-hidden="true"><span><%= date.day %></span></div>
       <% else %>
         <% events = @calendar_events.fetch(date, []) %>
-        <% people = events.group_by { |event| event[:employee] } %>
-        <%= link_to checklist_occurrences_path(filters.merge(day: date.iso8601, display: 'history', anchor: 'tracking-history')), class: "checklist-tracking__calendar-day #{'has-events' if events.any?} #{'is-today' if date == Date.current} #{'is-selected' if date == @day}", data: { calendar_date: date.iso8601, action: "click->checklist-occurrence-modal#open" }, aria: { label: "#{l(date, format: :long)}: #{pluralize(events.size, 'falta', 'faltas')}#{", #{people.keys.map(&:nome).join(', ')}" if people.any?}", current: date == @day ? 'date' : nil } do %>
+        <% people = events.group_by { |event| event[:subject_key] } %>
+        <%= link_to checklist_occurrences_path(filters.merge(day: date.iso8601, display: 'history', anchor: 'tracking-history')), class: "checklist-tracking__calendar-day #{'has-events' if events.any?} #{'is-today' if date == Date.current} #{'is-selected' if date == @day}", data: { calendar_date: date.iso8601, action: "click->checklist-occurrence-modal#open" }, aria: { label: "#{l(date, format: :long)}: #{pluralize(events.size, 'falta', 'faltas')}#{", #{people.values.map { |records| records.first[:name] }.join(', ')}" if people.any?}", current: date == @day ? 'date' : nil } do %>
           <span class="checklist-tracking__day-heading"><time datetime="<%= date.iso8601 %>"><%= date.day %></time><% if events.any? %><span class="checklist-tracking__day-count"><%= events.size %><span class="visually-hidden"> faltas</span></span><% end %></span>
-          <span class="checklist-tracking__day-people"><% people.first(2).each do |employee, records| %><span><%= employee.nome %><small><%= records.map { |event| event[:kind] }.uniq.join(' · ') %></small></span><% end %><% if people.size > 2 %><small>+ <%= people.size - 2 %> colaboradores</small><% end %></span>
+          <span class="checklist-tracking__day-people"><% people.first(2).each do |employee, records| %><span><%= records.first[:name] %><small><%= records.map { |event| event[:kind] }.uniq.join(' · ') %></small></span><% end %><% if people.size > 2 %><small>+ <%= people.size - 2 %> <%= @spot_mode ? "placas" : "colaboradores" %></small><% end %></span>
         <% end %>
       <% end %>
     <% end %>

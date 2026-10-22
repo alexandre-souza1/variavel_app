@@ -99,6 +99,10 @@ module Employees
 
     def self.synchronize!(person)
       return unless person.persisted?
+      if person.historical_only?
+        remember_name!(person, person.nome)
+        return
+      end
       identity = person.attributes.slice(*IDENTITY_FIELDS).merge('updated_at' => Time.current)
       MODELS.each { |model| model.where(employee_id: person.id).update_all(identity) }
       remember_name!(person, person.nome)
@@ -124,6 +128,7 @@ module Employees
     end
 
     def self.autonomy_record(registration, date: Date.current)
+      return if registration.blank?
       people = Employee.active.with_career_history.where(matricula: registration).limit(2).to_a
       return if people.many?
       if people.one?

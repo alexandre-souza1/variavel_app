@@ -1,11 +1,11 @@
-<% filters = { year: @year, action_plan_id: @plan&.id, employee_id: @employee&.id, month: @month, employee_sector: @employee_sector, display: @display, day: @day&.iso8601 }.compact %>
+<% filters = { year: @year, action_plan_id: @plan&.id, employee_id: @employee&.id, month: @month, employee_sector: @employee_sector, display: @display, day: @day&.iso8601, subject: @spot_mode ? "spot" : nil, spot_plate: @spot_plate }.compact %>
 <% months = I18n.t('date.abbr_month_names')[1..12] %>
 <div class="app-page checklist-tracking" data-controller="checklist-occurrence-modal" data-checklist-occurrence-modal-details-url-value="<%= details_checklist_occurrences_path %>" data-action="turbo:before-cache@document->checklist-occurrence-modal#close">
   <header class="app-page-header">
     <div>
-      <p class="app-page-eyebrow"><i class="bi bi-people me-1" aria-hidden="true"></i> Gestão · Colaboradores</p>
+      <p class="app-page-eyebrow"><i class="bi bi-people me-1" aria-hidden="true"></i> Gestão · <%= @spot_mode ? "Placas SPOT" : "Colaboradores" %></p>
       <h1><i class="bi bi-person-exclamation me-2" aria-hidden="true"></i>Faltas de checklist</h1>
-      <p>Acompanhamento anual de faltas por colaborador</p>
+      <p>Acompanhamento anual de faltas por <%= @spot_mode ? "placa SPOT" : "colaborador" %></p>
     </div>
     <div class="app-page-actions"><%= link_to(@plan ? "Voltar ao plano" : "Início", @plan ? action_plan_path(@plan) : variaveis_path, class: "btn btn-outline-secondary") %></div>
   </header>
@@ -13,20 +13,27 @@
   <%= form_with url: checklist_occurrences_path, method: :get, class: "checklist-tracking__filters" do %>
     <%= hidden_field_tag :display, @display %>
     <div><%= label_tag :year, "Ano da ocorrência" %><%= number_field_tag :year, @year, min: 1900, max: 9999, class: "form-control" %></div>
+    <div><%= label_tag :subject, "Acompanhar" %><%= select_tag :subject, options_for_select([["Colaboradores", "employees"], ["Placas SPOT", "spot"]], @spot_mode ? "spot" : "employees"), class: "form-select" %></div>
+    <% unless @spot_mode %>
     <div class="checklist-tracking__sector-field"><%= label_tag :employee_sector, "Área do colaborador" %><%= select_tag :employee_sector, options_for_select(current_user.employee_sectors.map { |sector| [sector.upcase, sector] }, @employee_sector), include_blank: current_user.employee_sectors.many? ? "DU e AZ" : false, class: "form-select" %></div>
+    <% end %>
     <div><%= label_tag :action_plan_id, "Plano de origem" %><%= select_tag :action_plan_id, options_from_collection_for_select(@plans, :id, :name, @plan&.id), include_blank: "Todas as origens", class: "form-select" %></div>
-    <div><%= label_tag :employee_id, "Colaborador" %><%= select_tag :employee_id, options_for_select(@employees.map { |employee| ["#{employee.nome} · #{employee.matricula}", employee.id] }, @employee&.id), include_blank: "Todos os colaboradores", class: "form-select", data: { controller: "task-select" } %></div>
+    <% if @spot_mode %>
+      <div><%= label_tag :spot_plate, "Placa SPOT" %><%= select_tag :spot_plate, options_for_select(@spot_plates, @spot_plate), include_blank: "Todas as placas", class: "form-select", data: { controller: "task-select" } %></div>
+    <% else %>
+    <div><%= label_tag :employee_id, "Colaborador" %><%= select_tag :employee_id, options_for_select(@employees.map { |employee| [employee.checklist_identity_label, employee.id] }, @employee&.id), include_blank: "Todos os colaboradores", class: "form-select", data: { controller: "task-select" } %></div>
+    <% end %>
     <div><%= label_tag :month, @display == "calendar" ? "Mês do calendário" : "Mês das ocorrências" %><%= select_tag :month, options_for_select(months.each_with_index.map { |name, index| [name, index + 1] }, @month), include_blank: "Ano inteiro", class: "form-select" %></div>
     <%= submit_tag "Filtrar", class: "btn btn-primary" %>
   <% end %>
 
   <div id="tracking-summary">
   <div class="checklist-tracking__metrics">
-    <% [[@report.total, 'Faltas no ano', 'calendar-x'], [@report.rows.size, 'Colaboradores com registro', 'people'], [@report.recurring_count, 'Com mais de uma falta', 'arrow-repeat'], [@report.pending_count, 'Com ações abertas', 'hourglass-split']].each do |value, label, icon| %>
+    <% [[@report.total, 'Faltas no ano', 'calendar-x'], [@report.rows.size, (@spot_mode ? 'Placas com registro' : 'Colaboradores com registro'), (@spot_mode ? 'truck' : 'people')], [@report.recurring_count, 'Com mais de uma falta', 'arrow-repeat'], [@report.pending_count, 'Com ações abertas', 'hourglass-split']].each do |value, label, icon| %>
       <div class="app-panel"><i class="bi bi-<%= icon %>" aria-hidden="true"></i><strong><%= value %></strong><span><%= label %></span></div>
     <% end %>
   </div>
-  <p class="checklist-tracking__explanation">A contagem usa a data da falta. Mesmo colaborador, data e tipo contam uma vez, ainda que existam várias ações. Concluir a ação preserva a ocorrência. Os totais anuais abrangem <%= @plan ? @plan.name : 'todas as origens dos colaboradores acessíveis' %><%= " · Área #{@employee_sector.upcase}" if @employee_sector %>.</p>
+  <p class="checklist-tracking__explanation">A contagem usa a data da falta. Mesm<%= @spot_mode ? "a placa" : "o colaborador" %>, data e tipo contam uma vez, ainda que existam várias ações. Concluir a ação preserva a ocorrência. Os totais anuais abrangem <%= @plan ? @plan.name : (@spot_mode ? 'ações SPOT acessíveis' : 'todas as origens dos colaboradores acessíveis') %><%= " · Área #{@employee_sector.upcase}" if @employee_sector %>.</p>
 
   </div>
 

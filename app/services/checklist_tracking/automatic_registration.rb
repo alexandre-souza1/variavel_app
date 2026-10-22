@@ -2,8 +2,8 @@ module ChecklistTracking
   class AutomaticRegistration
     Result = Struct.new(:created, :pending, :preserved, keyword_init: true)
 
-    def initialize(user:, tasks:, year:, employee_sector: nil)
-      @user, @tasks, @year, @employee_sector = user, tasks, year, employee_sector
+    def initialize(user:, tasks:, year:, employee_sector: nil, subject: "employees")
+      @user, @tasks, @year, @employee_sector, @subject = user, tasks, year, employee_sector, subject
     end
 
     def call
@@ -18,6 +18,7 @@ module ChecklistTracking
         .includes(:labels, :comments, :routine_comment, :checklist_occurrences, routine_value: :routine_indicator).find_each do |task|
         source = TaskSource.new(task)
         next unless source.suggested_date.year == @year
+        next unless source.spot? == (@subject == "spot")
         matched = source.name_match(employees, matcher: matcher).employee
         next if selected_ids && matched && !selected_ids.include?(matched.id)
         if task.checklist_occurrences.any?
@@ -32,11 +33,11 @@ module ChecklistTracking
         task.with_lock do
           next if task.checklist_occurrences.exists?
           occurrence = task.checklist_occurrences.create!(attributes.merge(recorded_by: @user,
-            notes: "Identificado automaticamente pelo nome e pelos dados da ação ou do GEROT."))
+            notes: source.spot? ? "Identificado automaticamente pela placa, data e tipo na ação ou no GEROT." : "Identificado automaticamente pelo nome e pelos dados da ação ou do GEROT."))
           TaskActivityService.log(task: task, user: @user, activity_type: :updated,
-            new_value: "#{occurrence.employee.nome} · #{I18n.l(occurrence.occurred_on)} · #{occurrence.kind_label}",
+            new_value: "#{occurrence.subject_name} · #{I18n.l(occurrence.occurred_on)} · #{occurrence.kind_label}",
             metadata: { field: "checklist_occurrence", action: "registered", occurrence_id: occurrence.id,
-                        identification_method: "automatic_name" })
+                        identification_method: source.spot? ? "automatic_spot_plate" : "automatic_name" })
           result.created += 1
         end
       end

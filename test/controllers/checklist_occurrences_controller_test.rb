@@ -90,10 +90,11 @@ class ChecklistOccurrencesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "checklist_occurrence", TaskActivity.last.metadata["field"]
   end
 
-  test "task modal supports registration and cancellation with an audit trail" do
+  test "task modal stays separate from tracking while registration and cancellation retain their audit trail" do
     get task_path(@task)
     assert_response :success
-    assert_select "#task-checklist-occurrences-#{@task.id}"
+    assert_select "#task-checklist-occurrences-#{@task.id}", count: 0
+    assert_select '.checklist-tracking__registration', count: 0
     post task_checklist_occurrences_path(@task), params: { checklist_occurrence: @attributes }, as: :turbo_stream
     assert_response :success
     record = ChecklistOccurrence.last

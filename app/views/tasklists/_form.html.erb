@@ -39,7 +39,7 @@
   <div class="task-checklist-surface">
     <%= f.fields_for :tasklist, task.tasklist || task.build_tasklist do |tasklist_form| %>
       <%= tasklist_form.hidden_field :id %>
-      <div data-task-checklist-target="itemsContainer"
+      <div class="task-checklist-items" data-task-checklist-target="itemsContainer"
            data-action="paste->task-checklist#pasteItems"
            id="tasklist-items-<%= task.id %>">
         <% task.tasklist&.tasklist_items&.each do |item| %>

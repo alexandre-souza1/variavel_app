@@ -1,0 +1,7 @@
+<div class="app-page employees-page employees-page--form">
+  <%= link_to 'Voltar às ações para conferir', checklist_occurrences_path(@tracking_filters), class: 'employees-back' %>
+  <header class="app-page-header">
+    <div><p class="app-page-eyebrow">Gestão de pessoas · Histórico</p><h1><i class="bi bi-person-plus" aria-hidden="true"></i> Cadastrar ex-colaborador</h1><p>Vincule as ações antigas de quem saiu antes de ter cadastro no app.</p></div>
+  </header>
+  <%= render "form", modal: false %>
+</div>

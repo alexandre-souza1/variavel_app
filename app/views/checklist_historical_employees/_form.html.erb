@@ -1,0 +1,26 @@
+  <%= form_with model: @registration, scope: :historical_employee, url: checklist_historical_employees_path, class: (modal ? 'modal-content' : 'employees-form'), data: { turbo: false } do |f| %>
+    <% if modal %>
+      <div class="modal-header"><div><h2 class="modal-title" id="historicalEmployeeModalTitle">Cadastrar ex-colaborador</h2><p class="mb-0 small text-muted">Identificação e cargo na época. O cadastro permanece inativo.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+    <% end %>
+    <div class="<%= modal ? 'modal-body' : '' %>">
+    <% @tracking_filters.except(:display).each do |key, value| %><%= hidden_field_tag key, value %><% end %>
+    <%= hidden_field_tag :task_id, @task.id if @task %>
+    <% if @registration.errors.any? %><div class="alert alert-danger" role="alert"><%= @registration.errors.full_messages.to_sentence %></div><% end %>
+    <section class="<%= modal ? '' : 'app-panel' %>">
+      <% unless modal %><div class="app-panel__header"><div><span class="app-panel__kicker">Cadastro histórico</span><h2 class="app-panel__title">Identificação e cargo na época</h2><p class="app-panel__subtitle">A pessoa fica nos arquivados e não entra na equipe ativa, escalas ou disponibilidade operacional.</p></div></div><% end %>
+      <div class="<%= 'app-panel__body' unless modal %> employees-fields">
+        <% if @task %><p class="employees-field--full"><strong>Ação de referência:</strong> <%= @task.title %></p><% end %>
+        <div class="employees-field employees-field--full"><%= f.label :nome, 'Nome completo' %><%= f.text_field :nome, required: true, class: 'form-control', autocomplete: 'off' %><small>Cadastre uma vez para reconhecer o nome nas outras ações. Confira antes se a pessoa já está nos colaboradores arquivados.</small></div>
+        <div class="employees-field"><%= f.label :profile, 'Setor e cargo na época' %><%= f.select :profile, @profiles, { include_blank: 'Selecione o cargo' }, required: true, class: 'form-select' %><small>Ajudante DU pode ter histórico, mas não recebe falta de checklist.</small></div>
+        <div class="employees-field"><%= f.label :matricula, 'Matrícula (opcional)' %><%= f.text_field :matricula, class: 'form-control', autocomplete: 'off' %><small>Deixe em branco se não souber. Não é necessário inventar matrícula ou código Promax.</small></div>
+        <div class="employees-field"><%= f.label :starts_on, 'Início na função (opcional)' %><%= f.date_field :starts_on, max: Date.current, class: 'form-control' %></div>
+        <div class="employees-field"><%= f.label :ends_on, 'Último dia na função / saída (opcional)' %><%= f.date_field :ends_on, max: Date.current, class: 'form-control' %></div>
+        <p class="employees-field--full employees-muted">Informe somente datas conhecidas. Sem datas, o cargo informado será usado para conferir as ações antigas. O cadastro não confirma faltas: registre as ocorrências após conferir as tarefas.</p>
+      </div>
+    </section>
+    </div>
+    <div class="<%= modal ? 'modal-footer' : 'employees-form-actions' %>">
+      <% if modal %><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><% else %><%= link_to 'Cancelar', checklist_occurrences_path(@tracking_filters), class: 'btn btn-outline-secondary' %><% end %>
+      <%= f.submit 'Cadastrar ex-colaborador', class: 'btn btn-primary' %>
+    </div>
+  <% end %>

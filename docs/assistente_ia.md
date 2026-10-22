@@ -84,7 +84,7 @@ O painel mostra o registro usado como referência e atalhos conforme a tela:
 - Tarefa: **Resumir tarefa**, **Alterar prazo** e **Concluir/Reabrir tarefa**.
 - Veículo: **Ver pendências**, **Ver disponibilidade** e **Ver pneus**, conforme acesso aos módulos.
 
-Na janela de uma tarefa, **Usar esta tarefa no assistente** fecha a janela e abre o assistente com a referência escolhida. O usuário pode remover o contexto pelo botão ao lado do nome. Cada pergunta guarda somente o tipo e o ID do registro em `ai_messages.page_context`, evitando que uma navegação ou outra aba troque a referência de uma pergunta já enfileirada. Não é enviado o HTML da página.
+O usuário pode remover o contexto pelo botão ao lado do nome. Cada pergunta guarda somente o tipo e o ID do registro em `ai_messages.page_context`, evitando que uma navegação ou outra aba troque a referência de uma pergunta já enfileirada. Não é enviado o HTML da página.
 
 O servidor valida a referência ao receber a pergunta e novamente no worker. Abrir uma tela ou enviar um ID manualmente não amplia permissões. Se o acesso tiver sido revogado, o modelo recebe um aviso de contexto indisponível. As funções continuam exigindo autorização em cada consulta e proposta.
 

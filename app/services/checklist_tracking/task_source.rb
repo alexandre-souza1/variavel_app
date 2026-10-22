@@ -2,8 +2,8 @@ module ChecklistTracking
   class TaskSource
     DATE_PATTERN = /\b(?:\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2})\b/
     MISSING_PATTERN = /(?:nao|sem)\s+(?:realiz\w*|preench\w*|faz\w*|fez|fazer|execut\w*)[^.!?\n]*check\s*list|check\s*list[^.!?\n]*(?:nao\s+(?:realiz\w*|preench\w*|fez|feito|execut\w*)|pendente)/
-    GEROT_ADHERENCE_PATTERN = /\Aaderencia (?:de )?(?:paleteira|empilhadeira|saida rota|retorno rota)\z/
-    GEROT_ADHERENCE_SQL = 'ader[eêé]ncia[[:space:]]+(de[[:space:]]+)?(paleteira|empilhadeira|sa[ií]da[[:space:]]+rota|retorno[[:space:]]+rota)'
+    GEROT_ADHERENCE_PATTERN = /\Aaderencia (?:de )?(?:paleteira|empilhadeira|saida rota|retorno rota|spot)\z/
+    GEROT_ADHERENCE_SQL = 'ader[eêé]ncia[[:space:]]+(de[[:space:]]+)?(paleteira|empilhadeira|sa[ií]da[[:space:]]+rota|retorno[[:space:]]+rota|spot)'
     attr_reader :task
 
     def initialize(task)
@@ -17,6 +17,21 @@ module ChecklistTracking
           checklist: 'check[ -]?list', adherence: GEROT_ADHERENCE_SQL).distinct
     end
 
+    def spot?
+      task.labels.any? { |label| normalize(label.name).split.include?("spot") } ||
+        normalize(task.routine_value&.routine_indicator&.name).match?(/\bspot\b/) ||
+        normalize(evidence).match?(/\bspot\b/)
+    end
+
+    def spot_plates
+      @spot_plates ||= evidence.scan(/\b[A-Z]{3}[- ]?[0-9][A-Z0-9][0-9]{2}\b/i)
+        .map { |plate| ChecklistOccurrence.normalize_spot_plate(plate) }.uniq
+    end
+
+    def suggested_spot_plate
+      spot_plates.first if spot_plates.one?
+    end
+
     def suggested_date
       dates = explicit_dates.presence || parse_dates(text)
       dates.one? ? dates.first : task.routine_value&.reference_date || task.start_at&.to_date || task.created_at.to_date
@@ -24,6 +39,7 @@ module ChecklistTracking
 
     def suggested_kind(employees = nil)
       return kinds.first if kinds.any?
+      return "outro" if spot?
       return "empilhadeira" if occupation_hint == "operador"
       if employees && (employee = name_match(employees).employee)
         allowed = eligibility(employee).allowed_kinds
@@ -33,6 +49,7 @@ module ChecklistTracking
     end
 
     def name_match(employees, matcher: nil)
+      return NameMatcher::Match.new(confidence: :missing, reason: "Esta ação se refere a uma placa SPOT.") if spot?
       matcher ||= NameMatcher.new(employees)
       name = mentioned_name.presence
       original = matcher.call(name: name, text: evidence)
@@ -60,6 +77,10 @@ module ChecklistTracking
     end
 
     def automatic_attributes(employees, matcher: nil)
+      if spot?
+        return unless missing_checklist? && spot_plates.one? && certain_date && kinds.one?
+        return { spot_plate: suggested_spot_plate, occurred_on: certain_date, checklist_kind: kinds.first }
+      end
       match = name_match(employees, matcher: matcher)
       return unless match.certain? && missing_checklist? && certain_date && label_sectors.size <= 1
       return unless context_allows?(match.employee)
@@ -69,6 +90,13 @@ module ChecklistTracking
     end
 
     def review_reason(employees, matcher: nil)
+      if spot?
+        return "Placa SPOT ausente ou há várias placas; confira a ação." unless spot_plates.one?
+        return "O texto não confirma um checklist não realizado." unless missing_checklist?
+        return "A data da falta está ausente ou há várias datas." unless certain_date
+        return "O tipo de checklist está ausente ou há vários tipos." unless kinds.one?
+        return "Placa SPOT, data e tipo identificados; pronto para registro em lote."
+      end
       match = name_match(employees, matcher: matcher)
       return "As etiquetas indicam DU e AZ; confira a área da ocorrência." if label_sectors.many?
       if match.employee
@@ -146,8 +174,8 @@ module ChecklistTracking
     def context_allows?(employee)
       context = eligibility(employee)
       role = context.role
-      return true unless role
       return false if context.allowed_kinds == []
+      return true unless role
       return false if label_sectors.one? && role.sector != label_sectors.first
       return false if occupation_hint && role.cargo != occupation_hint
       kinds.empty? || kinds.any? { |kind| context.allows?(kind) }
@@ -187,7 +215,7 @@ module ChecklistTracking
         explicit = kinds_in(evidence)
         if gerot_checklist_deviation?
           indicator_name = task.routine_value.routine_indicator.name
-          indicator_kinds = kinds_in(indicator_name)
+          indicator_kinds = normalize(indicator_name).match?(/\Aaderencia (?:de )?spot\z/) ? %w[saida] : kinds_in(indicator_name)
           # Specific adherence indicators must agree with the comment. A generic
           # safety-completion indicator can still be clarified by an explicit report.
           normalize(indicator_name).match?(GEROT_ADHERENCE_PATTERN) ? (explicit + indicator_kinds).uniq : (explicit.presence || indicator_kinds)

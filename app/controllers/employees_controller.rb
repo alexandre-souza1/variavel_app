@@ -88,6 +88,9 @@ class EmployeesController < ApplicationController
   end
 
   def reactivate
+    if @employee.historical_only?
+      return redirect_to employee_destination(@employee), alert: 'Este é um cadastro histórico de ex-colaborador e deve permanecer inativo.'
+    end
     Employees::Registry.update!(@employee, attributes: { active: true, retired_at: nil }, user: current_user,
       reason: params[:reason].presence || 'Reativação pelo RH')
     redirect_to employee_destination(@employee), notice: 'Colaborador reativado.'

@@ -30,7 +30,7 @@ class EmployeeRole < ApplicationRecord
   validates :sector, inclusion: { in: SECTORS.values }
   validates :cargo, inclusion: { in: ->(role) { cargos_for(role.sector).values } }
   validates :reason, presence: true
-  validates :promax, presence: true, if: -> { du? && !pending_start? }
+  validates :promax, presence: true, if: -> { du? && !pending_start? && !(legacy? && employee&.historical_only?) }
   validates :turno, inclusion: { in: TURNOS.values }, if: -> { az? && !(turno.nil? && (legacy? || pending_start?)) }
   validates :starts_on, presence: true, unless: -> { legacy? || pending_start? }
   validate :valid_interval

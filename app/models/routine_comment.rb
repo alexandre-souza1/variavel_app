@@ -7,4 +7,5 @@ class RoutineComment < ApplicationRecord
 
   validates :body,
             presence: true
+  after_update_commit -> { generated_task&.enqueue_checklist_tracking }
 end

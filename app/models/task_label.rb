@@ -2,6 +2,7 @@ class TaskLabel < ApplicationRecord
   belongs_to :task
   belongs_to :label
   validate :label_belongs_to_task_plan
+  after_commit -> { task&.enqueue_checklist_tracking }, on: %i[create destroy]
 
   private
 

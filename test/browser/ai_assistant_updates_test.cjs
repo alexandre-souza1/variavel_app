@@ -44,17 +44,7 @@ const fs = require('node:fs');
     await second.waitForFunction(() => !document.querySelector('[data-ai-assistant-target="send"]').disabled);
     assert.deepEqual(sent.at(-1).page_context, { type: 'plan', id: setup.other_plan_id });
     await second.close();
-    await page.locator('.ai-assistant__header button').click();
-    await page.locator(`#task_${setup.task_id}`).click();
-    await page.locator('#taskModal').waitFor({ state: 'visible' });
-    await page.getByRole('button', { name: 'Usar esta tarefa no assistente', exact: true }).click();
-    await page.locator('#taskModal').waitFor({ state: 'hidden' });
-    await panel.waitFor({ state: 'visible' });
-    assert.match(await bar.innerText(), /Tarefa: Inspecionar pneus/);
-    await bar.getByRole('button', { name: 'Concluir tarefa', exact: true }).click();
-    await page.waitForFunction(() => !document.querySelector('[data-ai-assistant-target="send"]').disabled);
-    assert.deepEqual(sent.at(-1).page_context, { type: 'task', id: setup.task_id });
-    assert.match(sent.at(-1).question, /conclusão desta tarefa/);
+    assert.match(await bar.innerText(), /Plano: Inspeção da frota/);
     assert.equal(await page.locator('.ai-assistant__proposal img').count(), 0);
     assert.equal(await page.evaluate(() => window.aiInjected), undefined);
     const proposed = page.locator('.ai-assistant__proposal').filter({ has: page.locator('> strong', { hasText: 'Inspecionar pneus' }) });
@@ -76,7 +66,7 @@ const fs = require('node:fs');
     }
     await proposed.getByRole('button', { name: 'Confirmar alterações', exact: true }).click();
     await proposed.getByText('Alterações salvas após sua confirmação.', { exact: true }).waitFor();
-    await bar.getByRole('button', { name: 'Reabrir tarefa', exact: true }).waitFor();
+    assert.match(await bar.innerText(), /Plano: Inspeção da frota/);
     const updated = await (await page.request.get(`${base}/assistente-ia`)).json();
     const executed = updated.messages.flatMap(message => message.actions || []).find(action => action.status === 'executed');
     assert.equal(executed.result.id, setup.task_id);
@@ -99,7 +89,7 @@ const fs = require('node:fs');
     assert.equal(await bar.isVisible(), false);
     assert.deepEqual(errors, []);
     assert.equal(await page.evaluate(() => window.aiInjected), undefined);
-    console.log('PASS: real update confirmation, before/after, task modal handoff, isolated tab contexts, contextual shortcuts, completion broadcast, stale edit protection, error persistence and responsive light/dark 1440/390/320.');
+    console.log('PASS: real update confirmation, before/after, isolated tab contexts, plan contextual shortcuts, completion broadcast, stale edit protection, error persistence and responsive light/dark 1440/390/320.');
   } finally {
     await browser.close();
   }

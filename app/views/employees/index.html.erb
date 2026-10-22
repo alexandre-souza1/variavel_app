@@ -43,10 +43,10 @@
           <tbody>
             <% @employees.each do |employee| %>
               <% role = employee.role_on(Date.current) %>
-              <% displayed_role = role || (employee.initial_role if employee.awaiting_function_start?) %>
+              <% displayed_role = role || (employee.initial_role if employee.awaiting_function_start? || employee.historical_only?) %>
               <tr>
                 <td><%= link_to employee_path(employee, employee_navigation), class: 'employees-person' do %><span class="employees-avatar" aria-hidden="true"><%= employee.nome.split.first(2).map(&:first).join %></span><span><strong><%= employee.nome %></strong><small>Ver cadastro e histórico</small></span><% end %></td>
-                <td><span class="employees-code"><%= employee.matricula %></span>
+                <td><span class="employees-code"><%= employee.matricula.presence || 'Sem matrícula' %></span>
                   <% if @duplicate_counts.key?(employee.matricula) %>
                     <%= link_to employee_path(employee, **employee_navigation, anchor: 'cadastros-duplicados'), class: 'employees-duplicate-link' do %><i class="bi bi-intersect" aria-hidden="true"></i> Matrícula repetida · revisar vínculo<% end %>
                   <% end %>

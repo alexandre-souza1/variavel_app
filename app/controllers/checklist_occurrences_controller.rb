@@ -7,10 +7,10 @@ class ChecklistOccurrencesController < ApplicationController
   def index
     prepare_report_filters
     @report = ChecklistTracking::Report.new(scope: @occurrence_scope, year: @year)
-    @calendar_events = @report.events.select { |event| !@employee || event[:employee] == @employee }.group_by { |event| event[:date] }
+    @calendar_events = @report.events.select { |event| selected_subject_event?(event) }.group_by { |event| event[:date] }
     @excluded_count = ChecklistTracking::History.new(scope: history_scope).events.count { |event| event[:excluded] }
     @events = @report.events.select do |event|
-      (!@employee || event[:employee] == @employee) && (!@month || event[:date].month == @month) && (!@day || event[:date] == @day)
+      (selected_subject_event?(event)) && (!@month || event[:date].month == @month) && (!@day || event[:date] == @day)
     end
     @event_count = @events.size
     @page = params[:page].to_i.clamp(1, [(@event_count / 20.0).ceil, 1].max)
@@ -26,7 +26,7 @@ class ChecklistOccurrencesController < ApplicationController
       .order(created_at: :desc).map { |task| ChecklistTracking::TaskSource.new(task) }
       .select do |source|
         person = source.name_match(@all_tracking_employees, matcher: @name_matcher).employee
-        source.suggested_date.year == @year && (!@employee_sector || !person || @employees.any? { |employee| employee.id == person.id })
+        source.spot? == @spot_mode && source.suggested_date.year == @year && (!@employee_sector || !person || @employees.any? { |employee| employee.id == person.id })
       end
     @candidate_count = @candidates.size
     @ready_count = @candidates.count { |source| source.automatic_attributes(@all_tracking_employees, matcher: @name_matcher) && !source.task.checklist_occurrences.any? }
@@ -40,12 +40,13 @@ class ChecklistOccurrencesController < ApplicationController
     @history_events = @history_events.select { |event| event[:excluded] } if params[:status] == "excluded"
     task_ids = @history_events.flat_map { |event| event[:sources].map(&:task_id) }
     @accessible_history_task_ids = Task.accessible_to(current_user).where(id: task_ids).pluck(:id).to_set
-    @modal_filters = params.permit(:year, :action_plan_id, :employee_id, :employee_sector, :month, :day, :display, :status).to_h
+    @modal_filters = params.permit(:year, :action_plan_id, :employee_id, :employee_sector, :month, :day, :display, :status, :subject, :spot_plate).to_h
     render partial: "checklist_occurrences/occurrence_modal"
   end
 
   def exclude
-    occurrence = ChecklistOccurrence.visible_to(current_user).where(employee_id: tracking_employees.select(:id)).find(params[:id])
+    occurrence = ChecklistOccurrence.visible_to(current_user).find(params[:id])
+    raise ActiveRecord::RecordNotFound unless occurrence.spot? || tracking_employees.exists?(occurrence.employee_id)
     attributes = params.require(:exclusion).permit(:reason, :details)
     ChecklistTracking::Exclusion.new(occurrence: occurrence, user: current_user,
       reason: attributes[:reason], details: attributes[:details]).call
@@ -58,14 +59,15 @@ class ChecklistOccurrencesController < ApplicationController
     plan = ActionPlan.visible_to(current_user).find(params[:action_plan_id]) if params[:action_plan_id].present?
     tasks = Task.accessible_to(current_user)
     tasks = tasks.where(bucket_id: plan.bucket_ids) if plan
-    result = ChecklistTracking::AutomaticRegistration.new(user: current_user, tasks: tasks, year: selected_year, employee_sector: selected_employee_sector).call
-    redirect_to checklist_occurrences_path(action_plan_id: plan&.id, year: selected_year, employee_sector: selected_employee_sector, display: params[:display] == "review" ? "review" : nil), status: :see_other,
+    result = ChecklistTracking::AutomaticRegistration.new(user: current_user, tasks: tasks, year: selected_year, employee_sector: selected_employee_sector, subject: selected_subject).call
+    redirect_to checklist_occurrences_path(action_plan_id: plan&.id, year: selected_year, employee_sector: selected_employee_sector, display: params[:display] == "review" ? "review" : nil, subject: selected_subject == "spot" ? "spot" : nil), status: :see_other,
       notice: "#{helpers.pluralize(result.created, 'ação vinculada', 'ações vinculadas')} automaticamente. #{helpers.pluralize(result.pending, 'ação para conferência', 'ações para conferência')}. Registros anteriores e correções foram preservados."
   end
 
   def create
-    attributes = params.require(:checklist_occurrence).permit(:employee_id, :occurred_on, :checklist_kind, :notes)
-    employee = tracking_employees.find(attributes.delete(:employee_id))
+    attributes = params.require(:checklist_occurrence).permit(:employee_id, :spot_plate, :occurred_on, :checklist_kind, :notes)
+    employee_id = attributes.delete(:employee_id)
+    employee = tracking_employees.find(employee_id) if employee_id.present?
     @task.with_lock do
       occurrence = @task.checklist_occurrences.create!(attributes.merge(employee: employee, recorded_by: current_user))
       log_occurrence(occurrence, "registered")
@@ -97,16 +99,20 @@ class ChecklistOccurrencesController < ApplicationController
   def prepare_report_filters
     @plans = ActionPlan.visible_to(current_user).order(:name)
     @plan = @plans.find(params[:action_plan_id]) if params[:action_plan_id].present?
+    @spot_mode = selected_subject == "spot"
     @year = selected_year
     @employee_sector = selected_employee_sector
     @all_tracking_employees = Employee.for_checklist_tracking(current_user).includes(:employee_names, :employee_roles).order(:nome).to_a
     @employees = tracking_employees.includes(:employee_names, :employee_roles).order(:nome).to_a
     @name_matcher = ChecklistTracking::NameMatcher.new(@all_tracking_employees)
-    @employee = @employees.find { |employee| employee.id.to_s == params[:employee_id] }
-    raise ActiveRecord::RecordNotFound if params[:employee_id].present? && !@employee && !@all_tracking_employees.any? { |employee| employee.id.to_s == params[:employee_id] }
+    @employee = @employees.find { |employee| employee.id.to_s == params[:employee_id] } unless @spot_mode
+    raise ActiveRecord::RecordNotFound if !@spot_mode && params[:employee_id].present? && !@employee && !@all_tracking_employees.any? { |employee| employee.id.to_s == params[:employee_id] }
 
-    @occurrence_scope = ChecklistOccurrence.visible_to(current_user).where(employee_id: @employees.map(&:id))
+    visible = ChecklistOccurrence.visible_to(current_user)
+    @occurrence_scope = @spot_mode ? visible.spots : visible.employees.where(employee_id: @employees.map(&:id))
     @occurrence_scope = @occurrence_scope.where(task_id: @plan.buckets.joins(:tasks).select("tasks.id")) if @plan
+    @spot_plates = @spot_mode ? @occurrence_scope.distinct.order(:spot_plate).pluck(:spot_plate) : []
+    @spot_plate = ChecklistOccurrence.normalize_spot_plate(params[:spot_plate]).presence if @spot_mode
     @display = params[:display].in?(%w[annual calendar history review]) ? params[:display] : "annual"
     @month = params[:month].to_i if params[:month].to_i.between?(1, 12)
     @month ||= Date.current.month if @display == "calendar"
@@ -118,12 +124,22 @@ class ChecklistOccurrencesController < ApplicationController
   def history_scope
     scope = @occurrence_scope.where(occurred_on: Date.new(@year, 1, 1)..Date.new(@year, 12, 31))
     scope = scope.where(employee_id: @employee.id) if @employee
+    scope = scope.where(spot_plate: @spot_plate) if @spot_plate
     scope = scope.where(occurred_on: @calendar_date..@calendar_date.end_of_month) if @month
     scope = scope.where(occurred_on: @day) if @day
     scope
   end
 
+  def selected_subject
+    params[:subject] == "spot" ? "spot" : "employees"
+  end
+
+  def selected_subject_event?(event)
+    (!@employee || event[:employee] == @employee) && (!@spot_plate || event[:spot_plate] == @spot_plate)
+  end
+
   def selected_employee_sector
+    return if selected_subject == "spot"
     params[:employee_sector].presence || (current_user.employee_sectors.one? ? current_user.employee_sectors.first : nil)
   end
 
@@ -148,7 +164,7 @@ class ChecklistOccurrencesController < ApplicationController
 
   def log_occurrence(occurrence, action)
     TaskActivityService.log(task: @task, user: current_user, activity_type: :updated,
-      new_value: "#{occurrence.employee.nome} · #{I18n.l(occurrence.occurred_on)} · #{occurrence.kind_label}",
+      new_value: "#{occurrence.subject_name} · #{I18n.l(occurrence.occurred_on)} · #{occurrence.kind_label}",
       metadata: { field: "checklist_occurrence", action: action, occurrence_id: occurrence.id,
                   reason: occurrence.cancellation_reason })
   end
@@ -162,7 +178,7 @@ class ChecklistOccurrencesController < ApplicationController
       end
       format.html do
         redirect_to checklist_occurrences_path(action_plan_id: params[:tracking_dashboard] == "1" ? params[:tracking_plan_id].presence : @task.bucket.action_plan_id,
-          year: params[:year].presence || Date.current.year, employee_sector: selected_employee_sector, display: params[:display] == "review" ? "review" : nil),
+          year: params[:year].presence || Date.current.year, employee_sector: selected_employee_sector, display: params[:display] == "review" ? "review" : nil, subject: selected_subject == "spot" ? "spot" : nil),
           status: :see_other, **{ status == :unprocessable_entity ? :alert : :notice => message }
       end
     end

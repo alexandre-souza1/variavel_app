@@ -105,6 +105,24 @@
   .task-detail-modal .users-field .ts-dropdown .option.active { background: rgba(var(--bs-primary-rgb), .1); color: var(--bs-body-color); }
 
   #taskModal .task-checklist-surface { background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; }
+  .task-checklist-items {
+    max-height: 14rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+    padding-right: .35rem;
+  }
+  .task-checklist-items, .task-detail-modal__feed, textarea.form-control {
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(var(--bs-primary-rgb), .5) transparent;
+
+    &::-webkit-scrollbar { width: 5px; height: 5px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: rgba(var(--bs-primary-rgb), .5); border-radius: 999px; }
+    &::-webkit-scrollbar-thumb:hover { background: rgba(var(--bs-primary-rgb), .75); }
+    &::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+  }
   .task-detail-modal [data-controller="task-checklist"] > .d-flex { margin-bottom: .35rem !important; }
   .task-detail-modal [data-controller="task-checklist"] h6 { color: var(--bs-secondary-color); font-size: .7rem; font-weight: 700; margin: 0; text-transform: uppercase; }
   .task-checklist-help { color: var(--bs-primary); cursor: help; font-size: .62rem; line-height: 1; }
@@ -144,7 +162,15 @@
 
   .task-detail-modal .modal-body > .row > .col-md-5 { border-left-color: var(--bs-border-color) !important; }
   .task-detail-modal .col-md-5 > h6 { color: var(--bs-secondary-color); font-size: .7rem; font-weight: 700; margin-bottom: .65rem; text-transform: uppercase; }
-  .task-detail-modal .comments-box { background: var(--bs-tertiary-bg); border-radius: 10px; padding: .65rem; }
+  .task-detail-modal__feed {
+    height: 18rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+    background: var(--bs-tertiary-bg);
+    border-radius: 10px;
+    padding: .65rem;
+  }
   .task-detail-modal .col-md-5 hr { border-color: var(--bs-border-color); margin: .7rem 0; opacity: .55; }
 }
 

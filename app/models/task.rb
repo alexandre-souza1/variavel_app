@@ -70,6 +70,15 @@ class Task < ApplicationRecord
   after_create_commit :broadcast_generated_task, if: :routine_value_id?
   after_create_commit :broadcast_inbox_task, if: :inbox?
   after_commit :notify_due_soon_if_needed, on: %i[create update]
+  after_commit :enqueue_checklist_tracking, on: %i[create update]
+
+  def enqueue_checklist_tracking
+    return unless persisted? && !inbox? && creator.can_view_checklist_tracking?
+    return if checklist_occurrences.exists?
+    return unless ChecklistTracking::TaskSource.candidates(Task.where(id: id)).exists?
+
+    ChecklistTracking::RegisterTaskJob.perform_later(id)
+  end
 
 
   def create_next_task_if_completed

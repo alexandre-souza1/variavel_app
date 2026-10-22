@@ -54,7 +54,7 @@ Calendário por grupo, rodízio contínuo A–F e cartões compactos de disponib
 
 ### Faltas de checklist
 
-Módulo próprio nos menus DU, AZ, Frota e RH, com filtro de área, totais por colaborador, calendário mensal e modal para consultar e justificar ocorrências que não devem entrar na contagem. Mantém o rastreio nas ações. Inclui identificação por nome e pelos indicadores de aderência do GEROT, com registro em lote dos casos claros. Veja [regras, acesso e uso](docs/faltas_de_checklist.md).
+Módulo próprio nos menus DU, AZ, Frota e RH, com filtro de área, totais por colaborador, calendário mensal e modal para consultar e justificar ocorrências que não devem entrar na contagem. Mantém o rastreio nas ações. Inclui identificação por nome e pelos indicadores de aderência do GEROT, com registro automático de novas tarefas em segundo plano e registro em lote dos casos antigos claros. Também acompanha placas SPOT em uma visão própria, usando a placa e a data da falta. Ex-colaboradores sem cadastro anterior podem ser incluídos como históricos inativos, com matrícula e datas opcionais. Veja [regras, acesso e uso](docs/faltas_de_checklist.md).
 
 ### Financeiro
 

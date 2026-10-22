@@ -2,15 +2,23 @@
 
 O módulo **Faltas de checklist** fica dentro dos menus **DU, AZ, FROTA e RH**, no desktop e no celular. DU e AZ já abrem com sua área selecionada; Frota e RH podem filtrar as duas áreas. Usa o cadastro único de pessoas e preserva o vínculo das ocorrências com suas ações de origem. Os atalhos nos planos continuam disponíveis. Ele não consulta nem altera o módulo de checklists do aplicativo.
 
+## Registro automático de novas tarefas
+
+Ao salvar uma tarefa comum ou gerar uma ação pelo GEROT, a identificação é processada automaticamente em segundo plano, após confirmar a gravação. Havendo colaborador ou placa SPOT, data e tipo suficientes, a ocorrência é vinculada e passa a contar sem registro manual nem clique no lote. As mesmas regras de nome, cargo, área, indicador e deduplicação continuam valendo.
+
+Alterações da tarefa, novos comentários que relatem a falta e etiquetas também provocam uma nova tentativa, enquanto a tarefa ainda não tiver registros de ocorrência. O processamento usa o acesso do criador da tarefa e registra a identificação automática no log. Casos sem nome/placa, com datas ou identidades ambíguas e incompatíveis com a função permanecem em **Ações para conferir**. Uma tarefa cujo título traz somente uma data (como **— 19/09**) não identifica por si só quem deixou de fazer o checklist.
+
+Ocorrências já registradas, correções e justificativas não são sobrescritas. Várias tarefas da mesma pessoa/placa, data e tipo continuam representando uma única falta. O botão de identificação em lote permanece disponível para ações antigas e reprocessamento dos casos claros. O modal de tarefas não exibe o formulário de faltas de checklist; a conferência e as justificativas ficam neste módulo.
+
 ## Registrar e conferir
 
 1. Escolha o ano, a **Área do colaborador** (DU, AZ ou ambas) e, se necessário, um plano de origem. O filtro segue o setor atual ou último setor do cadastro, como no diretório de colaboradores. Ele atualiza os cartões anuais, a tabela, o histórico, o calendário e a identificação em lote. Ações cujo colaborador ainda não foi identificado permanecem para conferência.
 2. Ações geradas pelo GEROT como **Investigar % Aderência Paleteira/Empilhadeira/Saída Rota/Retorno Rota fora da meta — NOME** também são identificadas. O vínculo com o indicador determina o tipo, o comentário de origem identifica a pessoa e a data de referência da célula determina a falta quando o comentário não traz uma data explícita. Nomes abreviados só entram no lote quando há correspondência única no cadastro. Indicadores de disponibilidade, produtividade ou tempo de preenchimento não são tratados como falta apenas por estarem fora da meta.
 3. Em **Ações para conferir**, use **Registrar N identificadas** para vincular de uma vez os casos com nome e sobrenome únicos, uma data explícita (ou data de referência do GEROT) e um tipo de checklist claro. Não é preciso confirmar cada caso separadamente. O título ou comentário que relata a falta tem prioridade sobre discussões posteriores.
 4. Os casos restantes mostram o motivo da conferência. A busca considera acentos, espaços, nomes anteriores do cadastro e sobrenomes abreviados. Primeiros nomes isolados e pequenas diferenças de grafia podem preencher uma sugestão, mas não são registrados automaticamente. Para esses casos, confira os campos e use **Registrar ocorrência**. Os responsáveis pela execução da tarefa não são usados para identificar quem deixou de fazer o checklist.
-5. Para outra pessoa, data ou tipo na mesma tarefa, abra a ação e use **Faltas de checklist → Adicionar ocorrência**. Esse campo também está disponível nas tarefas comuns do plano, mesmo quando elas não aparecem nas sugestões.
+5. O registro manual fica na aba **Ações para conferir** do módulo. O modal de tarefas mantém os campos próprios da ação, sem o bloco de registro de faltas de checklist.
 
-As próximas ações geradas pelo GEROT aparecem na fila pelos indicadores de aderência acima ou quando o indicador ou o texto da ação menciona checklist. A fila distingue casos prontos para registro em lote e sugestões que ainda precisam de conferência. Só registros efetivados entram na contagem. A identificação em lote preserva ocorrências manuais e registros desconsiderados; não os recria nem os altera. Uma ação sem nome suficiente, um SPOT sem cadastro ou uma investigação sem falta confirmada pode permanecer sem vínculo. Tarefas recorrentes de envio de farol não são classificadas pelo texto genérico da descrição.
+As ações do GEROT são avaliadas pelos indicadores de aderência acima ou quando o indicador ou o texto menciona checklist. Casos claros são registrados automaticamente; pendências e ações antigas continuam na fila para conferência ou reprocessamento em lote. Só registros efetivados entram na contagem. A identificação em lote preserva ocorrências manuais e registros desconsiderados; não os recria nem os altera. Uma ação sem nome suficiente, uma placa SPOT ausente ou uma investigação sem falta confirmada pode permanecer sem vínculo. Tarefas recorrentes de envio de farol não são classificadas pelo texto genérico da descrição.
 
 ## Calendário e consulta das ocorrências
 
@@ -25,6 +33,29 @@ No modal, expanda **Não contar esta ocorrência** e escolha **Erro na execuçã
 Ao salvar, os cartões, a tabela, o histórico e o calendário são atualizados. O registro, autor, data e motivo da decisão continuam disponíveis no modal e na atividade das ações. Todas as ações da mesma combinação de colaborador, data e tipo recebem a justificativa, inclusive em planos diferentes, pois representam a mesma falta. Uma nova ação vinculada posteriormente ao mesmo caso herda a justificativa e não volta a contar. O status da tarefa continua seguindo seu fluxo normal.
 
 O módulo permite justificar ocorrências dos colaboradores que o usuário pode acompanhar, mesmo quando os detalhes da tarefa de origem são privados. O acesso aos detalhes da tarefa continua respeitando suas próprias permissões.
+
+## Ex-colaboradores sem cadastro anterior
+
+Em **Ações para conferir**, use **Cadastrar ex-colaborador**, ou **Não encontrou? Cadastrar ex-colaborador** abaixo do registro de uma ação. O cadastro abre em um modal, sem sair da tela. Ao salvar, o ex-colaborador fica disponível na seleção e a identificação em lote é atualizada, preservando os filtros e os dados preenchidos na ação. Erros de validação aparecem no próprio modal. A opção está disponível para quem já pode gerenciar colaboradores no RH, respeitando os setores permitidos.
+
+Informe o nome completo e o setor/cargo exercido na época. Matrícula e datas são opcionais; não são criadas datas de saída, matrículas ou códigos Promax fictícios. O cadastro nasce **histórico e inativo**, aparece entre os **Arquivados** de Colaboradores e na seleção de pessoas do rastreio. Não cria perfis operacionais nem entra na equipe ativa, escalas ou disponibilidade. A criação fica auditada com o usuário e o cargo informado.
+
+Após cadastrar, selecione a pessoa na ação ou use **Registrar N identificadas** para reconhecer de uma vez as outras tarefas com nome e contexto claros. O cadastro sozinho não confirma ocorrências. Os registros continuam agrupados por pessoa, data e tipo; as mesmas regras de cargo valem, inclusive a proibição de contar checklist para ajudante DU.
+
+Se forem informadas datas de início ou fim, ações fora desse período exigem revisão do histórico e não entram na contagem. Datas desconhecidas ficam em branco; nesse caso o cargo informado é usado na conferência das ações antigas. Nomes já cadastrados geram um aviso para conferir os inativos. Homônimos com matrículas diferentes podem ser cadastrados, mantendo as tarefas ambíguas para conferência. Cadastros históricos não podem ser reativados pelo botão comum.
+
+## Placas SPOT
+
+No filtro **Acompanhar**, selecione **Placas SPOT** e clique em **Filtrar**. Essa visão tem seus próprios totais anuais, tabela por placa e mês, calendário, histórico e fila para registro em lote. As faltas dos colaboradores permanecem na visão **Colaboradores**.
+
+A identificação aceita estes formatos:
+
+- **Aplicar matriz ao SPOT IZI3B97 por não realização do Checklist de Saída no dia 29/04/2026**: placa, tipo e data vêm do texto.
+- **Investigar % Aderência SPOT fora da meta — DLL4A97**: a placa vem do comentário de origem e a data da referência da célula do GEROT. Conforme a regra da operação, **% Aderência SPOT significa checklist de saída**.
+
+A etiqueta **SPOT** ajuda a classificar a ação e aparece na conferência e no modal. Uma placa válida não precisa estar no cadastro de frota nem ser cadastrada como colaborador. Letras são normalizadas para maiúsculas, sem hífen; tanto placas antigas quanto Mercosul são aceitas. Placas ausentes ou múltiplas, datas ambíguas e tipos conflitantes ficam para conferência.
+
+Cada combinação **placa + data + tipo** conta uma falta, ainda que haja várias tarefas. As ocorrências aparecem no modal ao clicar na placa, no total ou no dia do calendário. A opção **Não contar esta ocorrência** mantém a justificativa e o rastreio. Os registros SPOT, as justificativas e o registro em lote respeitam o acesso às tarefas de origem; ações privadas não ficam visíveis por compartilharem a mesma placa.
 
 ## Área e função do colaborador
 
@@ -55,7 +86,7 @@ O módulo está disponível para os perfis que acompanham colaboradores e para F
 
 A fila de identificação, registro em lote e alterações em tarefas continuam exigindo acesso à ação de origem; justificar a contagem de uma ocorrência usa a permissão do próprio módulo e o escopo de colaboradores. Mecânicos e visitantes não têm acesso ao módulo. CPF e outros dados pessoais do cadastro não são exibidos.
 
-Antes de executar a versão atualizada, rode `bundle exec rails db:migrate`. As migrações criam a tabela independente de ocorrências e adicionam a categoria das justificativas. Não transformam sugestões históricas em faltas confirmadas.
+Antes de executar a versão atualizada, rode `bundle exec rails db:migrate`. As migrações criam a tabela independente de ocorrências, adicionam a categoria das justificativas e permitem registrar placas SPOT sem vínculo com colaborador. Não transformam sugestões históricas em faltas confirmadas.
 
 Validação:
 

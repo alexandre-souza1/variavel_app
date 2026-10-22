@@ -1,4 +1,5 @@
 <% source = ChecklistTracking::TaskSource.new(task) %>
+<% spot_form = source.spot? || @spot_mode %>
 <% values = local_assigns[:form_values] || {} %>
 <% suggested_employee = source.suggested_employee(employees) %>
 <%= form_with url: task_checklist_occurrences_path(task), scope: :checklist_occurrence, class: "checklist-tracking__registration", data: { turbo: !local_assigns[:dashboard] } do |form| %>
@@ -7,14 +8,20 @@
     <%= hidden_field_tag :display, "review" %>
     <%= hidden_field_tag :tracking_plan_id, local_assigns.fetch(:plan_id, @plan&.id) %>
   <% end %>
+  <%= hidden_field_tag :subject, "spot" if spot_form %>
   <%= hidden_field_tag :employee_sector, local_assigns.fetch(:employee_sector, @employee_sector) %>
   <%= hidden_field_tag :year, local_assigns[:year] || source.suggested_date.year %>
   <div class="checklist-tracking__fields">
     <div class="checklist-tracking__person-field">
+      <% if spot_form %>
+        <%= form.label :spot_plate, "Placa SPOT", for: "occurrence-plate-#{task.id}" %>
+        <%= form.text_field :spot_plate, value: values.fetch("spot_plate", source.suggested_spot_plate), id: "occurrence-plate-#{task.id}", required: true, maxlength: 8, class: "form-control", placeholder: "Ex.: IZI3B97", autocapitalize: "characters" %>
+      <% else %>
       <%= form.label :employee_id, "Colaborador que não fez", for: "occurrence-employee-#{task.id}" %>
-      <%= form.select :employee_id, employees.map { |employee| ["#{employee.nome} · #{employee.matricula}#{' · Inativo' unless employee.active?}", employee.id] },
+      <%= form.select :employee_id, employees.map { |employee| [employee.checklist_identity_label, employee.id] },
         { include_blank: "Selecione o colaborador", selected: values.fetch("employee_id", suggested_employee&.id) },
         id: "occurrence-employee-#{task.id}", required: true, class: "form-select", data: { controller: "task-select", task_select_placeholder_value: "Buscar nome ou matrícula..." } %>
+      <% end %>
     </div>
     <div>
       <%= form.label :occurred_on, "Data da falta", for: "occurrence-date-#{task.id}" %>
@@ -29,7 +36,16 @@
   <%= form.label :notes, "Observação (opcional)", for: "occurrence-notes-#{task.id}" %>
   <%= form.text_field :notes, id: "occurrence-notes-#{task.id}", class: "form-control", placeholder: "Contexto da ocorrência" %>
   <div class="checklist-tracking__form-footer">
-    <small>Confira nome, data e tipo sugeridos antes de registrar. Para outra pessoa ou data, adicione um novo registro.</small>
+    <small>Confira <%= spot_form ? "placa" : "nome" %>, data e tipo sugeridos antes de registrar. Para outra ocorrência, adicione um novo registro.</small>
     <%= form.submit "Registrar ocorrência", class: "btn btn-primary" %>
   </div>
+<% end %>
+<% unless spot_form %>
+  <% if current_user.can_manage_employees? %>
+    <%= link_to 'Não encontrou? Cadastrar ex-colaborador', new_checklist_historical_employee_path(task_id: task.id,
+      year: local_assigns[:year] || source.suggested_date.year, action_plan_id: local_assigns.fetch(:plan_id, task.bucket.action_plan_id),
+      employee_sector: local_assigns[:employee_sector]), class: 'btn btn-outline-secondary btn-sm mt-2', data: { controller: 'historical-employee-modal', action: 'click->historical-employee-modal#open', historical_employee_modal_task_id_value: task.id } %>
+  <% else %>
+    <p class="checklist-tracking__explanation mt-2">Se a pessoa já saiu e ainda não tem cadastro, solicite à gestão de colaboradores o cadastro histórico. Os inativos já cadastrados também aparecem na seleção.</p>
+  <% end %>
 <% end %>
