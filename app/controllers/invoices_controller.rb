@@ -153,6 +153,13 @@ class InvoicesController < ApplicationController
   end
 
   def dashboard
+    if request.format.pdf?
+      report = InvoiceManagementReport.new(user: current_user, month: params[:month], year: params[:year],
+        sector: params[:sector], cost_center_id: params[:cost_center_id])
+      send_data InvoiceManagementPdf.new(report).render, type: 'application/pdf', disposition: 'attachment',
+        filename: "relatorio-gerencial-financeiro-#{report.from.iso8601}-#{report.to.iso8601}.pdf"
+      return
+    end
     # ------------------------------------------------------------
     # 1. Parâmetros de filtro
     # ------------------------------------------------------------
@@ -385,6 +392,10 @@ class InvoicesController < ApplicationController
       end
       format.html { render partial: "category_line_chart", locals: { category_line_chart: @category_line_chart } } if request.headers["Accept"] == "text/html"
     end
+  rescue InvoiceManagementReport::InvalidPeriod, InvoiceManagementReport::InvalidFilter => error
+    render plain: error.message, status: :unprocessable_entity
+  rescue InvoiceManagementReport::Forbidden, ActiveRecord::RecordNotFound
+    head :forbidden
   end
 
 

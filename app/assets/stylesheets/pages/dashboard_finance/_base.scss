@@ -52,16 +52,6 @@
       flex-wrap: wrap;
     }
 
-    .filter-form {
-      display: flex;
-      align-items: center;
-
-      .filter-group {
-        display: flex;
-        gap: 0.25rem;
-        align-items: center;
-      }
-    }
   }
 
   // KPI Cards (reutiliza)
@@ -601,20 +591,44 @@
   .invoice-entry-eyebrow { margin: 0 0 .4rem; color: var(--bs-primary); font-size: .74rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
   .invoice-dashboard-eyebrow { display: block; }
   .dashboard-header { margin-bottom: 1.75rem; }
-  .dashboard-header .header-content { align-items: flex-start; }
-  .dashboard-header .header-actions { align-items: flex-end; }
+  .dashboard-header .header-content { align-items: center; gap: 1rem; }
 
   .az-report-btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 34px; padding: .4rem .7rem; border: 1px solid var(--bs-border-color); border-radius: 9px; background: var(--bs-body-bg); color: var(--bs-body-color); font-size: .8rem; font-weight: 600; text-decoration: none; }
   .az-report-btn:hover { border-color: var(--bs-primary); background: rgba(var(--bs-primary-rgb), .08); color: var(--bs-primary); }
   .az-report-btn--primary { border-color: var(--bs-primary); background: var(--bs-primary); color: #fff; }
   .az-report-btn--primary:hover { background: var(--bs-primary-text-emphasis); color: #fff; }
 
-  .filter-form { padding: .35rem; border: 1px solid var(--bs-border-color); border-radius: 10px; background: var(--bs-tertiary-bg); }
-  .filter-form .form-select { min-height: 34px; border-radius: 8px; }
-  .filter-form .filter-group { flex-wrap: wrap; gap: .5rem; }
-  .filter-form .app-select { --app-select-width: auto; flex: 0 0 auto; }
-  .filter-form #month + .app-select { min-width: 9rem; }
-  .filter-form #year + .app-select { min-width: 6rem; }
+  .invoice-report-action { display: flex; flex-direction: column; align-items: flex-end; gap: .35rem; }
+  .invoice-report-action .az-report-btn { min-height: 38px; padding-inline: .9rem; }
+  .invoice-report-action button:disabled { color: var(--bs-secondary-color); background: var(--bs-tertiary-bg); cursor: not-allowed; }
+  .invoice-report-action button:disabled:hover { border-color: var(--bs-border-color); }
+  .invoice-report-period-hint { color: var(--bs-secondary-color); font-size: .7rem; }
+
+  .invoice-dashboard-toolbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.1rem;
+    padding: .85rem 1rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 12px;
+    background: var(--bs-body-bg);
+  }
+
+  .invoice-dashboard-toolbar .filter-form { min-width: 0; margin: 0; }
+  .filter-form .filter-group { display: flex; align-items: flex-end; gap: .65rem; }
+  .invoice-filter-field { min-width: 0; width: 10rem; }
+  .invoice-filter-field--year { width: 8rem; }
+  .invoice-filter-field--sector { width: 12rem; }
+  .invoice-filter-field label { display: block; margin-bottom: .3rem; color: var(--bs-secondary-color); font-size: .7rem; font-weight: 600; }
+  .invoice-filter-field .form-select { min-height: 36px; border-radius: 8px; }
+  .invoice-filter-field .app-select { --app-select-width: 100%; width: 100%; min-width: 0; }
+  .filter-form .invoice-filter-submit { min-height: 36px; padding-inline: .85rem; white-space: nowrap; }
+  .invoice-filter-shortcuts { display: flex; align-items: center; flex-shrink: 0; gap: 1.1rem; min-height: 36px; }
+  .invoice-filter-shortcuts a { display: inline-flex; align-items: center; gap: .35rem; color: var(--bs-secondary-color); font-size: .76rem; text-decoration: none; white-space: nowrap; }
+  .invoice-filter-shortcuts a:hover { color: var(--bs-primary); }
+  .invoice-filter-shortcuts a:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 4px; border-radius: 3px; }
   .chart-card, .info-card, .table-card { border-radius: 14px; box-shadow: 0 8px 22px rgba(15, 23, 42, .055); }
 }
 

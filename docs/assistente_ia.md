@@ -131,6 +131,14 @@ As consultas são processadas em segundo plano e o painel acompanha a resposta. 
 
 A integração usa a API Interactions com funções permitidas explicitamente e `store: false`. O histórico do app fica no banco local. Apenas as perguntas recentes e os resultados das funções autorizadas da rodada são enviados ao Gemini; respostas antigas não são reenviadas. Perguntas e prévias usam texto simples. Respostas do assistente aceitam formatação básica de parágrafos, negrito, ênfase, títulos, listas e código, inclusive no histórico já salvo. A formatação cria elementos permitidos com nós de texto, sem interpretar HTML, links ou controles fornecidos pelo modelo; os links de fontes e botões de ação continuam sendo gerados pelo app. Não são habilitados SQL gerado pelo modelo, execução de código, acesso livre à rede ou execução de ações pelo modelo. A gravação dos registros usa endpoints autenticados separados e depende do botão de confirmação.
 
+## Falhas e tempo de espera
+
+O navegador acompanha o job em segundo plano. Cada chamada ao Gemini tem limite de 45 segundos, respeitando um orçamento de 150 segundos para as chamadas da consulta. Timeout, falha de conexão e HTTP 404/408/429/5xx permitem tentar outro modelo, com no máximo três candidatos por etapa. Falhas de autenticação ou formato não são repetidas em outros modelos.
+
+Quando a consulta falha, o painel distingue demora do Gemini, conexão, cota, autenticação/configuração, resposta inválida, limite de etapas e falha interna. A mensagem inclui uma referência `IA-...`, também registrada em um evento `ai_assistant_failure` nos logs do worker, com classe da exceção, modelo, função em execução, status HTTP e linhas do código do app quando disponíveis. Corpos HTTP, mensagens brutas de exceção, perguntas e credenciais não entram nesse diagnóstico. Os metadados de cada tentativa continuam em `AiApiRequest`.
+
+Para uma avaliação financeira em PDF com período fixo e sem depender do Gemini, use o [relatório gerencial financeiro](relatorio_financeiro.md) do dashboard.
+
 ## Validação
 
 `PARALLEL_WORKERS=1 bin/rails test test/controllers/ai_assistants_controller_test.rb test/controllers/ai_assistant_actions_controller_test.rb test/controllers/ai_assistant_task_updates_test.rb test/services/ai_assistant_actions_test.rb test/services/ai_assistant_page_context_test.rb test/services/ai_assistant_tools_test.rb test/services/ai_assistant_queries_test.rb test/services/ai_assistant_analytics_test.rb test/services/ai_assistant_daily_briefing_test.rb test/jobs/ai_assistant_job_test.rb test/jobs/ai_assistant_analytics_job_test.rb test/jobs/ai_assistant_task_context_job_test.rb`

@@ -8,10 +8,13 @@ class AiAssistantJob < ApplicationJob
     message = conversation.ai_messages.find_by(id: message_id, role: "user")
     return unless message
 
-    answer = AiAssistant::Responder.new(user: conversation.user, conversation: conversation, message: message).call
+    responder = AiAssistant::Responder.new(user: conversation.user, conversation: conversation, message: message)
+    answer = responder.call
     conversation.finish!(token, answer: answer)
   rescue StandardError => error
-    Rails.logger.error("Falha no assistente de IA: #{error.class}")
-    conversation&.finish!(token, error: "Não foi possível responder agora. Tente novamente em instantes.")
+    report = AiAssistant::ErrorReport.new(error, context: { job_id: job_id, conversation_id: conversation_id,
+      message_id: message_id }.merge(responder.respond_to?(:diagnostics) ? responder.diagnostics : {}))
+    report.log!
+    conversation&.finish!(token, error: report.message)
   end
 end

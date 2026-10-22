@@ -2,10 +2,23 @@ require "json"
 
 module AiAssistant
   class Responder
-    class Unavailable < StandardError; end
+    class Unavailable < StandardError
+      attr_reader :reason, :http_status
+
+      def initialize(reason = :provider, http_status: nil)
+        @reason, @http_status = reason, http_status
+        super(reason.to_s)
+      end
+    end
 
     MAX_ROUNDS = 5
     MAX_TOOL_CALLS = 12
+    REQUEST_TIMEOUT = 45
+    TOTAL_TIMEOUT = 150
+
+    def diagnostics
+      { model: @attempted_model, tool: @current_tool }.compact
+    end
 
     def initialize(user:, conversation:, message:)
       @user = user
@@ -16,8 +29,8 @@ module AiAssistant
     end
 
     def call
-      raise Unavailable if ENV["GEMINI_API_KEY"].blank?
-      @deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 100
+      raise Unavailable.new(:not_configured) if ENV["GEMINI_API_KEY"].blank?
+      @deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + TOTAL_TIMEOUT
 
       # Perguntas anteriores ajudam a interpretar seguimentos sem reenviar dados
       # antigos que podem ter perdido a autorização de acesso.
@@ -37,22 +50,24 @@ module AiAssistant
             .flat_map { |step| Array(step["content"]) }.filter_map { |part| part["text"] if part["type"] == "text" }.join("\n")
           # Compatibilidade com modelos que ainda retornam outputs.
           text = Array(response["outputs"]).filter_map { |part| part["text"] }.join("\n") if text.blank?
-          raise Unavailable if text.blank? || response["status"] == "failed"
+          raise Unavailable.new(:invalid_response) if text.blank? || response["status"] == "failed"
 
           return { content: text.truncate(12_000), sources: @tools.sources.first(30), actions: @tools.drafts }
         end
 
         calls += functions.length
-        raise Unavailable if calls > MAX_TOOL_CALLS
+        raise Unavailable.new(:analysis_limit) if calls > MAX_TOOL_CALLS
 
         input.concat(steps) # Inclui assinaturas de pensamento exigidas pela API.
         functions.each do |step|
+          @current_tool = step['name'] if @tools.declarations.any? { |entry| entry[:name] == step['name'] }
           result = @tools.call(step["name"], step["arguments"])
+          @current_tool = nil
           input << { type: "function_result", name: step["name"], call_id: step["id"],
                      result: [{ type: "text", text: JSON.generate(result) }] }
         end
       end
-      raise Unavailable
+      raise Unavailable.new(:analysis_limit)
     end
 
     private
@@ -65,27 +80,50 @@ module AiAssistant
 
     def request(input, final:)
       models = ([@model || AiSetting.current.primary_model] + GeminiMeetingService::DEFAULT_FALLBACK_MODELS).uniq.first(3)
+      failure = nil
       models.each do |model|
+        @attempted_model = model
         remaining = @deadline - Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        raise Unavailable if remaining <= 0
-        response = GeminiRequest.track(model: model, feature: "assistant", api_key: ENV.fetch("GEMINI_API_KEY"), user: @user) do
-          Faraday.post(GeminiMeetingService::ENDPOINT) do |req|
-            req.headers["x-goog-api-key"] = ENV.fetch("GEMINI_API_KEY")
-            req.headers["Content-Type"] = "application/json"
-            req.options.timeout = [25, remaining].min
-            req.options.open_timeout = [5, remaining].min
-            req.body = JSON.generate(model: model, store: false, system_instruction: instructions,
-              input: input, tools: @tools.declarations,
-              generation_config: { temperature: 0.1, max_output_tokens: 2500, tool_choice: final ? "none" : "auto" })
+        raise Unavailable.new(:timeout) if remaining <= 0
+        begin
+          response = GeminiRequest.track(model: model, feature: "assistant", api_key: ENV.fetch("GEMINI_API_KEY"), user: @user) do
+            Faraday.post(GeminiMeetingService::ENDPOINT) do |req|
+              req.headers["x-goog-api-key"] = ENV.fetch("GEMINI_API_KEY")
+              req.headers["Content-Type"] = "application/json"
+              req.options.timeout = [REQUEST_TIMEOUT, remaining].min
+              req.options.open_timeout = [5, remaining].min
+              req.body = JSON.generate(model: model, store: false, system_instruction: instructions,
+                input: input, tools: @tools.declarations,
+                generation_config: { temperature: 0.1, max_output_tokens: 2500, tool_choice: final ? "none" : "auto" })
+            end
           end
+        rescue Faraday::TimeoutError, Faraday::ConnectionFailed => error
+          failure = Unavailable.new(error.is_a?(Faraday::TimeoutError) ? :timeout : :connection)
+          Rails.logger.warn(JSON.generate(event: 'ai_assistant_retry', model: model, reason: failure.reason))
+          next
         end
         if response.success?
           @model = model
-          return JSON.parse(response.body)
+          begin
+            parsed = JSON.parse(response.body)
+            raise Unavailable.new(:invalid_response) unless parsed.is_a?(Hash)
+            return parsed
+          rescue JSON::ParserError
+            raise Unavailable.new(:invalid_response)
+          end
         end
-        break unless [404, 429, 503].include?(response.status)
+        reason = case response.status
+                 when 401, 403 then :authentication
+                 when 429 then :quota
+                 when 404 then :model
+                 when 408, 504 then :timeout
+                 when 500..599 then :provider
+                 else :invalid_request
+                 end
+        failure = Unavailable.new(reason, http_status: response.status)
+        break unless [404, 408, 429].include?(response.status) || response.status.between?(500, 599)
       end
-      raise Unavailable
+      raise failure || Unavailable.new(:provider)
     end
 
     def instructions
@@ -190,7 +228,9 @@ module AiAssistant
         para esse escopo. Não atribua um setor só pelo cargo/setor da conta: sem setor pedido pelo usuário,
         omita sector nas consultas financeiras para usar todos os setores autorizados, como na tela.
         Interprete meses pelo calendário civil e informe o ano usado. Sem ano, use o ano atual salvo
-        contexto explícito; "mês passado" usa o mês anterior à data de hoje, inclusive na virada do ano.
+        continuação explícita de um período anterior. Um ano citado só em uma pergunta antiga não muda
+        o ano de uma NOVA consulta. Não substitua o ano retornado pelas funções nem misture gastos de
+        um ano com metas de outro. "Mês passado" usa o mês anterior à data de hoje, inclusive na virada do ano.
         Organize a resposta por urgências, agenda e indicadores/metas, usando só as seções retornadas.
         Destaque o saldo das metas financeiras do mês, gastos acima da meta, veículos indisponíveis/em troca,
         pneus para recape, indicadores com desvio e preenchimentos previstos para hoje ainda pendentes.

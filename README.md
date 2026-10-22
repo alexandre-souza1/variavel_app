@@ -61,6 +61,7 @@ Módulo próprio nos menus DU, AZ, Frota e RH, com filtro de área, totais por c
 - Invoices, notas fiscais, fornecedores, centros de custo e categorias orçamentárias.
 - Rateio de notas fiscais e metas de invoices.
 - Dashboard financeiro.
+- [Relatório gerencial financeiro em PDF](docs/relatorio_financeiro.md), com período obrigatório, atingimento das metas por setor e avaliação técnica dos desvios.
 - Leitura de documentos fiscais com AWS Textract.
 - Geração de comprovantes em PDF.
 

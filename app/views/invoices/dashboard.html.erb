@@ -13,24 +13,59 @@
           Visão consolidada dos gastos e indicadores financeiros
         </p>
       </div>
-      <div class="header-actions">
-        <!-- Filtros -->
-        <%= form_with url: dashboard_invoices_path, method: :get, local: true, class: "filter-form" do %>
-          <div class="filter-group">
+      <div class="invoice-report-action">
+        <% if @has_period_filter %>
+          <%= link_to dashboard_invoices_path(format: :pdf, month: @month, year: @year, sector: @invoice_sector_filter, cost_center_id: @cost_center_id),
+              class: "az-report-btn az-report-btn--primary", data: { turbo: false } do %>
+            <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Relatório gerencial
+          <% end %>
+        <% else %>
+          <button type="button" class="az-report-btn" disabled aria-describedby="invoice-report-period-hint">
+            <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Relatório gerencial
+          </button>
+          <small id="invoice-report-period-hint" class="invoice-report-period-hint">Selecione mês e ano</small>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="invoice-dashboard-toolbar">
+      <%= form_with url: dashboard_invoices_path, method: :get, local: true, class: "filter-form" do %>
+        <div class="filter-group">
+          <div class="invoice-filter-field">
+            <%= label_tag :month, "Mês" %>
             <%= select_tag :month,
                 options_for_select((1..12).map { |m| [I18n.t("date.month_names")[m], m] }, params[:month]),
-                include_blank: "Mês",
+                include_blank: "Todos os meses",
                 class: "form-select form-select-sm" %>
+          </div>
+          <div class="invoice-filter-field invoice-filter-field--year">
+            <%= label_tag :year, "Ano" %>
             <%= select_tag :year,
                 options_for_select((2022..Date.today.year).to_a.reverse, params[:year]),
-                include_blank: "Ano",
+                include_blank: "Todos",
                 class: "form-select form-select-sm" %>
-            <%= submit_tag "Filtrar", class: "az-report-btn az-report-btn--primary" %>
           </div>
+          <% if @can_filter_invoice_sector %>
+            <div class="invoice-filter-field invoice-filter-field--sector">
+              <%= label_tag :sector, "Setor" %>
+              <%= select_tag :sector,
+                  options_for_select(BudgetCategory.sectors.map { |key, label| [label, key] }, @invoice_sector_filter),
+                  include_blank: "Todos os setores",
+                  class: "form-select form-select-sm" %>
+            </div>
+          <% end %>
+          <%= hidden_field_tag :cost_center_id, @cost_center_id if @cost_center_id.present? %>
+          <%= submit_tag "Aplicar filtros", class: "az-report-btn invoice-filter-submit" %>
+        </div>
+      <% end %>
+      <nav class="invoice-filter-shortcuts" aria-label="Atalhos do período">
+        <%= link_to dashboard_invoices_path(month: Date.today.month, year: Date.today.year, sector: @invoice_sector_filter) do %>
+          <i class="bi bi-calendar-event" aria-hidden="true"></i> Mês atual
         <% end %>
-        <%= link_to "Mês Atual", dashboard_invoices_path(month: Date.today.month, year: Date.today.year, sector: @invoice_sector_filter), class: "az-report-btn" %>
-        <%= link_to "Limpar", dashboard_invoices_path, class: "az-report-btn" %>
-      </div>
+        <%= link_to dashboard_invoices_path do %>
+          <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Limpar filtros
+        <% end %>
+      </nav>
     </div>
   </header>
 
