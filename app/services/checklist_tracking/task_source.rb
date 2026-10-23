@@ -11,7 +11,8 @@ module ChecklistTracking
     end
 
     def self.candidates(tasks)
-      tasks.left_joins(:comments, routine_value: :routine_indicator)
+      tasks.joins(:bucket).where(buckets: { action_plan_id: ActionPlan.checklist_tracking_sources.select(:id) })
+        .left_joins(:comments, routine_value: :routine_indicator)
         .where("tasks.title ~* :missing OR comments.content ~* :missing OR routine_indicators.name ~* :checklist OR routine_indicators.name ~* :adherence",
           missing: '(não|nao|sem).*(check[ -]?list)|(check[ -]?list).*(não|nao|pendente)',
           checklist: 'check[ -]?list', adherence: GEROT_ADHERENCE_SQL).distinct

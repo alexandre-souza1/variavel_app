@@ -53,7 +53,7 @@ class ChecklistOccurrencesControllerTest < ActionDispatch::IntegrationTest
           assert_equal "2026", query["year"]
           assert_equal "3", query["month"]
           assert_equal @employee.id.to_s, query["employee_id"]
-          assert_equal @task.bucket.action_plan_id.to_s, query["action_plan_id"]
+          assert_nil query["action_plan_id"]
         end
       end
     end
@@ -65,7 +65,7 @@ class ChecklistOccurrencesControllerTest < ActionDispatch::IntegrationTest
     assert_difference("ChecklistOccurrence.count", 1) do
       post identify_checklist_occurrences_path, params: { year: 2026, action_plan_id: @task.bucket.action_plan_id }
     end
-    assert_redirected_to checklist_occurrences_path(year: 2026, action_plan_id: @task.bucket.action_plan_id)
+    assert_redirected_to checklist_occurrences_path(year: 2026)
     assert_no_difference("ChecklistOccurrence.count") do
       post identify_checklist_occurrences_path, params: { year: 2026 }
     end
@@ -185,8 +185,8 @@ class ChecklistOccurrencesControllerTest < ActionDispatch::IntegrationTest
       sign_in @user
       get checklist_occurrences_path
       assert_response :success
-      assert_select "#navbarMain a[href=?]", checklist_occurrences_path, text: /Faltas de checklist/
-      assert_select "#mobileNavOffcanvas a[href=?]", checklist_occurrences_path, text: /Faltas de checklist/
+      assert_select "#navbarMain a[href=?]", checklist_occurrences_path, text: /Acompanhamento de Checklist/
+      assert_select "#mobileNavOffcanvas a[href=?]", checklist_occurrences_path, text: /Acompanhamento de Checklist/
       assert_select "a.btn[href=?]", variaveis_path, text: "Início"
     end
   end
@@ -265,7 +265,7 @@ class ChecklistOccurrencesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "network_error", record.exclusion_category
     assert_equal original_status, @task.reload.completed
     get checklist_occurrences_path(year: 2026)
-    assert_select ".checklist-tracking__ranking tbody tr", count: 0
+    assert_select ".checklist-tracking__ranking tbody tr[data-occurrence-count='0']", count: 1
     get checklist_occurrences_path(year: 2026, display: "history")
     assert_select ".checklist-tracking__history-actions a", text: "Desconsideradas (1)"
     assert_select ".checklist-tracking__candidate", count: 0
@@ -287,6 +287,100 @@ class ChecklistOccurrencesControllerTest < ActionDispatch::IntegrationTest
     sign_in @user
     get checklist_occurrences_path(employee_sector: "az")
     assert_response :forbidden
+  end
+
+  test "exclusion returns updated annual totals and the filtered modal in the save response" do
+    record = @task.checklist_occurrences.create!(@attributes.merge(recorded_by: @user))
+    @task.checklist_occurrences.create!(@attributes.merge(occurred_on: "2026-04-14", recorded_by: @user))
+    duplicate_task = @task.bucket.tasks.create!(title: "Outra ação da mesma falta", creator: @user)
+    duplicate = duplicate_task.checklist_occurrences.create!(@attributes.merge(recorded_by: @user))
+    filters = { year: 2026, action_plan_id: @task.bucket.action_plan_id }
+    assert_difference("TaskActivity.count", 2) do
+      patch exclude_checklist_occurrence_path(record), params: {
+        exclusion: { reason: "network_error", details: "Sem sinal" }, dashboard: filters,
+        modal: filters.merge(employee_id: @employee.id, month: 3)
+      }, as: :json
+    end
+    assert_response :success
+    result = response.parsed_body
+    summary = Nokogiri::HTML.fragment(result.fetch("fragments").fetch("tracking-summary"))
+    assert_equal "1", summary.at_css(".checklist-tracking__metrics strong").text
+    overview = Nokogiri::HTML.fragment(result["fragments"].fetch("tracking-overview"))
+    assert_equal "1", overview.at_css(".checklist-tracking__total").text
+    modal = Nokogiri::HTML.fragment(result.fetch("modal"))
+    assert_equal 1, modal.css(".checklist-tracking__modal-event.is-excluded").size
+    assert_equal 2, modal.css(".checklist-tracking__source").size
+    assert_includes modal.text, "Erro de rede — Sem sinal"
+    assert_not_includes modal.text, "14/04/2026"
+    assert record.reload.cancelled_at?
+    assert duplicate.reload.cancelled_at?
+  end
+
+  test "exclusion refreshes paginated history and keeps modal and dashboard filters independent" do
+    21.times do |index|
+      @task.checklist_occurrences.create!(@attributes.merge(occurred_on: Date.new(2026, 3, 1) + index.days, recorded_by: @user))
+    end
+    record = @task.checklist_occurrences.find_by!(occurred_on: "2026-03-01")
+    filters = { year: 2026, employee_id: @employee.id, month: 3 }
+    patch exclude_checklist_occurrence_path(record), params: {
+      exclusion: { reason: "turned_map" }, dashboard: filters.merge(display: "history", page: 2),
+      modal: filters.merge(day: "2026-03-01")
+    }, as: :json
+    assert_response :success
+    result = response.parsed_body
+    history = Nokogiri::HTML.fragment(result.fetch("fragments").fetch("tracking-history"))
+    assert_equal 20, history.css(".checklist-tracking__event").size
+    assert_includes history.text, "Desconsideradas (1)"
+    assert_empty history.css("nav[aria-label='Páginas do histórico']")
+    modal = Nokogiri::HTML.fragment(result.fetch("modal"))
+    assert_equal 1, modal.css(".checklist-tracking__modal-event.is-excluded").size
+    assert_includes modal.text, "Dia 1"
+  end
+
+  test "annual calendar history and modal avoid scanning unregistered tasks or loading name aliases" do
+    @task.checklist_occurrences.create!(@attributes.merge(recorded_by: @user))
+    paths = %w[annual calendar history].map do |display|
+      checklist_occurrences_path(year: 2026, month: 3, display: display)
+    end
+    paths << details_checklist_occurrences_path(year: 2026, month: 3, employee_id: @employee.id)
+    paths.each do |path|
+      queries = []
+      capture = ->(*args) { queries << args.last[:sql] }
+      ActiveSupport::Notifications.subscribed(capture, "sql.active_record") { get path }
+      assert_response :success
+      assert_not queries.any? { |sql| sql.match?(/\b(?:comments|employee_names)\b/) }, "Unexpected candidate/name queries for #{path}"
+    end
+  end
+
+  test "annual and monthly tracking include active people with zero absences and retain former people only in history" do
+    zero = Employee.create!(nome: "Pessoa Sem Ocorrências", matricula: "ZERO-01")
+    archived = Employee.create!(nome: "Pessoa Arquivada", matricula: "ARCH-01", active: false)
+    historical = Employee.create!(nome: "Pessoa Histórica", historical_only: true, active: false)
+    [@employee, archived, historical].each do |person|
+      @task.checklist_occurrences.create!(@attributes.merge(employee_id: person.id, recorded_by: @user))
+    end
+    get checklist_occurrences_path(year: 2026)
+    assert_response :success
+    assert_select ".checklist-tracking__ranking tbody tr", count: 2
+    assert_select ".checklist-tracking__ranking tbody tr[data-occurrence-count='0']", text: /#{zero.nome}/
+    assert_select ".checklist-tracking__metrics strong", text: "1", minimum: 1
+    assert_not_includes response.body, archived.nome
+    assert_not_includes response.body, historical.nome
+    get checklist_occurrences_path(year: 2026, month: 3, display: "calendar")
+    assert_select ".checklist-tracking__monthly-roster tbody tr", count: 2
+    assert_select ".checklist-tracking__monthly-roster tr[data-occurrence-count='0']", text: /#{zero.nome}/
+    assert_select "[data-calendar-date='2026-03-14'] .checklist-tracking__day-count", text: /1/
+    assert_not_includes response.body, archived.nome
+    assert_not_includes response.body, historical.nome
+    assert_select "#tracking-navigation a[href*='display=history']" do |links|
+      assert_nil Rack::Utils.parse_query(URI.parse(links.first['href']).query)['active_only']
+    end
+    get details_checklist_occurrences_path(year: 2026, month: 3, day: "2026-03-14", active_only: "1")
+    assert_select ".checklist-tracking__modal-event", count: 1
+    get checklist_occurrences_path(year: 2026, display: "history")
+    assert_select ".checklist-tracking__event", count: 3
+    assert_includes response.body, archived.nome
+    assert_includes response.body, historical.nome
   end
 
   test "a team can justify its employee occurrence while private source details stay protected" do
@@ -314,10 +408,10 @@ class ChecklistOccurrencesControllerTest < ActionDispatch::IntegrationTest
   test "navigation groups the module under DU AZ FROTA and RH and fleet access stays separate from HR" do
     get checklist_occurrences_path
     assert_select "#navbarMain .navbar-nav > a[href^='/ocorrencias-checklist']", count: 0
-    assert_select "#duDropdown + ul a[href=?]", checklist_occurrences_path(employee_sector: "du"), text: "Faltas de checklist"
-    assert_select "#azDropdown + ul a[href=?]", checklist_occurrences_path(employee_sector: "az"), text: "Faltas de checklist"
-    assert_select "#rhDropdown + ul a[href=?]", checklist_occurrences_path, text: "Faltas de checklist"
-    assert_select "ul[aria-labelledby=fleetDropdown] a[href=?]", checklist_occurrences_path, text: "Faltas de checklist"
+    assert_select "#duDropdown + ul a[href=?]", checklist_occurrences_path(employee_sector: "du"), text: "Acompanhamento de Checklist"
+    assert_select "#azDropdown + ul a[href=?]", checklist_occurrences_path(employee_sector: "az"), text: "Acompanhamento de Checklist"
+    assert_select "#rhDropdown + ul a[href=?]", checklist_occurrences_path, text: "Acompanhamento de Checklist"
+    assert_select "ul[aria-labelledby=fleetDropdown] a[href=?]", checklist_occurrences_path, text: "Acompanhamento de Checklist"
     assert_select ".app-mobile-shortcuts a[href^='/ocorrencias-checklist']", count: 0
     assert_select "#mobileDuCollapse a[href=?]", checklist_occurrences_path(employee_sector: "du")
     assert_select "#mobileAzCollapse a[href=?]", checklist_occurrences_path(employee_sector: "az")
@@ -338,7 +432,8 @@ class ChecklistOccurrencesControllerTest < ActionDispatch::IntegrationTest
     private_task = private_plan.buckets.first.tasks.create!(title: "Privada", creator: outsider)
     @user.update!(role: :user, sector: :du)
     get checklist_occurrences_path(action_plan_id: private_plan.id)
-    assert_response :not_found
+    assert_response :success
+    assert_not_includes response.body, private_plan.name
     sign_in @user
     post task_checklist_occurrences_path(private_task), params: { checklist_occurrence: @attributes }
     assert_response :not_found

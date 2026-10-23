@@ -24,7 +24,7 @@ module NavbarHelper
     checklist_tracking: {
       path: :checklist_occurrences_path,
       icon: 'bi-person-exclamation',
-      label: 'Faltas de checklist',
+      label: 'Acompanhamento de Checklist',
       sectors: [:fleet, :du, :warehouse, :hr, :safety, :planning]
     },
     availability: {

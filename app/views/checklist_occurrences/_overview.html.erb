@@ -8,21 +8,24 @@
   </div>
   <div class="app-panel__body">
     <p class="app-panel__subtitle"><%= @display == 'calendar' ? 'Selecione um dia para conferir suas ocorrências.' : "Selecione #{@spot_mode ? 'a placa' : 'o colaborador'} ou um total para conferir as ocorrências." %></p>
-    <% if @display == 'calendar' %><%= render "calendar", filters: filters %><% end %>
+    <% if @display == 'calendar' %>
+      <%= render "calendar", filters: filters %>
+      <%= render "monthly_roster", filters: filters if !@spot_mode && @report.rows.any? %>
+    <% end %>
   </div>
   <% unless @display == 'calendar' %>
     <% if @report.rows.empty? %>
-      <div class="checklist-tracking__empty"><i class="bi bi-person-check" aria-hidden="true"></i><p>Nenhuma falta confirmada neste ano.</p><span>Use a aba Ações para conferir para vincular as ações a <%= @spot_mode ? "uma placa" : "um colaborador" %> e incluí-las na contagem.</span></div>
+      <div class="checklist-tracking__empty"><i class="bi bi-person-check" aria-hidden="true"></i><p><%= @spot_mode ? "Nenhuma falta confirmada neste ano." : "Nenhum colaborador ativo nesta área." %></p></div>
     <% else %>
       <div class="app-table-shell">
         <table class="table app-table app-table--data employees-table checklist-tracking__ranking">
-          <caption class="visually-hidden">Faltas de checklist por <%= @spot_mode ? "placa SPOT" : "colaborador" %> e mês em <%= @year %>. Selecione <%= @spot_mode ? "uma placa" : "um colaborador" %> ou total para abrir as ocorrências.</caption>
+          <caption class="visually-hidden">Acompanhamento de Checklist por <%= @spot_mode ? "placa SPOT" : "colaborador" %> e mês em <%= @year %>. Selecione <%= @spot_mode ? "uma placa" : "um colaborador" %> ou total para abrir as ocorrências.</caption>
           <thead><tr><th scope="col"><%= @spot_mode ? "Placa SPOT" : "Colaborador" %></th><th scope="col"><%= @spot_mode ? "Tipo" : "Matrícula" %></th><th scope="col">Total</th><% months.each do |month| %><th scope="col"><%= month %></th><% end %></tr></thead>
           <tbody>
             <% @report.rows.each do |row| %>
               <% employee = row[:employee] %>
               <% employee_history_path = checklist_occurrences_path(filters.merge(employee_id: employee&.id, spot_plate: row[:spot_plate], month: nil, display: 'history', anchor: 'tracking-history')) %>
-              <tr>
+              <tr data-occurrence-count="<%= row[:total] %>">
                 <td>
                   <%= link_to employee_history_path, class: 'employees-person', data: { action: 'click->checklist-occurrence-modal#open' } do %>
                     <span class="employees-avatar" aria-hidden="true"><% if @spot_mode %><i class="bi bi-truck" aria-hidden="true"></i><% else %><%= row[:name].split.first(2).map(&:first).join %><% end %></span>
@@ -30,12 +33,12 @@
                   <% end %>
                 </td>
                 <td><span class="employees-code"><%= @spot_mode ? "SPOT" : (employee.matricula.presence || 'Sem matrícula') %></span></td>
-                <td><%= link_to row[:total], employee_history_path, class: "btn btn-outline-danger btn-sm checklist-tracking__total", data: { action: "click->checklist-occurrence-modal#open" }, aria: { label: "#{row[:name]}: #{row[:total]} faltas em #{@year}" } %></td>
+                <td><%= link_to row[:total], employee_history_path, class: "btn btn-outline-#{row[:total].positive? ? 'danger' : 'secondary'} btn-sm checklist-tracking__total", data: { action: "click->checklist-occurrence-modal#open" }, aria: { label: "#{row[:name]}: #{row[:total]} faltas em #{@year}" } %></td>
                 <% row[:months].each_with_index do |count, index| %>
                   <td>
                     <% if count.positive? %>
                       <%= link_to count, checklist_occurrences_path(filters.merge(employee_id: employee&.id, spot_plate: row[:spot_plate], month: index + 1, display: 'history', anchor: 'tracking-history')), class: 'btn btn-outline-danger btn-sm', data: { action: "click->checklist-occurrence-modal#open" }, aria: { label: "#{row[:name]}, #{months[index]}: #{count} faltas" } %>
-                    <% else %><span class="text-muted">–</span><% end %>
+                    <% else %><span class="text-muted">0</span><% end %>
                   </td>
                 <% end %>
               </tr>

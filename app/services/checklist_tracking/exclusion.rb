@@ -10,12 +10,12 @@ module ChecklistTracking
       label = ChecklistOccurrence::EXCLUSION_REASONS[@reason]
       raise InvalidChange, "Escolha o motivo para não contar esta ocorrência." unless label
       raise InvalidChange, "Descreva o motivo para desconsiderar a ocorrência." if @reason == "other" && @details.blank?
-      raise ActiveRecord::RecordNotFound unless @user.can_view_checklist_tracking? && ChecklistOccurrence.visible_to(@user).exists?(@occurrence.id)
+      raise ActiveRecord::RecordNotFound unless @user.can_view_checklist_tracking? && ChecklistOccurrence.from_tracking_sources.visible_to(@user).exists?(@occurrence.id)
       reason = [label, @details.presence].compact.join(" — ")
       ChecklistOccurrence.transaction do
-        scope = ChecklistOccurrence.active.where(@occurrence.subject_attributes).where(occurred_on: @occurrence.occurred_on, checklist_kind: @occurrence.checklist_kind)
+        scope = ChecklistOccurrence.from_tracking_sources.active.where(@occurrence.subject_attributes).where(occurred_on: @occurrence.occurred_on, checklist_kind: @occurrence.checklist_kind)
         scope = scope.where(id: ChecklistOccurrence.visible_to(@user).select(:id)) if @occurrence.spot?
-        records = scope.order(:id).lock.to_a
+        records = scope.order(:id).lock.preload(:employee, task: :bucket).to_a
         records.each do |record|
           record.update!(cancelled_at: Time.current, cancelled_by: @user,
             cancellation_reason: reason, exclusion_category: @reason)

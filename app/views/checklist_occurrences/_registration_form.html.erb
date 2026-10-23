@@ -6,7 +6,6 @@
   <% if local_assigns[:dashboard] %>
     <%= hidden_field_tag :tracking_dashboard, "1" %>
     <%= hidden_field_tag :display, "review" %>
-    <%= hidden_field_tag :tracking_plan_id, local_assigns.fetch(:plan_id, @plan&.id) %>
   <% end %>
   <%= hidden_field_tag :subject, "spot" if spot_form %>
   <%= hidden_field_tag :employee_sector, local_assigns.fetch(:employee_sector, @employee_sector) %>

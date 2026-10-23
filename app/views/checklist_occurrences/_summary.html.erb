@@ -1,0 +1,10 @@
+  <div id="tracking-summary">
+  <div class="checklist-tracking__metrics">
+    <% [[@report.total, 'Faltas no ano', 'calendar-x'], [@report.recorded_subject_count, (@spot_mode ? 'Placas com registro' : 'Colaboradores com registro'), (@spot_mode ? 'truck' : 'people')], [@report.recurring_count, 'Com mais de uma falta', 'arrow-repeat'], [@report.pending_count, 'Com ações abertas', 'hourglass-split']].each do |value, label, icon| %>
+      <div class="app-panel"><i class="bi bi-<%= icon %>" aria-hidden="true"></i><strong><%= value %></strong><span><%= label %></span></div>
+    <% end %>
+  </div>
+  <p class="checklist-tracking__explanation">A contagem usa a data da falta. Mesm<%= @spot_mode ? "a placa" : "o colaborador" %>, data e tipo contam uma vez, ainda que existam várias ações. Concluir a ação preserva a ocorrência. As origens são definidas nas configurações do módulo.<% if @active_only %> Os acompanhamentos anual e mensal incluem apenas colaboradores ativos, inclusive quem tem zero faltas.<% end %><%= " · Área #{@employee_sector.upcase}" if @employee_sector %>.</p>
+
+  </div>
+

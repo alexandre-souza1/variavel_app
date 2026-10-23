@@ -4,7 +4,7 @@
     <div class="checklist-tracking__heading">
       <p class="checklist-tracking__explanation"><%= pluralize(@ready_count, "ação identificada", "ações identificadas") %> com <%= @spot_mode ? "placa" : "nome" %>, data e tipo claros. Registre todas de uma vez. Casos incompletos ou ambíguos continuam para conferência.</p>
       <%= button_to "Registrar #{pluralize(@ready_count, 'identificada', 'identificadas')}", identify_checklist_occurrences_path,
-        params: { year: @year, action_plan_id: @plan&.id, employee_sector: @employee_sector, subject: @spot_mode ? "spot" : nil, display: "review" }, class: "btn btn-primary", disabled: @ready_count.zero?, data: { turbo: false } %>
+        params: { year: @year, employee_sector: @employee_sector, subject: @spot_mode ? "spot" : nil, display: "review" }, class: "btn btn-primary", disabled: @ready_count.zero?, data: { turbo: false } %>
     </div>
   </section>
   <% end %>
@@ -12,12 +12,12 @@
 </div>
   <section id="tracking-review" class="app-panel checklist-tracking__card" aria-labelledby="tracking-review-title">
     <div class="checklist-tracking__heading"><div><h2 id="tracking-review-title">Ações para conferir</h2><p><%= pluralize(@candidate_count, "ação", "ações") %> de <%= @year %> sem ocorrência vinculada. Novas tarefas com dados completos são registradas automaticamente.</p></div>
-      <% if !@spot_mode && current_user.can_manage_employees? %><%= link_to 'Cadastrar ex-colaborador', new_checklist_historical_employee_path(year: @year, action_plan_id: @plan&.id, employee_sector: @employee_sector), class: 'btn btn-outline-secondary', data: { controller: 'historical-employee-modal', action: 'click->historical-employee-modal#open' } %><% end %>
+      <% if !@spot_mode && current_user.can_manage_employees? %><%= link_to 'Cadastrar ex-colaborador', new_checklist_historical_employee_path(year: @year, employee_sector: @employee_sector), class: 'btn btn-outline-secondary', data: { controller: 'historical-employee-modal', action: 'click->historical-employee-modal#open' } %><% end %>
     </div>
     <p class="checklist-tracking__explanation">Use o lote para reprocessar ações antigas já identificadas. Casos com <%= @spot_mode ? "placas ambíguas" : "nomes ambíguos" %> ou dados incompletos precisam de conferência.</p>
     <% if @candidates.empty? %><p class="checklist-tracking__empty">Nenhuma ação para conferir neste ano.</p><% end %>
     <% @candidates.each do |source| %>
-      <%= render "candidate", task: source.task, employees: @employees, year: @year, plan_id: @plan&.id, employee_sector: @employee_sector %>
+      <%= render "candidate", task: source.task, employees: @employees, year: @year, employee_sector: @employee_sector %>
     <% end %>
     <%= render "pagination", current_page: @candidate_page, total_count: @candidate_count, per_page: 15, page_key: :candidate_page, filters: filters, anchor: 'tracking-review', label: 'Páginas das ações para conferir' %>
   </section>

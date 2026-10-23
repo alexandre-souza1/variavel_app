@@ -13,7 +13,7 @@
       </div>
       <div class="header-actions">
         <% if current_user.can_view_checklist_tracking? %>
-          <%= link_to "Faltas de checklist", checklist_occurrences_path, class: "btn-outline" %>
+          <%= link_to "Acompanhamento de Checklist", checklist_occurrences_path, class: "btn-outline" %>
         <% end %>
         <%= link_to inbox_path, class: "btn-outline" do %>
           <i class="bi bi-inbox"></i>

@@ -2,8 +2,8 @@
 <% occurrences = ChecklistOccurrence.visible_to(current_user).where(task: task).includes(:employee, :recorded_by, :cancelled_by).order(:occurred_on, :id) %>
 <section id="task-checklist-occurrences-<%= task.id %>" class="checklist-tracking checklist-tracking__task-panel">
   <div class="checklist-tracking__heading">
-    <div><h3>Faltas de checklist</h3><p>Registre quem deixou de fazer e em qual data.</p></div>
-    <%= link_to "Ver painel anual", checklist_occurrences_path(action_plan_id: task.bucket.action_plan_id, subject: ChecklistTracking::TaskSource.new(task).spot? ? "spot" : nil), class: "btn btn-outline-secondary btn-sm checklist-tracking__link", data: { turbo_frame: "_top" } %>
+    <div><h3>Acompanhamento de Checklist</h3><p>Registre quem deixou de fazer e em qual data.</p></div>
+    <%= link_to "Ver painel anual", checklist_occurrences_path(subject: ChecklistTracking::TaskSource.new(task).spot? ? "spot" : nil), class: "btn btn-outline-secondary btn-sm checklist-tracking__link", data: { turbo_frame: "_top" } %>
   </div>
   <% if local_assigns[:message] %>
     <p class="alert <%= local_assigns[:error] ? 'alert-danger' : 'alert-success' %>" role="status"><%= message %></p>

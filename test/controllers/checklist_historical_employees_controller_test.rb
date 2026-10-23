@@ -11,7 +11,7 @@ class ChecklistHistoricalEmployeesControllerTest < ActionDispatch::IntegrationTe
   test 'historical registration is discoverable from review and preserves task context and filters' do
     get checklist_occurrences_path(@filters.merge(display: 'review'))
     assert_response :success
-    assert_select "a[href=?]", new_checklist_historical_employee_path(@filters), text: 'Cadastrar ex-colaborador'
+    assert_select "a[href=?]", new_checklist_historical_employee_path(@filters.except(:action_plan_id)), text: 'Cadastrar ex-colaborador'
     get new_checklist_historical_employee_path(@filters.merge(task_id: @task.id))
     assert_response :success
     assert_select 'h1', text: 'Cadastrar ex-colaborador'
@@ -72,9 +72,11 @@ class ChecklistHistoricalEmployeesControllerTest < ActionDispatch::IntegrationTe
     end
     assert_equal [@task.id, duplicate.id, second_date.id].sort, person.checklist_occurrences.pluck(:task_id).sort
     get checklist_occurrences_path(@filters)
-    assert_select '.checklist-tracking__ranking tbody tr', count: 1
-    assert_select '.checklist-tracking__ranking .checklist-tracking__total', text: '2'
-    assert_select '.employees-code', text: 'Sem matrícula'
+    assert_select '.checklist-tracking__ranking tbody tr', count: 0
+    assert_not_includes response.body, person.nome
+    get checklist_occurrences_path(@filters.merge(display: 'history'))
+    assert_select '.checklist-tracking__event', count: 2
+    assert_select '.checklist-tracking__event', text: /Ex Motorista Histórico/, count: 2
     get employees_path(q: person.nome)
     assert_select '.employees-person', count: 0
     get employees_path(q: person.nome, status: 'archived')

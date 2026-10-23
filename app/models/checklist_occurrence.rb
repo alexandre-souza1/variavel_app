@@ -18,6 +18,9 @@ class ChecklistOccurrence < ApplicationRecord
   scope :spots, -> { where.not(spot_plate: nil) }
   scope :employees, -> { where(spot_plate: nil) }
   scope :active, -> { where(cancelled_at: nil) }
+  scope :from_tracking_sources, -> do
+    where(task_id: Task.joins(:bucket).where(buckets: { action_plan_id: ActionPlan.checklist_tracking_sources.select(:id) }).select(:id))
+  end
   scope :visible_to, ->(user) do
     where(employee_id: Employee.for_checklist_tracking(user).select(:id))
       .or(where.not(spot_plate: nil).where(task_id: Task.accessible_to(user).select(:id)))

@@ -108,6 +108,10 @@ class User < ApplicationRecord
     can_view_employees? || sector_fleet?
   end
 
+  def can_manage_checklist_tracking_settings?
+    admin? || (supervisor? && sector_fleet?)
+  end
+
   def can_view_du_operations?
     !mechanical? && (admin? || supervisor? || sector_du? || sector_fleet? || sector_hr? || sector_safety? || sector_planning?)
   end

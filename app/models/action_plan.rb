@@ -1,5 +1,6 @@
 class ActionPlan < ApplicationRecord
   enum :sector, User.sectors, prefix: true
+  scope :checklist_tracking_sources, -> { where(checklist_tracking_visible: true) }
 
   scope :visible_to, ->(user) do
     return all if user.admin?

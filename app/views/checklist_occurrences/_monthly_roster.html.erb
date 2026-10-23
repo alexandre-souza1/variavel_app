@@ -1,0 +1,20 @@
+<div class="app-table-shell mt-4">
+  <table class="table app-table app-table--data employees-table checklist-tracking__monthly-roster">
+    <caption>Colaboradores ativos em <%= l(@calendar_date, format: '%B de %Y') %>, incluindo quem não tem faltas.</caption>
+    <thead><tr><th scope="col">Colaborador</th><th scope="col">Matrícula</th><th scope="col">Faltas no mês</th></tr></thead>
+    <tbody>
+      <% @report.rows.each do |row| %>
+        <% next if @employee && row[:employee] != @employee %>
+        <% count = row[:months][@month - 1] %>
+        <tr data-occurrence-count="<%= count %>">
+          <td><strong><%= row[:name] %></strong></td>
+          <td><%= row[:employee].matricula.presence || 'Sem matrícula' %></td>
+          <td><%= link_to count, checklist_occurrences_path(filters.except(:day).merge(employee_id: row[:employee].id, display: 'history')),
+            class: "btn btn-outline-#{count.positive? ? 'danger' : 'secondary'} btn-sm",
+            data: { action: 'click->checklist-occurrence-modal#open' },
+            aria: { label: "#{row[:name]}: #{count} faltas em #{l(@calendar_date, format: '%B de %Y')}" } %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

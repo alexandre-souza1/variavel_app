@@ -71,8 +71,8 @@
         <% end %>
 
         <% if current_user.can_view_checklist_tracking? %>
-          <%= link_to checklist_occurrences_path(action_plan_id: @action_plan.id, year: @action_plan.gerot_year), class: "btn-outline action-plan-view-link" do %>
-            <i class="bi bi-person-exclamation" aria-hidden="true"></i><span>Faltas de checklist</span>
+          <%= link_to checklist_occurrences_path(year: @action_plan.gerot_year), class: "btn-outline action-plan-view-link" do %>
+            <i class="bi bi-person-exclamation" aria-hidden="true"></i><span>Acompanhamento de Checklist</span>
           <% end %>
         <% end %>
 

@@ -76,6 +76,27 @@ class ChecklistSpotOccurrencesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".checklist-tracking__record", text: /Placa incorreta/
   end
 
+  test "one SPOT exclusion response updates the calendar and preserves the selected plate" do
+    record = @task.checklist_occurrences.create!(@attributes.merge(recorded_by: @user))
+    @task.checklist_occurrences.create!(@attributes.merge(spot_plate: "DLL4A97", recorded_by: @user))
+    filters = { year: 2026, subject: "spot", month: 4 }
+    patch exclude_checklist_occurrence_path(record), params: {
+      subject: "spot", exclusion: { reason: "network_error", details: "Sem conexão" },
+      dashboard: filters.merge(display: "calendar"), modal: filters.merge(spot_plate: "IZI3B97")
+    }, as: :json
+    assert_response :success
+    result = response.parsed_body
+    calendar = Nokogiri::HTML.fragment(result.fetch("fragments").fetch("tracking-overview"))
+    day = calendar.at_css("[data-calendar-date='2026-04-29']")
+    assert_equal "1 faltas", day.at_css(".checklist-tracking__day-count").text.strip
+    assert_includes day.text, "DLL4A97"
+    assert_not_includes day.text, "IZI3B97"
+    modal = Nokogiri::HTML.fragment(result.fetch("modal"))
+    assert_equal 1, modal.css(".checklist-tracking__modal-event.is-excluded").size
+    assert_includes modal.text, "IZI3B97"
+    assert_not_includes modal.text, "DLL4A97"
+  end
+
   test "private SPOT plates are absent from totals filters history and exclusion access" do
     outsider = users(:two)
     outsider.update!(role: :user, sector: :warehouse)

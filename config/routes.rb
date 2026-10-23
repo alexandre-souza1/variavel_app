@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resource :checklist_tracking_setting, path: "ocorrencias-checklist/configuracoes", only: %i[edit update]
   resources :checklist_historical_employees, path: 'ocorrencias-checklist/ex-colaboradores', only: %i[new create]
   resources :checklist_occurrences, path: "ocorrencias-checklist", only: :index do
     post :identify, on: :collection

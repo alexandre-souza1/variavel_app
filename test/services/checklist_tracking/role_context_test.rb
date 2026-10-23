@@ -95,6 +95,7 @@ class ChecklistTracking::RoleContextTest < ActiveSupport::TestCase
     assert_match "Ajudante DU", excluded[:role_restriction]
     assert ChecklistOccurrence.exists?(old.id)
     assert_nil old.reload.cancelled_at
+    assert_equal 1, ChecklistTracking::History.new(scope: @task.checklist_occurrences).excluded_count
   end
 
   private
