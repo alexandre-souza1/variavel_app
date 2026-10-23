@@ -45,7 +45,7 @@ export default class extends Controller {
 
         fallbackTolerance: 3,
 
-        filter: "[data-observation-edit], [data-fleet-departure-alert]",
+        filter: "[data-observation-edit], [data-unavailable-edit], [data-fleet-departure-alert]",
 
         preventOnFilter: false,
 
@@ -83,6 +83,7 @@ export default class extends Controller {
     if (!this.mobileMode()) return
     if (event.target.closest("[data-plate-profile-link]")) return
     if (event.target.closest("[data-observation-edit]")) return
+    if (event.target.closest("[data-unavailable-edit]")) return
     if (event.target.closest("[data-fleet-departure-alert]")) return
 
     const item = event.currentTarget
@@ -464,9 +465,20 @@ export default class extends Controller {
     this.modal = bootstrap.Modal.getOrCreateInstance(modalElement)
 
     // Resetar os campos para valores padrão
-    document.getElementById("unavailableReason").value = "maintenance"
+    const item = this.pendingEvent?.item
+    document.getElementById("unavailableReason").value =
+      item?.dataset.status === "unavailable" ? item.dataset.reason || "maintenance" : "maintenance"
     document.getElementById("unavailableObservation").value =
-      this.pendingEvent?.item?.dataset?.observation || ""
+      item?.dataset.observation || ""
+    const supplierSelect = document.getElementById("unavailableSupplier")
+    supplierSelect.querySelectorAll("[data-current-supplier]").forEach(option => option.remove())
+    const supplierId = item?.dataset.supplierId || ""
+    if (supplierId && !Array.from(supplierSelect.options).some(option => option.value === supplierId)) {
+      const option = new Option(`${item.dataset.supplierName} (tipo alterado)`, supplierId)
+      option.dataset.currentSupplier = "true"
+      supplierSelect.add(option)
+    }
+    supplierSelect.value = supplierId
 
     this.modal.show()
   }
@@ -480,6 +492,18 @@ export default class extends Controller {
 
 
     if (!button) return
+
+    this.element.addEventListener("click", (event) => {
+      const editButton = event.target.closest("[data-unavailable-edit]")
+      if (!editButton) return
+
+      event.preventDefault()
+      event.stopPropagation()
+      const item = editButton.closest(".sortable-item")
+      const list = item.closest(".sortable-list")
+      this.pendingEvent = { item, from: list, to: list, oldIndex: Array.from(list.children).indexOf(item) }
+      this.openModal()
+    })
 
 
     this.modalElement = document.getElementById(
@@ -536,7 +560,9 @@ export default class extends Controller {
         this.itemPosition(event),
         reason,
         observation,
-        event.item
+        event.item,
+        null,
+        document.getElementById("unavailableSupplier").value
       )
 
 
@@ -657,7 +683,8 @@ export default class extends Controller {
     reason = null,
     observation = null,
     itemElement = null,
-    specialRoute = null
+    specialRoute = null,
+    supplierId = undefined
   ) {
 
 
@@ -674,7 +701,7 @@ export default class extends Controller {
 
           "X-CSRF-Token": document
             .querySelector("[name='csrf-token']")
-            .content
+            ?.content || ""
 
         },
 
@@ -691,7 +718,9 @@ export default class extends Controller {
 
             observation: observation,
 
-            special_route: specialRoute
+            special_route: specialRoute,
+
+            supplier_id: supplierId
 
           }
 
@@ -813,6 +842,8 @@ export default class extends Controller {
   refreshItem(itemElement, item) {
     itemElement.dataset.status = item.status
     itemElement.dataset.reason = item.reason || ""
+    itemElement.dataset.supplierId = item.supplier_id || ""
+    itemElement.dataset.supplierName = item.supplier_name || ""
     itemElement.dataset.observation = item.observation || ""
     itemElement.classList.remove(
       "fleet-plate-item--availability",
@@ -851,6 +882,16 @@ export default class extends Controller {
     }
 
     this.refreshTreadDepthBadge(itemElement)
+    const situation = itemElement.querySelector("[data-situation-display]")
+    if (situation) situation.hidden = item.status === "exchange"
+    const editButton = itemElement.querySelector("[data-unavailable-edit]")
+    if (editButton) editButton.hidden = item.status !== "unavailable"
+    const supplierDisplay = itemElement.querySelector("[data-supplier-display]")
+    if (supplierDisplay) {
+      supplierDisplay.hidden = item.status !== "unavailable" || !item.supplier_name
+      supplierDisplay.title = item.supplier_name || ""
+      supplierDisplay.querySelector("[data-supplier-label]").textContent = item.supplier_name || ""
+    }
     this.setObservationDetails(itemElement, item.observation)
   }
 
@@ -1013,12 +1054,14 @@ export default class extends Controller {
 
     const button = container.querySelector("[data-observation-edit]")
     const observationText = String(observation || "").trim()
+    const unavailable = itemElement.dataset.status === "unavailable"
     const label = observationText
       ? `<span>${this.escapeHtml(observationText)}</span>`
       : "<span>Adicionar observação</span>"
 
-    // Preserve the action for adding the first observation on editable cards.
-    container.hidden = !observationText && !button
+    // Unavailable cards use one action to edit reason, supplier and observation.
+    container.hidden = !observationText && (!button || unavailable)
+    if (button) button.hidden = unavailable
     container.innerHTML = label
 
     if (button) {

@@ -51,6 +51,7 @@ module FleetAvailabilities
       {
         fleet_availability_id: availability_id,
         reason: nil,
+        supplier_id: nil,
         observation: nil,
         special_route: nil,
         created_at: Time.current,
@@ -102,6 +103,7 @@ module FleetAvailabilities
           status: FleetAvailabilityItem.statuses.fetch(item.status),
           position: item.position,
           reason: item.reason,
+          supplier_id: item.supplier_id,
           observation: item.observation,
           special_route: item.special_route,
           created_at: Time.current,
@@ -147,6 +149,7 @@ module FleetAvailabilities
           status: FleetAvailabilityItem.statuses[:unavailable],
           position: item.position,
           reason: item.reason,
+          supplier_id: item.supplier_id,
           observation: item.observation,
           special_route: item.special_route
         }
@@ -167,6 +170,7 @@ module FleetAvailabilities
           status: data[:status],
           position: position,
           reason: data[:reason],
+          supplier_id: data[:supplier_id],
           observation: data[:observation],
           special_route: data[:special_route]
         )
@@ -205,6 +209,7 @@ module FleetAvailabilities
           status: data[:status],
           position: position,
           reason: data[:reason],
+          supplier_id: data[:supplier_id],
           observation: data[:observation],
           special_route: data[:special_route]
         )

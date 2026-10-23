@@ -13,7 +13,8 @@ class FleetAvailabilityItemsController < ApplicationController
       position: item_params[:position],
       reason: item_params[:reason],
       observation: item_params[:observation],
-      special_route: item_params[:special_route]
+      special_route: item_params[:special_route],
+      supplier_id: item_params[:supplier_id]
     )
 
     render json: {
@@ -23,6 +24,8 @@ class FleetAvailabilityItemsController < ApplicationController
       reason: item.reason,
       reason_label: item.reason_label,
       observation: item.observation,
+      supplier_id: item.supplier_id,
+      supplier_name: item.supplier&.display_name,
       position: item.position,
       special_route: item.special_route,
       special_route_label: item.special_route_label,
@@ -62,7 +65,7 @@ class FleetAvailabilityItemsController < ApplicationController
 
   def item_params
     params.require(:fleet_availability_item)
-          .permit(:status, :position, :reason, :observation, :special_route)
+          .permit(:status, :position, :reason, :observation, :special_route, :supplier_id)
   end
 
 end

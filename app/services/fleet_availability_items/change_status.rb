@@ -13,7 +13,8 @@ module FleetAvailabilityItems
       position:,
       reason: nil,
       observation: nil,
-      special_route: nil
+      special_route: nil,
+      supplier_id: nil
     )
       @item = item
       @user = user
@@ -22,12 +23,14 @@ module FleetAvailabilityItems
       @reason = reason
       @observation = observation
       @special_route = special_route
+      @supplier_id = supplier_id
     end
 
 
     def call
 
       old_status = @item.status
+      old_supplier_id = @item.supplier_id
 
 
       ActiveRecord::Base.transaction do
@@ -37,13 +40,15 @@ module FleetAvailabilityItems
         )
 
 
-        if old_status != @item.status
+        if old_status != @item.status || old_supplier_id != @item.supplier_id
 
           FleetAvailabilityChange.create!(
             fleet_availability_item: @item,
             user: @user,
             from_status: old_status,
             to_status: @item.status,
+            reason: @item.reason,
+            supplier: @item.supplier,
             observation: @observation
           )
 
@@ -69,6 +74,7 @@ module FleetAvailabilityItems
       attributes[:observation] = @observation unless @observation.nil?
 
       if @status == "unavailable"
+        attributes[:supplier_id] = @supplier_id unless @supplier_id.nil?
         attributes[:reason] = @reason.presence || "other"
         attributes[:special_route] = nil
       elsif @status == "special_route"

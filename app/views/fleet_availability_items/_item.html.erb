@@ -17,6 +17,8 @@
          data-profile="<%= plate.perfil.presence || "Sem perfil" %>"
          data-plate-id="<%= plate.id %>"
          data-reason="<%= item.reason %>"
+         data-supplier-id="<%= item.supplier_id %>"
+         data-supplier-name="<%= item.supplier&.display_name %>"
          data-observation="<%= item.observation %>"
          data-van-plate="<%= item.van_plate? %>"
          data-tread-depth="<%= tread_depth %>"
@@ -68,6 +70,8 @@
       <% end %>
     </div>
 
+    <div class="fleet-vehicle-card__situation" data-situation-display
+         <%= "hidden" unless [:availability, :special_route, :unavailable].include?(variant) %>>
       <div class="<%= variant == :unavailable ? "fleet-plate-card__defect-wrapper" : "fleet-plate-card__side" %>"
            <%= "hidden" unless [:availability, :special_route, :unavailable].include?(variant) %>
            data-live-details>
@@ -89,9 +93,25 @@
           </div>
         <% end %>
       </div>
+      <% if editable %>
+        <button type="button" class="fleet-vehicle-card__edit" data-unavailable-edit
+                <%= "hidden" unless item.unavailable? %>
+                title="Editar indisponibilidade"
+                aria-label="Editar indisponibilidade da placa <%= plate.placa %>">
+          <i class="bi bi-pencil" aria-hidden="true"></i>
+        </button>
+      <% end %>
+    </div>
+
+    <div class="fleet-vehicle-card__supplier" data-supplier-display
+         <%= "hidden" unless item.unavailable? && item.supplier.present? %>
+         title="<%= item.supplier&.display_name %>">
+      <i class="bi bi-shop" aria-hidden="true"></i>
+      <span data-supplier-label><%= item.supplier&.display_name %></span>
+    </div>
 
     <div class="fleet-plate-card__observation"
-         <%= "hidden" if item.observation.blank? && !editable %>
+         <%= "hidden" if item.observation.blank? && (!editable || item.unavailable?) %>
          data-observation-display>
       <% if item.observation.present? %>
         <span>
@@ -104,6 +124,7 @@
       <% if editable %>
         <button type="button"
                 class="btn btn-sm btn-link fleet-plate-card__observation-button"
+                <%= "hidden" if item.unavailable? %>
                 aria-label="Editar observação da placa <%= plate.placa %>"
                 data-observation-edit>
           <i class="bi bi-pencil-square"></i>

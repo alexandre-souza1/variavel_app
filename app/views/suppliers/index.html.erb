@@ -1,7 +1,7 @@
-<div class="admin-catalog-page">
+<div class="admin-catalog-page" data-controller="supplier-drawer" data-supplier-drawer-auto-open-value="<%= @supplier.present? %>">
   <div class="admin-catalog-header">
     <div><p class="admin-catalog-eyebrow"><i class="bi bi-building me-1"></i> Cadastros · Financeiro</p><h1><i class="bi bi-truck me-2"></i>Fornecedores</h1><p>Consulte os fornecedores e acompanhe seus lançamentos.</p></div>
-    <%= link_to new_supplier_path, class: "az-report-btn az-report-btn--primary" do %><i class="bi bi-plus-lg"></i> Novo fornecedor<% end %>
+    <%= link_to new_supplier_path, class: "az-report-btn az-report-btn--primary", data: { action: "supplier-drawer#open", drawer_title: "Novo fornecedor" } do %><i class="bi bi-plus-lg" aria-hidden="true"></i> Novo fornecedor<% end %>
   </div>
 
   <div class="admin-catalog-summary"><div><span>Fornecedores cadastrados</span><strong><%= @suppliers.size %></strong></div><div><span>Com lançamentos</span><strong><%= @suppliers.count { |supplier| supplier.invoices.loaded? && supplier.invoices.any? } %></strong></div></div>
@@ -13,6 +13,7 @@
         <tr>
           <th>Nome</th>
           <th>CNPJ</th>
+          <th>Tipo</th>
           <th>Lançamentos</th>
           <th>Ações</th>
         </tr>
@@ -20,13 +21,14 @@
       <tbody>
         <% @suppliers.each do |supplier| %>
           <tr>
-            <td><%= link_to supplier.name, supplier_path(supplier), class: "admin-catalog-link" %></td>
+            <td><%= link_to supplier.name, supplier_path(supplier), class: "admin-catalog-link" %><% if supplier.fantasy_name.present? && supplier.fantasy_name != supplier.name %><small class="d-block text-muted"><%= supplier.fantasy_name %></small><% end %></td>
             <td><%= supplier.cnpj %></td>
+            <td><span class="badge <%= supplier.provides_maintenance? ? 'bg-success' : 'bg-secondary' %>"><%= supplier.supplier_type_label %></span></td>
             <td><span class="admin-catalog-count"><%= supplier.invoices.size %></span></td>
             <td>
               <div class="d-inline-flex gap-2">
                 <%= link_to supplier_path(supplier), class: "btn btn-sm btn-outline-secondary", title: "Ver fornecedor" do %><i class="bi bi-eye"></i><% end %>
-                <%= link_to edit_supplier_path(supplier), class: "btn btn-sm btn-outline-primary", title: "Editar fornecedor" do %><i class="bi bi-pencil"></i><% end %>
+                <%= link_to edit_supplier_path(supplier), class: "btn btn-sm btn-outline-primary", title: "Editar fornecedor", data: { action: "supplier-drawer#open", drawer_title: "Editar fornecedor" } do %><i class="bi bi-pencil"></i><% end %>
                 <%= button_to supplier_path(supplier),
                   method: :delete,
                   data: { turbo_confirm: "Tem certeza?" },
@@ -40,4 +42,5 @@
     </table></div>
   </div></div></div>
   <%= link_to "Voltar", invoices_path, class: "btn btn-primary shadow-sm p-3 w-100 mt-2" %>
+  <%= render "drawer" %>
 </div>

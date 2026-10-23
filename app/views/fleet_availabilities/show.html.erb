@@ -550,7 +550,7 @@
         <div class="modal-header">
 
           <h5 class="modal-title">
-            Defeito da placa
+            Indisponibilidade da placa
           </h5>
 
           <button type="button"
@@ -601,7 +601,16 @@
 
           <div>
 
-            <label class="form-label">
+            <label for="unavailableSupplier" class="form-label">Oficina / borracharia (opcional)</label>
+            <select id="unavailableSupplier" class="form-select mb-2">
+              <option value="">Não informada</option>
+              <% @maintenance_suppliers.each do |supplier| %>
+                <option value="<%= supplier.id %>"><%= supplier.display_name %> · <%= supplier.supplier_type_label %></option>
+              <% end %>
+            </select>
+            <div class="form-text mb-3">Selecione um fornecedor cadastrado como Oficina ou Borracharia.</div>
+
+            <label for="unavailableObservation" class="form-label">
               Observação
             </label>
 

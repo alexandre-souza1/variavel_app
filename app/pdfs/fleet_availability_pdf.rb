@@ -15,7 +15,7 @@ class FleetAvailabilityPdf < Prawn::Document
     @fleet_availability = fleet_availability
     @items = fleet_availability
              .fleet_availability_items
-             .includes(:plate)
+             .includes(:plate, :supplier)
              .ordered
              .select { |item| item.plate.active? }
     @standard_plate_by_position =
@@ -73,7 +73,7 @@ class FleetAvailabilityPdf < Prawn::Document
 
   def main_section
     top = cursor
-    left_width = bounds.width * 0.68
+    left_width = bounds.width * 0.65
     right_width = bounds.width - left_width - 10
 
     # Caixa da esquerda (disponibilidade)
@@ -174,9 +174,8 @@ class FleetAvailabilityPdf < Prawn::Document
       ]
     end
 
-    # Larguras fixas para as 5 primeiras colunas (ordem atual)
-    fixed_widths = [100, 70, 40, 100, 70]   # soma = 245
-    obs_width = bounds.width - fixed_widths.sum  # o resto para Observação
+    fixed_widths = [85, 70, 40, 85, 70]
+    obs_width = bounds.width - fixed_widths.sum
 
     col_widths = fixed_widths + [obs_width]
 
@@ -240,26 +239,30 @@ class FleetAvailabilityPdf < Prawn::Document
   end
 
   def unavailable_section
+    fixed_widths = [45, 55]
+    details_width = bounds.width - fixed_widths.sum
+    supplier_width = details_width * 0.48
+    col_widths = fixed_widths + [supplier_width, details_width - supplier_width]
+
     rows =
       items.select(&:unavailable?).map do |item|
         plate = item.plate
+        supplier_name = (item.supplier&.display_name.presence || "-").squish.truncate(20)
+        while supplier_name.length > 3 && width_of(supplier_name, size: 7) > supplier_width - 8
+          supplier_name = supplier_name.truncate(supplier_name.length - 1)
+        end
 
         [
           plate.placa,
           item.reason_label,
+          supplier_name,
           item.observation.presence || "-"
         ]
       end
 
-    # Larguras fixas para as 5 primeiras colunas (ordem atual)
-    fixed_widths = [50, 60]   # soma = 245
-    obs_width = bounds.width - fixed_widths.sum  # o resto para Observação
-
-    col_widths = fixed_widths + [obs_width]
-
     table_section(
       STATUS_TITLES[:unavailable],
-      ["Placa", "Defeito", "Observação"],
+      ["Placa", "Motivo", "Fornecedor", "Observação"],
       rows, column_widths: col_widths
     )
   end

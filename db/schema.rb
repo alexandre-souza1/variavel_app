@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_23_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_23_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -596,7 +596,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_23_120000) do
     t.text "observation"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "supplier_id"
     t.index ["fleet_availability_item_id"], name: "index_fleet_availability_changes_on_fleet_availability_item_id"
+    t.index ["supplier_id"], name: "index_fleet_availability_changes_on_supplier_id"
     t.index ["user_id"], name: "index_fleet_availability_changes_on_user_id"
   end
 
@@ -621,10 +623,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_23_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "special_route"
+    t.bigint "supplier_id"
     t.index ["fleet_availability_id", "plate_id"], name: "idx_fleet_availability_item", unique: true
     t.index ["fleet_availability_id", "position"], name: "index_fleet_availability_items_on_unique_available_position", unique: true, where: "(status = 0)"
     t.index ["fleet_availability_id"], name: "index_fleet_availability_items_on_fleet_availability_id"
     t.index ["plate_id"], name: "index_fleet_availability_items_on_plate_id"
+    t.index ["supplier_id"], name: "index_fleet_availability_items_on_supplier_id"
   end
 
   create_table "fleet_availability_settings", force: :cascade do |t|
@@ -1221,6 +1225,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_23_120000) do
     t.string "city"
     t.string "state"
     t.string "zip_code"
+    t.string "supplier_type", default: "other", null: false
+    t.string "fantasy_name"
   end
 
   create_table "task_activities", force: :cascade do |t|
@@ -1510,9 +1516,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_23_120000) do
   add_foreign_key "fleet_availabilities", "users"
   add_foreign_key "fleet_availabilities", "users", column: "locked_by_id"
   add_foreign_key "fleet_availability_changes", "fleet_availability_items"
+  add_foreign_key "fleet_availability_changes", "suppliers"
   add_foreign_key "fleet_availability_changes", "users"
   add_foreign_key "fleet_availability_items", "fleet_availabilities"
   add_foreign_key "fleet_availability_items", "plates"
+  add_foreign_key "fleet_availability_items", "suppliers"
   add_foreign_key "fleet_dimensioning_standard_plates", "fleet_dimensionings"
   add_foreign_key "fleet_dimensioning_standard_plates", "plates"
   add_foreign_key "hidden_action_plans", "action_plans"

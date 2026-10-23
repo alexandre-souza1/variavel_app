@@ -2,6 +2,7 @@ class FleetAvailabilityChange < ApplicationRecord
 
   belongs_to :fleet_availability_item
   belongs_to :user
+  belongs_to :supplier, optional: true
 
 
   enum :from_status, {

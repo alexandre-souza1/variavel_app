@@ -1,140 +1,108 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = [
-    "cnpj",
-    "name",
-    "situation",
-    "email",
-    "phone",
-    "street",
-    "number",
-    "complement",
-    "neighborhood",
-    "city",
-    "state",
-    "zipCode"
-  ]
+  static targets = ["cnpj", "name", "fantasyName", "situation", "email", "phone", "street", "number",
+    "complement", "neighborhood", "city", "state", "zipCode", "status", "lookupButton", "lookupLabel", "submit",
+    "editableField", "editButton", "editLabel", "editHint"]
 
-  // Método chamado quando o campo CNPJ perde o foco
-  fetchSupplierData() {
+  connect() {
+    if (this.nameTarget.value) {
+      this.lastLookup = this.cnpjTarget.value.replace(/\D/g, "")
+      this.showAlert("Consulte para atualizar os dados cadastrais.")
+    }
+  }
+
+  disconnect() {
+    this.request?.abort()
+  }
+
+  lookupOnEnter(event) {
+    event.preventDefault()
+    this.fetchSupplierData(event)
+  }
+
+  async fetchSupplierData(event) {
     const cnpj = this.cnpjTarget.value.replace(/\D/g, "")
-
+    if (!cnpj && event?.type === "blur") return
     if (cnpj.length !== 14) {
-      this.showAlert("CNPJ inválido. Deve conter 14 dígitos.", "warning")
+      this.showAlert("Informe um CNPJ com 14 dígitos.", "warning")
       return
     }
+    if (this.loading && this.requestCnpj === cnpj) return
+    if (event?.type === "blur" && this.lastLookup === cnpj) return
 
-    // Mostra loading
+    this.request?.abort()
+    const request = new AbortController()
+    this.request = request
+    this.requestCnpj = cnpj
     this.setLoading(true)
+    this.showAlert("Consultando os dados do CNPJ…", "loading")
 
-    fetch(`/suppliers/search_cnpj?cnpj=${cnpj}`)
-      .then(res => {
-        if (!res.ok) throw new Error(`Erro na requisição: ${res.status}`)
-        return res.json()
-      })
-      .then(data => {
-        if (data.error) {
-          throw new Error(data.error)
-        }
-
-        this.fillFormFields(data)
-        this.showAlert("Dados do CNPJ carregados com sucesso!", "success")
-      })
-      .catch(err => {
-        console.error("Erro ao buscar CNPJ:", err)
-        this.showAlert(`Erro: ${err.message}`, "error")
-        this.clearFormFields()
-      })
-      .finally(() => {
-        this.setLoading(false)
-      })
+    try {
+      const response = await fetch(`/suppliers/search_cnpj?cnpj=${cnpj}`, { signal: request.signal })
+      const data = await response.json()
+      if (!response.ok || data.error || !data.name) throw new Error(data.error || "Não foi possível consultar este CNPJ. Tente novamente.")
+      this.fillFormFields(data)
+      this.setManualEditing(false)
+      this.lastLookup = cnpj
+      this.showAlert("Dados cadastrais preenchidos.", "success")
+    } catch (error) {
+      if (error.name === "AbortError") return
+      this.clearFormFields()
+      this.lastLookup = null
+      this.showAlert(error instanceof TypeError ? "Não foi possível consultar o CNPJ. Verifique a conexão e tente novamente." : error.message, "error")
+    } finally {
+      if (this.request === request) this.setLoading(false)
+    }
   }
 
-  // Preenche todos os campos do formulário
   fillFormFields(data) {
-    this.nameTarget.value = data.name || ""
-    this.situationTarget.value = data.situation || ""
-    this.emailTarget.value = data.email || ""
-    this.phoneTarget.value = data.phone || ""
-    this.streetTarget.value = data.street || ""
-    this.numberTarget.value = data.number || ""
-    this.complementTarget.value = data.complement || ""
-    this.neighborhoodTarget.value = data.neighborhood || ""
-    this.cityTarget.value = data.city || ""
-    this.stateTarget.value = data.state || ""
-    this.zipCodeTarget.value = data.zip_code || ""
+    const keys = { fantasyName: "fantasy_name", zipCode: "zip_code" }
+    for (const target of ["name", "fantasyName", "situation", "email", "phone", "street", "number", "complement", "neighborhood", "city", "state", "zipCode"]) {
+      this[`${target}Target`].value = data[keys[target] || target] || ""
+    }
   }
 
-  // Limpa todos os campos (exceto CNPJ)
   clearFields() {
+    this.request?.abort()
+    this.request = null
+    this.lastLookup = null
+    this.setLoading(false)
     this.cnpjTarget.value = ""
     this.clearFormFields()
-    this.showAlert("Campos limpos com sucesso!", "info")
+    this.setManualEditing(false)
+    this.showAlert("Campos limpos. Informe um CNPJ para consultar.")
+    this.cnpjTarget.focus()
   }
 
-  // Limpa apenas os campos de dados (mantém o CNPJ)
   clearFormFields() {
-    this.nameTarget.value = ""
-    this.situationTarget.value = ""
-    this.emailTarget.value = ""
-    this.phoneTarget.value = ""
-    this.streetTarget.value = ""
-    this.numberTarget.value = ""
-    this.complementTarget.value = ""
-    this.neighborhoodTarget.value = ""
-    this.cityTarget.value = ""
-    this.stateTarget.value = ""
-    this.zipCodeTarget.value = ""
+    this.fillFormFields({})
   }
 
-  // Mostra mensagens de alerta
   showAlert(message, type = "info") {
-    // Remove alertas anteriores
-    const existingAlert = this.element.querySelector('.alert')
-    if (existingAlert) {
-      existingAlert.remove()
-    }
-
-    // Cria novo alerta
-    const alertDiv = document.createElement('div')
-    alertDiv.className = `alert alert-${this.getAlertClass(type)} alert-dismissible fade show mt-3`
-    alertDiv.innerHTML = `
-      ${message}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `
-
-    this.element.insertBefore(alertDiv, this.element.firstChild)
-
-    // Auto-remove após 5 segundos
-    setTimeout(() => {
-      if (alertDiv.parentNode) {
-        alertDiv.remove()
-      }
-    }, 5000)
+    this.statusTarget.textContent = message
+    this.statusTarget.dataset.state = type
   }
 
-  getAlertClass(type) {
-    const classes = {
-      success: 'success',
-      error: 'danger',
-      warning: 'warning',
-      info: 'info'
-    }
-    return classes[type] || 'info'
+  toggleManualEditing() {
+    this.setManualEditing(this.editButtonTarget.getAttribute("aria-pressed") !== "true")
   }
 
-  // Controla estado de loading
+  setManualEditing(editing) {
+    this.editableFieldTargets.forEach(field => { field.readOnly = !editing })
+    this.editButtonTarget.setAttribute("aria-pressed", String(editing))
+    this.editLabelTarget.textContent = editing ? "Concluir edição" : "Editar dados"
+    this.editHintTarget.textContent = editing
+      ? "Edição manual liberada. Salve para aplicar as alterações."
+      : "Os dados abaixo são preenchidos pela consulta do CNPJ."
+  }
+
   setLoading(loading) {
-    const button = this.element.querySelector('input[type="submit"]')
-    if (button) {
-      if (loading) {
-        button.value = "Buscando..."
-        button.disabled = true
-      } else {
-        button.value = "Salvar"
-        button.disabled = false
-      }
-    }
+    this.loading = loading
+    this.element.setAttribute("aria-busy", String(loading))
+    this.lookupButtonTarget.disabled = loading
+    this.lookupLabelTarget.textContent = loading ? "Consultando…" : "Consultar"
+    this.submitTarget.disabled = loading
+    this.editButtonTarget.disabled = loading
   }
 }

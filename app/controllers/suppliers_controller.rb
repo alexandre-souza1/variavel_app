@@ -4,20 +4,22 @@ class SuppliersController < ApplicationController
   before_action :set_supplier, only: [:edit, :update, :destroy]
 
   def index
-    @suppliers = Supplier.includes(:invoices).all.order(:name)
+    load_suppliers
   end
 
   def new
     @supplier = Supplier.new
+    load_suppliers unless turbo_frame_request?
   end
 
   def create
     @supplier = Supplier.new(supplier_params)
     if @supplier.save
-      redirect_to suppliers_path, notice: "Fornecedor cadastrado com sucesso!"
+      supplier_saved("Fornecedor cadastrado com sucesso!")
     else
+      load_suppliers unless turbo_frame_request?
       flash.now[:alert] = "Erro ao cadastrar fornecedor"
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 
@@ -37,20 +39,25 @@ class SuppliersController < ApplicationController
   end
 
   def edit
+    load_suppliers unless turbo_frame_request?
   end
 
   def update
     if @supplier.update(supplier_params)
-      redirect_to suppliers_path, notice: "Fornecedor atualizado com sucesso!"
+      supplier_saved("Fornecedor atualizado com sucesso!")
     else
+      load_suppliers unless turbo_frame_request?
       flash.now[:alert] = "Erro ao atualizar fornecedor"
-      render :edit
+      render :edit, status: :unprocessable_entity
     end
   end
 
   def destroy
-    @supplier.destroy
-    redirect_to suppliers_path, notice: "Fornecedor excluído com sucesso!"
+    if @supplier.destroy
+      redirect_to suppliers_path, notice: "Fornecedor excluído com sucesso!"
+    else
+      redirect_to suppliers_path, alert: "Fornecedor vinculado à disponibilidade da frota não pode ser excluído."
+    end
   end
 
   def search_cnpj
@@ -65,6 +72,7 @@ class SuppliersController < ApplicationController
       if data && data["nome"]
         supplier_data = {
           name: data["nome"],
+          fantasy_name: data["fantasia"],
           cnpj: data["cnpj"]&.gsub(/\D/, ''),
           situation: data["situacao"],
           email: data["email"],
@@ -91,8 +99,21 @@ class SuppliersController < ApplicationController
 
   private
 
+  def load_suppliers
+    @suppliers = Supplier.includes(:invoices).order(:name)
+  end
+
+  def supplier_saved(message)
+    if turbo_frame_request?
+      flash[:notice] = message
+      render :saved
+    else
+      redirect_to suppliers_path, notice: message
+    end
+  end
+
   def supplier_params
-    params.require(:supplier).permit(:name, :cnpj, :fantasy_name, :situation, :email, :phone, :street, :number, :complement, :neighborhood, :city, :state, :zip_code)
+    params.require(:supplier).permit(:name, :cnpj, :fantasy_name, :situation, :email, :phone, :street, :number, :complement, :neighborhood, :city, :state, :zip_code, :supplier_type)
   end
 
   def set_supplier

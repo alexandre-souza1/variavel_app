@@ -98,9 +98,10 @@ class FleetAvailabilitiesController < ApplicationController
 
     @locking_enabled = FleetAvailability.locking_enabled?
     @editable = @fleet_availability.editable_by?(current_user)
+    @maintenance_suppliers = Supplier.maintenance_providers.sort_by { |supplier| supplier.display_name.downcase } if @editable
     @items = @fleet_availability
               .fleet_availability_items
-              .includes(:plate)
+              .includes(:plate, :supplier)
               .ordered
               .select { |item| item.plate.active_on?(@fleet_availability.date) }
     @dimensioning = FleetAvailability.dimensioning_period_for(@fleet_availability.date)

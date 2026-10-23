@@ -1,0 +1,15 @@
+<div class="offcanvas offcanvas-end supplier-drawer" tabindex="-1" id="supplier-drawer"
+     aria-labelledby="supplier-drawer-title" data-supplier-drawer-target="panel">
+  <div class="offcanvas-header">
+    <div class="supplier-drawer__heading">
+      <span class="supplier-drawer__icon" aria-hidden="true"><i class="bi bi-building"></i></span>
+      <div><p>Cadastros / Fornecedores</p><h2 class="offcanvas-title" id="supplier-drawer-title" data-supplier-drawer-target="title"><%= @supplier&.persisted? ? "Editar fornecedor" : "Novo fornecedor" %></h2></div>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar formulário"></button>
+  </div>
+  <div class="offcanvas-body">
+    <%= turbo_frame_tag "supplier-form-drawer", data: { supplier_drawer_target: "frame", action: "turbo:frame-load->supplier-drawer#loaded turbo:frame-missing->supplier-drawer#missing" } do %>
+      <%= render "form" if @supplier.present? %>
+    <% end %>
+  </div>
+</div>

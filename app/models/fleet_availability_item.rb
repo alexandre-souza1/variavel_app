@@ -1,6 +1,7 @@
 class FleetAvailabilityItem < ApplicationRecord
   belongs_to :fleet_availability
   belongs_to :plate
+  belongs_to :supplier, optional: true
   has_many :fleet_availability_changes,
          dependent: :destroy
 
@@ -37,6 +38,8 @@ class FleetAvailabilityItem < ApplicationRecord
   validate :special_route_quantity_is_available
   validate :van_route_requires_van_plate
   validate :available_position_is_within_agreed_quantity
+  before_validation :clear_supplier_when_operational
+  validate :supplier_provides_maintenance
 
   def status_badge_class
     case status
@@ -84,6 +87,17 @@ class FleetAvailabilityItem < ApplicationRecord
   end
 
   private
+
+  def clear_supplier_when_operational
+    self.supplier = nil unless unavailable?
+  end
+
+  def supplier_provides_maintenance
+    return if supplier_id.blank? || !will_save_change_to_supplier_id?
+    return if supplier&.provides_maintenance?
+
+    errors.add(:supplier, "deve ser uma oficina ou borracharia")
+  end
 
   def special_route_is_valid
     return if special_route.blank?

@@ -24,6 +24,8 @@
       <div class="az-panel-body">
         <div class="supplier-profile"><div class="supplier-avatar"><i class="bi bi-building"></i></div><div><strong><%= @supplier.name %></strong><span><%= @supplier.email.presence || "E-mail não informado" %></span></div></div>
         <div class="az-period-details">
+          <div class="az-detail-item"><span>Nome fantasia</span><strong><%= @supplier.fantasy_name.presence || "Não informado" %></strong></div>
+          <div class="az-detail-item"><span>Tipo de fornecedor</span><strong><%= @supplier.supplier_type_label %></strong></div>
           <div class="az-detail-item"><span>CNPJ</span><strong><%= CNPJ.new(@supplier.cnpj).formatted %></strong></div>
           <div class="az-detail-item"><span>Telefone</span><strong><%= @supplier.phone.presence || "Não informado" %></strong></div>
           <div class="az-detail-item"><span>E-mail</span><strong><%= @supplier.email.presence || "Não informado" %></strong></div>

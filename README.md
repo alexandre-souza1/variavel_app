@@ -29,6 +29,8 @@ O admin acompanha consumo, cotas estimadas e estatísticas por usuário em uma t
 
 - Cadastro único de colaboradores DU/AZ, com cargos e turnos por vigência; controle de placas. Veja [colaboradores e regras por setor](docs/colaboradores_e_cargos.md).
 - Disponibilidade diária da frota, com posições, depósito, indisponibilidade e rotas especiais.
+- Ao indisponibilizar um carro, permite informar uma oficina ou borracharia cadastrada como fornecedor. O vínculo pode ser alterado no cartão, aparece no PDF e acompanha a cópia da disponibilidade para os dias seguintes.
+- A frota identifica o fornecedor pelo nome fantasia, usando a razão social quando ele não está preenchido. O nome fantasia vem da consulta do CNPJ e pode ser corrigido pelo botão Editar dados no cadastro.
 - Dimensionamento da frota e placas padrão por posição.
 - Fechamento manual e automático da disponibilidade.
 - Ajuste automático no fechamento: placas disponíveis no depósito podem preencher posições vazias, com observação e histórico da movimentação.
@@ -59,6 +61,7 @@ Módulo próprio nos menus DU, AZ, Frota e RH, com filtro de área, totais por c
 ### Financeiro
 
 - Invoices, notas fiscais, fornecedores, centros de custo e categorias orçamentárias.
+- Fornecedores classificados por tipo: Oficina, Borracharia, Loja, Posto de combustível, Contratadas e Outros. Cadastros existentes começam como Outros e podem ser classificados na edição.
 - Rateio de notas fiscais e metas de invoices.
 - Dashboard financeiro.
 - [Relatório gerencial financeiro em PDF](docs/relatorio_financeiro.md), com período obrigatório, atingimento das metas por setor e avaliação técnica dos desvios.
