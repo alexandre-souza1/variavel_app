@@ -84,14 +84,15 @@ class ChecklistOccurrencesController < ApplicationController
     @display = filters[:display].in?(%w[annual calendar history review]) ? filters[:display] : "annual"
     @active_only = !@spot_mode && (%w[annual calendar].include?(@display) || filters[:active_only] == "1")
     employees = tracking_employees(sector: @employee_sector)
-    employees = employees.active if @active_only
+    participants = employees.checklist_participants
+    employees = participants.active if @active_only
     @employees = nil
     @employee = nil
     if !@spot_mode && filters[:employee_id].present?
       selected_employee = Employee.for_checklist_tracking(current_user).find(filters[:employee_id])
       @employee = selected_employee if employees.exists?(selected_employee.id)
     end
-    @employees = employees.order(:nome).to_a if directory && !@spot_mode
+    @employees = (@active_only ? employees : participants).order(:nome).to_a if directory && !@spot_mode
 
     visible = ChecklistOccurrence.from_tracking_sources.visible_to(current_user)
     @occurrence_scope = @spot_mode ? visible.spots : visible.employees.where(employee_id: employees.select(:id))
@@ -110,7 +111,7 @@ class ChecklistOccurrencesController < ApplicationController
   end
 
   def prepare_dashboard
-    roster = @employees || tracking_employees(sector: @employee_sector).active.order(:nome).to_a if @active_only
+    roster = @employees || tracking_employees(sector: @employee_sector).active.checklist_participants.order(:nome).to_a if @active_only
     @report = ChecklistTracking::Report.new(scope: @occurrence_scope, year: @year, employees: roster)
     if @display == "calendar"
       @calendar_events = @report.events.select { |event| selected_subject_event?(event) }.group_by { |event| event[:date] }

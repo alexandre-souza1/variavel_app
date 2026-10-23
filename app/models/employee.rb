@@ -28,6 +28,9 @@ class Employee < ApplicationRecord
   scope :for_checklist_tracking, ->(user) do
     user&.sector_fleet? ? all : visible_to(user)
   end
+  scope :checklist_participants, -> do
+    where.not(id: EmployeeRole.for_directory.where(sector: 'du', cargo: 'ajudante').select(:employee_id))
+  end
   scope :archived, -> { where(active: false) }
   before_save do
     self.registration_aliases = (registration_aliases + [matricula_in_database, matricula]).compact.reject(&:blank?).uniq

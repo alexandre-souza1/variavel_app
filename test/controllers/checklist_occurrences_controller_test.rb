@@ -383,6 +383,28 @@ class ChecklistOccurrencesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, historical.nome
   end
 
+  test "DU helpers are absent from tracking and registration while AZ helpers and promoted drivers remain" do
+    du_helper = Employee.create!(nome: "Ajudante DU Fora do Checklist", matricula: "HELP-DU")
+    du_helper.change_role!({ cargo: "ajudante", sector: "du", promax: "HELP-DU", starts_on: Date.current - 10, reason: "Admissão" }, user: @user)
+    az_helper = Employee.create!(nome: "Ajudante AZ Faz Checklist", matricula: "HELP-AZ")
+    az_helper.change_role!({ cargo: "ajudante", sector: "az", turno: 0, starts_on: Date.current - 10, reason: "Admissão" }, user: @user)
+    promoted = Employee.create!(nome: "Motorista Antes Ajudante", matricula: "HELP-PROM")
+    promoted.change_role!({ cargo: "ajudante", sector: "du", promax: "HELP-PROM", starts_on: Date.current - 10, reason: "Admissão" }, user: @user)
+    promoted.change_role!({ cargo: "motorista", sector: "du", promax: "HELP-PROM", starts_on: Date.current - 1, reason: "Promoção" }, user: @user)
+    du_helper.change_role!({ cargo: "motorista", sector: "du", promax: "HELP-DU", starts_on: Date.current + 5, reason: "Promoção futura" }, user: @user)
+    %w[annual calendar].each do |display|
+      get checklist_occurrences_path(year: 2026, month: 3, display: display)
+      assert_response :success
+      assert_not_includes response.body, du_helper.nome
+      assert_includes response.body, az_helper.nome
+      assert_includes response.body, promoted.nome
+    end
+    get checklist_occurrences_path(year: 2026, display: 'review')
+    assert_select "select[name='checklist_occurrence[employee_id]'] option[value='#{du_helper.id}']", count: 0
+    assert_select "select[name='checklist_occurrence[employee_id]'] option[value='#{az_helper.id}']", minimum: 1
+    assert_select "select[name='checklist_occurrence[employee_id]'] option[value='#{promoted.id}']", minimum: 1
+  end
+
   test "a team can justify its employee occurrence while private source details stay protected" do
     @employee.change_role!({ cargo: "motorista", sector: "du", promax: "PRIVATE-DU", starts_on: "2026-01-01", reason: "Admissão" }, user: @user)
     outsider = users(:two)

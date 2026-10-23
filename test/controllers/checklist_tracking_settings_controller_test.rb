@@ -15,7 +15,7 @@ class ChecklistTrackingSettingsControllerTest < ActionDispatch::IntegrationTest
       [:supervisor, :warehouse, false], [:user, :fleet, false], [:user, :hr, false], [:mechanical, :fleet, false]].each do |role, sector, allowed|
       @user.update!(role: role, sector: sector)
       sign_in @user
-      get edit_checklist_tracking_setting_path
+      get edit_checklist_tracking_setting_path, headers: { 'Turbo-Frame' => 'checklist-tracking-settings-form' }
       assert_response allowed ? :success : :forbidden
       patch checklist_tracking_setting_path, params: { checklist_tracking_setting: { plan_ids: [@plan.id] } }
       assert_response allowed ? :see_other : :forbidden
@@ -23,7 +23,8 @@ class ChecklistTrackingSettingsControllerTest < ActionDispatch::IntegrationTest
       if role == :mechanical
         assert_response :forbidden
       else
-        assert_select "a[href=?]", edit_checklist_tracking_setting_path, count: allowed ? 1 : 0
+        assert_select "button[aria-controls=checklist-tracking-settings]", count: allowed ? 1 : 0
+        assert_select "#checklist-tracking-settings.offcanvas", count: allowed ? 1 : 0
         assert_select "select[name=action_plan_id]", count: 0
       end
     end
@@ -70,7 +71,7 @@ class ChecklistTrackingSettingsControllerTest < ActionDispatch::IntegrationTest
     private_plan = owner.action_plans.create!(name: 'Origem privada AZ', public: false, sector: :warehouse)
     @user.update!(role: :supervisor, sector: :fleet)
     sign_in @user
-    get edit_checklist_tracking_setting_path
+    get edit_checklist_tracking_setting_path, headers: { 'Turbo-Frame' => 'checklist-tracking-settings-form' }
     assert_not_includes response.body, private_plan.name
     patch checklist_tracking_setting_path, params: { checklist_tracking_setting: { plan_ids: [@plan.id, private_plan.id] } }
     assert_redirected_to edit_checklist_tracking_setting_path
@@ -78,5 +79,38 @@ class ChecklistTrackingSettingsControllerTest < ActionDispatch::IntegrationTest
     patch checklist_tracking_setting_path, params: { checklist_tracking_setting: { plan_ids: [''] } }
     assert_not @plan.reload.checklist_tracking_visible?
     assert private_plan.reload.checklist_tracking_visible?
+  end
+
+  test "legacy settings URL opens the drawer in the tracking module" do
+    get edit_checklist_tracking_setting_path
+    assert_redirected_to checklist_occurrences_path(settings: '1')
+    follow_redirect!
+    assert_select '[data-checklist-tracking-settings-open-value=true]'
+    assert_select '#checklist-tracking-settings.offcanvas'
+    assert_select '#checklist-tracking-settings input[type=checkbox]', count: 0
+  end
+
+  test "drawer saves preserve the selected tab filters and pagination" do
+    context = { year: '2026', subject: 'spot', spot_plate: 'IZI3B97', month: '4', display: 'history', page: '2' }
+    headers = { 'Turbo-Frame' => 'checklist-tracking-settings-form' }
+    get edit_checklist_tracking_setting_path(context: context), headers: headers
+    assert_response :success
+    assert_select 'turbo-frame#checklist-tracking-settings-form form'
+    assert_select 'input[name="context[display]"][value=history]'
+    assert_select 'input[name="context[page]"][value="2"]'
+    assert_not_includes response.body, '<html'
+    patch checklist_tracking_setting_path, params: { context: context, checklist_tracking_setting: { plan_ids: [''] } }, headers: headers
+    assert_response :success
+    assert_not @plan.reload.checklist_tracking_visible?
+    assert_select '[data-settings-saved-url=?]', checklist_occurrences_path(context)
+    assert_nil response.headers['Location']
+  end
+
+  test "drawer validation stays in the panel without changing plan visibility" do
+    patch checklist_tracking_setting_path, params: { checklist_tracking_setting: { plan_ids: ['999999999'] } },
+      headers: { 'Turbo-Frame' => 'checklist-tracking-settings-form' }
+    assert_response :unprocessable_entity
+    assert_select 'turbo-frame#checklist-tracking-settings-form [role=alert]', text: /Selecione apenas planos/
+    assert @plan.reload.checklist_tracking_visible?
   end
 end

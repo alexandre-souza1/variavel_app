@@ -1,0 +1,26 @@
+<%= turbo_frame_tag 'checklist-tracking-settings-form' do %>
+  <%= form_with url: checklist_tracking_setting_path, scope: :checklist_tracking_setting, method: :patch, class: 'checklist-tracking-settings__form' do |form| %>
+    <div class="checklist-tracking-settings__content">
+      <p class="checklist-tracking-settings__description">Escolha os planos que aparecem no acompanhamento. Esta seleção vale para todos os usuários do módulo.</p>
+      <% if @error %><p class="alert alert-danger" role="alert"><%= @error %></p><% end %>
+      <%= hidden_field_tag 'checklist_tracking_setting[plan_ids][]', '' %>
+      <% tracking_filters = params.fetch(:context, ActionController::Parameters.new).permit(*ChecklistOccurrencesController::FILTER_KEYS, :candidate_page) %>
+      <% tracking_filters.each do |key, value| %><%= hidden_field_tag "context[#{key}]", value %><% end %>
+      <fieldset class="checklist-tracking-settings__plans">
+        <legend class="visually-hidden">Planos visíveis no módulo</legend>
+        <% @plans.each do |plan| %>
+          <label class="checklist-tracking-settings__plan" for="tracking-source-plan-<%= plan.id %>">
+            <%= check_box_tag 'checklist_tracking_setting[plan_ids][]', plan.id, plan.checklist_tracking_visible?, id: "tracking-source-plan-#{plan.id}", class: 'form-check-input' %>
+            <span><%= plan.name %></span>
+          </label>
+        <% end %>
+        <% if @plans.empty? %><p class="text-muted">Nenhum plano disponível.</p><% end %>
+      </fieldset>
+      <p class="checklist-tracking-settings__hint"><i class="bi bi-info-circle me-1" aria-hidden="true"></i> Ocultar um plano preserva os registros e as justificativas. Novos planos começam visíveis.</p>
+    </div>
+    <div class="checklist-tracking-settings__footer">
+      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="offcanvas">Cancelar</button>
+      <%= form.submit 'Salvar configurações', class: 'btn btn-primary', data: { turbo_submits_with: 'Salvando…' } %>
+    </div>
+  <% end %>
+<% end %>

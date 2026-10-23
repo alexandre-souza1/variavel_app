@@ -1,0 +1,13 @@
+<div class="offcanvas offcanvas-end checklist-tracking-settings" tabindex="-1" id="checklist-tracking-settings"
+  aria-labelledby="checklist-tracking-settings-title" data-checklist-tracking-settings-target="panel">
+  <div class="offcanvas-header">
+    <div>
+      <p class="checklist-tracking-settings__eyebrow"><i class="bi bi-gear me-1" aria-hidden="true"></i> Configurações</p>
+      <h2 class="offcanvas-title" id="checklist-tracking-settings-title">Planos de origem</h2>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar configurações"></button>
+  </div>
+  <div class="offcanvas-body">
+    <%= turbo_frame_tag 'checklist-tracking-settings-form', data: { checklist_tracking_settings_target: 'frame', action: 'turbo:frame-load->checklist-tracking-settings#loaded turbo:frame-missing->checklist-tracking-settings#missing turbo:submit-start->checklist-tracking-settings#saving turbo:submit-end->checklist-tracking-settings#saved' } %>
+  </div>
+</div>

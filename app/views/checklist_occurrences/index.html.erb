@@ -1,6 +1,10 @@
 <% filters = @tracking_filters %>
 <% months = I18n.t('date.abbr_month_names')[1..12] %>
-<div class="app-page checklist-tracking" data-controller="checklist-occurrence-modal" data-checklist-occurrence-modal-details-url-value="<%= details_checklist_occurrences_path %>" data-action="turbo:before-cache@document->checklist-occurrence-modal#close">
+<div class="app-page checklist-tracking" data-controller="checklist-occurrence-modal checklist-tracking-settings"
+  data-checklist-occurrence-modal-details-url-value="<%= details_checklist_occurrences_path %>"
+  data-checklist-tracking-settings-url-value="<%= edit_checklist_tracking_setting_path %>"
+  data-checklist-tracking-settings-open-value="<%= params[:settings] == '1' %>"
+  data-action="turbo:before-cache@document->checklist-occurrence-modal#close turbo:before-cache@document->checklist-tracking-settings#beforeCache">
   <header class="app-page-header">
     <div>
       <p class="app-page-eyebrow"><i class="bi bi-people me-1" aria-hidden="true"></i> Gestão · <%= @spot_mode ? "Placas SPOT" : "Colaboradores" %></p>
@@ -8,7 +12,11 @@
       <p>Acompanhamento anual de faltas por <%= @spot_mode ? "placa SPOT" : "colaborador" %></p>
     </div>
     <div class="app-page-actions">
-      <% if current_user.can_manage_checklist_tracking_settings? %><%= link_to "Configurações", edit_checklist_tracking_setting_path, class: "btn btn-outline-secondary" %><% end %>
+      <% if current_user.can_manage_checklist_tracking_settings? %>
+        <button type="button" class="btn btn-outline-secondary" aria-controls="checklist-tracking-settings" data-action="checklist-tracking-settings#open">
+          <i class="bi bi-gear me-1" aria-hidden="true"></i> Configurações
+        </button>
+      <% end %>
       <%= link_to "Início", variaveis_path, class: "btn btn-outline-secondary" %>
     </div>
   </header>
@@ -48,4 +56,5 @@
     <%= render "overview", filters: filters, months: months %>
   <% end %>
   <div data-checklist-occurrence-modal-target="container"></div>
+  <%= render "checklist_tracking_settings/drawer" if current_user.can_manage_checklist_tracking_settings? %>
 </div>
