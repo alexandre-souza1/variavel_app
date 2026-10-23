@@ -11,6 +11,11 @@
     <%= turbo_stream_from "tasks_action_plan_#{@action_plan.id}" %>
   <% end %>
 
+  <%= link_to action_plans_path, class: "action-plan-back-link" do %>
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    Planos de ação
+  <% end %>
+
   <div class="dashboard-header action-plan-header">
     <div class="header-content">
 
@@ -80,13 +85,7 @@
 
         </div>
 
-        <!-- VOLTAR -->
-        <%= link_to action_plans_path,
-            class: "btn-outline action-plan-back-link",
-            aria: { label: "Voltar para planos" } do %>
-          <i class="fas fa-arrow-left me-1"></i>
-          Voltar
-        <% end %>
+        </div>
 
         <div class="action-plan-view-tools">
           <div class="action-plan-view-switch" role="group" aria-label="Visualização do plano">
@@ -117,7 +116,6 @@
           </div>
         </div>
 
-        </div>
       </div>
     </div>
   </div>
