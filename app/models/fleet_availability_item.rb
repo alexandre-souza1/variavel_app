@@ -77,6 +77,10 @@ class FleetAvailabilityItem < ApplicationRecord
     plate.perfil == "VAN" || plate.tipo == "Van"
   end
 
+  def van_profile_exception?
+    special_route? && special_route == "van" && !van_plate?
+  end
+
   def reason_label
     {
       "maintenance" => "Manutenção",

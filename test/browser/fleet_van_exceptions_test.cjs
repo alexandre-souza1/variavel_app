@@ -3,6 +3,7 @@
 const { chromium } = require('playwright');
 const { execFileSync } = require('node:child_process');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 
 const rails = code => execFileSync('bin/rails', ['runner', code], {
   env: { ...process.env, RAILS_ENV: 'test' }, encoding: 'utf8'
@@ -44,6 +45,12 @@ const rails = code => execFileSync('bin/rails', ['runner', code], {
     const van = page.locator(`#fleet_availability_item_${data.items[1]}`);
     const target = page.locator('#special-route-van-list');
     const select = async locator => locator.locator('.fleet-vehicle-card__profile').click();
+    const assertException = async () => {
+      assert.equal(await item.locator('[data-van-profile-exception]').textContent().then(text => text.trim()), 'Exceção de perfil na Van');
+      assert.equal(await item.evaluate(element => element.classList.contains('fleet-plate-item--van-exception')), true);
+      assert.equal(await item.evaluate(element => element.classList.contains('fleet-plate-item--changed')), false);
+      assert.equal(await item.locator('.fleet-plate-card__changed-badge').count(), 0);
+    };
 
     await page.goto(`${base}/users/sign_in`);
     await page.locator('#user_email').fill('browser-van-exception@example.test');
@@ -68,8 +75,10 @@ const rails = code => execFileSync('bin/rails', ['runner', code], {
     assert.equal((await saved).status(), 200);
     await page.waitForFunction(id => document.getElementById(id).dataset.status === 'special_route', `fleet_availability_item_${data.items[0]}`);
     assert.equal(patches.at(-1).fleet_availability_item.confirm_non_van_plate, true);
+    await assertException();
     await page.reload();
     assert.equal(await item.locator('..').getAttribute('id'), 'special-route-van-list');
+    await assertException();
 
     // Editing the exception does not ask for confirmation again.
     await item.locator('[data-observation-edit]').click();
@@ -91,6 +100,8 @@ const rails = code => execFileSync('bin/rails', ['runner', code], {
     await page.locator('button[data-mobile-destination=exchange]').click();
     assert.equal((await saved).status(), 200);
     await page.waitForFunction(id => document.getElementById(id).dataset.status === 'exchange', `fleet_availability_item_${data.items[0]}`);
+    assert.equal(await item.locator('[data-van-profile-exception]').count(), 0);
+    assert.equal(await item.evaluate(element => element.classList.contains('fleet-plate-item--van-exception')), false);
 
     // Exercise the actual Sortable pointer interaction on desktop.
     await page.setViewportSize({ width: 1920, height: 1400 });
@@ -118,12 +129,28 @@ const rails = code => execFileSync('bin/rails', ['runner', code], {
     saved = response();
     await drag();
     assert.equal((await saved).status(), 200);
+    await page.waitForFunction(id => document.getElementById(id).dataset.status === 'special_route', `fleet_availability_item_${data.items[0]}`);
+    await assertException();
     await page.reload();
     assert.equal(await item.locator('..').getAttribute('id'), 'special-route-van-list');
     assert.equal(patches.at(-1).fleet_availability_item.confirm_non_van_plate, true);
     assert.match(await item.locator('[data-observation-display]').textContent(), /Exceção para esta operação/);
+    fs.mkdirSync('tmp/browser', { recursive: true });
+    for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+      await page.evaluate(theme => {
+        document.documentElement.dataset.bsTheme = theme;
+        document.documentElement.dataset.colorTheme = 'retro_orange';
+      }, theme);
+      await assertException();
+      assert.equal(await item.locator('.fleet-plate-card').evaluate(element => getComputedStyle(element).borderTopStyle), 'dashed');
+      const routeCard = page.locator('[data-special-route-card=van]');
+      await routeCard.evaluate(element => element.scrollIntoView({ block: 'center' }));
+      await page.mouse.move(0, 0);
+      await routeCard.screenshot({ path: `tmp/browser/fleet-van-exception-${theme}-${width}.png`, animations: 'disabled' });
+    }
     assert.deepEqual(errors, []);
-    console.log('PASS: mobile and desktop cancellation/confirmation, persistence, observation editing and full Van quota');
+    console.log('PASS: mobile and desktop cancellation/confirmation, distinct profile exception before/after reload, cleanup on return, observation editing and full Van quota; light/dark layouts');
   } finally {
     await browser.close();
     rails(`

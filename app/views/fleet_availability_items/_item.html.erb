@@ -1,7 +1,8 @@
 <% variant = local_assigns.fetch(:variant, :default).to_sym %>
 <% plate = item.plate %>
 <% standard_plate = local_assigns[:standard_plate] %>
-<% plate_changed = if variant == :special_route
+<% van_exception = variant == :special_route && item.van_profile_exception? %>
+<% plate_changed = !van_exception && if variant == :special_route
                      standard_plate.present? && standard_plate.id != plate.id
                    else
                      variant == :availability && standard_plate&.id != plate&.id
@@ -11,7 +12,7 @@
 <% tread_depth = @tread_depth_by_plate&.fetch(PlateUtils.normalizar(plate.placa), nil) %>
 
 <article id="<%= dom_id(item) %>"
-         class="fleet-plate-item fleet-plate-item--<%= variant %><%= reason_class %><%= ' fleet-plate-item--changed' if plate_changed %> sortable-item"
+         class="fleet-plate-item fleet-plate-item--<%= variant %><%= reason_class %><%= ' fleet-plate-item--changed' if plate_changed %><%= ' fleet-plate-item--van-exception' if van_exception %> sortable-item"
          data-status="<%= item.status %>"
          data-setor="<%= plate.setor.presence || "-" %>"
          data-profile="<%= plate.perfil.presence || "Sem perfil" %>"
@@ -80,7 +81,11 @@
             Placa padrão:
             <%= standard_plate&.placa.presence || "não definida" %>
           </span>
-          <% if plate_changed %>
+          <% if van_exception %>
+            <span class="fleet-plate-card__van-exception-badge" data-van-profile-exception>
+              <i class="bi bi-truck" aria-hidden="true"></i> Exceção de perfil na Van
+            </span>
+          <% elsif plate_changed %>
             <span class="fleet-plate-card__changed-badge">
               <i class="bi bi-exclamation-triangle-fill"></i> Placa diferente
             </span>

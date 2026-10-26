@@ -124,4 +124,35 @@ class FleetAvailabilities::DailyOpeningTest < ActiveSupport::TestCase
     assert_equal "maintenance", copied_item.reason
     assert_equal "Copiar integralmente", copied_item.observation
   end
+
+  test "keeps a truck in the van slot across consecutive automatic openings" do
+    FleetDimensioning.find_by!(label: "Teste diário").update!(van_quantity: 1)
+    previous = fleet_availabilities(:two)
+    FleetAvailability.where(id: previous.id).update_all(["special_routes = ?", { van: 1 }.to_json])
+    previous.reload
+    item = previous.fleet_availability_items.first
+    item.plate.update!(placa: "DOV1A23", setor: "ROTA", tipo: "Caminhão", perfil: "TOCO")
+    item.update!(status: :special_route, special_route: "van", confirm_non_van_plate: true,
+                 observation: "Caminhão substituindo a Van")
+
+    [22, 23].each do |day|
+      result = nil
+      assert_difference "FleetAvailability.count", 1 do
+        result = FleetAvailabilities::DailyOpening.call(
+          user: users(:one), now: Time.zone.local(2026, 7, day, 8, 0)
+        )
+      end
+
+      assert_nil result.skipped_reason
+      assert_equal Date.new(2026, 7, day + 1), result.availability.date
+      copy = result.availability.fleet_availability_items.find_by!(plate_id: item.plate_id)
+      assert_equal "van", copy.special_route
+      assert_equal item.position, copy.position
+      assert_predicate copy, :van_profile_exception?
+      assert_not copy.confirm_non_van_plate
+      assert_predicate copy, :valid?
+      assert_equal "Caminhão substituindo a Van", copy.observation
+      copy.update!(observation: "Caminhão substituindo a Van")
+    end
+  end
 end

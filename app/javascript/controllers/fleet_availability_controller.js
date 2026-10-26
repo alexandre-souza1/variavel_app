@@ -868,6 +868,7 @@ export default class extends Controller {
       "fleet-plate-item--special_route",
       "fleet-plate-item--default",
       "fleet-plate-item--changed",
+      "fleet-plate-item--van-exception",
       "fleet-plate-item--reason-maintenance",
       "fleet-plate-item--reason-breakdown",
       "fleet-plate-item--reason-accident",
@@ -996,14 +997,21 @@ export default class extends Controller {
     const route = itemElement.closest("[data-special-route]")?.dataset.specialRoute
     const standardPlate = this.standardRoutePlateForRoute(route)
     const standardPlateId = this.standardRoutePlateIdForRoute(route)
-    const plateChanged = Boolean(standardPlateId) && String(standardPlateId) !== String(itemElement.dataset.plateId || "")
+    const vanException = route === "van" && itemElement.dataset.vanPlate !== "true"
+    const plateChanged = !vanException && Boolean(standardPlateId) && String(standardPlateId) !== String(itemElement.dataset.plateId || "")
 
     itemElement.classList.toggle("fleet-plate-item--changed", plateChanged)
+    itemElement.classList.toggle("fleet-plate-item--van-exception", vanException)
     container.innerHTML = `
       <span>Placa padrão: ${this.escapeHtml(standardPlate || "não definida")}</span>
     `
 
-    if (plateChanged) {
+    if (vanException) {
+      container.insertAdjacentHTML(
+        "beforeend",
+        '<span class="fleet-plate-card__van-exception-badge" data-van-profile-exception><i class="bi bi-truck" aria-hidden="true"></i> Exceção de perfil na Van</span>'
+      )
+    } else if (plateChanged) {
       container.insertAdjacentHTML(
         "beforeend",
         '<span class="fleet-plate-card__changed-badge"><i class="bi bi-exclamation-triangle-fill"></i> Placa diferente</span>'
