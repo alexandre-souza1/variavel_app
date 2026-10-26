@@ -183,6 +183,9 @@ html:root body.app-shell {
   }
   .ts-wrapper.single.dropdown-active .ts-control::after { top: calc(50% - 2px); transform: rotate(225deg); }
 
+  // O estilo de busca do Tom Select usa fundo branco, inclusive no tema escuro.
+  .ts-wrapper.single.input-active .ts-control { background-color: var(--app-field-bg); }
+
   .ts-wrapper.focus .ts-control {
     border-color: var(--app-field-feedback, var(--app-field-accent));
     box-shadow: inset 0 -2px 0 var(--app-field-feedback, var(--app-field-accent));
@@ -214,7 +217,7 @@ html:root body.app-shell {
 
   // O valor selecionado (inclusive a opção de orientação) não deve aparecer
   // junto do texto digitado no campo de busca dos selects simples.
-  .app-select--searchable.input-active .ts-control > .item { display: none; }
+  .app-select--searchable.dropdown-active.input-active .ts-control > .item { display: none; }
 
   .app-select-menu[popover] {
     inset: auto;

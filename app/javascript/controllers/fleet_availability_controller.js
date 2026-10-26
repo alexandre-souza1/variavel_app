@@ -140,6 +140,9 @@ export default class extends Controller {
 
     if (!this.canMoveSelectedItemTo(targetList, item, specialRoute)) return
 
+    const confirmNonVanPlate = specialRoute === "van" && item.dataset.vanPlate !== "true" && from !== targetList
+    if (confirmNonVanPlate && !this.confirmVanProfileException(item)) return
+
     this.removeAvailabilitySlotPlaceholder(this.availableSlotFor(targetList))
     targetList.appendChild(item)
     this.ensureAvailabilitySlotPlaceholder(this.availableSlotFor(from))
@@ -161,7 +164,9 @@ export default class extends Controller {
       null,
       null,
       item,
-      specialRoute
+      specialRoute,
+      undefined,
+      confirmNonVanPlate
     )
 
     this.clearMobileSelection()
@@ -311,17 +316,22 @@ export default class extends Controller {
       return false
     }
 
-    if (specialRoute && this.specialRouteListIsFull(targetList)) {
+    if (specialRoute && this.specialRouteListIsFull(targetList, item)) {
       this.showAlert("Essa rota especial já atingiu a quantidade dimensionada.")
       return false
     }
 
-    if (specialRoute === "van" && item.dataset.vanPlate !== "true") {
-      this.showAlert("A rota Van só pode ser roteirizada com uma placa VAN.")
-      return false
-    }
-
     return true
+  }
+
+
+  confirmVanProfileException(item) {
+    const plate = item.dataset.mobilePlateLabel || "selecionada"
+    const profile = item.dataset.profile || "Sem perfil"
+
+    return window.confirm(
+      `A placa ${plate} não possui o perfil correto para a rota Van (perfil atual: ${profile}). Deseja continuar e adicioná-la como exceção?`
+    )
   }
 
 
@@ -419,15 +429,15 @@ export default class extends Controller {
       return
     }
 
-    if (status === "special_route" && this.specialRouteListIsFull(event.to)) {
+    if (status === "special_route" && this.specialRouteListIsFull(event.to, event.item)) {
       this.restoreItem(event)
       this.showAlert("Essa rota especial já atingiu a quantidade dimensionada.")
       return
     }
 
-    if (specialRoute === "van" && event.item.dataset.vanPlate !== "true") {
+    const confirmNonVanPlate = specialRoute === "van" && event.item.dataset.vanPlate !== "true" && event.from !== event.to
+    if (confirmNonVanPlate && !this.confirmVanProfileException(event.item)) {
       this.restoreItem(event)
-      this.showAlert("A rota Van só pode ser roteirizada com uma placa VAN.")
       return
     }
 
@@ -451,7 +461,9 @@ export default class extends Controller {
       null,
       null,
       event.item,
-      specialRoute
+      specialRoute,
+      undefined,
+      confirmNonVanPlate
     )
 
     this.ensureAvailabilitySlotPlaceholder(this.availableSlotFor(event.from))
@@ -684,7 +696,8 @@ export default class extends Controller {
     observation = null,
     itemElement = null,
     specialRoute = null,
-    supplierId = undefined
+    supplierId = undefined,
+    confirmNonVanPlate = false
   ) {
 
 
@@ -720,7 +733,9 @@ export default class extends Controller {
 
             special_route: specialRoute,
 
-            supplier_id: supplierId
+            supplier_id: supplierId,
+
+            confirm_non_van_plate: confirmNonVanPlate
 
           }
 
@@ -777,12 +792,13 @@ export default class extends Controller {
   }
 
 
-  specialRouteListIsFull(list) {
+  specialRouteListIsFull(list, item) {
     const maxItems = Number(list.dataset.maxItems)
 
     if (!Number.isFinite(maxItems)) return false
 
-    return list.querySelectorAll(".sortable-item").length > maxItems
+    return Array.from(list.querySelectorAll(".sortable-item"))
+      .filter(element => element !== item).length >= maxItems
   }
 
 

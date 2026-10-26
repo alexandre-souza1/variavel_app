@@ -14,7 +14,8 @@ class FleetAvailabilityItemsController < ApplicationController
       reason: item_params[:reason],
       observation: item_params[:observation],
       special_route: item_params[:special_route],
-      supplier_id: item_params[:supplier_id]
+      supplier_id: item_params[:supplier_id],
+      confirm_non_van_plate: item_params[:confirm_non_van_plate]
     )
 
     render json: {
@@ -65,7 +66,8 @@ class FleetAvailabilityItemsController < ApplicationController
 
   def item_params
     params.require(:fleet_availability_item)
-          .permit(:status, :position, :reason, :observation, :special_route, :supplier_id)
+          .permit(:status, :position, :reason, :observation, :special_route, :supplier_id,
+                  :confirm_non_van_plate)
   end
 
 end

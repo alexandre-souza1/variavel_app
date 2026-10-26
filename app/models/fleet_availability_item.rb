@@ -1,4 +1,6 @@
 class FleetAvailabilityItem < ApplicationRecord
+  attribute :confirm_non_van_plate, :boolean, default: false
+
   belongs_to :fleet_availability
   belongs_to :plate
   belongs_to :supplier, optional: true
@@ -138,6 +140,9 @@ class FleetAvailabilityItem < ApplicationRecord
   def van_route_requires_van_plate
     return unless status == "special_route" && special_route == "van"
     return if van_plate?
+    return if confirm_non_van_plate
+    return if persisted? && !will_save_change_to_status? &&
+              !will_save_change_to_special_route? && !will_save_change_to_plate_id?
 
     errors.add(:plate, "precisa ser VAN para a rota Van")
   end

@@ -60,6 +60,7 @@ class FleetAvailability::RestoreStandardLayout
 
       # Release both occupied positions and route quotas before applying swaps.
       movable_items.each do |item|
+        item.confirm_non_van_plate = item.special_route? && item.special_route == "van"
         item.update_columns(status: FleetAvailabilityItem.statuses[:exchange], special_route: nil)
       end
       assignments.each do |item, attributes|

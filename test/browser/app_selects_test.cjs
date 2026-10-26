@@ -168,6 +168,7 @@ const fs = require('node:fs');
     assert.equal(await page.locator('#prompt-search-select').inputValue(), '');
     assert.equal(await page.locator('#prompt-search-select').evaluate(el => new FormData(el.form).get('supplier_id')), '');
     await page.locator('.app-select-menu:visible .option[data-value="supplier-12"]').click();
+    assert.equal(await searchWrapper.locator('.item:visible').textContent(), 'Fornecedor 12', 'selection is visible immediately, while the control still has focus');
     await page.locator('#prompt-search-blur').click();
     assert.equal(await searchWrapper.locator('.item:visible').textContent(), 'Fornecedor 12');
     await searchWrapper.locator('.ts-control').click();
@@ -176,9 +177,72 @@ const fs = require('node:fs');
     assert.equal(await searchWrapper.locator('input').inputValue(), 'Fornecedor 3');
     assert.equal(await searchWrapper.locator('.item:visible').count(), 0);
     await page.keyboard.press('Escape');
+    assert.equal(await searchWrapper.locator('.item:visible').textContent(), 'Fornecedor 12', 'closing a search restores the selected label before blur');
     await page.locator('#prompt-search-blur').click();
     assert.equal(await page.locator('#prompt-search-select').inputValue(), 'supplier-12');
     assert.equal(await searchWrapper.locator('.item:visible').textContent(), 'Fornecedor 12');
+
+    // Searchable selects inside a Bootstrap modal keep their text and surface
+    // after a choice, after Escape and after a click outside the modal.
+    await page.evaluate(async () => {
+      const modal = document.createElement('div');
+      modal.id = 'select-visibility-modal';
+      modal.className = 'modal fade';
+      modal.tabIndex = -1;
+      modal.innerHTML = `<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5>Indisponibilidade da placa</h5></div><div class="modal-body"><label for="modal-search-select">Oficina / borracharia</label><select id="modal-search-select" class="form-select"><option value="">Não informada</option>${Array.from({ length: 15 }, (_, i) => `<option value="workshop-${i}">Oficina ${i} · Borracharia</option>`).join('')}</select><label for="modal-search-notes">Observação</label><textarea id="modal-search-notes" class="form-control"></textarea></div></div></div>`;
+      document.body.append(modal);
+      const { Modal } = await import('bootstrap');
+      window.selectVisibilityModal = new Modal(modal, { backdrop: 'static' });
+    });
+    await page.waitForFunction(() => document.querySelector('#modal-search-select')?.tomselect);
+    const modal = page.locator('#select-visibility-modal');
+    const modalWrapper = page.locator('#modal-search-select + .app-select');
+    const surface = async () => {
+      const colors = await modalWrapper.locator('.ts-control').evaluate(element => {
+        const probe = document.createElement('span');
+        probe.style.backgroundColor = 'var(--app-field-bg)';
+        element.append(probe);
+        const colors = { actual: getComputedStyle(element).backgroundColor, expected: getComputedStyle(probe).backgroundColor };
+        probe.remove();
+        return colors;
+      });
+      assert.equal(colors.actual, colors.expected, 'search surface matches the current theme, including while focused');
+    };
+    for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+      await page.evaluate(theme => {
+        document.documentElement.dataset.bsTheme = theme;
+        document.documentElement.dataset.colorTheme = 'retro_orange';
+        document.querySelector('#modal-search-select').value = '';
+        window.selectVisibilityModal.show();
+      }, theme);
+      await modal.waitFor({ state: 'visible' });
+      await modalWrapper.locator('.ts-control').click();
+      await page.waitForFunction(() => document.querySelector('#modal-search-select').tomselect.isFocused);
+      await modalWrapper.locator('input').fill('Oficina 12');
+      await page.locator('.app-select-menu:visible .option[data-value="workshop-12"]').waitFor({ state: 'visible' });
+      await surface();
+      await page.locator('.app-select-menu:visible .option[data-value="workshop-12"]').click();
+      assert.equal(await page.locator('#modal-search-select').inputValue(), 'workshop-12');
+      assert.equal(await modalWrapper.locator('.item:visible').textContent(), 'Oficina 12 · Borracharia');
+      await surface();
+      await page.screenshot({ path: `tmp/browser/app-selects-modal-${theme}-${width}.png` });
+
+      await page.mouse.click(2, 2);
+      assert.equal(await modalWrapper.locator('.item:visible').textContent(), 'Oficina 12 · Borracharia', 'outside click keeps the selection visible');
+      await modalWrapper.locator('.ts-control').click();
+      await page.waitForFunction(() => document.querySelector('#modal-search-select').tomselect.isFocused);
+      await modalWrapper.locator('input').fill('Oficina 3');
+      await page.keyboard.press('Escape');
+      // Allow any queued search refresh to run before checking the closed menu.
+      await page.waitForTimeout(400);
+      assert.equal(await modalWrapper.locator('.item:visible').textContent(), 'Oficina 12 · Borracharia', 'Escape restores the selection without another modal click');
+      await surface();
+      await page.locator('#modal-search-notes').click();
+      assert.equal(await modalWrapper.locator('.item:visible').textContent(), 'Oficina 12 · Borracharia');
+      await page.evaluate(() => window.selectVisibilityModal.hide());
+      await modal.waitFor({ state: 'hidden' });
+    }
 
     assert.deepEqual(errors, []);
     console.log('PASS: common menus; real dependent fields; native values/events/order/metadata/groups; silent programmatic updates; dynamic options and disabled states; required validation; long-list search; multiple selection/removal; form reset; viewport positioning; textarea resizing; Turbo cleanup and reconnection.');

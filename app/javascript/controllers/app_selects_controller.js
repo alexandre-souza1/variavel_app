@@ -8,6 +8,13 @@ export default class extends Controller {
     if (!window.TomSelect) return
     this.controls = new Map()
     this.Select = class extends window.TomSelect {
+      close(...args) {
+        // Uma busca pendente não deve reabrir o menu após selecionar ou sair.
+        window.clearTimeout(this.refreshTimeout)
+        this.refreshTimeout = null
+        super.close(...args)
+      }
+
       updateOriginalInput({ silent = false } = {}) {
         if (this.appSyncing) return
         const selected = new Set(this.items)

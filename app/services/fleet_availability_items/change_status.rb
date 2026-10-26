@@ -14,7 +14,8 @@ module FleetAvailabilityItems
       reason: nil,
       observation: nil,
       special_route: nil,
-      supplier_id: nil
+      supplier_id: nil,
+      confirm_non_van_plate: false
     )
       @item = item
       @user = user
@@ -24,6 +25,7 @@ module FleetAvailabilityItems
       @observation = observation
       @special_route = special_route
       @supplier_id = supplier_id
+      @confirm_non_van_plate = confirm_non_van_plate
     end
 
 
@@ -68,7 +70,8 @@ module FleetAvailabilityItems
     def update_attributes
       attributes = {
         status: @status,
-        position: @position
+        position: @position,
+        confirm_non_van_plate: @confirm_non_van_plate
       }
 
       attributes[:observation] = @observation unless @observation.nil?

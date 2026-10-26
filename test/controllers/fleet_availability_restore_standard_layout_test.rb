@@ -96,6 +96,18 @@ class FleetAvailabilityRestoreStandardLayoutTest < ActionDispatch::IntegrationTe
     end
   end
 
+  test "keeps an existing confirmed van exception when the default is unavailable" do
+    @van.update!(status: :unavailable, reason: :maintenance)
+    @spare.plate.update!(tipo: "Caminhão", perfil: "TOCO")
+    @spare.update!(status: :special_route, special_route: "van", confirm_non_van_plate: true)
+
+    restore
+
+    assert_response :success
+    assert_special @spare, "van"
+    assert_predicate @van.reload, :unavailable?
+  end
+
   test "supports a dimensioning with only special routes" do
     @dimensioning.update!(route_quantity: 0)
 
