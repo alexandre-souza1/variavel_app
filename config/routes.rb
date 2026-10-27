@@ -224,6 +224,7 @@ Rails.application.routes.draw do
 
   resources :fleet_availabilities do
     member do
+      get :tread_inspection
       patch :restore_standard_layout
       patch :lock
       patch :unlock

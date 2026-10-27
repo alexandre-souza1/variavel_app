@@ -1,6 +1,6 @@
 # app/helpers/navbar_helper.rb
 module NavbarHelper
-  FLEET_LINK_KEYS = %i[fleet_dashboard availability stress_test tires].freeze
+  FLEET_LINK_KEYS = %i[fleet_dashboard availability stress_test tires patio].freeze
 
   FINANCE_LINKS = [
     { label: "Dashboard", path: :dashboard_invoices_path },
@@ -15,6 +15,7 @@ module NavbarHelper
   NAVBAR_LINKS = {
     fleet_dashboard: { path: :dashboard_path, icon: "bi-speedometer", label: "Dashboard de Frota", sectors: [:fleet] },
     tires: { path: :tire_inspections_path, icon: "bi-circle", label: "Pneus", sectors: [:fleet, :du, :safety] },
+    patio: { path: :patio_path, icon: "bi-p-square", label: "Pátio", sectors: [:fleet, :du, :safety] },
     tasks: {
       path: :action_plans_path,
       icon: 'bi-bar-chart-fill',

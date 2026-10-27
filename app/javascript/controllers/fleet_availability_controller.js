@@ -10,8 +10,8 @@ export default class extends Controller {
     this.selectedMobileItem = null
     this.modalConfirmed = false
     this.editable = this.element.dataset.editable === "true"
-    this.departureTooltips = Array.from(
-      this.element.querySelectorAll("[data-fleet-departure-alert]"),
+    this.cardAlertTooltips = Array.from(
+      this.element.querySelectorAll("[data-fleet-card-alert]"),
       (element) => new bootstrap.Tooltip(element, { container: "body", trigger: "hover focus" })
     )
 
@@ -45,7 +45,7 @@ export default class extends Controller {
 
         fallbackTolerance: 3,
 
-        filter: "[data-observation-edit], [data-unavailable-edit], [data-fleet-departure-alert]",
+        filter: "[data-observation-edit], [data-unavailable-edit], [data-fleet-card-alert], [data-tread-inspection]",
 
         preventOnFilter: false,
 
@@ -84,7 +84,8 @@ export default class extends Controller {
     if (event.target.closest("[data-plate-profile-link]")) return
     if (event.target.closest("[data-observation-edit]")) return
     if (event.target.closest("[data-unavailable-edit]")) return
-    if (event.target.closest("[data-fleet-departure-alert]")) return
+    if (event.target.closest("[data-fleet-card-alert]")) return
+    if (event.target.closest("[data-tread-inspection]")) return
 
     const item = event.currentTarget
 
@@ -1476,7 +1477,7 @@ export default class extends Controller {
 
   disconnect() {
 
-    this.departureTooltips.forEach(tooltip => tooltip.dispose())
+    this.cardAlertTooltips.forEach(tooltip => tooltip.dispose())
 
     this.sortables.forEach(sortable => {
 

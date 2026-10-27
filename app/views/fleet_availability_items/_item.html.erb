@@ -9,7 +9,9 @@
                    end %>
 <% reason_class = variant == :unavailable && item.reason.present? ? " fleet-plate-item--reason-#{item.reason}" : "" %>
 <% editable = local_assigns.fetch(:editable, false) %>
-<% tread_depth = @tread_depth_by_plate&.fetch(PlateUtils.normalizar(plate.placa), nil) %>
+<% tire_summary = @tire_summaries&.fetch(PlateUtils.normalizar(plate.placa), nil) %>
+<% tread_depth = tire_summary&.dig(:minimum_tread_depth) %>
+<% missing_tires_message = fleet_missing_tires_message(plate, tire_summary) if @tire_summaries && @tires_error.nil? %>
 
 <article id="<%= dom_id(item) %>"
          class="fleet-plate-item fleet-plate-item--<%= variant %><%= reason_class %><%= ' fleet-plate-item--changed' if plate_changed %><%= ' fleet-plate-item--van-exception' if van_exception %> sortable-item"
@@ -47,10 +49,21 @@
           <% if @plate_ids_without_monthly_departure&.include?(plate.id) %>
             <span class="fleet-vehicle-card__departure-alert"
                   data-fleet-departure-alert
+                  data-fleet-card-alert
                   tabindex="0"
                   title="Carro sem saída no 2ART"
                   aria-label="Carro sem saída no 2ART">
               <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+            </span>
+          <% end %>
+          <% if missing_tires_message %>
+            <span class="fleet-vehicle-card__missing-tires-alert"
+                  data-fleet-missing-tires-alert
+                  data-fleet-card-alert
+                  tabindex="0"
+                  title="<%= missing_tires_message %>"
+                  aria-label="<%= missing_tires_message %>">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
             </span>
           <% end %>
         </strong>
@@ -62,7 +75,12 @@
       <% if tread_depth != nil %>
         <div class="fleet-vehicle-card__measurement">
             <span class="fleet-tread-depth-badge <%= tread_depth_badge_class(tread_depth) %>"
-                  title="Menor sulco dos pneus em uso, sem estepes. Verde: ≥ 5 mm; amarelo: 3 a &lt; 5 mm; vermelho: &lt; 3 mm."
+                  data-controller="tread-inspection"
+                  data-tread-inspection
+                  data-tread-inspection-url-value="<%= tread_inspection_fleet_availability_path(item.fleet_availability_id, plate_id: plate.id) %>"
+                  data-action="mouseenter->tread-inspection#load focus->tread-inspection#load"
+                  tabindex="0"
+                  title="Consultando a última aferição de sulcos no Prolog…"
                   aria-label="Menor sulco dos pneus em uso, sem estepes: <%= number_with_precision(tread_depth, precision: 2, strip_insignificant_zeros: true) %> milímetros">
               <span class="fleet-tread-depth-badge__label">Sulco</span>
               <strong class="fleet-tread-depth-badge__value"><%= number_with_precision(tread_depth, precision: 2, strip_insignificant_zeros: true) %><small> mm</small></strong>

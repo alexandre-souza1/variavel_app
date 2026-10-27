@@ -2,7 +2,7 @@ class FleetAvailabilitiesController < ApplicationController
   helper_method :fleet_navigation, :fleet_return_path
   before_action :authenticate_user!
   before_action :auto_lock_expired_fleet_availabilities, except: :lock
-  before_action :set_fleet_availability, only: %i[show destroy lock unlock restore_standard_layout]
+  before_action :set_fleet_availability, only: %i[show destroy lock unlock restore_standard_layout tread_inspection]
   before_action :require_admin!, only: %i[destroy unlock]
   before_action :require_creator_edit_access!, only: %i[
     lock
@@ -113,7 +113,9 @@ class FleetAvailabilitiesController < ApplicationController
     respond_to do |format|
       format.html do
         load_plates_without_monthly_departure
-        @tread_depth_by_plate = Prolog::TiresClient.new.tread_depth_by_plate
+        tires_client = Prolog::TiresClient.new
+        @tire_summaries = tires_client.tire_summary_by_plate
+        @tires_error = tires_client.error
       end
       format.pdf do
         pdf = FleetAvailabilityPdf.new(@fleet_availability)
@@ -124,6 +126,20 @@ class FleetAvailabilitiesController < ApplicationController
                   disposition: params[:download].present? ? "attachment" : "inline"
       end
     end
+  end
+
+  def tread_inspection
+    item = @fleet_availability.fleet_availability_items.includes(:plate).find_by!(plate_id: params[:plate_id])
+    inspected_at = Prolog::InspectionsClient.new.last_tread_inspection_at(item.plate.placa)
+    message = if inspected_at
+                "Última aferição de sulcos do veículo: #{inspected_at.in_time_zone.strftime('%d/%m/%Y às %H:%M')}."
+              else
+                "Última aferição de sulcos do veículo: não encontrada no Prolog."
+              end
+
+    render json: { message: message, inspected_at: inspected_at&.iso8601 }
+  rescue Prolog::InspectionsClient::Error
+    render json: { message: "Não foi possível consultar a última aferição de sulcos no Prolog." }, status: :service_unavailable
   end
 
   def destroy

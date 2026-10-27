@@ -101,7 +101,7 @@ class NavigationJourneysTest < ActionDispatch::IntegrationTest
 
   test "fleet detail returns to the record period even when opened directly" do
     period = create_fleet_period
-    client = Struct.new(:tread_depth_by_plate).new({})
+    client = Struct.new(:tire_summary_by_plate, :error).new({}, nil)
     Prolog::TiresClient.stub(:new, client) do
       get fleet_availability_path(fleet_availabilities(:one))
     end

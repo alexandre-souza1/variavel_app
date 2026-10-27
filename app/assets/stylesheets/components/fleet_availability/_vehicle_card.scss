@@ -48,7 +48,8 @@
   }
   .fleet-vehicle-card__plate-link-icon { font-size: .58em; vertical-align: .15em; opacity: .7; }
 
-  .fleet-vehicle-card__departure-alert {
+  .fleet-vehicle-card__departure-alert,
+  .fleet-vehicle-card__missing-tires-alert {
     display: inline-flex;
     align-items: center;
     margin-left: 0.15rem;
@@ -75,6 +76,15 @@
   .fleet-vehicle-card__measurement {
     flex: 0 0 auto;
     &:empty { display: none; }
+  }
+
+  .fleet-tread-depth-badge[data-tread-inspection] {
+    cursor: help;
+
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
   }
 
   [data-live-details] {

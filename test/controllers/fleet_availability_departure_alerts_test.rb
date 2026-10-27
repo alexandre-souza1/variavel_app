@@ -79,8 +79,7 @@ class FleetAvailabilityDepartureAlertsTest < ActionDispatch::IntegrationTest
   end
 
   def get_availability
-    client = Object.new
-    client.define_singleton_method(:tread_depth_by_plate) { {} }
+    client = Struct.new(:tire_summary_by_plate, :error).new({}, nil)
     Prolog::TiresClient.stub(:new, client) do
       get fleet_availability_path(@availability)
     end
