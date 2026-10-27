@@ -15,7 +15,7 @@ module NavbarHelper
   NAVBAR_LINKS = {
     fleet_dashboard: { path: :dashboard_path, icon: "bi-speedometer", label: "Dashboard de Frota", sectors: [:fleet] },
     tires: { path: :tire_inspections_path, icon: "bi-circle", label: "Pneus", sectors: [:fleet, :du, :safety] },
-    patio: { path: :patio_path, icon: "bi-p-square", label: "Pátio", sectors: [:fleet, :du, :safety] },
+    patio: { path: :patio_path, icon: "bi-p-square", label: "Layout do Pátio", sectors: [:fleet, :du, :safety] },
     tasks: {
       path: :action_plans_path,
       icon: 'bi-bar-chart-fill',
