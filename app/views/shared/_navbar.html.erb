@@ -62,7 +62,7 @@
               <% if current_user.can_view_checklist_tracking? %><li><%= link_to "Acompanhamento de Checklist", checklist_occurrences_path, class: "dropdown-item app-dropdown-item" %></li><% end %><% if current_user.can_view_du_operations? %><li><%= link_to "Escala de folgas", time_off_schedule_path, class: "dropdown-item app-dropdown-item" %></li><% end %><li><%= link_to "Importar Ciclo de Gente", people_cycle_feedbacks_path, class: "dropdown-item app-dropdown-item" %></li></ul>
           </li>
 
-          <% if NavbarHelper::FLEET_LINK_KEYS.any? { |key| can_view_nav_link?(key, current_user) } %>
+          <% if can_view_fleet_menu?(current_user) %>
             <li class="nav-item dropdown">
               <button class="nav-link dropdown-toggle app-dropdown-toggle" id="fleetDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-truck-front me-1"></i> FROTA</button>
               <ul class="dropdown-menu app-dropdown-menu" aria-labelledby="fleetDropdown">
@@ -72,6 +72,11 @@
                     <% link = NavbarHelper::NAVBAR_LINKS.fetch(key) %>
                     <li><%= link_to link[:label], send(link[:path]), class: "dropdown-item app-dropdown-item" %></li>
                   <% end %>
+                <% end %>
+                <li class="dropdown-divider"></li>
+                <li class="dropdown-header-li"><h6 class="dropdown-header" id="fleetTiresHeading">Pneus</h6></li>
+                <% NavbarHelper::TIRE_LINKS.each do |link| %>
+                  <li><%= link_to link[:label], send(link[:path]), class: "dropdown-item app-dropdown-item tire-nav-link" %></li>
                 <% end %>
               </ul>
             </li>
@@ -91,7 +96,7 @@
           <% end %>
 
           <!-- Links rápidos (exceto Cadastros) -->
-          <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS, :finance, :checklist_tracking).each do |key, link| %>
+          <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS, :tires, :finance, :checklist_tracking).each do |key, link| %>
             <% if can_view_nav_link?(key, current_user) %>
               <%= link_to send(link[:path]), class: "nav-link app-nav-link" do %>
                 <i class="bi <%= link[:icon] %> me-1"></i> <%= link[:label] %>

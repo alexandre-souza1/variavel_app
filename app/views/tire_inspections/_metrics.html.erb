@@ -1,0 +1,13 @@
+<% metrics = if @pressure_view
+  [["Permaneceu baixa", @pressure_counts.fetch("persisted", 0), "danger"], ["Normalizou", @pressure_counts.fetch("normalized", 0), "success"], ["Baixa neste mês", @pressure_counts.fetch("current_low", 0), "danger"], ["Sem aferição neste mês", @pressure_counts.fetch("awaiting_month", 0), "warning"], ["Última leitura baixa", @pressure_counts.fetch("pending", 0), "secondary"], ["Sem comparação", @pressure_counts.fetch("unknown", 0), "secondary"]]
+else
+  [["Aferições no período", @report.inspection_count, "primary"], ["Divergências baixas", @severity_counts.fetch("low", 0), "success"], ["Divergências médias", @severity_counts.fetch("medium", 0), "warning"], ["Divergências altas", @severity_counts.fetch("high", 0), "danger"]]
+end %>
+<div class="kpi-grid tire-metrics <%= 'tire-metrics--pressure' if @pressure_view %>" aria-label="Resumo da consulta">
+  <% metrics.each do |label, count, tone| %>
+    <div class="kpi-card">
+      <div class="kpi-icon bg-<%= tone %>-soft"><i class="bi bi-<%= @pressure_view ? 'speedometer2' : 'clipboard-data' %> text-<%= tone %>" aria-hidden="true"></i></div>
+      <div class="kpi-info"><span class="kpi-label"><%= label %></span><strong class="kpi-value"><%= count %></strong></div>
+    </div>
+  <% end %>
+</div>

@@ -299,6 +299,9 @@ Rails.application.routes.draw do
   resources :rotogramas, only: :index
   resource :patio, controller: "parking_layouts", only: [:show, :update]
 
+  get "pneus", to: "tire_inspections#redirect_to_schedule", as: :tire_dashboard
+  get "pneus/afericoes", to: "tire_inspections#schedule", as: :tire_schedule
+  get "pneus/calibragem", to: "tire_inspections#pressure", as: :tire_pressure
   resources :tire_inspections, only: :index, path: "pneus/divergencias"
 
   resources :plates do

@@ -1,0 +1,20 @@
+<%= turbo_frame_tag "tire-report" do %>
+  <% if @error %>
+    <section class="app-panel tire-report-error" role="alert">
+      <div class="app-panel__body">
+        <i class="bi bi-cloud-slash" aria-hidden="true"></i>
+        <h2>Os resultados não foram carregados</h2>
+        <p><%= @error %></p>
+        <%= link_to "Tentar novamente", tire_panel_path(request.query_parameters.except("load", "view")), class: "btn-outline", data: { turbo_frame: "_top" } %>
+      </div>
+    </section>
+  <% elsif @schedule_view %>
+    <%= render "schedule" %>
+  <% else %>
+    <%= render "metrics" %>
+    <%= render "filters" %>
+    <%= render "charts" %>
+    <%= render(@pressure_view ? "pressure" : "divergences") %>
+    <%= render "pagination" %>
+  <% end %>
+<% end %>

@@ -5,19 +5,62 @@ class TireInspectionsController < ApplicationController
   PAGE_SIZES = [25, 50, 100, 200].freeze
   before_action :authenticate_user!
 
+  before_action :prepare_panel
+  rescue_from Prolog::InspectionsClient::Error, with: :integration_error
+
+  def redirect_to_schedule
+    options = request.query_parameters.symbolize_keys
+    options[:format] = :csv if request.format.csv?
+    redirect_to tire_schedule_path(options), status: :see_other
+  end
+
+  def schedule
+    return render(:schedule) unless report_requested?
+
+    load_schedule
+    respond_to do |format|
+      format.html { paginate_rows; render_report }
+      format.csv { send_data schedule_csv, filename: "prazos-afericoes-#{Date.current}.csv", type: "text/csv; charset=utf-8" }
+    end
+  end
+
+  def pressure
+    history_report
+  end
+
   def index
+    if %w[schedule pressure].include?(params[:view])
+      options = request.query_parameters.except("view", "format").symbolize_keys.merge(format: request.format.csv? ? :csv : nil)
+      return redirect_to(params[:view] == "schedule" ? tire_schedule_path(options) : tire_pressure_path(options))
+    end
+    history_report
+  end
+
+  private
+
+  def prepare_panel
+    @schedule_view = action_name == "schedule"
+    @pressure_view = action_name == "pressure"
     @per_page = PAGE_SIZES.include?(params[:per_page].to_i) ? params[:per_page].to_i : 50
+    @query = params[:q].to_s.strip
+    @status = params[:status].to_s
+  end
+
+  def report_requested?
+    request.format.csv? || turbo_frame_request? || params[:load] == "1"
+  end
+
+  def history_report
     @sort = SORT_OPTIONS.any? { |_, key| key == params[:sort] } ? params[:sort] : "newest"
-    @pressure_view = params[:view] == "pressure"
     @start_date = params[:start_date].present? ? Date.iso8601(params[:start_date]) : Date.current << 3
     @end_date = params[:end_date].present? ? Date.iso8601(params[:end_date]) : Date.current
     if @end_date < @start_date || @end_date > Date.current || @end_date > (@start_date >> 12)
       raise ArgumentError
     end
     @baseline_date = @start_date << 3
-    @query = params[:q].to_s.strip
-    @status = params[:status].to_s
-    inspections = Prolog::InspectionsClient.new.fetch(start_time: @baseline_date.in_time_zone, end_time: (@end_date + 1).in_time_zone)
+    return render(@pressure_view ? :pressure : :index) unless report_requested?
+
+    inspections = Prolog::CachedInspections.new.fetch(start_time: @baseline_date.in_time_zone, end_time: (@end_date + 1).in_time_zone)
     if @pressure_view
       prepare_pressure(inspections)
     else
@@ -33,22 +76,56 @@ class TireInspectionsController < ApplicationController
     respond_to do |format|
       format.html do
         prepare_charts
-        @total_rows = @rows.size
-        @total_pages = [(@total_rows / @per_page.to_f).ceil, 1].max
-        @page = [[params[:page].to_i, 1].max, @total_pages].min
-        @rows = @rows.slice((@page - 1) * @per_page, @per_page) || []
+        paginate_rows
+        render_report
       end
       format.csv { send_data (@pressure_view ? pressure_csv : export_csv), filename: "#{@pressure_view ? 'calibragem' : 'divergencias'}-pneus-#{@start_date}-#{@end_date}.csv", type: "text/csv; charset=utf-8" }
     end
   rescue ArgumentError
     @error = "Informe um período válido de até 12 meses, sem datas futuras."
-    render :index, formats: [:html], status: :unprocessable_entity
-  rescue Prolog::InspectionsClient::Error => e
-    @error = e.message
-    render :index, formats: [:html], status: :service_unavailable
+    render_report(status: :unprocessable_entity)
   end
 
-  private
+  def integration_error(error)
+    @error = error.message
+    render_report(status: :service_unavailable)
+  end
+
+  def render_report(status: :ok)
+    if turbo_frame_request?
+      render partial: "tire_inspections/report", formats: [:html], status: status
+    else
+      render(@schedule_view ? :schedule : (@pressure_view ? :pressure : :index), formats: [:html], status: status)
+    end
+  end
+
+  def load_schedule
+    inspections = Prolog::CachedInspections.new.tread_inspections
+    plates = Plate.active.where(tipo: ["Caminhão", "Van"]).ordered
+    @report = Prolog::InspectionSchedule.new(plates, inspections)
+    @rows = @report.rows.select { |row| PlateUtils.normalizar(row[:plate].placa).include?(PlateUtils.normalizar(@query)) }
+    @schedule_counts = @rows.group_by { |row| row[:status] }.transform_values(&:size)
+    @schedule_total = @rows.size
+    @rows = @rows.select { |row| row[:status] == @status } if Prolog::InspectionSchedule::STATUSES.key?(@status)
+  end
+
+  def paginate_rows
+    @total_rows = @rows.size
+    @total_pages = [(@total_rows / @per_page.to_f).ceil, 1].max
+    @page = [[params[:page].to_i, 1].max, @total_pages].min
+    @rows = @rows.slice((@page - 1) * @per_page, @per_page) || []
+  end
+
+  def schedule_csv
+    "\uFEFF" + CSV.generate(col_sep: ";") do |csv|
+      csv << ["Placa", "Perfil", "Última aferição de sulco", "Próxima aferição até", "Dias para vencer", "Situação", "Responsável", "Aferição"]
+      @rows.each do |row|
+        record = row[:reading]&.dig(:record) || {}
+        values = [row[:plate].placa, row[:plate].perfil, row[:last_date]&.strftime("%d/%m/%Y"), row[:due_date]&.strftime("%d/%m/%Y"), row[:days_left], helpers.inspection_schedule_label(row), record.dig("submittedBy", "name"), record["id"]]
+        csv << values.map { |value| value.is_a?(String) && value.match?(/\A[=+\-@\t\r\n]/) ? "'#{value}" : value }
+      end
+    end
+  end
 
   def sort_divergences
     @rows.sort_by! do |row|

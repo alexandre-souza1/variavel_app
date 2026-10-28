@@ -43,6 +43,9 @@ Calendário por grupo, rodízio contínuo A–F e cartões compactos de disponib
 
 ### Manutenção e segurança
 
+- O menu **Frota** reúne **Aferições**, **Divergências de sulco** e **Calibragem** em uma seção **Pneus**, separada como os grupos de Cadastros, no desktop e no celular. A seção segue a visibilidade de Frota: administradores e usuários de Frota, DU e Segurança, exceto mecânicos. Não há página de visão geral; o endereço antigo `/pneus` redireciona para Aferições. Cada relatório carrega os dados separadamente, mantendo a navegação disponível durante a consulta. O histórico com medidas é reaproveitado por até 5 minutos entre divergências, calibragem, filtros, páginas e exportações; o histórico de aferições por veículo fica em cache por até 10 minutos. Se o ambiente usa NullStore, o módulo usa um cache em memória por processo, sem alterar o cache dos outros módulos.
+- Em **Aferições**, a próxima aferição vence 30 dias corridos após a última aferição de sulco de cada caminhão ou van ativo. Há destaque para atrasos, vencimentos de hoje, próximos 7 dias e veículos sem histórico, além de busca por placa e exportação CSV. Calibragens isoladas não renovam o prazo. Os links antigos com `view=pressure` ou `view=schedule` redirecionam para as páginas próprias, preservando os filtros.
+- O grupo Pneus e os títulos usam o ícone `mdi-tire` do Material Design Icons, distribuído com licença Apache 2.0. O SVG fica em `app/assets/images/icons/tire.svg` e herda a cor do tema por máscara CSS. Não exige fonte adicional, CDN nem Kit Pro. A licença da coleção e o texto Apache 2.0 estão em `vendor/licenses/`.
 - Checklists e modelos de checklist.
 - Respostas, defeitos, fotos, histórico e exportação para Excel.
 - Tarefas de mecânica e atividades relacionadas.

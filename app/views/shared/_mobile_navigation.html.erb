@@ -24,7 +24,7 @@
             <i class="bi bi-list-check" aria-hidden="true"></i> Minhas tarefas
           <% end %>
         <% end %>
-        <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS, :finance, :du, :checklist_tracking).each do |key, link| %>
+        <% NavbarHelper::NAVBAR_LINKS.except(*NavbarHelper::FLEET_LINK_KEYS, :tires, :finance, :du, :checklist_tracking).each do |key, link| %>
           <% if can_view_nav_link?(key, current_user) %>
             <%= link_to send(link[:path]), class: "app-mobile-nav-link" do %>
               <i class="bi <%= link[:icon] %>" aria-hidden="true"></i> <%= link[:label] %>
@@ -101,11 +101,11 @@
         </div>
       </div>
 
-      <% if NavbarHelper::FLEET_LINK_KEYS.any? { |key| can_view_nav_link?(key, current_user) } %>
+      <% if can_view_fleet_menu?(current_user) %>
         <div class="app-mobile-nav-section">
           <button class="app-mobile-nav-section__title w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#mobileFleetCollapse" aria-expanded="false" aria-controls="mobileFleetCollapse">
             <i class="bi bi-truck-front" aria-hidden="true"></i>
-            <span><strong>Frota</strong><small>Disponibilidade e indicadores</small></span>
+            <span><strong>Frota</strong><small>Disponibilidade, pneus e indicadores</small></span>
           </button>
           <div class="collapse" id="mobileFleetCollapse" data-bs-parent="#mobileNavModules">
             <% if current_user.can_view_checklist_tracking? %><%= link_to "Acompanhamento de Checklist", checklist_occurrences_path, class: "app-mobile-nav-link" %><% end %>
@@ -114,6 +114,10 @@
                 <% link = NavbarHelper::NAVBAR_LINKS.fetch(key) %>
                 <%= link_to link[:label], send(link[:path]), class: "app-mobile-nav-link" %>
               <% end %>
+            <% end %>
+            <div class="app-mobile-nav-group" id="mobileFleetTiresHeading">Pneus</div>
+            <% NavbarHelper::TIRE_LINKS.each do |link| %>
+              <%= link_to link[:label], send(link[:path]), class: "app-mobile-nav-link tire-nav-link" %>
             <% end %>
           </div>
         </div>

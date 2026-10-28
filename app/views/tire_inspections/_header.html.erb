@@ -1,0 +1,18 @@
+<% title, subtitle = tire_page_details %>
+<header class="dashboard-header">
+  <div class="header-content">
+    <div>
+      <p class="dashboard-eyebrow">Frota · Pneus · Prolog</p>
+      <h1><i class="<%= NavbarHelper::TIRE_ICON %>" aria-hidden="true"></i> <%= title %></h1>
+      <p class="subtitle"><%= subtitle %></p>
+    </div>
+    <div class="header-actions">
+      <% if current_user.admin? || current_user.sector_fleet? %>
+        <%= link_to dashboard_path, class: "btn-outline", data: { turbo_frame: "_top" } do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar para Frota<% end %>
+      <% else %>
+        <%= link_to variaveis_path, class: "btn-outline", data: { turbo_frame: "_top" } do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar ao início<% end %>
+      <% end %>
+      <%= link_to tire_panel_path(request.query_parameters.slice("start_date", "end_date", "q", "status", "sort").merge(format: :csv)), class: "btn-primary-solid", data: { turbo: false } do %><i class="bi bi-download" aria-hidden="true"></i> Exportar CSV<% end %>
+    </div>
+  </div>
+</header>

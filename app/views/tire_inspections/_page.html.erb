@@ -1,0 +1,22 @@
+<div class="dashboard-page tire-inspections-page">
+  <%= render "header" %>
+  <% if @error || @report %>
+    <%= render "report" %>
+  <% else %>
+    <%= turbo_frame_tag "tire-report", data: { controller: "tire-report", tire_report_url_value: tire_panel_path(request.query_parameters.except("load", "view")) } do %>
+      <section class="app-panel tire-loading" role="status" aria-live="polite">
+        <span class="tire-loading__icon"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></span>
+        <h2>Carregando os dados da Prolog</h2>
+        <p>A consulta está em andamento. Você pode continuar navegando pelo menu Frota enquanto aguarda.</p>
+      </section>
+      <template data-tire-report-target="error">
+        <section class="app-panel tire-report-error" role="alert"><div class="app-panel__body">
+          <h2>Não foi possível carregar a consulta</h2>
+          <p>Verifique a conexão e tente novamente.</p>
+          <%= link_to "Tentar novamente", tire_panel_path(request.query_parameters.except("load", "view")), class: "btn-outline", data: { turbo_frame: "_top" } %>
+        </div></section>
+      </template>
+      <noscript><%= link_to "Carregar relatório", tire_panel_path(request.query_parameters.except("view").merge(load: 1)), class: "btn-outline" %></noscript>
+    <% end %>
+  <% end %>
+</div>

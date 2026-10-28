@@ -6,7 +6,7 @@ class TireInspectionsControllerTest < ActionDispatch::IntegrationTest
   teardown { travel_back }
   test "requires authentication" do
     sign_out :user
-    get tire_inspections_path
+    get_report tire_inspections_path
     assert_redirected_to new_user_session_path
   end
 
@@ -15,14 +15,14 @@ class TireInspectionsControllerTest < ActionDispatch::IntegrationTest
     client = Object.new
     client.define_singleton_method(:fetch) { |**options| records }
     Prolog::InspectionsClient.stub :new, client do
-      get tire_inspections_path, params: { start_date: "2026-06-24", end_date: "2026-09-24" }
+      get_report tire_inspections_path, params: { start_date: "2026-06-24", end_date: "2026-09-24" }
       assert_response :success
       assert_select "td span.badge", text: "Divergência baixa", count: 1
       assert_select "td span.badge", text: "Divergência média", count: 1
       assert_select "td span.tire-status--success", text: "Divergência baixa", count: 1
       assert_select "td span.tire-status--warning", text: "Divergência média", count: 1
       assert_select "td span.tire-status--danger", text: "Divergência alta", count: 1
-      get tire_inspections_path(format: :csv), params: { start_date: "2026-06-24", end_date: "2026-09-24", status: "medium" }
+      get_report tire_inspections_path(format: :csv), params: { start_date: "2026-06-24", end_date: "2026-09-24", status: "medium" }
       assert_response :success
       assert_includes response.body, "0,51"
       assert_includes response.body, "Divergência média"
@@ -31,7 +31,7 @@ class TireInspectionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "invalid dates do not query prolog" do
-    get tire_inspections_path, params: { start_date: "invalid" }
+    get_report tire_inspections_path, params: { start_date: "invalid" }
     assert_response :unprocessable_entity
     assert_includes response.body, "Informe um período válido"
   end
@@ -40,7 +40,7 @@ class TireInspectionsControllerTest < ActionDispatch::IntegrationTest
     client = Object.new
     client.define_singleton_method(:fetch) { |**options| raise Prolog::InspectionsClient::Error, "Falha na consulta" }
     Prolog::InspectionsClient.stub :new, client do
-      get tire_inspections_path
+      get_report tire_inspections_path
       assert_response :service_unavailable
       assert_includes response.body, "Os resultados não foram carregados"
       refute_includes response.body, "Nenhum aumento de sulco"
@@ -56,13 +56,13 @@ class TireInspectionsControllerTest < ActionDispatch::IntegrationTest
     client = Object.new
     client.define_singleton_method(:fetch) { |**options| records }
     Prolog::InspectionsClient.stub :new, client do
-      get tire_inspections_path, params: { start_date: "2026-06-24", end_date: "2026-09-24", q: "PNEU", page: 1 }
+      get_report tire_inspections_path, params: { start_date: "2026-06-24", end_date: "2026-09-24", q: "PNEU", page: 1 }
       assert_response :success
       assert_select "tbody tr", count: 50
       assert_select "#tire-evolution-chart"
       assert_select "#tire-distribution-chart"
       chart_script = response.parsed_body.css("script").map(&:text).find { |text| text.include?("tire-evolution-chart") }
-      get tire_inspections_path, params: { start_date: "2026-06-24", end_date: "2026-09-24", q: "PNEU", per_page: 25, page: 2 }
+      get_report tire_inspections_path, params: { start_date: "2026-06-24", end_date: "2026-09-24", q: "PNEU", per_page: 25, page: 2 }
       assert_select "tbody tr", count: 25
       assert_select "select[name=per_page] option[selected]", text: "25"
       assert_select "a[aria-current=page]", text: "2"
@@ -71,15 +71,17 @@ class TireInspectionsControllerTest < ActionDispatch::IntegrationTest
         assert_includes links.first["href"], "q=PNEU"
       end
       assert_select "#fleetDropdown", text: /FROTA/
-      assert_select "#mobileFleetCollapse a", text: "Pneus"
-      get tire_inspections_path, params: { start_date: "2026-06-24", end_date: "2026-09-24", page: 2 }
+      assert_select "#fleetTiresHeading", text: /Pneus/
+      assert_select "#mobileFleetCollapse a.tire-nav-link", text: "Aferições"
+      assert_select "#mobileFleetCollapse a[href=?]", tire_dashboard_path, count: 0
+      get_report tire_inspections_path, params: { start_date: "2026-06-24", end_date: "2026-09-24", page: 2 }
       assert_select "tbody tr", count: 10
-      get tire_inspections_path, params: { start_date: "2026-06-24", end_date: "2026-09-24", per_page: 100, page: 999 }
+      get_report tire_inspections_path, params: { start_date: "2026-06-24", end_date: "2026-09-24", per_page: 100, page: 999 }
       assert_select "tbody tr", count: 60
       assert_select "a[aria-current=page]", text: "1"
-      get tire_inspections_path, params: { start_date: "2026-06-24", end_date: "2026-09-24", per_page: -1 }
+      get_report tire_inspections_path, params: { start_date: "2026-06-24", end_date: "2026-09-24", per_page: -1 }
       assert_select "tbody tr", count: 50
-      get tire_inspections_path(format: :csv), params: { start_date: "2026-06-24", end_date: "2026-09-24", per_page: 25, page: 2 }
+      get_report tire_inspections_path(format: :csv), params: { start_date: "2026-06-24", end_date: "2026-09-24", per_page: 25, page: 2 }
       assert_equal 61, CSV.parse(response.body.delete_prefix("\uFEFF"), col_sep: ";").size
     end
   end
@@ -90,15 +92,15 @@ class TireInspectionsControllerTest < ActionDispatch::IntegrationTest
     client = Object.new
     client.define_singleton_method(:fetch) { |**options| records }
     Prolog::InspectionsClient.stub :new, client do
-      get tire_inspections_path, params: { view: "pressure", status: "persisted" }
+      get_report tire_pressure_path, params: { status: "persisted" }
       assert_response :success
       assert_select "tbody tr", count: 1
       assert_select "td span.badge", text: "Permaneceu baixa"
-      get tire_inspections_path, params: { view: "pressure", status: "awaiting_month" }
+      get_report tire_pressure_path, params: { status: "awaiting_month" }
       assert_response :success
       assert_select "tbody tr", count: 1
       assert_select "td span.tire-status--warning", text: "Pressão baixa · sem aferição no mês atual"
-      get tire_inspections_path(format: :csv), params: { view: "pressure" }
+      get_report tire_pressure_path(format: :csv)
       assert_response :success
       assert_includes response.body, "Pressão seguinte"
       assert_includes response.body, "Pressão baixa · sem aferição no mês atual"
@@ -114,19 +116,19 @@ class TireInspectionsControllerTest < ActionDispatch::IntegrationTest
     client = Object.new
     client.define_singleton_method(:fetch) { |**options| records }
     Prolog::InspectionsClient.stub :new, client do
-      get tire_inspections_path, params: { sort: "depth_asc", per_page: 25, page: 2 }
+      get_report tire_inspections_path, params: { sort: "depth_asc", per_page: 25, page: 2 }
       assert_response :success
       assert_select "tbody tr:first-child td:first-child strong", text: "PNEU-26"
       assert_select "input[name=sort][value=depth_asc]"
       assert_select "a[rel=prev]" do |links|
         assert_includes links.first["href"], "sort=depth_asc"
       end
-      get tire_inspections_path(format: :csv), params: { sort: "depth_asc", per_page: 25, page: 2 }
+      get_report tire_inspections_path(format: :csv), params: { sort: "depth_asc", per_page: 25, page: 2 }
       data = CSV.parse(response.body.delete_prefix("\uFEFF"), col_sep: ";")
       assert_equal 32, data.size
       assert_equal "PNEU-1", data[1][0]
       assert_equal "PNEU-31", data.last[0]
-      get tire_inspections_path, params: { sort: "depth_desc" }
+      get_report tire_inspections_path, params: { sort: "depth_desc" }
       assert_select "tbody tr:first-child td:first-child strong", text: "PNEU-31"
     end
   end
@@ -137,7 +139,7 @@ class TireInspectionsControllerTest < ActionDispatch::IntegrationTest
     client.define_singleton_method(:fetch) { |**options| records }
     Prolog::InspectionsClient.stub :new, client do
       [nil, "invalid"].each do |sort|
-        get tire_inspections_path, params: { sort: sort }
+        get_report tire_inspections_path, params: { sort: sort }
         assert_response :success
         assert_select "select[name=sort] option[selected]", text: "Aferições mais recentes"
         assert_select "tbody tr:first-child td:nth-child(4)", text: /01\/09\/2026/
@@ -146,6 +148,10 @@ class TireInspectionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def get_report(path, params: {})
+    get path, params: params.merge(load: 1)
+  end
 
   def inspection(id, date, depth)
     { "id" => id, "source" => "vehicles", "submittedAt" => "#{date}T12:00:00Z", "inspectionMeasures" => [

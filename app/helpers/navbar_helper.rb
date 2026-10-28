@@ -1,6 +1,12 @@
 # app/helpers/navbar_helper.rb
 module NavbarHelper
-  FLEET_LINK_KEYS = %i[fleet_dashboard availability stress_test tires patio].freeze
+  FLEET_LINK_KEYS = %i[fleet_dashboard availability stress_test patio].freeze
+  TIRE_ICON = "mdi mdi-tire".freeze
+  TIRE_LINKS = [
+    { label: "Aferições", path: :tire_schedule_path },
+    { label: "Divergências de sulco", path: :tire_inspections_path },
+    { label: "Calibragem", path: :tire_pressure_path }
+  ].freeze
 
   FINANCE_LINKS = [
     { label: "Dashboard", path: :dashboard_invoices_path },
@@ -14,7 +20,7 @@ module NavbarHelper
 
   NAVBAR_LINKS = {
     fleet_dashboard: { path: :dashboard_path, icon: "bi-speedometer", label: "Dashboard de Frota", sectors: [:fleet] },
-    tires: { path: :tire_inspections_path, icon: "bi-circle", label: "Pneus", sectors: [:fleet, :du, :safety] },
+    tires: { path: :tire_schedule_path, icon: TIRE_ICON, label: "Pneus", sectors: [:fleet, :du, :safety] },
     patio: { path: :patio_path, icon: "bi-p-square", label: "Layout do Pátio", sectors: [:fleet, :du, :safety] },
     tasks: {
       path: :action_plans_path,
@@ -124,10 +130,15 @@ module NavbarHelper
   def can_view_nav_link?(link_key, user)
     return false if user.mechanical?
     return true if user.admin?
+    return can_view_fleet_menu?(user) if link_key == :tires
     return user.can_view_checklist_tracking? if link_key == :checklist_tracking
     link = NAVBAR_LINKS[link_key]
     return false unless link
     link[:sectors].include?(user.sector&.to_sym)
+  end
+
+  def can_view_fleet_menu?(user)
+    FLEET_LINK_KEYS.any? { |key| can_view_nav_link?(key, user) }
   end
 
   def can_view_subitem?(subitem_key, user)

@@ -41,6 +41,13 @@ module Prolog
       end
     end
 
+    def tread_inspections
+      raise Error, "A integração com a Prolog não está configurada." if @token.blank?
+
+      fetch_source("vehicles", startDate: "1970-01-01T00:00Z",
+        endDate: Time.current.utc.strftime("%Y-%m-%dT%H:%MZ"), includeMeasures: false)
+    end
+
     private
 
     def inspection_timestamp(value)

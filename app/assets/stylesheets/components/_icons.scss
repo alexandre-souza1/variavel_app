@@ -1,0 +1,11 @@
+// O SVG local mantém o ícone na cor do texto, sem carregar uma fonte de ícones.
+.mdi.mdi-tire {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  vertical-align: -.125em;
+  background-color: currentColor;
+  -webkit-mask: asset-url("icons/tire.svg") center / contain no-repeat;
+  mask: asset-url("icons/tire.svg") center / contain no-repeat;
+}

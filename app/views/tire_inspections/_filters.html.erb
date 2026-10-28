@@ -1,0 +1,16 @@
+  <section class="app-panel tire-filter-panel">
+    <div class="app-panel__body">
+      <%= form_with url: tire_panel_path, method: :get, local: true, data: { turbo_frame: "_top" }, class: "tire-filters #{'tire-filters--pressure' if @pressure_view}" do %>
+        <%= hidden_field_tag :per_page, @per_page %>
+        <div class="tire-filter-date"><%= label_tag :start_date, "De", class: "form-label" %><%= date_field_tag :start_date, @start_date, required: true, class: "form-control" %></div>
+        <div class="tire-filter-date"><%= label_tag :end_date, "Até", class: "form-label" %><%= date_field_tag :end_date, @end_date, required: true, max: Date.current, class: "form-control" %></div>
+        <div class="tire-filter-search"><%= label_tag :q, "Pneu ou placa", class: "form-label" %><%= text_field_tag :q, params[:q], class: "form-control", placeholder: "Número de fogo ou placa" %></div>
+        <div class="tire-filter-status"><%= label_tag :status, "Classificação", class: "form-label" %><%= select_tag :status, options_for_select(@pressure_view ? [["Todas as ocorrências", ""], ["Permaneceu baixa", "persisted"], ["Normalizou", "normalized"], ["Incorreto · pressão baixa no mês atual", "current_low"], ["Pressão baixa · sem aferição no mês atual", "awaiting_month"], ["Última leitura baixa no período", "pending"], ["Sem comparação válida", "unknown"]] : [["Todas as divergências", ""], ["Baixa · até 0,50 mm", "low"], ["Média · acima de 0,50 até 2,00 mm", "medium"], ["Alta · acima de 2,00 mm", "high"]], params[:status]), class: "form-select" %></div>
+        <% unless @pressure_view %>
+          <div class="tire-filter-sort"><%= label_tag :sort, "Ordenar por", class: "form-label" %><%= select_tag :sort, options_for_select(TireInspectionsController::SORT_OPTIONS, @sort), class: "form-select" %></div>
+        <% end %>
+        <div class="tire-filter-submit"><%= submit_tag "Consultar", class: "btn-primary-solid w-100" %></div>
+      <% end %>
+      <% unless @pressure_view %><p class="tire-filter-hint">A ordenação por sulco considera a medida da aferição seguinte de cada comparação.</p><% end %>
+    </div>
+  </section>

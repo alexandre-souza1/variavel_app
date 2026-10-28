@@ -69,7 +69,7 @@ module AiAssistant
       client = Prolog::TiresClient.new
       tires = args['plate'].present? ? client.tires_for_plate(args['plate']) : client.tires_needing_retread
       return { available: false, error: 'A consulta de pneus está indisponível na Prolog. Confira a integração na tela de pneus.' } if client.error.present?
-      source('Pneus', tire_inspections_path)
+      source('Pneus', tire_schedule_path)
       rows = tires.map { |tire| tire.slice(:id, :fire_number, :plate, :position, :life, :spare, :smallest_tread_depth, :created_at) }
       array_page(rows, args).merge(available: true, source: 'Prolog', consulted_at: Time.current, retread_threshold_mm: 3.5)
     end

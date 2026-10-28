@@ -72,6 +72,36 @@ class Prolog::LastTreadInspectionTest < ActiveSupport::TestCase
     assert_raises(Prolog::InspectionsClient::Error) { client.last_tread_inspection_at("ABC1D23") }
   end
 
+  test "fleet history fetches vehicle pages once and shares the cache across plates" do
+    @responses.concat([page([inspection("2024-01-01T12:00:00Z")], last: false), page([inspection("2026-10-20T12:00:00Z", plate: "DEF4G56")])])
+    cached = Prolog::CachedInspections.new(client: @client, cache: @cache)
+    Rails.stub :cache, @cache do
+      assert_equal 2, cached.tread_inspections.size
+      assert_equal 2, cached.tread_inspections.size
+      assert_equal 2, @requests.size
+      assert_equal [0, 1], @requests.map { |_, options| options[:query][:pageNumber] }
+      @requests.each do |url, options|
+        assert url.end_with?("/vehicles")
+        assert_equal false, options[:query][:includeMeasures]
+        assert_equal "1970-01-01T00:00Z", options[:query][:startDate]
+        refute options[:query].key?(:textQuery)
+      end
+      travel 11.minutes
+      @responses << page([])
+      assert_empty cached.tread_inspections
+    end
+  end
+
+  test "fleet history never caches partial pages or failed responses" do
+    @responses.concat([page([inspection("2026-10-01T12:00:00Z")], last: false), Response.new(503, {})])
+    cached = Prolog::CachedInspections.new(client: @client, cache: @cache)
+    Rails.stub :cache, @cache do
+      assert_raises(Prolog::InspectionsClient::Error) { cached.tread_inspections }
+      @responses << page([])
+      assert_empty cached.tread_inspections
+    end
+  end
+
   private
 
   def page(records, last: true)

@@ -1,0 +1,55 @@
+<section class="tire-schedule-overview" aria-labelledby="tire-schedule-title">
+  <div class="tire-overview-heading">
+    <h2 id="tire-schedule-title">Aferições a cada 30 dias</h2>
+    <p><%= @schedule_total %> veículos · <%= l(Date.current, format: "%d/%m/%Y") %></p>
+  </div>
+  <div class="kpi-grid tire-schedule-cards">
+    <% Prolog::InspectionSchedule::STATUSES.each do |key, (label, tone, icon)| %>
+      <%= link_to tire_schedule_path(q: @query, status: key, per_page: @per_page), data: { turbo_frame: "_top" }, class: "kpi-card tire-schedule-card tire-schedule-card--#{tone} #{'is-active' if @status == key}", aria: { current: @status == key ? "true" : nil } do %>
+        <div class="kpi-icon bg-<%= tone == "muted" ? "secondary" : tone %>-soft"><i class="bi <%= icon %>" aria-hidden="true"></i></div>
+        <div class="kpi-info"><span class="kpi-label"><%= label %></span><strong class="kpi-value"><%= @schedule_counts.fetch(key, 0) %></strong></div>
+      <% end %>
+    <% end %>
+  </div>
+</section>
+
+<section class="app-panel tire-filter-panel">
+  <div class="app-panel__body">
+    <%= form_with url: tire_schedule_path, method: :get, local: true, data: { turbo_frame: "_top" }, class: "tire-filters tire-filters--schedule" do %>
+      <%= hidden_field_tag :per_page, @per_page %>
+      <div class="tire-filter-search"><%= label_tag :q, "Buscar placa", class: "form-label" %><%= text_field_tag :q, @query, class: "form-control", placeholder: "Digite a placa" %></div>
+      <div class="tire-filter-status"><%= label_tag :status, "Prazo da aferição", class: "form-label" %><%= select_tag :status, options_for_select([["Todos os veículos", ""]] + Prolog::InspectionSchedule::STATUSES.map { |key, (label, *)| [label, key] }, @status), class: "form-select" %></div>
+      <div class="tire-filter-submit"><%= submit_tag "Filtrar", class: "btn-primary-solid w-100" %></div>
+      <%= link_to "Limpar filtros", tire_schedule_path, class: "btn-outline" %>
+    <% end %>
+  </div>
+</section>
+
+<section class="app-panel tire-results">
+  <div class="app-panel__header"><h2><%= @total_rows %> veículos <span>no acompanhamento</span></h2><small>Maiores atrasos primeiro</small></div>
+  <div class="app-panel__body dashboard-table-wrapper">
+    <table class="table dashboard-data-table align-middle mb-0 tire-schedule-table" role="table" aria-label="Prazos de aferição por placa">
+      <thead><tr><th scope="col">Placa</th><th scope="col">Última aferição</th><th scope="col">Próxima até</th><th scope="col">Prazo</th><th scope="col">Último registro</th></tr></thead>
+      <tbody>
+        <% @rows.each do |row| %>
+          <% tone = Prolog::InspectionSchedule::STATUSES.fetch(row[:status])[1]; record = row[:reading]&.dig(:record) %>
+          <tr>
+            <td><%= link_to row[:plate].placa, plate_path(row[:plate]), class: "tire-plate-link", data: { turbo_frame: "_top" } %><br><small><%= row[:plate].perfil.presence || row[:plate].tipo %></small></td>
+            <td data-label="Última aferição"><%= row[:last_date]&.strftime("%d/%m/%Y") || "Sem histórico" %><% if row[:last_date] %><br><small>Há <%= pluralize(30 - row[:days_left], "dia", "dias") %></small><% end %></td>
+            <td data-label="Próxima até" class="fw-bold"><%= row[:due_date]&.strftime("%d/%m/%Y") || "A confirmar" %></td>
+            <td><span class="badge tire-status tire-status--<%= tone %>"><%= inspection_schedule_label(row) %></span></td>
+            <td data-label="Último registro"><% if record %><%= record.dig("submittedBy", "name").presence || "Responsável não informado" %><br><small>Aferição #<%= record["id"] %></small><% else %><small>Conferir cadastro e aferições na Prolog</small><% end %></td>
+          </tr>
+        <% end %>
+        <% if @rows.empty? %><tr><td colspan="5" class="text-center py-5 text-muted">Nenhum veículo encontrado para os filtros selecionados.</td></tr><% end %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<%= render "pagination" %>
+<details class="tire-methodology"><summary><%= disclosure_arrow %> Como os prazos são calculados</summary><div>
+  A próxima aferição deve ocorrer até <strong>30 dias corridos</strong> após a última aferição de sulco do veículo. O dia do vencimento é destacado; no dia seguinte, a aferição passa a constar como vencida. O alerta antecipado cobre os próximos <strong>7 dias</strong>.
+  <br>São consideradas aferições de veículo com sulco ou sulco e pressão. Calibragens isoladas e aferições individuais de pneus não renovam esse prazo. Placas antigas e Mercosul equivalentes são consideradas juntas.
+  <br>Sem histórico indica que não foi encontrada aferição de sulco para a placa na Prolog. Esses veículos precisam de conferência e não são classificados como em dia.
+  <br>São exibidos caminhões e vans ativos. A consulta à Prolog pode levar até 10 minutos para refletir uma nova aferição.
+</div></details>

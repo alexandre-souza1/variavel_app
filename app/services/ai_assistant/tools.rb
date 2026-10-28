@@ -215,7 +215,7 @@ module AiAssistant
         du: ['Dashboard DU', dashboard_mapas_path], az: ['Dashboard Armazém', dashboard_az_path],
         time_off: ['Escala de folgas', time_off_schedule_path], consumption: ['Consumo de combustível', fuel_consumptions_path],
         pcd: ['PCD SALAS', pcd_path], routines: ['GEROT', routines_path],
-        plates: ['Placas', plates_path], tires: ['Pneus', tire_inspections_path],
+        plates: ['Placas', plates_path], tires: ['Pneus', tire_schedule_path],
         stress: ['Stress Test', stress_tests_path], documents: ['Documentos e padrões', downloads_path],
         public_resources: ['Rotogramas', rotogramas_path], checklists: ['Histórico de checklists', historic_checklists_path]
       }

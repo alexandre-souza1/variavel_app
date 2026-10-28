@@ -1,0 +1,32 @@
+    <details class="tire-methodology"><summary><%= disclosure_arrow %> Como as divergências são identificadas</summary><div>
+      Cada divergência representa um aumento em um sulco. Até <strong>0,50 mm</strong>: divergência baixa. Acima de 0,50 até <strong>2,00 mm</strong>: média. Acima de <strong>2,00 mm</strong>: alta. Todos os aumentos aparecem por padrão. Medidas comparadas com duas casas decimais.
+      <br>Referências anteriores buscadas desde <%= @baseline_date.strftime("%d/%m/%Y") %>. <%= @report.without_previous %> leituras de sulco no período ficaram sem referência anterior nessa janela e não puderam ser comparadas. A contagem de aferições é do período completo; as contagens de divergências respeitam a busca por pneu ou placa.
+    </div></details>
+    <section class="app-panel tire-results">
+      <div class="app-panel__header"><h2 class="h5 mb-0"><%= @total_rows %> divergências na seleção</h2></div>
+      <div class="app-panel__body dashboard-table-wrapper">
+        <table class="table dashboard-data-table align-middle mb-0">
+          <thead><tr><th>Pneu / vida</th><th>Sulco</th><th>Aferição anterior</th><th>Aferição seguinte</th><th>Aumento</th><th>Classificação</th></tr></thead>
+          <tbody>
+            <% @rows.each do |row| %>
+              <tr>
+                <td><strong><%= row[:serial].presence || row[:tire_id] %></strong><br><small class="text-muted">Vida <%= row[:life] %></small></td>
+                <td><%= row[:groove] %></td>
+                <% [:previous, :current].each do |side| %>
+                  <% reading = row[side]; record = reading[:record] %>
+                  <td>
+                    <strong><%= number_with_precision(reading[:depth], precision: 2, separator: ",") %> mm</strong><br>
+                    <%= reading[:time].in_time_zone.strftime("%d/%m/%Y %H:%M") %><br>
+                    <small><%= record.dig("vehicle", "licensePlate").presence || "Aferição individual" %> · <%= record.dig("submittedBy", "name").presence || "Responsável não informado" %></small><br>
+                    <small class="text-muted">Aferição #<%= record["id"] %> · Posição <%= reading[:measure]["tirePositionAtInspection"].presence || "—" %></small>
+                  </td>
+                <% end %>
+                <td class="text-nowrap fw-bold">+<%= number_with_precision(row[:delta], precision: 2, separator: ",") %> mm</td>
+                <td><span class="badge tire-status <%= { 'low' => 'tire-status--success', 'medium' => 'tire-status--warning', 'high' => 'tire-status--danger' }.fetch(row[:severity]) %>"><%= Prolog::InspectionDivergences::SEVERITIES.fetch(row[:severity]) %></span></td>
+              </tr>
+            <% end %>
+            <% if @rows.empty? %><tr><td colspan="6" class="text-center py-5 text-muted">Nenhum aumento de sulco encontrado para os filtros selecionados.</td></tr><% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
