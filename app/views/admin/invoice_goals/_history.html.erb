@@ -1,0 +1,65 @@
+<% source = indicator[:source] %>
+<% current = indicator[:current] %>
+<% previous = indicator[:history].reject { |record| record.id == current&.id || record.reference_month > @month } %>
+<div class="modal fade app-modal catalog-modal invoice-indicator-history" id="invoiceGoalHistory<%= source.id %>"
+    tabindex="-1" aria-labelledby="invoiceGoalHistoryLabel<%= source.id %>" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="invoiceGoalHistoryLabel<%= source.id %>"><i class="bi bi-clock-history me-2" aria-hidden="true"></i>Histórico da meta</h5>
+          <small><%= indicator[:name] %> · <%= InvoiceGoal.sectors[indicator[:sector]] %></small>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="invoice-goal-history-current <%= 'invoice-goal-history-record' if current %>">
+          <div>
+            <span class="invoice-goal-history-label">Meta atual</span>
+            <% if current %>
+              <strong class="invoice-goal-history-total"><%= number_to_currency(current.target_amount, unit: "R$ ", separator: ",", delimiter: ".") %></strong>
+              <small>Desde <%= l(current.reference_month, format: "%B de %Y") %></small>
+            <% else %>
+              <strong class="d-block">Sem meta neste mês</strong>
+            <% end %>
+          </div>
+          <%= link_to current ? "Alterar" : "Definir meta", edit_admin_invoice_goal_path(source), class: "btn btn-sm btn-outline-primary" %>
+        </div>
+
+        <% if indicator[:scheduled].any? %>
+          <section class="invoice-goal-history-section" aria-label="Metas agendadas">
+            <h6>Agendadas</h6>
+            <%= render "history_entries", records: indicator[:scheduled], source: source, scheduled: true %>
+          </section>
+        <% end %>
+
+        <% if previous.any? %>
+          <section class="invoice-goal-history-section" aria-label="Metas anteriores">
+            <h6>Anteriores</h6>
+            <%= render "history_entries", records: previous, source: source, scheduled: false %>
+          </section>
+        <% elsif indicator[:scheduled].empty? %>
+          <p class="small text-muted mb-3">Este é o primeiro valor cadastrado.</p>
+        <% end %>
+
+        <details class="invoice-goal-history-manage">
+          <summary><i class="bi bi-chevron-right app-disclosure-arrow" aria-hidden="true"></i>Gerenciar registros</summary>
+          <p class="small text-muted mt-3 mb-2">A exclusão recalcula os relatórios dos meses que usam o registro.</p>
+          <ul class="list-unstyled mb-0">
+            <% indicator[:history].each do |record| %>
+              <li class="d-flex align-items-center justify-content-between gap-2 py-2">
+                <div class="small">
+                  <%= l(record.reference_month, format: "%B de %Y") %>
+                  <span class="d-block text-muted"><%= number_to_currency(record.target_amount, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+                </div>
+                <%= button_to "Excluir", admin_invoice_goal_path(record), method: :delete,
+                    class: "btn btn-sm btn-outline-danger", aria: { label: "Excluir registro de #{l(record.reference_month, format: '%B de %Y')}" },
+                    data: { turbo_confirm: "Excluir este registro? Os relatórios dos meses que usam esta meta serão recalculados." } %>
+              </li>
+            <% end %>
+          </ul>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>

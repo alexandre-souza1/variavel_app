@@ -88,7 +88,7 @@ class AiAssistantQueriesTest < ActiveSupport::TestCase
 
   test 'financial goals use category spend and exclude other sectors' do
     invoice = create_invoice('FROTA-GOAL', :frota, @user, 100)
-    goal = InvoiceGoal.create!(name: 'Meta Frota IA', sector: :frota, reference_month: Date.current,
+    goal = InvoiceGoal.create!(name: 'Meta Frota IA', sector: :frota, reference_month: Date.current.prev_month,
       target_amount: 200, budget_categories: [invoice.budget_category])
     values = @tools.call('financial_goals', {})[:records].find { |row| row[:name] == goal.name }
     assert_equal 100, values[:spent]

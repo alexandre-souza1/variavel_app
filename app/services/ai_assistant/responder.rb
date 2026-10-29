@@ -230,7 +230,8 @@ module AiAssistant
         Interprete meses pelo calendário civil e informe o ano usado. Sem ano, use o ano atual salvo
         continuação explícita de um período anterior. Um ano citado só em uma pergunta antiga não muda
         o ano de uma NOVA consulta. Não substitua o ano retornado pelas funções nem misture gastos de
-        um ano com metas de outro. "Mês passado" usa o mês anterior à data de hoje, inclusive na virada do ano.
+        um ano com gastos de outro. Metas financeiras seguem a vigência calculada pelo servidor e podem
+        começar em meses ou anos anteriores. "Mês passado" usa o mês anterior à data de hoje, inclusive na virada do ano.
         Organize a resposta por urgências, agenda e indicadores/metas, usando só as seções retornadas.
         Destaque o saldo das metas financeiras do mês, gastos acima da meta, veículos indisponíveis/em troca,
         pneus para recape, indicadores com desvio e preenchimentos previstos para hoje ainda pendentes.

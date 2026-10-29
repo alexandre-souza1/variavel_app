@@ -76,7 +76,7 @@ module AiAssistant
     end
 
     def financial_goal_scope(args, month)
-      InvoiceGoal.where(reference_month: month, sector: financial_sectors(args)).includes(:budget_categories).order(:sector, :name, :id)
+      InvoiceGoal.effective_on(month).where(sector: financial_sectors(args)).includes(:budget_categories).order(:sector, :name, :id)
     end
 
     def checklist_scope

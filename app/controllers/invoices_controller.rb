@@ -526,8 +526,8 @@ class InvoicesController < ApplicationController
       current_user.budget_sectors
     end
 
-    @invoice_goals = InvoiceGoal.includes(:budget_categories)
-                                 .where(reference_month: month_start, sector: sectors)
+    @invoice_goals = InvoiceGoal.effective_on(month_start).includes(:budget_categories)
+                                 .where(sector: sectors)
                                  .order(:sector, :name)
                                  .map do |goal|
       actual_amount = base_scope

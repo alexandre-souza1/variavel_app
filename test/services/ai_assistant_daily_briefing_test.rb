@@ -18,7 +18,7 @@ class AiAssistantDailyBriefingTest < ActiveSupport::TestCase
       due_at: @today.in_time_zone.change(hour: 17))
     Task.create!(title: 'Entrada de outro usuário', bucket: users(:two).personal_inbox!, creator: users(:two), due_at: 2.days.ago)
     invoice = create_expense(150)
-    InvoiceGoal.create!(name: 'Orçamento manutenção', sector: :frota, reference_month: @today,
+    InvoiceGoal.create!(name: 'Orçamento manutenção', sector: :frota, reference_month: @today.prev_month,
       target_amount: 200, budget_categories: [invoice.budget_category])
     plates(:one).update_columns(placa: 'ABC1D23', setor: 'ROTA')
     fleet = FleetAvailability.create!(user: @user, date: @today, agreed_quantity: 1)

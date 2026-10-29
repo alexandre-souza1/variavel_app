@@ -1,50 +1,84 @@
 <div class="admin-catalog-page">
   <div class="admin-catalog-header">
     <div>
-      <p class="admin-catalog-eyebrow"><i class="bi bi-bullseye me-1"></i> Financeiro · Metas</p>
-      <h1><i class="bi bi-bullseye me-2"></i>Metas por setor</h1>
-      <p>Acompanhe metas mensais agrupadas pelas categorias selecionadas.</p>
+      <p class="admin-catalog-eyebrow"><i class="bi bi-bullseye me-1" aria-hidden="true"></i> Financeiro · Metas</p>
+      <h1><i class="bi bi-bullseye me-2" aria-hidden="true"></i>Metas mensais</h1>
+      <p>O valor de cada indicador se repete nos meses seguintes, até a próxima alteração.</p>
     </div>
     <%= link_to new_admin_invoice_goal_path, class: "az-report-btn az-report-btn--primary" do %>
-      <i class="bi bi-plus-lg"></i> Nova meta
+      <i class="bi bi-plus-lg" aria-hidden="true"></i> Novo indicador
     <% end %>
   </div>
 
-  <div>
-      <div class="table-responsive">
-        <div class="app-table-shell"><table class="table app-table app-table--data admin-catalog-table">
+  <div class="d-flex flex-wrap justify-content-between gap-2 small text-muted mb-2">
+    <span><%= pluralize(@indicators.size, "indicador", "indicadores") %></span>
+    <span>Referência: <strong><%= l(@month, format: "%B de %Y") %></strong></span>
+  </div>
+  <div class="app-table-section admin-catalog-card">
+    <div class="app-table-section__body">
+      <div class="app-table-shell table-responsive">
+        <table class="table app-table app-table--data admin-catalog-table">
           <thead>
             <tr>
-              <th>Meta</th>
-              <th>Setor</th>
-              <th>Mês</th>
-              <th>Categorias</th>
-              <th class="text-end">Valor</th>
-              <th>Ações</th>
+              <th scope="col">Indicador</th>
+              <th scope="col">Setor</th>
+              <th scope="col">Categorias</th>
+              <th scope="col" class="text-end">Meta mensal</th>
+              <th scope="col">Ações</th>
             </tr>
           </thead>
           <tbody>
-            <% @invoice_goals.each do |goal| %>
-              <tr>
-                <td><strong><%= goal.name %></strong></td>
-                <td><span class="badge bg-secondary"><%= InvoiceGoal.sectors[goal.sector] %></span></td>
-                <td><%= l(goal.reference_month, format: "%B de %Y") %></td>
-                <td><%= goal.budget_categories.map(&:name).join(", ") %></td>
-                <td class="text-end"><%= number_to_currency(goal.target_amount, unit: "R$ ", separator: ",", delimiter: ".") %></td>
+            <% @indicators.each do |indicator| %>
+              <% current = indicator[:current] %>
+              <% source = indicator[:source] %>
+              <tr class="invoice-indicator">
+                <td>
+                  <strong><%= indicator[:name] %></strong>
+                  <% if (upcoming = indicator[:scheduled].first) %>
+                    <small class="invoice-indicator-scheduled d-block text-muted mt-1">
+                      <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>
+                      <%= number_to_currency(upcoming.target_amount, unit: "R$ ", separator: ",", delimiter: ".") %>
+                      a partir de <%= l(upcoming.reference_month, format: "%B de %Y") %>
+                      <%= link_to "Editar", edit_admin_invoice_goal_path(upcoming), class: "ms-1", aria: { label: "Editar meta agendada de #{indicator[:name]}" } %>
+                    </small>
+                  <% end %>
+                </td>
+                <td><span class="badge bg-secondary"><%= InvoiceGoal.sectors[indicator[:sector]] %></span></td>
+                <td><%= source.budget_categories.map(&:name).join(", ") %></td>
+                <td class="invoice-indicator-amount text-end">
+                  <% if current %>
+                    <strong class="text-nowrap"><%= number_to_currency(current.target_amount, unit: "R$ ", separator: ",", delimiter: ".") %></strong>
+                    <% if current.ends_at %>
+                      <small class="d-block text-muted">Até <%= l(current.ends_at, format: "%B de %Y") %></small>
+                    <% end %>
+                  <% else %>
+                    <span class="invoice-indicator-unset text-muted">Sem meta definida</span>
+                  <% end %>
+                </td>
                 <td>
                   <div class="d-flex gap-2">
-                    <%= link_to edit_admin_invoice_goal_path(goal), class: "btn btn-sm btn-outline-primary", title: "Editar meta" do %><i class="bi bi-pencil"></i><% end %>
-                    <%= button_to admin_invoice_goal_path(goal), method: :delete, class: "btn btn-sm btn-outline-danger", title: "Excluir meta", data: { turbo_confirm: "Tem certeza?" } do %><i class="bi bi-trash"></i><% end %>
+                    <%= link_to edit_admin_invoice_goal_path(source), class: "btn btn-sm btn-outline-primary invoice-indicator-change",
+                        title: "Alterar meta", aria: { label: "Alterar meta de #{indicator[:name]}" } do %>
+                      <i class="bi bi-pencil" aria-hidden="true"></i>
+                    <% end %>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                        data-bs-target="#invoiceGoalHistory<%= source.id %>" title="Histórico da meta" aria-label="Histórico de <%= indicator[:name] %>">
+                      <i class="bi bi-clock-history" aria-hidden="true"></i>
+                    </button>
                   </div>
                 </td>
               </tr>
             <% end %>
+            <% if @indicators.empty? %>
+              <tr><td colspan="5" class="text-center text-muted py-4">Nenhum indicador cadastrado.</td></tr>
+            <% end %>
           </tbody>
-        </table></div>
+        </table>
       </div>
-
-      <% if @invoice_goals.empty? %>
-        <p class="text-muted mb-0">Nenhuma meta cadastrada.</p>
-      <% end %>
+    </div>
   </div>
 </div>
+
+<% @indicators.each do |indicator| %>
+  <%= render "history", indicator: indicator %>
+<% end %>

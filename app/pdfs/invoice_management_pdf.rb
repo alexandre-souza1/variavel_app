@@ -45,7 +45,7 @@ class InvoiceManagementPdf < Prawn::Document
     move_down 12
     text 'Base: mês civil e data de emissão, nos setores e centro de custo indicados. Comparação limitada ao mês imediatamente anterior, com os mesmos filtros. Valores lançados não comprovam pagamento. Nenhuma consulta considera todo o histórico do app.', size: 8, color: MUTED
     move_down 8
-    text 'Metas: exclusivamente do mês, ano e setor selecionados. Uma meta pode agrupar várias categorias; categorias podem participar de mais de uma meta. Os valores das metas e seus excessos não são somados como um único orçamento.', size: 8, color: MUTED
+    text 'Metas: vigentes no mês, ano e setor selecionados, inclusive quando iniciadas em meses anteriores. Uma meta pode agrupar várias categorias; categorias podem participar de mais de uma meta. Os valores das metas e seus excessos não são somados como um único orçamento.', size: 8, color: MUTED
     move_down 14
     title 'Alertas e avaliação técnica'
     report_table([['Ocorrência', 'Evidência e interpretação'], *@report.alerts], [0.25, 0.75])

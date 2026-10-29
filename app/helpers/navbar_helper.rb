@@ -14,7 +14,7 @@ module NavbarHelper
     { label: "Novo Lançamento", path: :new_invoice_path },
     { label: "Centros de Custo", path: :admin_cost_centers_path },
     { label: "Categorias", path: :admin_budget_categories_path },
-    { label: "Metas por setor", path: :admin_invoice_goals_path },
+    { label: "Metas mensais", path: :admin_invoice_goals_path },
     { label: "Fornecedores", path: :suppliers_path }
   ].freeze
 

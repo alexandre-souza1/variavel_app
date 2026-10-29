@@ -64,7 +64,7 @@ module AiAssistant
       sectors = focus == 'all' || focus == 'finance' ? nil : User::CATEGORY_SECTORS_BY_USER_SECTOR[focus.to_sym]
       scope = scope.joins(:budget_category).where(budget_categories: { sector: sectors }) if sectors
       month_scope = scope.where(date_issued: today.beginning_of_month..today.end_of_month)
-      goals = InvoiceGoal.where(reference_month: today.beginning_of_month)
+      goals = InvoiceGoal.effective_on(today)
       allowed_sectors = @user.admin? || @user.sector_finance? ? BudgetCategory.sectors.keys : @user.budget_sectors
       goals = goals.where(sector: allowed_sectors)
       goals = goals.where(sector: sectors) if sectors

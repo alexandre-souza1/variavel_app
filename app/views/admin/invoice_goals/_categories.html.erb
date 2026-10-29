@@ -1,0 +1,17 @@
+<p class="form-text">Os gastos dessas categorias serão somados para comparar com a meta.</p>
+<%= hidden_field_tag "invoice_goal[budget_category_ids][]", "" %>
+<div class="border rounded p-3">
+  <div class="row">
+    <% budget_categories.each do |category| %>
+      <div class="col-md-6 mb-2" data-invoice-goal-form-target="category" data-sector="<%= category.sector %>">
+        <div class="form-check">
+          <%= check_box_tag "invoice_goal[budget_category_ids][]", category.id,
+              invoice_goal.budget_category_ids.include?(category.id),
+              id: "invoice_goal_budget_category_#{category.id}", class: "form-check-input" %>
+          <%= label_tag "invoice_goal_budget_category_#{category.id}", category.name, class: "form-check-label" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <p class="text-muted small mb-0" data-invoice-goal-form-target="empty" hidden>Selecione um setor com categorias cadastradas.</p>
+</div>

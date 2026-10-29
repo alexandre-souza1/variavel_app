@@ -1,0 +1,18 @@
+<ol class="invoice-goal-history-timeline">
+  <% records.each do |record| %>
+    <li class="invoice-goal-history-record">
+      <div>
+        <time datetime="<%= record.reference_month.iso8601 %>"><%= l(record.reference_month, format: "%B de %Y") %></time>
+        <% if record.budget_category_ids.sort != source.budget_category_ids.sort %>
+          <small class="d-block text-muted"><%= record.budget_categories.map(&:name).join(", ") %></small>
+        <% end %>
+      </div>
+      <div class="invoice-goal-history-value">
+        <strong><%= number_to_currency(record.target_amount, unit: "R$ ", separator: ",", delimiter: ".") %></strong>
+        <% if scheduled %>
+          <%= link_to "Editar", edit_admin_invoice_goal_path(record), class: "d-block small", aria: { label: "Editar meta agendada para #{l(record.reference_month, format: '%B de %Y')}" } %>
+        <% end %>
+      </div>
+    </li>
+  <% end %>
+</ol>

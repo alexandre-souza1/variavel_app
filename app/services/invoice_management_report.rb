@@ -69,8 +69,8 @@ class InvoiceManagementReport
       current = @current.where(budget_category_id: goal.budget_category_ids)
       previous = @previous.where(budget_category_id: goal.budget_category_ids)
       values = comparison(current, previous)
-      previous_goal = InvoiceGoal.includes(:budget_categories).find_by(
-        sector: goal.sector, name: goal.name, reference_month: from.prev_month)
+      previous_goal = InvoiceGoal.effective_on(from.prev_month).includes(:budget_categories).find_by(
+        sector: goal.sector, name: goal.name)
       previous_target = previous_goal&.target_amount if previous_goal && previous_goal.budget_category_ids.sort == goal.budget_category_ids.sort
       values.merge(id: goal.id, name: goal.name, sector: goal.sector, target: goal.target_amount,
         percentage: percentage(values[:spent], goal.target_amount),
@@ -94,7 +94,7 @@ class InvoiceManagementReport
     result = []
     result << ['Período parcial', 'O mês ainda não terminou ou é futuro. O gasto é acumulado e a meta é mensal; estar abaixo da meta não comprova atingimento no fechamento. A comparação anterior usa o mês completo e não é normalizada por dias ou volume operacional.'] if partial?
     result << ['Sem lançamentos', 'Não há lançamentos por emissão no mês e nos filtros selecionados. Isso não comprova ausência de despesas ou pagamento.'] if summary[:count].zero?
-    result << ['Sem metas no período', "Não há metas para #{from.strftime('%m/%Y')} nos setores selecionados. Gastos e concentração são analisáveis; atingimento e estouro de meta não são calculáveis. Metas de outros meses/anos não foram reutilizadas."] if goals.empty?
+    result << ['Sem metas no período', "Não há metas vigentes para #{from.strftime('%m/%Y')} nos setores selecionados. Gastos e concentração são analisáveis; atingimento e estouro de meta não são calculáveis."] if goals.empty?
     if summary[:spending_without_goal].positive?
       result << ['Gastos sem cobertura de meta', "#{money(summary[:spending_without_goal])} em categorias sem meta no mês. Defina orçamento para avaliar atingimento dessas despesas."]
     end
@@ -161,7 +161,7 @@ class InvoiceManagementReport
   end
 
   def goal_records
-    @goal_records ||= InvoiceGoal.where(reference_month: from, sector: sectors).includes(:budget_categories).order(:sector, :name, :id).to_a
+    @goal_records ||= InvoiceGoal.effective_on(from).where(sector: sectors).includes(:budget_categories).order(:sector, :name, :id).to_a
   end
 
   def comparison(current, previous)

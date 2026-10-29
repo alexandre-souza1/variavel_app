@@ -163,7 +163,7 @@ class AiAssistantAnalyticsTest < ActiveSupport::TestCase
     assert_equal 0, @tools.call('list_invoices', { month: '2026-09', due_from: '2026-09-01', due_until: '2026-09-30' })[:total]
   end
 
-  test 'goals without invoices remain visible and goals from other months are never reused' do
+  test 'goals without invoices remain visible throughout their validity' do
     item = category('Aguardando lançamento')
     goal('Orçamento setembro', [item], 500)
     result = @tools.call('financial_analysis', { month: '2026-09' })
@@ -173,7 +173,8 @@ class AiAssistantAnalyticsTest < ActiveSupport::TestCase
     assert_empty result[:largest_invoices]
     next_month = @tools.call('financial_analysis', { month: '2026-10' })
     refute next_month[:has_invoices]
-    refute next_month[:has_goals]
+    assert next_month[:has_goals]
+    assert_equal 500, next_month[:goals][:records].sole[:remaining]
   end
 
   test 'goal pagination preserves full counts ranks and uncovered spending' do

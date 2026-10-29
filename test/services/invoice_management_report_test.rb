@@ -10,6 +10,28 @@ class InvoiceManagementReportTest < ActiveSupport::TestCase
 
   teardown { travel_back }
 
+  test 'recurring goals and budget comparisons use the validity for each month' do
+    item = category('Manutenção recorrente')
+    original = goal('Orçamento recorrente', [item], 1000, month: '2026-07')
+    invoice('RECURRING-300', item, 300)
+
+    report = report_for
+    assert_equal original.id, report.goals.sole[:id]
+    assert_equal 1000, report.goals.sole[:previous_target]
+    assert_equal 700, report.goals.sole[:remaining]
+
+    revision = goal('Orçamento recorrente', [item], 500, month: '2026-09')
+    revised_report = report_for
+    assert_equal revision.id, revised_report.goals.sole[:id]
+    assert_equal 1000, revised_report.goals.sole[:previous_target]
+    assert_equal 200, revised_report.goals.sole[:remaining]
+    assert_equal original.id, report_for(month: 8).goals.sole[:id]
+
+    revision.update!(ends_at: '2026-10')
+    original.update!(ends_at: '2026-08')
+    assert_empty report_for(month: 11).goals
+  end
+
   test 'the selected year sector and grouped goal categories determine attainment' do
     truck = category('Manutenção caminhão relatório')
     forklift = category('Manutenção empilhadeira relatório')

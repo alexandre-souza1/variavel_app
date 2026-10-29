@@ -49,7 +49,7 @@ module AiAssistant
         goals: goal_page, categories: array_page(categories, args),
         spending_without_goal: categories.reject { |row| row[:has_goal] }.sum { |row| row[:spent] },
         top_suppliers: financial_top_suppliers(current), largest_invoices: financial_largest_invoices(current),
-        basis: 'Mês civil e data de emissão. Valores lançados não comprovam pagamento. Metas são exclusivamente as cadastradas no mês solicitado; ausência de meta não significa ausência de gasto.',
+        basis: 'Mês civil e data de emissão. Valores lançados não comprovam pagamento. Metas são as vigentes no mês solicitado, mesmo quando iniciadas em meses anteriores; ausência de meta não significa ausência de gasto.',
         note: 'Categorias podem participar de várias metas: não some metas, gastos ou excessos entre elas. Fornecedores, categorias e lançamentos são possíveis contribuintes do gasto, não causas comprovadas. Detalhes por meta mostram até 5 categorias, 5 fornecedores e 3 lançamentos; rankings gerais mostram até 10 fornecedores e 10 lançamentos. Totais e contadores consideram todos os registros.' }
     end
 
