@@ -1,7 +1,7 @@
 <% source = indicator[:source] %>
 <% current = indicator[:current] %>
 <% previous = indicator[:history].reject { |record| record.id == current&.id || record.reference_month > @month } %>
-<div class="modal fade app-modal catalog-modal invoice-indicator-history" id="invoiceGoalHistory<%= source.id %>"
+<div class="modal app-modal catalog-modal invoice-indicator-history" id="invoiceGoalHistory<%= source.id %>"
     tabindex="-1" aria-labelledby="invoiceGoalHistoryLabel<%= source.id %>" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
@@ -23,7 +23,7 @@
               <strong class="d-block">Sem meta neste mês</strong>
             <% end %>
           </div>
-          <%= link_to current ? "Alterar" : "Definir meta", edit_admin_invoice_goal_path(source), class: "btn btn-sm btn-outline-primary" %>
+          <%= link_to current ? "Alterar" : "Definir meta", edit_admin_invoice_goal_path(source), class: "btn btn-sm btn-outline-primary", data: { bs_toggle: "modal", bs_target: "#invoiceGoalEditor#{source.id}" } %>
         </div>
 
         <% if indicator[:scheduled].any? %>

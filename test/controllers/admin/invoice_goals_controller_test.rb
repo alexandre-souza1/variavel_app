@@ -12,7 +12,10 @@ class Admin::InvoiceGoalsControllerTest < ActionDispatch::IntegrationTest
 
   test "a new indicator repeats automatically and has no end configuration" do
     get new_admin_invoice_goal_path
+    assert_redirected_to admin_invoice_goals_path(editor: "new")
+    follow_redirect!
     assert_response :success
+    assert_select '#invoiceGoalEditorNew[data-invoice-goal-modal-open-value="true"]'
     assert_select 'input[name="invoice_goal[ends_at]"]', count: 0
     assert_difference "InvoiceGoal.count" do
       post admin_invoice_goals_path, params: { invoice_goal: {
@@ -28,14 +31,18 @@ class Admin::InvoiceGoalsControllerTest < ActionDispatch::IntegrationTest
 
   test "alter target only asks for value and start month with categories collapsed" do
     get edit_admin_invoice_goal_path(@goal)
+    assert_redirected_to admin_invoice_goals_path(editor: @goal.id)
+    follow_redirect!
     assert_response :success
-    assert_select 'input[name="invoice_goal[name]"]', count: 0
-    assert_select 'select[name="invoice_goal[sector]"]', count: 0
-    assert_select 'input[name="invoice_goal[ends_at]"]', count: 0
-    assert_select 'input[name="invoice_goal[reference_month]"][value="2026-10"]'
-    assert_select 'input[name="invoice_goal[target_amount]"][value="1000.0"]'
-    assert_select 'details.invoice-goal-categories:not([open])'
-    assert_select "input[type=checkbox][value='#{@category.id}'][checked]"
+    assert_select "#invoiceGoalEditor#{@goal.id}[data-invoice-goal-modal-open-value='true']" do
+      assert_select 'input[name="invoice_goal[name]"]', count: 0
+      assert_select 'select[name="invoice_goal[sector]"]', count: 0
+      assert_select 'input[name="invoice_goal[ends_at]"]', count: 0
+      assert_select 'input[name="invoice_goal[reference_month]"][value="2026-10"]'
+      assert_select 'input[name="invoice_goal[target_amount]"][value="1000.0"]'
+      assert_select 'details.invoice-goal-categories:not([open])'
+      assert_select "input[type=checkbox][value='#{@category.id}'][checked]"
+    end
   end
 
   test "saving a different month creates a change without modifying past targets or indicator identity" do
@@ -67,8 +74,12 @@ class Admin::InvoiceGoalsControllerTest < ActionDispatch::IntegrationTest
   test "invalid change stays in the simple form and does not change stored data" do
     patch admin_invoice_goal_path(@goal), params: { invoice_goal: { reference_month: "2026-13", target_amount: 2000 } }
     assert_response :unprocessable_entity
-    assert_select '.invoice-goal-editor h1', text: "Alterar meta"
-    assert_select '.alert-danger'
+    assert_select '.invoice-indicator', count: 1
+    assert_select "#invoiceGoalEditor#{@goal.id}[data-invoice-goal-modal-open-value='true']" do
+      assert_select '.modal-title', text: /Alterar meta/
+      assert_select '.alert-danger'
+      assert_select 'input[name="invoice_goal[target_amount]"][value="2000"]'
+    end
     assert_equal 1000, @goal.reload.target_amount
     assert_equal Date.new(2026, 8, 1), @goal.reference_month
   end
@@ -81,7 +92,10 @@ class Admin::InvoiceGoalsControllerTest < ActionDispatch::IntegrationTest
       } }
     end
     assert_response :unprocessable_entity
-    assert_includes response.body, "Use Alterar meta"
+    assert_select '#invoiceGoalEditorNew[data-invoice-goal-modal-open-value="true"]' do
+      assert_select '.alert-danger', text: /Use Alterar meta/
+      assert_select 'input[name="invoice_goal[name]"][value="Meta recorrente"]'
+    end
   end
 
   test "index shows one indicator in the standard table and keeps history in its modal" do
@@ -102,6 +116,8 @@ class Admin::InvoiceGoalsControllerTest < ActionDispatch::IntegrationTest
     assert_select '.invoice-indicator-scheduled', text: /3\.000,00.*[Dd]ezembro/m
     assert_select ".invoice-indicator-scheduled a[href='#{edit_admin_invoice_goal_path(scheduled)}']"
     assert_select '.invoice-indicator-change[title="Alterar meta"]'
+    assert_select '.invoice-indicator-change[data-bs-toggle="modal"]', count: 1
+    assert_select "#invoiceGoalEditor#{scheduled.id}", count: 1
     refute_includes response.body, "Nova vigência"
   end
 
@@ -115,7 +131,10 @@ class Admin::InvoiceGoalsControllerTest < ActionDispatch::IntegrationTest
     assert_select '.invoice-indicator-unset', text: 'Sem meta definida', count: 2
     assert_select '.invoice-indicator-scheduled', count: 1
     get edit_admin_invoice_goal_path(scheduled)
-    assert_select 'input[name="invoice_goal[reference_month]"][value="2026-12"]'
+    follow_redirect!
+    assert_select "#invoiceGoalEditor#{scheduled.id}" do
+      assert_select 'input[name="invoice_goal[reference_month]"][value="2026-12"]'
+    end
   end
 
   test "dashboard selects the latest validity only once and respects the end month" do
@@ -138,7 +157,7 @@ class Admin::InvoiceGoalsControllerTest < ActionDispatch::IntegrationTest
 
   test "old revision links redirect to the simplified editor" do
     get new_admin_invoice_goal_path, params: { version_of: @goal.id }
-    assert_redirected_to edit_admin_invoice_goal_path(@goal)
+    assert_redirected_to admin_invoice_goals_path(editor: @goal.id)
   end
 
   test "only admin and finance can manage targets" do
@@ -152,6 +171,18 @@ class Admin::InvoiceGoalsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
     user.update!(sector: :finance)
     get edit_admin_invoice_goal_path(@goal)
+    assert_redirected_to admin_invoice_goals_path(editor: @goal.id)
+    follow_redirect!
     assert_response :success
+  end
+
+  test "editor fields have unique ids and history links open the matching modal" do
+    get admin_invoice_goals_path
+    assert_response :success
+    ids = css_select('.invoice-goal-editor [id]').map { |element| element['id'] }
+    assert_equal ids.uniq, ids
+    assert_select '#invoiceGoalEditorNew form[action=?]', admin_invoice_goals_path
+    assert_select "#invoiceGoalEditor#{@goal.id} form[action=?]", admin_invoice_goal_path(@goal)
+    assert_select ".invoice-indicator-history a[data-bs-target='#invoiceGoalEditor#{@goal.id}']"
   end
 end

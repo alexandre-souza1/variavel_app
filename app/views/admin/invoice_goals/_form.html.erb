@@ -1,57 +1,61 @@
 <%= form_with(model: invoice_goal, url: source ? admin_invoice_goal_path(source) : admin_invoice_goals_path,
       method: source ? :patch : :post, local: true,
+      namespace: modal_id,
+      class: "d-flex flex-column overflow-hidden",
       data: { controller: "invoice-goal-form", invoice_goal_form_sector_value: invoice_goal.sector }) do |form| %>
-  <% if invoice_goal.errors.any? %>
-    <div class="alert alert-danger" role="alert">
-      <p class="mb-1">Revise os campos abaixo:</p>
-      <ul class="mb-0">
-        <% invoice_goal.errors.full_messages.each do |message| %><li><%= message %></li><% end %>
-      </ul>
-    </div>
-  <% end %>
-
-  <% unless source %>
-    <div class="mb-3">
-      <%= form.label :name, "Nome do indicador", class: "form-label" %>
-      <%= form.text_field :name, class: "form-control", required: true, placeholder: "Ex.: Gastos com manutenção" %>
-    </div>
-    <div class="mb-4">
-      <%= form.label :sector, "Setor", class: "form-label" %>
-      <%= form.select :sector, InvoiceGoal.sectors.map { |key, label| [label, key] },
-          { include_blank: "Selecione um setor" }, class: "form-select", required: true,
-          data: { invoice_goal_form_target: "sector", action: "change->invoice-goal-form#filter" } %>
-    </div>
-  <% end %>
-
-  <div class="row">
-    <div class="col-md-6 mb-3">
-      <%= form.label :target_amount, "Valor mensal (R$)", class: "form-label" %>
-      <%= form.number_field :target_amount, step: "0.01", min: "0.01", class: "form-control", required: true, inputmode: "decimal" %>
-    </div>
-    <div class="col-md-6 mb-3">
-      <%= form.label :reference_month, "A partir de", class: "form-label" %>
-      <%= form.month_field :reference_month, value: invoice_goal.reference_month&.strftime("%Y-%m"), class: "form-control", required: true %>
-    </div>
-  </div>
-  <p class="form-text"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Esse valor continua nos meses seguintes, até a próxima alteração.</p>
-  <% if source %>
-    <p class="form-text mb-4">O histórico anterior ao mês escolhido é mantido.</p>
-    <% if @scheduled_change %>
-      <p class="form-text">A alteração já agendada para <%= l(@scheduled_change.reference_month, format: "%B de %Y") %> será mantida.</p>
+  <div class="modal-body">
+    <% if invoice_goal.errors.any? %>
+      <div class="alert alert-danger" role="alert" tabindex="-1">
+        <p class="mb-1">Revise os campos abaixo:</p>
+        <ul class="mb-0">
+          <% invoice_goal.errors.full_messages.each do |message| %><li><%= message %></li><% end %>
+        </ul>
+      </div>
     <% end %>
-    <details class="invoice-goal-categories border-top pt-3 mb-4" <%= "open" if invoice_goal.errors[:budget_categories].any? %>>
-      <summary class="small fw-semibold"><i class="bi bi-chevron-right app-disclosure-arrow" aria-hidden="true"></i>Alterar categorias incluídas</summary>
-      <%= render "categories", invoice_goal: invoice_goal, budget_categories: budget_categories %>
-    </details>
-  <% else %>
-    <fieldset class="mb-4">
-      <legend class="form-label">Categorias incluídas</legend>
-      <%= render "categories", invoice_goal: invoice_goal, budget_categories: budget_categories %>
-    </fieldset>
-  <% end %>
 
-  <div class="d-flex flex-wrap gap-2">
+    <% unless source %>
+      <div class="mb-3">
+        <%= form.label :name, "Nome do indicador", class: "form-label" %>
+        <%= form.text_field :name, class: "form-control", required: true, placeholder: "Ex.: Gastos com manutenção" %>
+      </div>
+      <div class="mb-4">
+        <%= form.label :sector, "Setor", class: "form-label" %>
+        <%= form.select :sector, InvoiceGoal.sectors.map { |key, label| [label, key] },
+            { include_blank: "Selecione um setor" }, class: "form-select", required: true,
+            data: { invoice_goal_form_target: "sector", action: "change->invoice-goal-form#filter" } %>
+      </div>
+    <% end %>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <%= form.label :target_amount, "Valor mensal (R$)", class: "form-label" %>
+        <%= form.number_field :target_amount, step: "0.01", min: "0.01", class: "form-control", required: true, inputmode: "decimal" %>
+      </div>
+      <div class="col-md-6 mb-3">
+        <%= form.label :reference_month, "A partir de", class: "form-label" %>
+        <%= form.month_field :reference_month, value: invoice_goal.reference_month&.strftime("%Y-%m"), class: "form-control", required: true %>
+      </div>
+    </div>
+    <p class="form-text"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Esse valor continua nos meses seguintes, até a próxima alteração.</p>
+    <% if source %>
+      <p class="form-text mb-4">O histórico anterior ao mês escolhido é mantido.</p>
+      <% if scheduled_change %>
+        <p class="form-text">A alteração já agendada para <%= l(scheduled_change.reference_month, format: "%B de %Y") %> será mantida.</p>
+      <% end %>
+      <details class="invoice-goal-categories border-top pt-3 mb-4" <%= "open" if invoice_goal.errors[:budget_categories].any? %>>
+        <summary class="small fw-semibold"><i class="bi bi-chevron-right app-disclosure-arrow" aria-hidden="true"></i>Alterar categorias incluídas</summary>
+        <%= render "categories", invoice_goal: invoice_goal, budget_categories: budget_categories, modal_id: modal_id %>
+      </details>
+    <% else %>
+      <fieldset class="mb-4">
+        <legend class="form-label">Categorias incluídas</legend>
+        <%= render "categories", invoice_goal: invoice_goal, budget_categories: budget_categories, modal_id: modal_id %>
+      </fieldset>
+    <% end %>
+
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
     <%= form.submit source ? "Salvar alteração" : "Criar indicador", class: "btn btn-primary" %>
-    <%= link_to "Cancelar", admin_invoice_goals_path, class: "btn btn-secondary" %>
   </div>
 <% end %>

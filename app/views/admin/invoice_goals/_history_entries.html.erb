@@ -10,7 +10,7 @@
       <div class="invoice-goal-history-value">
         <strong><%= number_to_currency(record.target_amount, unit: "R$ ", separator: ",", delimiter: ".") %></strong>
         <% if scheduled %>
-          <%= link_to "Editar", edit_admin_invoice_goal_path(record), class: "d-block small", aria: { label: "Editar meta agendada para #{l(record.reference_month, format: '%B de %Y')}" } %>
+          <%= link_to "Editar", edit_admin_invoice_goal_path(record), class: "d-block small", data: { bs_toggle: "modal", bs_target: "#invoiceGoalEditor#{record.id}" }, aria: { label: "Editar meta agendada para #{l(record.reference_month, format: '%B de %Y')}" } %>
         <% end %>
       </div>
     </li>

@@ -1,5 +1,5 @@
 <p class="form-text">Os gastos dessas categorias serão somados para comparar com a meta.</p>
-<%= hidden_field_tag "invoice_goal[budget_category_ids][]", "" %>
+<%= hidden_field_tag "invoice_goal[budget_category_ids][]", "", id: nil %>
 <div class="border rounded p-3">
   <div class="row">
     <% budget_categories.each do |category| %>
@@ -7,8 +7,8 @@
         <div class="form-check">
           <%= check_box_tag "invoice_goal[budget_category_ids][]", category.id,
               invoice_goal.budget_category_ids.include?(category.id),
-              id: "invoice_goal_budget_category_#{category.id}", class: "form-check-input" %>
-          <%= label_tag "invoice_goal_budget_category_#{category.id}", category.name, class: "form-check-label" %>
+              id: "#{modal_id}_budget_category_#{category.id}", class: "form-check-input" %>
+          <%= label_tag "#{modal_id}_budget_category_#{category.id}", category.name, class: "form-check-label" %>
         </div>
       </div>
     <% end %>

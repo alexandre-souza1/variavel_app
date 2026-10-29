@@ -1,0 +1,20 @@
+<% modal_id = source ? "invoiceGoalEditor#{source.id}" : "invoiceGoalEditorNew" %>
+<div class="modal app-modal catalog-modal invoice-goal-editor" id="<%= modal_id %>" tabindex="-1"
+    aria-labelledby="<%= modal_id %>Label" aria-hidden="true"
+    data-controller="invoice-goal-modal" data-invoice-goal-modal-open-value="<%= @active_editor == (source ? source.id.to_s : 'new') %>"
+    data-action="turbo:before-cache@document->invoice-goal-modal#beforeCache shown.bs.modal->invoice-goal-modal#focus">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="<%= modal_id %>Label">
+            <i class="bi <%= source ? 'bi-pencil-square' : 'bi-bullseye' %> me-2" aria-hidden="true"></i><%= source ? "Alterar meta" : "Novo indicador" %>
+          </h5>
+          <small><%= source ? "#{source.name} · #{InvoiceGoal.sectors[source.sector]}" : "Defina o indicador e o valor da meta mensal." %></small>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <%= render "form", invoice_goal: invoice_goal, source: source, budget_categories: budget_categories, scheduled_change: scheduled_change, modal_id: modal_id %>
+    </div>
+  </div>
+</div>
