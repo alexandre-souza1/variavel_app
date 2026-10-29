@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_29_140000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_29_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -24,6 +24,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_140000) do
     t.integer "sector"
     t.boolean "public", default: true, null: false
     t.boolean "checklist_tracking_visible", default: true, null: false
+    t.datetime "archived_at"
+    t.index ["archived_at"], name: "index_action_plans_on_archived_at"
     t.index ["user_id"], name: "index_action_plans_on_user_id"
   end
 

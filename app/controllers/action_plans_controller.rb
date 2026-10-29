@@ -2,7 +2,17 @@ class ActionPlansController < ApplicationController
   before_action :authenticate_user!
   before_action :set_action_plan, only: [:show, :assign_open_tasks, :export_excel]
   before_action :require_admin!, only: :assign_open_tasks
-  before_action :set_owned_action_plan, only: [:edit, :update, :destroy]
+  before_action :set_owned_action_plan, only: [:edit, :update, :destroy, :archive, :unarchive]
+
+  def archive
+    @action_plan.archive!
+    redirect_to action_plans_path(status: "archived"), notice: "Plano arquivado com sucesso."
+  end
+
+  def unarchive
+    @action_plan.unarchive!
+    redirect_to action_plans_path, notice: "Plano restaurado com sucesso."
+  end
 
   def toggle_hidden
     @action_plan = accessible_action_plans.find(params[:id])
@@ -28,6 +38,8 @@ class ActionPlansController < ApplicationController
   def index
     # Planos que o usuário pode acessar
     @action_plans = accessible_action_plans
+    @show_archived_action_plans = params[:status] == "archived"
+    @action_plans = @show_archived_action_plans ? @action_plans.archived : @action_plans.active
     @hidden_action_plan_ids = current_user.hidden_action_plans.pluck(:action_plan_id)
     @show_hidden_action_plans = params[:show_hidden] == "1"
     @action_plans = @action_plans.where.not(id: @hidden_action_plan_ids) unless @show_hidden_action_plans

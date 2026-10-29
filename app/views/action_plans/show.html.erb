@@ -40,6 +40,9 @@
           <span>Ações do plano</span>
         </button>
         <div class="collapse action-plan-secondary-actions" id="actionPlanActions">
+        <% if @action_plan.manageable_by?(current_user) %>
+          <%= render "archive_button", plan: @action_plan %>
+        <% end %>
         <%= link_to export_excel_action_plan_path(@action_plan, format: :xlsx),
             class: "btn-outline action-plan-view-link",
             title: "Exportar plano para Excel" do %>
@@ -68,12 +71,6 @@
         <%= link_to action_plan_meeting_minutes_path(@action_plan), class: "btn-outline action-plan-view-link" do %>
           <i class="bi bi-file-earmark-text"></i>
           <span>Atas de Reuniões</span>
-        <% end %>
-
-        <% if current_user.can_view_checklist_tracking? %>
-          <%= link_to checklist_occurrences_path(year: @action_plan.gerot_year), class: "btn-outline action-plan-view-link" do %>
-            <i class="bi bi-person-exclamation" aria-hidden="true"></i><span>Acompanhamento de Checklist</span>
-          <% end %>
         <% end %>
 
         <!-- LABELS -->
@@ -120,6 +117,15 @@
     </div>
   </div>
 
+
+  <% if @action_plan.archived? %>
+    <div class="alert alert-secondary" role="status">
+      <i class="bi bi-archive me-1" aria-hidden="true"></i>
+      Este plano foi arquivado em <%= l(@action_plan.archived_at, format: :short) %>.
+      As tarefas e o histórico foram preservados.
+      <%= link_to "Ver planos arquivados", action_plans_path(status: "archived"), class: "alert-link" %>
+    </div>
+  <% end %>
 
   <% unless %w[gerots gerot_actions dashboard].include?(params[:view]) %>
   <!-- RESUMO MOBILE -->

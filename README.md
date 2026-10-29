@@ -54,6 +54,7 @@ Calendário por grupo, rodízio contínuo A–F e cartões compactos de disponib
 ### Gestão de tarefas e rotinas
 
 - Planos de ação, buckets, tarefas, responsáveis, etiquetas, comentários e listas de tarefas.
+- Criadores e administradores podem arquivar e restaurar planos pela lista ou pelas ações do plano. Em **Meus Planos → Arquivados**, os planos continuam disponíveis conforme as permissões de acesso. O arquivamento vale para todos, preserva tarefas e GEROTs e não conclui as pendências: tarefas abertas continuam no painel pessoal. A opção de ocultar continua sendo uma preferência individual.
 - GEROTs por período dentro dos planos de ação anuais, com um modelo por plano e categorias correspondentes aos buckets. GEROTs independentes usam seus próprios modelos e podem ser adaptados a um plano preservando o histórico. Por padrão, um comentário em indicador fora da meta cria a tarefa. Veja [preparação e uso](docs/gerots_planos_de_acao.md).
 - Notificações de atribuição e vencimento.
 

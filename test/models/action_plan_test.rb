@@ -1,6 +1,41 @@
 require "test_helper"
 
 class ActionPlanTest < ActiveSupport::TestCase
+  test "archives and restores a plan while preserving its tasks and gerots" do
+    plan = users(:one).action_plans.create!(name: "Plano anual")
+    task = plan.buckets.first.tasks.create!(title: "Ação pendente", creator: users(:one))
+    template = Routines::PlanTemplateBuilder.call(action_plan: plan, attributes: { name: "Modelo anual" })
+    gerot = plan.routines.create!(routine_template: template, created_by: users(:one),
+      title: "Outubro", period_start: Date.new(2026, 10, 1), period_end: Date.new(2026, 10, 31))
+    bucket_ids = plan.buckets.ids
+
+    freeze_time do
+      plan.archive!
+      assert_equal Time.current, plan.reload.archived_at
+    end
+    assert plan.archived?
+    assert_includes ActionPlan.archived, plan
+    assert_not_includes ActionPlan.active, plan
+    assert_equal bucket_ids.sort, plan.buckets.ids.sort
+    assert_equal plan.buckets.first.id, task.reload.bucket_id
+    assert_not task.completed?
+    assert_equal plan.id, gerot.reload.action_plan_id
+
+    original_archived_at = plan.archived_at
+    travel 1.day do
+      plan.archive!
+      assert_equal original_archived_at, plan.reload.archived_at
+    end
+
+    plan.unarchive!
+    assert_nil plan.reload.archived_at
+    assert_not plan.archived?
+    assert_includes ActionPlan.active, plan
+    assert_not_includes ActionPlan.archived, plan
+    assert_equal plan.id, gerot.reload.action_plan_id
+    assert Task.exists?(task.id)
+  end
+
   test "inherits the sector from its owner" do
     user = users(:one)
     user.update!(sector: :du)

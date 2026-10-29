@@ -1,0 +1,11 @@
+<% compact = local_assigns.fetch(:compact, false) %>
+<% label = plan.archived? ? "Restaurar plano" : "Arquivar plano" %>
+<%= button_to plan.archived? ? unarchive_action_plan_path(plan) : archive_action_plan_path(plan),
+              method: :patch,
+              class: compact ? "icon-btn" : "btn-outline action-plan-view-link",
+              title: label,
+              aria: { label: label },
+              form: { data: { turbo_confirm: plan.archived? ? nil : "Arquivar este plano para todos? As tarefas e o histórico serão preservados." } } do %>
+  <i class="bi <%= plan.archived? ? 'bi-arrow-counterclockwise' : 'bi-archive' %>" aria-hidden="true"></i>
+  <% unless compact %><span><%= label %></span><% end %>
+<% end %>

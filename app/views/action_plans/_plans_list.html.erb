@@ -4,6 +4,9 @@
       <div class="plan-item position-relative">
         <div class="plan-item-content">
           <h6 class="plan-name"><%= plan.name %></h6>
+          <% if plan.archived? %>
+            <span class="badge text-bg-secondary mb-1">Arquivado</span>
+          <% end %>
           <% sector_key = plan.sector&.to_sym %>
           <% sector_icons = {
             fleet: "bi-truck",
@@ -44,11 +47,13 @@
             <span>Abrir</span>
           <% end %>
 
-          <% if plan.user == current_user || current_user.admin? %>
+          <% if plan.manageable_by?(current_user) %>
             <%= link_to edit_action_plan_path(plan), class: "btn-outline btn-sm plan-edit-link" do %>
               <i class="bi bi-pencil-square"></i>
               <span>Editar</span>
             <% end %>
+
+            <%= render "archive_button", plan: plan, compact: true %>
 
             <button class="icon-btn danger" data-bs-toggle="modal" data-bs-target="#deleteModal-<%= plan.id %>">
               <i class="bi bi-trash3"></i>
@@ -69,6 +74,6 @@
 <% else %>
   <div class="empty-state-compact">
     <i class="bi bi-folder-plus"></i>
-    <span>Nenhum plano criado ainda.</span>
+    <span><%= @show_archived_action_plans ? "Nenhum plano arquivado encontrado." : "Nenhum plano ativo encontrado." %></span>
   </div>
 <% end %>

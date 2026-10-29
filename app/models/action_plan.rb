@@ -1,5 +1,7 @@
 class ActionPlan < ApplicationRecord
   enum :sector, User.sectors, prefix: true
+  scope :active, -> { where(archived_at: nil) }
+  scope :archived, -> { where.not(archived_at: nil) }
   scope :checklist_tracking_sources, -> { where(checklist_tracking_visible: true) }
 
   scope :visible_to, ->(user) do
@@ -45,6 +47,18 @@ class ActionPlan < ApplicationRecord
 
   def manageable_by?(user)
     user.present? && (user.admin? || user_id == user.id)
+  end
+
+  def archived?
+    archived_at.present?
+  end
+
+  def archive!
+    update!(archived_at: Time.current) unless archived?
+  end
+
+  def unarchive!
+    update!(archived_at: nil)
   end
 
   def gerot_year
