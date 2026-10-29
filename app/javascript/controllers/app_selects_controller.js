@@ -82,7 +82,9 @@ export default class extends Controller {
       hideSelected: false,
       maxOptions: null,
       lockOptgroupOrder: true,
-      dropdownParent: "body",
+      // showModal() torna inertes os elementos fora do dialog, mesmo popovers.
+      // Mantém o menu dentro dele para aceitar cliques além do teclado.
+      dropdownParent: element.closest("dialog") || "body",
       plugins: element.multiple ? ["remove_button"] : [],
       ...(element.options.length <= 12 && !element.multiple ? { controlInput: null } : {}),
       render: {

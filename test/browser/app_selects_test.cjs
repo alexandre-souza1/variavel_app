@@ -182,6 +182,35 @@ const fs = require('node:fs');
     assert.equal(await page.locator('#prompt-search-select').inputValue(), 'supplier-12');
     assert.equal(await searchWrapper.locator('.item:visible').textContent(), 'Fornecedor 12');
 
+    // Native modal dialogs make everything outside them inert, including
+    // dropdowns shown in the top layer via the Popover API.
+    await page.evaluate(() => {
+      const dialog = document.createElement('dialog');
+      dialog.id = 'select-native-dialog';
+      dialog.style.cssText = 'width:320px;max-width:90vw;overflow:hidden';
+      dialog.innerHTML = `<form><label for="dialog-group-select">Grupo</label><select id="dialog-group-select" name="group" class="form-select"><option value="A">Grupo A</option><option value="F" selected>Grupo F</option><option value="FIXO">Fixo</option></select><label for="dialog-search-select">Responsável</label><select id="dialog-search-select" class="form-select">${Array.from({ length: 15 }, (_, i) => `<option value="${i}">Pessoa ${i}</option>`).join('')}</select></form>`;
+      document.body.append(dialog);
+    });
+    await page.waitForFunction(() => document.querySelector('#dialog-search-select')?.tomselect);
+    const nativeDialog = page.locator('#select-native-dialog');
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+      await nativeDialog.evaluate(dialog => { dialog.querySelector('form').reset(); dialog.showModal(); });
+      await page.locator('#dialog-group-select + .app-select .ts-control').click();
+      await page.locator('.app-select-menu:visible .option[data-value="A"]').click({ timeout: 3000 });
+      assert.equal(await page.locator('#dialog-group-select').inputValue(), 'A', 'mouse selects a group inside a native modal');
+      assert.equal(await nativeDialog.locator('form').evaluate(form => new FormData(form).get('group')), 'A');
+      await page.locator('#dialog-group-select + .app-select .ts-control').click();
+      await page.locator('.app-select-menu:visible .option[data-value="FIXO"]').click();
+      assert.equal(await page.locator('#dialog-group-select + .app-select .item').textContent(), 'Fixo');
+      await page.locator('#dialog-search-select + .app-select .ts-control').click();
+      await page.locator('#dialog-search-select + .app-select input').fill('Pessoa 12');
+      await page.locator('.app-select-menu:visible .option[data-value="12"]').click();
+      assert.equal(await page.locator('#dialog-search-select').inputValue(), '12', 'search results remain clickable in native dialogs');
+      await nativeDialog.evaluate(dialog => dialog.close());
+    }
+    await nativeDialog.evaluate(dialog => dialog.remove());
+
     // Searchable selects inside a Bootstrap modal keep their text and surface
     // after a choice, after Escape and after a click outside the modal.
     await page.evaluate(async () => {
