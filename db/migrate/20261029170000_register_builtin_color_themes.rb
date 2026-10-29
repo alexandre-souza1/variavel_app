@@ -13,6 +13,8 @@ class RegisterBuiltinColorThemes < ActiveRecord::Migration[7.1]
     add_column :color_themes, :extra_color, :string
 
     theme_class = Class.new(ActiveRecord::Base) { self.table_name = "color_themes" }
+    # A migração anterior pode ter carregado o esquema da tabela neste processo.
+    theme_class.reset_column_information
     THEMES.each do |key, name, description, colors|
       theme_class.find_or_create_by!(key: key) do |theme|
         theme.assign_attributes(name: name, description: description,
