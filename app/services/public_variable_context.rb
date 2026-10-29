@@ -118,7 +118,7 @@ class PublicVariableContext
   end
 
   def du_context(scope)
-    mapas = scope.to_a.filter_map { |mapa| [mapa.data_formatada, mapa] if mapa.data_formatada }.select { |date, _| date >= 2.years.ago.to_date }
+    mapas = scope.rota.to_a.filter_map { |mapa| [mapa.data_formatada, mapa] if mapa.data_formatada }.select { |date, _| date >= 2.years.ago.to_date }
     service = MapaRemuneracaoService.new(@identity.profile == "motorista" ? "motorista" : "ajudante")
 
     monthly = mapas.group_by { |date, _| closing_month_for(date).strftime("%Y-%m") }.sort.to_h do |month, entries|

@@ -336,6 +336,7 @@ class DashboardsController < ApplicationController
   end
 
   def ranking_motoristas(mapas)
+    mapas = mapas.select(&:rota?)
     promaxes = mapas.map { |mapa| mapa.matric_motorista.to_s }.reject(&:blank?).uniq
     drivers_by_promax = Driver.where(employee_id: nil).where(promax: promaxes).index_by { |driver| driver.promax.to_s }
 
@@ -370,6 +371,7 @@ class DashboardsController < ApplicationController
   end
 
   def ranking_ajudantes(mapas)
+    mapas = mapas.select(&:rota?)
     mapas_por_ajudante = Hash.new { |hash, promax| hash[promax] = [] }
 
     mapas.each do |mapa|

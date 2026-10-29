@@ -68,6 +68,25 @@ class FleetAvailabilityDepartureAlertsTest < ActionDispatch::IntegrationTest
     assert_select "[data-fleet-departure-alert]", count: 0
   end
 
+  test "an imported AS map counts as a monthly departure in the stress test and fleet board" do
+    Tempfile.create(['2art-as', '.csv']) do |file|
+      file.write("Entrega;Mapa;Data;MatricMotorista;MatricAjud1;MatricAjud2;CxCarreg;CxEntreg;QtEntregasCarreg(RV);QtEntregasEntreg(RV);Recarga;Placa\n")
+      file.write("AS;DEPARTURE-AS;20/07/2026;AS-DRIVER;0;0;100;100;5;5;NAO; abc-1323 \n")
+      file.rewind
+      assert_difference 'Mapa.count', 1 do
+        post import_mapas_path, params: { file: Rack::Test::UploadedFile.new(file.path, 'text/csv') }
+      end
+    end
+    assert_equal 'AS', Mapa.find_by!(mapa: 'DEPARTURE-AS').entrega
+
+    get_availability
+    assert_select "[data-fleet-departure-alert]", count: 0
+
+    get placas_por_setor_path, params: { mes: 7, ano: 2026, placa: @plate.placa }
+    assert_response :success
+    assert_select "tbody tr td:nth-child(5) .badge.bg-success", text: /1 dia\(s\)/, count: 1
+  end
+
   private
 
   def create_map(**attributes)

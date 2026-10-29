@@ -25,6 +25,22 @@ class DashboardMapasHistoryTest < ActionDispatch::IntegrationTest
     assert_equal original, closing.reload.result
   end
 
+  test 'AS counts in fleet operations but stays out of route remuneration rankings' do
+    driver = drivers(:one)
+    helper = ajudantes(:one)
+    driver.update!(nome: 'Motorista somente AS', promax: 'DASH-AS-D')
+    helper.update!(nome: 'Ajudante somente AS', promax: 'DASH-AS-H')
+    Mapa.create!(mapa: 'DASH-AS', entrega: 'AS', data: '10/09/2026', plate: 'ASX1A23',
+      matric_motorista: driver.promax, matric_ajudante: helper.promax,
+      fator: 1, cx_real: 10, pdv_total: 5, pdv_real: 5, recarga: 'NAO')
+
+    get dashboard_mapas_path, params: { mes: 9, ano: 2026 }
+    assert_response :success
+    assert_select '.mapas-fleet-table td', text: 'ASX1A23', count: 1
+    assert_select '.mapas-ranking-name', text: driver.nome, count: 0
+    assert_select '.mapas-ranking-name', text: helper.nome, count: 0
+  end
+
   test 'merging snapshots recomputes a weighted percentage per cargo' do
     first = { 'groups' => { 'motorista' => group(real: 95, returned: 5).merge('percentual_devolucao' => '0.05') } }
     second = { 'groups' => { 'motorista' => group(real: 30, returned: 20).merge('percentual_devolucao' => '0.4') } }

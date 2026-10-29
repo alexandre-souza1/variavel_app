@@ -110,7 +110,8 @@ class MapasController < ApplicationController
     CSV.foreach(file.path, headers: true, col_sep: ";", encoding: "ISO-8859-1:utf-8").with_index(2) do |row, line|
 
       begin
-        next unless row["Entrega"]&.strip == "Rota"
+        entrega = row["Entrega"]&.strip
+        next unless Mapa::TIPOS_ENTREGA.include?(entrega)
 
         numero_mapa = row["Mapa"].to_s.strip
 
@@ -128,6 +129,7 @@ class MapasController < ApplicationController
 
         mapa = Mapa.new(
           mapa: numero_mapa,
+          entrega: entrega,
           data: row["Data"],
 
           fator: begin

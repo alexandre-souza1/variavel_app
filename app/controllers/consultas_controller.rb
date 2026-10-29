@@ -36,7 +36,7 @@ class ConsultasController < ApplicationController
         normalized_name = @driver.nome.strip.gsub(/\s+/, " ")
         @fuel_consumption = FuelConsumption.where(driver_name: normalized_name).order(:created_at).last
 
-        @mapas = Mapa.where(matric_motorista: @driver.promax)
+        @mapas = Mapa.rota.where(matric_motorista: @driver.promax)
         filtrar_por_periodo!
 
         @valor_caixa_motorista      = ParametroCalculo.valor_para(categoria: "motorista", nome: "valor_caixa")
@@ -54,7 +54,7 @@ class ConsultasController < ApplicationController
       @ajudante = Ajudante.find_by(matricula: @matricula)
 
       if @ajudante
-        @mapas = Mapa.where(matric_ajudante: @ajudante.promax).or(Mapa.where(matric_ajudante_2: @ajudante.promax))
+        @mapas = Mapa.where(matric_ajudante: @ajudante.promax).or(Mapa.where(matric_ajudante_2: @ajudante.promax)).rota
         filtrar_por_periodo!
 
         @valor_caixa_ajudante      = ParametroCalculo.valor_para(categoria: "ajudante", nome: "valor_caixa")
@@ -72,7 +72,7 @@ class ConsultasController < ApplicationController
       @driver = nil # Van exige uma vigência cadastrada no RH.
 
       if @driver
-        @mapas = Mapa.where(matric_motorista: @driver.promax)
+        @mapas = Mapa.rota.where(matric_motorista: @driver.promax)
         filtrar_por_periodo!
 
         @valor_caixa_van           = ParametroCalculo.valor_para(categoria: "van", nome: "valor_caixa")

@@ -12,6 +12,8 @@ class EmployeeVariableReport
     codes = employee.employee_roles.select(&:du?).filter_map { |role| role.promax.presence }
     other_roles = EmployeeRole.du.where(promax: codes).where.not(employee_id: employee.id).to_a
     @maps = candidates.select do |mapa|
+      next false unless mapa.rota?
+
       date = mapa.data_formatada
       unless date
         @issues << "Mapa #{mapa.mapa}: data inválida; não foi calculado."

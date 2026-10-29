@@ -34,6 +34,24 @@ class EmployeeVariableReportTest < ActiveSupport::TestCase
     assert_equal 2, @employee.employee_career_events.count
   end
 
+  test 'AS stays out of route reports and closing snapshots without requiring route role history' do
+    route_map = mapa('01/09/2026')
+    as_map = mapa('02/09/2026').tap { |record| record.update!(entrega: 'AS') }
+    mapa('inválida').update!(entrega: 'AS')
+    mapa('01/01/2025').update!(entrega: 'AS')
+
+    report = EmployeeVariableReport.new(@employee)
+    assert_includes @employee.maps, as_map
+    assert_equal [route_map], report.maps
+    assert_empty report.issues
+    assert_equal 1, report.totals[:quantidade_mapas]
+    assert_equal 20, report.totals[:valor_total]
+
+    closing = VariableClosing.capture!(employee: @employee, user: users(:one), year: 2026, month: 9, reason: 'Conferido')
+    assert_equal [route_map.id], closing.result.fetch('maps').map { |entry| entry.dig('source', 'id') }
+    assert_equal 20, closing.result.dig('totals', 'valor_total').to_d
+  end
+
   test 'bonus is separate per role and van recarga counts as a normal map' do
     14.times { mapa('01/09/2026') }
     @employee.change_role!({ cargo: 'van', promax: 'RH-9', starts_on: '2026-09-10', reason: 'Promoção' }, user: users(:one))

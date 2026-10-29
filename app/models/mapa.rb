@@ -1,5 +1,12 @@
 class Mapa < ApplicationRecord
   CARGOS = EmployeeRole::CARGOS.values.freeze
+  TIPOS_ENTREGA = %w[Rota AS].freeze
+
+  scope :rota, -> { where(entrega: 'Rota') }
+
+  validates :entrega, inclusion: { in: TIPOS_ENTREGA }
+
+  def rota? = entrega == 'Rota'
 
   belongs_to :driver, foreign_key: :matric_motorista, primary_key: :promax, optional: true
   belongs_to :ajudante, foreign_key: :matric_ajudante, primary_key: :promax, optional: true

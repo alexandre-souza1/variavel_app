@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_29_170000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_29_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -865,6 +865,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_170000) do
     t.text "cargo_override_reason"
     t.datetime "cargo_override_at"
     t.bigint "cargo_override_user_id"
+    t.string "entrega", default: "Rota", null: false
     t.index ["cargo_override_user_id"], name: "index_mapas_on_cargo_override_user_id"
     t.index ["created_at", "id"], name: "index_mapas_on_created_at_and_id"
     t.index ["data"], name: "index_mapas_on_data"
@@ -873,6 +874,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_170000) do
     t.index ["matric_ajudante_2"], name: "index_mapas_on_matric_ajudante_2"
     t.index ["matric_motorista"], name: "index_mapas_on_matric_motorista"
     t.check_constraint "cargo_override IS NULL OR (cargo_override::text = ANY (ARRAY['motorista'::character varying::text, 'van'::character varying::text, 'ajudante'::character varying::text]))", name: "mapa_valid_cargo_override"
+    t.check_constraint "entrega::text = ANY (ARRAY['Rota'::character varying, 'AS'::character varying]::text[])", name: "mapas_valid_entrega"
   end
 
   create_table "meeting_minute_edits", force: :cascade do |t|

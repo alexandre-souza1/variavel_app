@@ -13,6 +13,12 @@ class MapaRemuneracaoService
   end
 
   def values(mapa)
+    unless mapa.rota?
+      return { valor_cx: ZERO, valor_pdv: ZERO, valor_rec: ZERO, valor_mp: ZERO,
+        categoria: @categoria, recarga: false, recarga_inconsistente: false,
+        tarifas: { caixa: ZERO, entrega: ZERO, recarga: ZERO } }
+    end
+
     date = mapa.data_formatada
     raise EmployeeRole::HistoryError, "Mapa #{mapa.mapa}: data inválida." unless date
     valor_caixa = rate("valor_caixa", date)
@@ -37,6 +43,7 @@ class MapaRemuneracaoService
   end
 
   def totals(mapas)
+    mapas = mapas.select(&:rota?)
     total_cx_real = ZERO
     total_pdv_real = ZERO
     total_pdv_total = ZERO
