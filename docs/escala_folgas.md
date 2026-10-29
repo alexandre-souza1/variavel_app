@@ -4,6 +4,10 @@ Acesse **DU → Escala de folgas 5×2** ou **RH → Escala de folgas 5×2**, em 
 
 O piloto começa em 01/10/2026. O rodízio A–F segue continuamente por ciclos de seis semanas, usando 28/09/2026 como segunda-feira de referência do grupo A. Os domingos são DSR para todos. O grupo Fixo folga aos sábados e domingos.
 
+Motoristas e ajudantes podem ser vinculados à operação fixa **AS**, assim como à Vespertina. Ambas exigem grupo **Fixo** com folga no sábado; a regra vale tanto para cadastrar quanto para corrigir uma vigência existente.
+
+Quando há ajudante fixo no AS, a sugestão inicial do PCD reserva uma vaga de ajudante por saída AS a partir dessa vigência. Afastamento ou inativação deixam a vaga pendente. Datas anteriores mantêm a composição anterior, e PCDs já salvos preservam as escolhas do gestor.
+
 ## Preparação
 
 ```sh
@@ -79,7 +83,7 @@ A IA do chat público recebe a escala da pessoa identificada pela matrícula e n
 ## Validação
 
 ```sh
-PARALLEL_WORKERS=1 bin/rails test test/services/time_off test/controllers/time_off_schedules_controller_test.rb test/controllers/time_off_daily_routes_test.rb test/controllers/time_off_membership_corrections_test.rb
+PARALLEL_WORKERS=1 bin/rails test test/models/time_off_membership_test.rb test/services/time_off test/services/pcd test/controllers/pcds_controller_test.rb test/controllers/time_off_schedules_controller_test.rb test/controllers/time_off_daily_routes_test.rb test/controllers/time_off_membership_corrections_test.rb
 ```
 
 O teste de navegador usa somente o banco de testes. Prepare os cadastros e inicie um servidor de teste antes de executá-lo:

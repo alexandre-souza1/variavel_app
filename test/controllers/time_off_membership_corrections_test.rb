@@ -35,6 +35,27 @@ class TimeOffMembershipCorrectionsTest < ActionDispatch::IntegrationTest
     assert_select '.time-off-history p', text: 'Começa após o dia 13'
   end
 
+  test 'a helper can be corrected to fixed AS with Saturday off and retained audit' do
+    assert_no_difference('TimeOffMembership.count') do
+      assert_difference('TimeOffChange.count', 1) do
+        patch revise_membership_time_off_schedule_path, params: { membership: attributes.merge(
+          group_code: 'FIXO', fixed_weekday: 6, standard_operation: 'as') }
+      end
+    end
+    assert_response :redirect
+    assert_nil flash[:alert]
+    assert_equal 'FIXO', @member.reload.group_code
+    assert_equal 'as', @member.standard_operation
+    assert_equal ajudantes(:one), @member.ajudante
+    change = @schedule.time_off_changes.last
+    assert_equal 'A', change.details['before']['group_code']
+    assert_equal 'as', change.details['after']['standard_operation']
+    assert_equal users(:one), change.user
+    get time_off_schedule_path(date: '2026-10-14', tab: 'day', role: 'helper')
+    assert_response :success
+    assert_select '.time-off-person .time-off-muted', text: /Ajudante · AS/
+  end
+
   test 'invalid data and stale pages leave the period unchanged and return to correction settings' do
     [{ starts_on: 'invalid' }, { reason: '' }, { expected_updated_at: 'stale' }, { group_code: 'invalid' }].each do |invalid|
       assert_no_difference('TimeOffChange.count') do

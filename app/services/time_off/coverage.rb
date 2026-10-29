@@ -72,9 +72,19 @@ module TimeOff
       candidates.uniq(&:person_key).first(quantities.fetch(operation))
     end
 
+    def helpers_per_car(operation)
+      return 1 if %w[route vespertina].include?(operation)
+      return 0 unless operation == 'as'
+
+      # A vaga começa na vigência do ajudante fixo. Afastamento ou inativação
+      # deixam a vaga pendente, sem apagar a necessidade da operação.
+      @as_helpers_per_car ||= schedule.time_off_memberships.on(date)
+        .where(standard_operation: 'as').where.not(ajudante_id: nil).exists? ? 1 : 0
+    end
+
     def assignments
       @assignments ||= SPECIAL_OPERATIONS.index_with do |operation|
-        roles = operation == 'vespertina' ? %w[driver helper] : ['driver']
+        roles = helpers_per_car(operation).positive? ? %w[driver helper] : ['driver']
         roles.index_with do |role|
           saved = details.dig('special_assignments', operation, role)
           ids = saved.nil? ? default_members(operation, role).map(&:id) : Array(saved)
@@ -114,7 +124,7 @@ module TimeOff
           end
         end
         build_row(operation, quantities[operation], supplied['driver'].to_i,
-          operation == 'vespertina' ? quantities[operation] : 0, supplied['helper'].to_i)
+          quantities[operation] * helpers_per_car(operation), supplied['helper'].to_i)
       end
       # A configured fixed person with a pending absence cannot inflate the
       # route pool. Reserve each position once, independently of availability.

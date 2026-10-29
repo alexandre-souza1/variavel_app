@@ -38,6 +38,20 @@ class TimeOffRosterTest < ActiveSupport::TestCase
     assert_equal 'working', @schedule.base_status(@member, Date.new(2026, 10, 2))
   end
 
+  test 'assigning a helper to fixed AS preserves the operation and audits the group' do
+    member = nil
+    assert_difference({ 'TimeOffMembership.count' => 1, 'TimeOffChange.count' => 1 }) do
+      member = TimeOff::AssignGroup.call(schedule: @schedule, person: ajudantes(:one), group_code: 'FIXO',
+        fixed_weekday: 6, standard_operation: 'as', starts_on: Date.new(2026, 10, 1), user: users(:one))
+    end
+    assert_equal ajudantes(:one), member.ajudante
+    assert_nil member.driver_id
+    assert_equal 'as', member.reload.standard_operation
+    assert_equal 'helper', member.role
+    assert_equal 'as', @schedule.time_off_changes.last.details['standard_operation']
+    assert_equal users(:one), @schedule.time_off_changes.last.user
+  end
+
   test 'call up a resting driver then restore rotation preserving revision and audit' do
     date = Date.new(2026, 10, 2)
     override = change(date, 'working', -1)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_29_130000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_29_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -1359,7 +1359,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_130000) do
     t.check_constraint "ends_on IS NULL OR ends_on >= starts_on", name: "time_off_valid_membership_dates"
     t.check_constraint "fixed_weekday IS NULL OR fixed_weekday >= 1 AND fixed_weekday <= 6", name: "time_off_valid_fixed_weekday"
     t.check_constraint "group_code::text = ANY (ARRAY['A'::character varying::text, 'B'::character varying::text, 'C'::character varying::text, 'D'::character varying::text, 'E'::character varying::text, 'F'::character varying::text, 'FIXO'::character varying::text])", name: "time_off_valid_group"
-    t.check_constraint "standard_operation IS NULL OR group_code::text = 'FIXO'::text AND fixed_weekday = 6 AND (standard_operation::text = 'vespertina'::text OR standard_operation::text = 'as'::text AND driver_id IS NOT NULL)", name: "time_off_valid_standard_operation"
+    t.check_constraint "standard_operation IS NULL OR group_code::text = 'FIXO'::text AND fixed_weekday = 6 AND (standard_operation::text = ANY (ARRAY['vespertina'::character varying, 'as'::character varying]::text[]))", name: "time_off_valid_standard_operation"
   end
 
   create_table "time_off_overrides", force: :cascade do |t|

@@ -27,7 +27,7 @@ module TimeOff
           details['cars'] = Board.validate!(proposed, attributes['cars']) if attributes.key?('cars')
           used = Set.new
           Coverage::SPECIAL_OPERATIONS.each do |operation|
-            allowed_roles = operation == 'vespertina' ? %w[driver helper] : ['driver']
+            allowed_roles = proposed.assignments.fetch(operation).keys
             submitted = details['special_assignments'].fetch(operation, {})
             raise UpdateDay::InvalidChange, 'Função inválida para a operação.' if (submitted.keys - allowed_roles).any?
             submitted.each_value do |ids|

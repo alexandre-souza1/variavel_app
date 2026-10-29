@@ -17,7 +17,7 @@ module TimeOff
             { 'key' => "#{operation}:#{position}", 'operation' => operation, 'position' => position,
               'plate' => plate && RoutingCsv.plate(plate.placa), 'scheduled' => true,
               'label' => plate&.placa || "#{operation == 'route' ? 'Carro' : Coverage::OPERATIONS[operation]} #{position + 1}",
-              'helper_count' => %w[route vespertina].include?(operation) ? 1 : 0,
+              'helper_count' => coverage.helpers_per_car(operation),
               'driver' => nil, 'helper1' => nil, 'helper2' => nil }
           end
         end
@@ -73,7 +73,7 @@ module TimeOff
         operation = raw['operation']
         position = Integer(raw['position'].to_s, 10)
         count = Integer(raw['helper_count'].to_s, 10)
-        valid_count = operation == 'route' ? (0..2).cover?(count) : count == (operation == 'vespertina' ? 1 : 0)
+        valid_count = operation == 'route' ? (0..2).cover?(count) : count == coverage.helpers_per_car(operation)
         raise UpdateDay::InvalidChange, 'Composição incompatível com esta operação.' unless valid_count && expected.include?([operation, position])
         default = defaults.fetch([operation, position])
         scheduled = raw.key?('scheduled') ? ActiveModel::Type::Boolean.new.cast(raw['scheduled']) : true

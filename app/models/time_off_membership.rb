@@ -84,8 +84,8 @@ class TimeOffMembership < ApplicationRecord
 
   def valid_standard_operation
     return if standard_operation.blank?
-    unless STANDARD_OPERATIONS.value?(standard_operation) && group_code == 'FIXO' && fixed_weekday == 6 && (standard_operation != 'as' || driver_id?)
-      errors.add(:standard_operation, 'exige grupo Fixo com folga no sábado; AS exige motorista')
+    unless STANDARD_OPERATIONS.value?(standard_operation) && group_code == 'FIXO' && fixed_weekday == 6
+      errors.add(:standard_operation, 'exige grupo Fixo com folga no sábado')
     end
   end
 
