@@ -5,10 +5,11 @@ class User < ApplicationRecord
     "Retro-orange" => "retro_orange",
     "BLACK-MINT" => "black_mint",
     "WHITE-TEA&SAGE" => "white_tea_sage",
-    "EARTHY-FOREST-HUES" => "earthy_forest_hues"
+    "EARTHY-FOREST-HUES" => "earthy_forest_hues",
+    "Halloween" => "halloween"
   }.freeze
 
-  validates :color_theme, inclusion: { in: COLOR_THEMES.values }
+  validates :color_theme, inclusion: { in: ->(_user) { COLOR_THEMES.values + ColorTheme.pluck(:key) } }
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable

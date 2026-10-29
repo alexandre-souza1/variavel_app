@@ -1,0 +1,9 @@
+<% registered_color_themes.select { |theme| theme.decoration.present? }.each do |theme| %>
+  <span class="theme-decoration theme-decoration--<%= placement %>" data-decoration-theme="<%= theme.key %>" aria-hidden="true">
+    <%= theme_symbol(theme, size: { 'brand' => 26, 'avatar' => 22, 'footer' => 32 }.fetch(placement)) %>
+    <% if placement == 'footer' %>
+      <span class="theme-decoration__star">✦</span>
+      <%= theme_symbol(theme, size: 24) %>
+    <% end %>
+  </span>
+<% end %>

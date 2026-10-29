@@ -1,0 +1,94 @@
+<%= form_with model: [:admin, @color_theme], local: true, data: { turbo: false, controller: "color-theme-editor", action: "color-theme:generated->color-theme-editor#applyGenerated", color_theme_generator_target: (@color_theme.new_record? ? "form" : nil), color_theme_editor_dark_palette_value: ColorTheme::DARK_PALETTE_RECIPE, color_theme_editor_original_theme_value: original_dark_theme_preview_key(@color_theme), color_theme_editor_original_palette_value: @color_theme.palette }, class: "color-theme-form" do |form| %>
+  <div class="card p-3 p-md-4">
+    <% if @color_theme.errors.any? %>
+      <div class="alert alert-danger" role="alert">
+        <strong>Revise os dados do tema.</strong>
+        <ul class="mb-0"><% @color_theme.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+      </div>
+    <% end %>
+    <h2 class="h5 mb-3">Identidade e cores</h2>
+    <% if @color_theme.preserve_original_palette? %>
+      <p class="small text-muted">Este tema mantém o visual original. Alterar suas cores também atualiza os fundos dos modos claro e escuro.</p>
+    <% end %>
+    <div class="row g-3">
+      <div class="col-md-8">
+        <%= form.label :name, "Nome do tema", class: "form-label" %>
+        <%= form.text_field :name, required: true, maxlength: 40, placeholder: "Ex.: Natal", class: "form-control", data: { color_theme_editor_target: "name", action: "input->color-theme-editor#refresh" } %>
+      </div>
+      <div class="col-md-4">
+        <%= form.label :decoration, "Símbolo (opcional)", class: "form-label" %>
+        <%= form.text_field :decoration, maxlength: 16, placeholder: "🎄", class: "form-control", data: { color_theme_editor_target: "decoration", action: "input->color-theme-editor#refresh" } %>
+        <div class="form-text">Um emoji para a barra, o avatar e o rodapé.</div>
+      </div>
+      <div class="col-12">
+        <%= form.label :description, "Descrição (opcional)", class: "form-label" %>
+        <%= form.text_field :description, maxlength: 160, class: "form-control", placeholder: "Ex.: Verdes e dourados para celebrar o Natal." %>
+      </div>
+      <% { base_color: "Base e barra superior", primary_color: "Cor principal", accent_color: "Destaques", highlight_color: "Complemento e fundos", extra_color: "Quinta cor (opcional)" }.each do |field, label| %>
+        <div class="col-sm-6">
+          <%= form.label field, label, class: "form-label" %>
+          <%= render "shared/color_picker", form: form, field: field, label: label %>
+        </div>
+      <% end %>
+      <p class="form-text mb-0">Cole os códigos das quatro cores principais. A quinta é opcional. O aplicativo adapta os fundos e o contraste para os modos claro e escuro.</p>
+    </div>
+
+    <hr class="my-4">
+    <h2 class="h5">Divulgação no menu</h2>
+    <div class="theme-promotion-toggle my-3">
+      <%= form.check_box :promotion_enabled, class: "theme-promotion-toggle__input",
+        aria: { controls: "color-theme-promotion-fields", expanded: @color_theme.promotion_enabled? },
+        data: { color_theme_editor_target: "promotionToggle", action: "change->color-theme-editor#togglePromotion" } %>
+      <%= form.label :promotion_enabled, "Mostrar convite para experimentar este tema", class: "theme-promotion-toggle__label" %>
+    </div>
+    <%= tag.div id: "color-theme-promotion-fields", class: class_names("color-theme-promotion-fields", "is-open": @color_theme.promotion_enabled?),
+      data: { color_theme_editor_target: "promotionPanel" } do %>
+      <div class="color-theme-promotion-fields__inner">
+        <%= tag.fieldset disabled: !@color_theme.promotion_enabled?, data: { color_theme_editor_target: "promotionFields" } do %>
+          <div class="row g-3">
+            <div class="col-12">
+              <%= form.label :promotion_text, "Texto do aviso", class: "form-label" %>
+              <%= form.text_field :promotion_text, maxlength: 64, placeholder: "Ex.: Experimente o Natal", class: "form-control" %>
+              <div class="form-text">Se ficar vazio, usamos “Experimente” seguido do nome do tema.</div>
+            </div>
+            <div class="col-sm-6">
+              <%= form.label :promotion_starts_on, "Mostrar a partir de", class: "form-label" %>
+              <%= form.date_field :promotion_starts_on, class: "form-control", required: @color_theme.promotion_enabled?, data: { promotion_date: true } %>
+            </div>
+            <div class="col-sm-6">
+              <%= form.label :promotion_ends_on, "Mostrar até", class: "form-label" %>
+              <%= form.date_field :promotion_ends_on, class: "form-control", required: @color_theme.promotion_enabled?, data: { promotion_date: true } %>
+            </div>
+            <p class="form-text mb-0">As duas datas estão incluídas, no horário de Brasília. Depois do último dia, o aviso some automaticamente. O tema continua disponível.</p>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+    <div class="d-flex flex-wrap gap-2 mt-4">
+      <%= form.submit "Salvar tema", class: "btn btn-primary" %>
+      <%= link_to "Cancelar", admin_color_themes_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+
+  <aside class="color-theme-preview-panel">
+    <h2 class="h6">Prévia da paleta</h2>
+    <div class="color-theme-preview-modes">
+      <% { light: ["Claro", "bi-sun"], dark: ["Escuro", "bi-moon-stars"] }.each do |mode, (label, icon)| %>
+        <section aria-label="Prévia no modo <%= label.downcase %>">
+          <h3 class="color-theme-preview-mode-label"><i class="bi <%= icon %>" aria-hidden="true"></i> <%= label %></h3>
+          <div class="color-theme-preview" data-color-theme-editor-target="preview" data-preview-mode="<%= mode %>">
+            <div class="color-theme-preview__bar"><span data-preview-decoration></span> <strong data-preview-name>Seu tema</strong></div>
+            <div class="color-theme-preview__body">
+              <span class="color-theme-preview__eyebrow">LOGIA</span>
+              <h4>Um toque de cor</h4>
+              <p>Uma paleta para deixar o aplicativo no clima da data.</p>
+              <span class="color-theme-preview__button">Continuar <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+            </div>
+            <div class="color-theme-preview__swatches" aria-hidden="true"><span></span><span></span><span></span><span></span><span data-preview-extra hidden></span></div>
+          </div>
+        </section>
+      <% end %>
+    </div>
+    <p class="small text-muted mt-3 mb-0">Compare a paleta nos dois modos antes de salvar.</p>
+  </aside>
+<% end %>

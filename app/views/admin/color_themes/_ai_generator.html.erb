@@ -1,0 +1,29 @@
+<dialog id="color-theme-ai-dialog" class="color-theme-ai" aria-labelledby="color-theme-ai-title" aria-describedby="color-theme-ai-description"
+        data-color-theme-generator-target="dialog" data-action="cancel->color-theme-generator#close click->color-theme-generator#backdrop">
+  <div class="color-theme-ai__header">
+    <span class="color-theme-ai__mark" aria-hidden="true"><i class="bi bi-stars"></i></span>
+    <button type="button" class="color-theme-ai__close" data-action="color-theme-generator#close" aria-label="Fechar criação com IA"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+  </div>
+  <p class="color-theme-ai__eyebrow">GEMINI · ASSISTENTE DE TEMAS</p>
+  <h2 id="color-theme-ai-title">Crie a partir das suas cores</h2>
+  <p id="color-theme-ai-description" class="color-theme-ai__description">Cole os HEX e deixe a IA organizar a paleta, o nome e os detalhes do tema.</p>
+
+  <label for="color-theme-ai-colors" class="color-theme-ai__label">Suas cores</label>
+  <textarea id="color-theme-ai-colors" class="color-theme-ai__input" rows="3" maxlength="200" spellcheck="false"
+            placeholder="#522D60 #80426E&#10;#F2A67B #FFD38B" data-color-theme-generator-target="colors" data-action="input->color-theme-generator#previewPalette"></textarea>
+  <div class="color-theme-ai__palette-row">
+    <div class="color-theme-ai__swatches" role="group" aria-label="Cores informadas" data-color-theme-generator-target="swatches"></div>
+    <span class="color-theme-ai__count" data-color-theme-generator-target="colorCount">1 a 5 cores</span>
+  </div>
+  <p class="color-theme-ai__hint">Com menos de quatro cores, a IA completa a paleta.</p>
+  <p class="color-theme-ai__status" role="status" aria-live="polite" data-color-theme-generator-target="status"></p>
+  <p class="color-theme-ai__error" role="alert" data-color-theme-generator-target="error" hidden></p>
+
+  <div class="color-theme-ai__footer">
+    <button type="button" class="btn btn-sm btn-outline-secondary" data-action="color-theme-generator#close">Cancelar</button>
+    <button type="button" class="btn btn-sm btn-primary" data-action="color-theme-generator#generate" data-color-theme-generator-target="button">
+      <i class="bi bi-stars" aria-hidden="true" data-color-theme-generator-target="icon"></i>
+      <span data-color-theme-generator-target="buttonLabel">Gerar tema</span>
+    </button>
+  </div>
+</dialog>

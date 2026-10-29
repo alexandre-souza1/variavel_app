@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_29_150000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_29_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -466,6 +466,26 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_150000) do
     t.index ["checklist_template_id"], name: "index_checklists_on_checklist_template_id"
     t.index ["plate_id"], name: "index_checklists_on_plate_id"
     t.index ["user_id"], name: "index_checklists_on_user_id"
+  end
+
+  create_table "color_themes", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "name", null: false
+    t.string "description"
+    t.string "base_color", null: false
+    t.string "primary_color", null: false
+    t.string "accent_color", null: false
+    t.string "highlight_color", null: false
+    t.string "decoration"
+    t.boolean "promotion_enabled", default: false, null: false
+    t.string "promotion_text"
+    t.date "promotion_starts_on"
+    t.date "promotion_ends_on"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "preserve_original_palette", default: false, null: false
+    t.string "extra_color"
+    t.index ["key"], name: "index_color_themes_on_key", unique: true
   end
 
   create_table "comments", force: :cascade do |t|

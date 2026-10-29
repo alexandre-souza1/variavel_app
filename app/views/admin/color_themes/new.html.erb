@@ -1,0 +1,20 @@
+<div class="catalog-form-page color-themes-page" data-controller="color-theme-generator"
+     data-color-theme-generator-url-value="<%= generate_admin_color_themes_path %>"
+     data-color-theme-generator-auto-open-value="<%= params[:ai] == '1' %>">
+  <%= link_to admin_color_themes_path, class: "text-muted text-decoration-none d-inline-flex align-items-center gap-1 mb-3" do %>
+    <i class="bi bi-arrow-left" aria-hidden="true"></i> Temas e feriados
+  <% end %>
+  <div class="color-theme-editor-header">
+    <div>
+      <h1 class="h2">Novo tema</h1>
+      <p class="text-muted mb-0">Escolha as cores e, se quiser, programe a divulgação perto do feriado.</p>
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-secondary color-theme-ai-trigger" data-action="color-theme-generator#open"
+            data-color-theme-generator-target="trigger" aria-haspopup="dialog" aria-controls="color-theme-ai-dialog" aria-expanded="false">
+      <i class="bi bi-stars" aria-hidden="true"></i> Criar com IA
+    </button>
+  </div>
+  <p class="color-theme-ai-feedback text-muted small" role="status" aria-live="polite" data-color-theme-generator-target="feedback" hidden></p>
+  <%= render "form" %>
+  <%= render "ai_generator" %>
+</div>

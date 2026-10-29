@@ -1,0 +1,75 @@
+// As cores e os seletores de cada tema cadastrado são gerados no layout.
+.theme-promo {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  width: 100%;
+  min-height: 32px;
+  margin-top: .5rem;
+  padding: .35rem .5rem;
+  border: 1px solid var(--theme-promo-border);
+  border-radius: 8px;
+  background: var(--theme-promo-base);
+  color: #fff;
+  font: inherit;
+  font-size: .68rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+
+  .theme-promo__symbol { flex-shrink: 0; }
+  &:hover { box-shadow: inset 0 0 0 1px var(--theme-promo-border); }
+  &:focus-visible { outline: 3px solid var(--bs-primary-text-emphasis); outline-offset: 3px; }
+  &[hidden] { display: none; }
+}
+
+.theme-promo__text { min-width: 0; overflow-wrap: anywhere; }
+
+.theme-decoration {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+}
+
+.theme-decoration--brand {
+  flex-shrink: 0;
+  font-size: 24px;
+  transform: rotate(8deg);
+}
+
+.app-navbar .navbar-nav .nav-link.avatar-btn {
+  position: relative;
+  overflow: visible;
+
+  > img { border-radius: 50%; }
+}
+
+.theme-decoration--avatar {
+  position: absolute;
+  left: -6px;
+  bottom: -4px;
+  width: 22px;
+  height: 22px;
+  font-size: 20px;
+  filter: drop-shadow(0 1px 1px rgba(33, 21, 39, .35));
+  transform: rotate(-12deg);
+}
+
+.theme-decoration--footer {
+  gap: .65rem;
+  margin-bottom: .8rem;
+  color: var(--app-soft);
+  font-size: 28px;
+
+  > :last-child { transform: rotate(12deg); font-size: 22px; }
+}
+
+.theme-decoration__star { font-size: 16px; }
+
+@media print {
+  html[data-color-theme] [data-decoration-theme] { display: none; }
+}

@@ -1,0 +1,50 @@
+<% panel_id = "#{form.object_name}_#{field}_picker" %>
+<div class="color-theme-field" data-controller="color-picker"
+     data-action="pointerdown@document->color-picker#outside keydown.esc@window->color-picker#escape resize@window->color-picker#position">
+  <div class="color-picker-field">
+    <button type="button" class="color-picker-trigger" data-color-picker-target="trigger" data-action="color-picker#toggle"
+            aria-label="Escolher <%= label.downcase %>" aria-haspopup="dialog" aria-expanded="false" aria-controls="<%= panel_id %>">
+      <span class="color-picker-trigger__swatch" data-color-picker-target="swatch" aria-hidden="true"></span>
+    </button>
+    <%= form.text_field field, required: ColorTheme::COLOR_FIELDS.include?(field), pattern: "#[0-9a-fA-F]{6}", maxlength: 7, placeholder: "#522D60", class: "color-picker-field__hex",
+      data: { color_theme_editor_target: "color", color_key: field, color_picker_target: "input", action: "input->color-picker#syncFromInput input->color-theme-editor#refresh" } %>
+  </div>
+
+  <div id="<%= panel_id %>" class="color-picker-panel" popover="manual" role="dialog" aria-label="Escolher <%= label.downcase %>"
+       data-color-picker-target="panel" data-action="toggle->color-picker#syncExpanded">
+    <div class="color-picker-panel__header">
+      <span><i class="bi bi-palette2" aria-hidden="true"></i> Escolha sua cor</span>
+      <button type="button" class="color-picker-close" data-action="color-picker#close" aria-label="Fechar seletor de cores"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+    <div class="color-picker-plane" data-color-picker-target="plane" aria-hidden="true"
+         data-action="pointerdown->color-picker#startDrag pointermove->color-picker#drag pointerup->color-picker#endDrag pointercancel->color-picker#endDrag">
+      <span class="color-picker-plane__thumb" data-color-picker-target="thumb"></span>
+    </div>
+    <label class="color-picker-slider">
+      <span>Matiz <output data-color-picker-target="hueValue"></output></span>
+      <input type="range" class="color-picker-range color-picker-range--hue" min="0" max="360" step="1" aria-label="Matiz"
+             data-color-picker-target="hue" data-action="input->color-picker#adjust">
+    </label>
+    <div class="color-picker-panel__adjustments">
+      <label class="color-picker-slider">
+        <span>Saturação <output data-color-picker-target="saturationValue"></output></span>
+        <input type="range" class="color-picker-range color-picker-range--saturation" min="0" max="100" step="1" aria-label="Saturação"
+               data-color-picker-target="saturation" data-action="input->color-picker#adjust">
+      </label>
+      <label class="color-picker-slider">
+        <span>Brilho <output data-color-picker-target="brightnessValue"></output></span>
+        <input type="range" class="color-picker-range color-picker-range--brightness" min="0" max="100" step="1" aria-label="Brilho"
+               data-color-picker-target="brightness" data-action="input->color-picker#adjust">
+      </label>
+    </div>
+    <div class="color-picker-panel__hex">
+      <span class="color-picker-value-swatch" data-color-picker-target="valueSwatch" aria-hidden="true"></span>
+      <label>HEX <input type="text" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Código hexadecimal"
+                        data-color-picker-target="hex" data-action="input->color-picker#editHex"></label>
+    </div>
+    <p class="color-picker-error" data-color-picker-target="error" role="status" hidden>Use um código como #522D60.</p>
+    <p class="color-picker-panel__caption">Tons sugeridos</p>
+    <div class="color-picker-suggestions" data-color-picker-target="suggestions" role="group" aria-label="Tons sugeridos"></div>
+    <button type="button" class="btn btn-sm btn-primary w-100 mt-3" data-action="color-picker#close" data-color-picker-target="done">Pronto</button>
+  </div>
+</div>

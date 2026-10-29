@@ -21,20 +21,15 @@
         const storedColorTheme = localStorage.getItem(`colorTheme:${userId}`) || localStorage.getItem("colorTheme");
         const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         const theme = storedTheme || preferredTheme;
-        const colorThemeColors = {
-          blue_teal: "#3368A0",
-          sage_teal: "#265073",
-          retro_orange: "#527853",
-          black_mint: "#2A835F",
-          white_tea_sage: "#8B9A6E",
-          earthy_forest_hues: "#588157"
-        };
+        const colorThemes = <%= raw(json_escape(color_theme_catalog.to_json)) %>;
+        const fallbackColorTheme = colorThemes[userColorTheme] ? userColorTheme : "blue_teal";
+        const colorTheme = colorThemes[storedColorTheme] ? storedColorTheme : fallbackColorTheme;
 
         document.documentElement.dataset.bsTheme = theme;
-        document.documentElement.dataset.colorTheme = storedColorTheme || userColorTheme;
+        document.documentElement.dataset.colorTheme = colorTheme;
         document.querySelector("meta[name='theme-color']")?.setAttribute(
           "content",
-          theme === "dark" ? "#092328" : (colorThemeColors[storedColorTheme || userColorTheme] || "#3368A0")
+          colorThemes[colorTheme][theme === "dark" ? "dark" : "light"]
         );
       })();
     </script>
@@ -47,10 +42,11 @@
     <script nonce="<%= request.content_security_policy_nonce %>" src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <style nonce="<%= request.content_security_policy_nonce %>" data-turbo-track="reload"><%= raw(registered_color_theme_styles) %></style>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="app-shell" data-user-id="<%= current_user&.id || 'guest' %>" data-controller="chart-theme meeting-recorder-launch app-selects">
+  <body class="app-shell" data-user-id="<%= current_user&.id || 'guest' %>" data-color-themes="<%= color_theme_catalog.to_json %>" data-controller="chart-theme meeting-recorder-launch app-selects">
   <%= render "shared/navbar" %>
   <div id="flash-container">
     <%= render 'shared/flashes' %>

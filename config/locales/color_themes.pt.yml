@@ -1,0 +1,18 @@
+pt:
+  activerecord:
+    models:
+      color_theme: Tema
+    attributes:
+      color_theme:
+        name: Nome
+        key: Identificador
+        description: Descrição
+        base_color: Cor de base
+        primary_color: Cor principal
+        accent_color: Cor de destaque
+        highlight_color: Cor de complemento
+        extra_color: Quinta cor
+        decoration: Símbolo
+        promotion_text: Texto do aviso
+        promotion_starts_on: Início da divulgação
+        promotion_ends_on: Fim da divulgação

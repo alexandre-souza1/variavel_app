@@ -1,0 +1,14 @@
+<% colors = color_theme.css_variables(:light) %>
+<button type="button"
+        class="theme-promo"
+        style="--theme-promo-base: <%= colors.fetch('app-strong') %>; --theme-promo-border: <%= color_theme.accent_color %>"
+        data-theme-target="promotion"
+        data-action="click->theme#setColor"
+        data-theme-color-param="<%= color_theme.key %>"
+        data-promotion-starts-on="<%= color_theme.promotion_starts_on.iso8601 %>"
+        data-promotion-ends-on="<%= color_theme.promotion_ends_on.iso8601 %>">
+  <% if color_theme.decoration.present? %>
+    <span class="theme-promo__symbol" aria-hidden="true"><%= theme_symbol(color_theme, size: 18) %></span>
+  <% end %>
+  <span class="theme-promo__text"><%= color_theme.invitation %></span>
+</button>

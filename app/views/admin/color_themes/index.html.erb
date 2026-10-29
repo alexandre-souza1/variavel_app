@@ -1,0 +1,54 @@
+<div class="admin-catalog-page color-themes-page">
+  <div class="admin-catalog-header">
+    <div>
+      <p class="admin-catalog-eyebrow"><i class="bi bi-palette me-1"></i> Administração</p>
+      <h1>Temas e feriados</h1>
+      <p>Crie paletas e programe quando convidar os usuários a experimentá-las.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <%= link_to new_admin_color_theme_path(ai: 1), class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-stars" aria-hidden="true"></i> Criar com IA
+      <% end %>
+      <%= link_to new_admin_color_theme_path, class: "btn btn-primary" do %>
+        <i class="bi bi-plus-lg"></i> Novo tema
+      <% end %>
+    </div>
+  </div>
+
+  <div class="color-theme-grid">
+    <% @color_themes.each do |theme| %>
+      <article class="card color-theme-card">
+        <div class="color-theme-swatches" aria-label="Paleta de <%= theme.name %>">
+          <% theme.palette.each do |color| %>
+            <span style="background-color: <%= color %>" title="<%= color %>"></span>
+          <% end %>
+        </div>
+        <div class="card-body">
+          <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+            <h2 class="h5 mb-0"><span aria-hidden="true"><%= theme.decoration %></span> <%= theme.name %></h2>
+            <% if theme.promotion_enabled? %>
+              <span class="badge text-bg-secondary">Sazonal</span>
+            <% end %>
+          </div>
+          <p class="text-muted small"><%= theme.description.presence || "Paleta personalizada para o aplicativo." %></p>
+          <% if theme.promotion_enabled? %>
+            <p class="small mb-1"><i class="bi bi-calendar3 me-1"></i> Aviso de <%= l(theme.promotion_starts_on) %> até <%= l(theme.promotion_ends_on) %></p>
+            <p class="small text-muted">“<%= theme.invitation %>”</p>
+          <% end %>
+          <div class="d-flex flex-wrap gap-2 mt-auto">
+            <%= link_to edit_admin_color_theme_path(theme), class: "btn btn-sm btn-outline-primary" do %>
+              <i class="bi bi-pencil"></i> Editar tema
+            <% end %>
+            <% unless User::COLOR_THEMES.values.include?(theme.key) %>
+              <%= button_to admin_color_theme_path(theme), method: :delete, class: "btn btn-sm btn-outline-danger",
+                data: { turbo_confirm: "Excluir #{theme.name}? Quem usa este tema voltará ao Blue-Teal." } do %>
+                <i class="bi bi-trash"></i> Excluir
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </article>
+    <% end %>
+  </div>
+  <p class="small text-muted mt-3">Todos os temas acima aparecem no seletor. O fim da divulgação remove apenas o aviso; a paleta continua disponível.</p>
+</div>

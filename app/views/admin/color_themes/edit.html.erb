@@ -1,0 +1,8 @@
+<div class="catalog-form-page color-themes-page">
+  <%= link_to admin_color_themes_path, class: "text-muted text-decoration-none d-inline-flex align-items-center gap-1 mb-3" do %>
+    <i class="bi bi-arrow-left" aria-hidden="true"></i> Temas e feriados
+  <% end %>
+  <h1 class="h2">Editar tema: <%= @color_theme.name %></h1>
+  <p class="text-muted">As alterações ficam disponíveis no aplicativo depois de salvar.</p>
+  <%= render "form" %>
+</div>

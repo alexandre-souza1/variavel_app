@@ -22,12 +22,42 @@
   --app-dark-text: #e5e7eb;
   --app-dark-muted: #a5b4c7;
 
+  // Paletas próprias: fundos discretos, acentos legíveis e ações mais sólidas.
+  // Os valores padrão acima continuam atendendo os demais temas.
+  &[data-color-theme="blue_teal"] {
+    --app-primary: #89baee;
+    --app-primary-rgb: 137, 186, 238;
+    --app-strong: #263e59;
+    --app-soft: #9ccacb;
+    --app-dark-soft-rgb: 156, 202, 203;
+    --app-button-solid: #3368a0;
+    --app-dark-page: #1b232d;
+    --app-dark-surface: #252f3b;
+    --app-dark-elevated: #303d4b;
+    --app-dark-border: #485d70;
+    --app-dark-input: #18212b;
+    --app-dark-hover: #354656;
+    --app-dark-deep: #151d26;
+    --app-dark-text: #e9eef5;
+    --app-dark-muted: #b1c0d0;
+  }
+
   &[data-color-theme="sage_teal"] {
-    --app-primary: #2d9596;
-    --app-primary-rgb: 45, 149, 150;
-    --app-strong: #265073;
-    --app-soft: #9ad0c2;
-    --app-dark-page: #0f172a;
+    --app-primary: #70ccbf;
+    --app-primary-rgb: 112, 204, 191;
+    --app-strong: #23494f;
+    --app-soft: #b0d7c0;
+    --app-dark-soft-rgb: 176, 215, 192;
+    --app-button-solid: #246c70;
+    --app-dark-page: #1c2728;
+    --app-dark-surface: #273436;
+    --app-dark-elevated: #324144;
+    --app-dark-border: #486365;
+    --app-dark-input: #182425;
+    --app-dark-hover: #384b4c;
+    --app-dark-deep: #152021;
+    --app-dark-text: #e8f2ee;
+    --app-dark-muted: #b2c9c3;
   }
 
   &[data-color-theme="retro_orange"] {
@@ -47,51 +77,91 @@
   }
 
   &[data-color-theme="black_mint"] {
-    --app-primary: #2a835f;
-    --app-primary-rgb: 42, 131, 95;
-    --app-strong: #12544f;
-    --app-soft: #8bbb92;
-    --app-dark-page: #092328;
-    --app-dark-surface: #0f3032;
-    --app-dark-elevated: #123b3a;
-    --app-dark-border: #245b51;
-    --app-dark-input: #06191d;
-    --app-dark-hover: #164943;
-    --app-dark-deep: #061719;
-    --app-dark-text: #e4f2e6;
-    --app-dark-muted: #a5c9ae;
+    --app-primary: #70cca0;
+    --app-primary-rgb: 112, 204, 160;
+    --app-strong: #23463d;
+    --app-soft: #a4d2ad;
+    --app-dark-soft-rgb: 164, 210, 173;
+    --app-button-solid: #256b4b;
+    --app-dark-page: #1b2623;
+    --app-dark-surface: #26332e;
+    --app-dark-elevated: #314139;
+    --app-dark-border: #496757;
+    --app-dark-input: #17221e;
+    --app-dark-hover: #394c41;
+    --app-dark-deep: #131d1a;
+    --app-dark-text: #e8f3e9;
+    --app-dark-muted: #b0cbb7;
   }
 
   &[data-color-theme="white_tea_sage"] {
-    --app-primary: #8b9a6e;
-    --app-primary-rgb: 139, 154, 110;
-    --app-strong: #5d684a;
-    --app-soft: #eae2d6;
-    --app-dark-page: #292a25;
-    --app-dark-surface: #35362f;
-    --app-dark-elevated: #414238;
-    --app-dark-border: #62664f;
-    --app-dark-input: #1c1d1a;
-    --app-dark-hover: #4c4e40;
-    --app-dark-deep: #151613;
-    --app-dark-text: #f7f2eb;
-    --app-dark-muted: #d6d0c4;
+    --app-primary: #bac793;
+    --app-primary-rgb: 186, 199, 147;
+    --app-strong: #444d3a;
+    --app-soft: #ddd3bd;
+    --app-dark-soft-rgb: 221, 211, 189;
+    --app-button-solid: #596747;
+    --app-dark-page: #282923;
+    --app-dark-surface: #33352d;
+    --app-dark-elevated: #3f4236;
+    --app-dark-border: #60664e;
+    --app-dark-input: #22241f;
+    --app-dark-hover: #484d3d;
+    --app-dark-deep: #1d1f1b;
+    --app-dark-text: #f4efe5;
+    --app-dark-muted: #c9c9b7;
   }
 
   &[data-color-theme="earthy_forest_hues"] {
-    --app-primary: #588157;
-    --app-primary-rgb: 88, 129, 87;
-    --app-strong: #3a5a40;
-    --app-soft: #a3b18a;
-    --app-dark-page: #1e2d25;
-    --app-dark-surface: #273b30;
-    --app-dark-elevated: #304736;
-    --app-dark-border: #46674d;
-    --app-dark-input: #202f28;
-    --app-dark-hover: #3d5b43;
-    --app-dark-deep: #152119;
-    --app-dark-text: #dad7cd;
-    --app-dark-muted: #b9c4a4;
+    --app-primary: #b0c893;
+    --app-primary-rgb: 176, 200, 147;
+    --app-strong: #344837;
+    --app-soft: #d2cbb7;
+    --app-dark-soft-rgb: 210, 203, 183;
+    --app-button-solid: #506b47;
+    --app-dark-page: #232922;
+    --app-dark-surface: #2e362c;
+    --app-dark-elevated: #3a4435;
+    --app-dark-border: #59684b;
+    --app-dark-input: #1e251d;
+    --app-dark-hover: #444f3d;
+    --app-dark-deep: #1a2018;
+    --app-dark-text: #eae8db;
+    --app-dark-muted: #c3c7b0;
+  }
+
+  &[data-color-theme="blue_teal"],
+  &[data-color-theme="sage_teal"],
+  &[data-color-theme="black_mint"],
+  &[data-color-theme="white_tea_sage"],
+  &[data-color-theme="earthy_forest_hues"] {
+    --bs-primary-text-emphasis: var(--app-primary);
+    --bs-link-color: var(--app-primary);
+    --bs-link-color-rgb: var(--app-primary-rgb);
+    --bs-link-hover-color: var(--app-soft);
+    --bs-link-hover-color-rgb: var(--app-dark-soft-rgb);
+    --app-muted: var(--app-dark-muted);
+
+    .ai-assistant__launcher {
+      background: var(--app-button-solid);
+      color: #fff;
+    }
+  }
+
+  &[data-color-theme="halloween"] {
+    --app-primary: #f2a67b;
+    --app-primary-rgb: 242, 166, 123;
+    --app-strong: #522d60;
+    --app-soft: #ffd38b;
+    --app-dark-page: #211527;
+    --app-dark-surface: #302037;
+    --app-dark-elevated: #3e2946;
+    --app-dark-border: #80426e;
+    --app-dark-input: #1b1021;
+    --app-dark-hover: #522d60;
+    --app-dark-deep: #160d1b;
+    --app-dark-text: #fff3e1;
+    --app-dark-muted: #d5b4c4;
   }
 
   // Acentos compartilhados com o tema claro, adaptados para o contraste escuro.

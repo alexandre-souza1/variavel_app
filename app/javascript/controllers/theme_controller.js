@@ -1,9 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["button", "colorSelect", "preview"]
+  static targets = ["button", "colorSelect", "preview", "promotion"]
 
   connect() {
+    this.colorThemes = JSON.parse(document.body.dataset.colorThemes || "{}")
     this.syncButtons()
     this.element.querySelectorAll("select[data-icon-map]").forEach((select) => {
       this.setSelectionIcon({ target: select })
@@ -11,6 +12,13 @@ export default class extends Controller {
     const colorTheme = document.documentElement.dataset.colorTheme || "blue_teal"
     this.syncColorSelectors(colorTheme)
     this.syncColorPreview(colorTheme)
+    if (this.hasPromotionTarget) {
+      this.promotionTimer = window.setInterval(() => this.syncPromotions(), 60000)
+    }
+  }
+
+  disconnect() {
+    window.clearInterval(this.promotionTimer)
   }
 
   set(event) {
@@ -24,7 +32,8 @@ export default class extends Controller {
   }
 
   setColor(event) {
-    const colorTheme = event.currentTarget.value
+    const colorTheme = event.params?.color || event.currentTarget.value
+    if (!this.colorThemes[colorTheme]) return
     const userId = document.body.dataset.userId || "guest"
 
     localStorage.setItem(`colorTheme:${userId}`, colorTheme)
@@ -43,22 +52,26 @@ export default class extends Controller {
         select.value = colorTheme
       }
     })
+    this.syncPromotions(colorTheme)
+  }
+
+  syncPromotions(colorTheme = document.documentElement.dataset.colorTheme) {
+    const today = new Intl.DateTimeFormat("sv-SE", {
+      timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit"
+    }).format(new Date())
+
+    document.querySelectorAll('[data-theme-target="promotion"]').forEach((promotion) => {
+      promotion.hidden = promotion.dataset.themeColorParam === colorTheme ||
+        today < promotion.dataset.promotionStartsOn || today > promotion.dataset.promotionEndsOn
+    })
   }
 
   syncColorPreview(colorTheme) {
-    const palettes = {
-      blue_teal: ["#3368A0", "#66A3BF", "#C8DFDB", "#F2EFE7"],
-      sage_teal: ["#2D9596", "#9AD0C2", "#265073", "#ECF4D6"],
-      retro_orange: ["#527853", "#F7B787", "#EE7214", "#F9E8D9"],
-      black_mint: ["#092328", "#12544F", "#2A835F", "#8BBB92"],
-      white_tea_sage: ["#8B9A6E", "#F7F2EB", "#EAE2D6", "#EEEEEE"],
-      earthy_forest_hues: ["#DAD7CD", "#A3B18A", "#588157", "#3A5A40", "#344E41"]
-    }
-    const colors = palettes[colorTheme] || palettes.blue_teal
+    const colors = (this.colorThemes[colorTheme] || this.colorThemes.blue_teal)?.colors || []
 
     document.querySelectorAll('[data-theme-target="preview"]').forEach((preview) => {
       preview.querySelectorAll("[data-theme-preview-color]").forEach((swatch, index) => {
-        swatch.style.backgroundColor = colors[index]
+        swatch.style.backgroundColor = colors[index] || colors[0]
       })
     })
   }
@@ -84,18 +97,11 @@ export default class extends Controller {
   }
 
   updateBrowserColor(theme) {
-    const colors = {
-      blue_teal: "#3368A0",
-      sage_teal: "#265073",
-      retro_orange: "#527853",
-      black_mint: "#2A835F",
-      white_tea_sage: "#8B9A6E",
-      earthy_forest_hues: "#588157"
-    }
     const colorTheme = document.documentElement.dataset.colorTheme || "blue_teal"
+    const palette = this.colorThemes[colorTheme] || this.colorThemes.blue_teal
 
     document
       .querySelector("meta[name='theme-color']")
-      ?.setAttribute("content", theme === "dark" ? "#0b0f0b" : colors[colorTheme])
+      ?.setAttribute("content", palette?.[theme === "dark" ? "dark" : "light"] || "#3368A0")
   }
 }

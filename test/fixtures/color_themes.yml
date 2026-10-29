@@ -1,0 +1,27 @@
+halloween:
+  key: halloween
+  name: Halloween
+  description: Roxos e abóboras.
+  base_color: "#522D60"
+  primary_color: "#80426E"
+  accent_color: "#F2A67B"
+  highlight_color: "#FFD38B"
+  decoration: "🎃"
+  promotion_enabled: true
+  promotion_text: Experimente o Halloween
+  promotion_starts_on: 2026-10-29
+  promotion_ends_on: 2026-11-03
+
+<% ColorTheme::BUILTIN_PALETTES.except("halloween").each do |key, (description, colors, _navbar)| %>
+<%= key %>:
+  key: <%= key %>
+  name: <%= User::COLOR_THEMES.key(key).to_json %>
+  description: <%= description.to_json %>
+  base_color: <%= colors[0].to_json %>
+  primary_color: <%= colors[1].to_json %>
+  accent_color: <%= colors[2].to_json %>
+  highlight_color: <%= colors[3].to_json %>
+  extra_color: <%= colors[4]&.to_json || "null" %>
+  preserve_original_palette: true
+  promotion_enabled: false
+<% end %>

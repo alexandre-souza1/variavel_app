@@ -75,6 +75,18 @@ html[data-bs-theme="light"] {
     --app-muted: #64705c;
   }
 
+  &[data-color-theme="halloween"] {
+    --app-primary: #80426e;
+    --app-primary-rgb: 128, 66, 110;
+    --app-strong: #522d60;
+    --app-soft: #f2a67b;
+    --app-page-bg: #fff3e1;
+    --app-surface: #fffaf2;
+    --app-secondary-bg: #ffd38b;
+    --app-tertiary-bg: #fff6eb;
+    --app-muted: #79566f;
+  }
+
   --bs-primary: var(--app-primary);
   --bs-primary-rgb: var(--app-primary-rgb);
   --bs-primary-text-emphasis: var(--app-strong);

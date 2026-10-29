@@ -90,6 +90,9 @@ Rails.application.routes.draw do
     get 'users/update'
     resource :ai_setting, only: %i[edit update], path: "configuracoes-ia"
     resources :android_releases, only: %i[index create update], path: "atualizacoes-android"
+    resources :color_themes, except: :show, path: "temas" do
+      post :generate, on: :collection, path: "gerar-com-ia"
+    end
   end
 
   devise_for :users

@@ -1,0 +1,180 @@
+.color-picker-field {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 46px;
+  padding: 4px 8px;
+  border: 1px solid var(--app-field-border);
+  border-radius: 12px;
+  background: var(--app-field-bg);
+  color: var(--app-field-ink);
+  transition: border-color .18s ease, background-color .18s ease;
+
+  &:hover { border-color: var(--app-field-accent); }
+  &:focus-within, &:has(.color-picker-trigger[aria-expanded="true"]) {
+    border-color: var(--app-field-accent);
+    outline: 2px solid var(--app-field-accent);
+    outline-offset: 2px;
+  }
+
+  &__hex {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    padding: .3rem .25rem .3rem 0;
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    background: transparent;
+    color: inherit;
+    box-shadow: none;
+    font: 500 .875rem ui-monospace, SFMono-Regular, Consolas, monospace;
+    text-transform: uppercase;
+  }
+
+  &__hex::placeholder { color: var(--app-field-muted); opacity: .7; }
+}
+
+.color-picker-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  height: 36px;
+  padding: 3px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+
+  &:focus { outline: 0; }
+  &:hover .color-picker-trigger__swatch,
+  &:focus-visible .color-picker-trigger__swatch { box-shadow: 0 0 0 2px var(--app-field-bg), 0 0 0 3px var(--app-field-accent); }
+
+  &__swatch {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(127, 127, 127, .35);
+    border-radius: 7px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .2);
+    transition: box-shadow .18s ease;
+  }
+}
+
+.color-picker-panel {
+  position: fixed;
+  inset: auto;
+  z-index: 1100;
+  width: 296px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--app-field-border);
+  border-radius: 16px;
+  background: var(--bs-card-bg, var(--bs-body-bg));
+  color: var(--bs-body-color);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, .22), 0 2px 8px rgba(15, 23, 42, .08);
+  font-size: .8rem;
+
+  &:popover-open { animation: color-picker-enter .16s ease-out; }
+  &__header { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: 10px; font-weight: 700; }
+  &__header > span { display: inline-flex; align-items: center; gap: .4rem; }
+  &__header > span > i { color: var(--bs-primary-text-emphasis); }
+  &__adjustments { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  &__caption { margin: 12px 0 8px; color: var(--bs-secondary-color); font-size: .65rem; font-weight: 600; }
+  &__hex { display: flex; align-items: center; gap: .65rem; margin-top: 12px; }
+  &__hex label { display: flex; align-items: center; gap: .5rem; flex: 1; font-size: .65rem; font-weight: 700; color: var(--bs-secondary-color); }
+  &__hex input {
+    width: 100%;
+    min-width: 0;
+    padding: .45rem .55rem;
+    border: 1px solid var(--app-field-border);
+    border-radius: 8px;
+    background: var(--app-field-bg);
+    color: var(--bs-body-color);
+    font: 600 .8rem ui-monospace, monospace;
+    text-transform: uppercase;
+  }
+  &__hex input:focus-visible { outline: 2px solid var(--app-field-accent); outline-offset: 2px; }
+  &__hex input[aria-invalid="true"] { border-color: var(--bs-danger); }
+}
+
+.color-picker-close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: var(--app-field-bg);
+  color: var(--bs-secondary-color);
+  cursor: pointer;
+
+  &:hover { color: var(--bs-body-color); }
+  &:focus-visible { outline: 2px solid var(--app-field-accent); }
+}
+
+.color-picker-plane {
+  position: relative;
+  height: 124px;
+  overflow: hidden;
+  border: 1px solid rgba(127, 127, 127, .2);
+  border-radius: 10px;
+  background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent), var(--picker-hue-color);
+  cursor: crosshair;
+  touch-action: none;
+
+  &__thumb { position: absolute; width: 13px; height: 13px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, .6); transform: translate(-50%, -50%); pointer-events: none; }
+}
+
+.color-picker-slider {
+  display: block;
+  margin-top: 12px;
+  > span { display: flex; justify-content: space-between; gap: .3rem; margin-bottom: 7px; color: var(--bs-secondary-color); font-size: .65rem; }
+  output { font-variant-numeric: tabular-nums; }
+}
+
+.color-picker-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 8px;
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+
+  &--hue { background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); }
+  &--saturation { background: linear-gradient(to right, #fff, var(--picker-hue-color)); }
+  &--brightness { background: linear-gradient(to right, #000, var(--picker-full-color)); }
+  &::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; border: 2px solid #fff; border-radius: 50%; background: var(--bs-primary-text-emphasis); box-shadow: 0 1px 4px rgba(0, 0, 0, .4); }
+  &::-moz-range-thumb { width: 12px; height: 12px; border: 2px solid #fff; border-radius: 50%; background: var(--bs-primary-text-emphasis); box-shadow: 0 1px 4px rgba(0, 0, 0, .4); }
+  &:focus-visible { outline: 2px solid var(--app-field-accent); outline-offset: 5px; }
+}
+
+.color-picker-value-swatch { flex-shrink: 0; width: 28px; height: 28px; border: 1px solid rgba(127, 127, 127, .35); border-radius: 7px; }
+.color-picker-error { margin: .4rem 0 0; color: var(--bs-danger-text-emphasis); font-size: .7rem; }
+.color-picker-suggestions {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 7px;
+
+  button { min-width: 0; height: 26px; border: 1px solid rgba(127, 127, 127, .35); border-radius: 6px; cursor: pointer; transition: transform .15s ease; }
+  button:hover { transform: translateY(-2px); }
+  button[aria-pressed="true"], button:focus-visible { outline: 2px solid var(--app-field-accent); outline-offset: 2px; }
+}
+
+@keyframes color-picker-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .color-picker-panel:popover-open { animation: none; }
+  .color-picker-field, .color-picker-trigger__swatch, .color-picker-suggestions button { transition: none; }
+}
