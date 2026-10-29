@@ -62,6 +62,18 @@ A tabela `ai_action_requests` registra conta autora, tipo, dados aprovados, pré
 
 Exemplos: “Crie uma tarefa para inspecionar os pneus amanhã às 14h, com lembrete”, “No plano Revisão de Frota, crie uma tarefa para conferir o estepe e atribua à Ana”, “Prepare um plano de inspeção mensal com tarefas para pressão, sulcos e estepe”.
 
+## Cadastro de colaboradores
+
+Administradores ativos e usuários ativos de **RH** podem pedir o cadastro de colaboradores pelo assistente. Supervisores de outros setores e mecânicos não recebem essa função, mesmo quando podem consultar colaboradores ou cadastrar pelas telas do app. A permissão é conferida na preparação e novamente na confirmação.
+
+`prepare_employee` prepara a prévia de um colaborador com **nome completo, matrícula, setor DU/AZ e cargo inicial**. DU permite ajudante, motorista de van e motorista; AZ permite ajudante e operador. Registro na carteira, CPF e nascimento são opcionais e usados somente quando informados. Matrícula e Promax preservam zeros à esquerda.
+
+O início na função é separado da data de registro na carteira. Sem início definido, o cadastro fica **em integração**, sem disponibilidade operacional, e pode aguardar Promax/turno. Para iniciar a função, DU exige código Promax e AZ exige turno A, B ou C. Datas inválidas, matrícula já existente, códigos DU sobrepostos e cargos incompatíveis são recusados.
+
+O usuário confere a prévia e clica em **Confirmar cadastro**, ou usa **Ajustar** / **Cancelar**. Texto como “sim” não confirma. A proposta segue o prazo de 30 minutos, isolamento por conta, token e proteção contra requisições repetidas das demais ações. A confirmação usa o cadastro central para criar a pessoa, o cargo inicial, o vínculo operacional e o histórico, com auditoria da conta e da proposta do assistente. Não cria uma conta de acesso ao app. Uma falha desfaz o conjunto.
+
+Exemplos: “Cadastre Maria Silva, matrícula 001234, ajudante DU, ainda em integração”; “Cadastre João Souza, matrícula 001235, operador AZ, turno B, início na função em 03/11/2026”.
+
 ## Montagem de automações pela conversa
 
 O assistente monta regras do módulo **Automações** com `automation_options`, `configure_automation` e `prepare_automation`. O passo a passo está disponível como sugestão no assistente. Na central, o painel recolhível **Crie uma automação com suas palavras** permite enviar uma descrição diretamente. A IA usa origens/ações do catálogo real, localiza registros permitidos e pergunta um dado por vez, preservando as escolhas privadas por até duas horas. Respostas curtas completam a montagem atual; mudar perfil/setor, expirar o estado ou limpar a conversa a descarta.
@@ -141,7 +153,7 @@ Para uma avaliação financeira em PDF com período fixo e sem depender do Gemin
 
 ## Validação
 
-`PARALLEL_WORKERS=1 bin/rails test test/controllers/ai_assistants_controller_test.rb test/controllers/ai_assistant_actions_controller_test.rb test/controllers/ai_assistant_task_updates_test.rb test/services/ai_assistant_actions_test.rb test/services/ai_assistant_page_context_test.rb test/services/ai_assistant_tools_test.rb test/services/ai_assistant_queries_test.rb test/services/ai_assistant_analytics_test.rb test/services/ai_assistant_daily_briefing_test.rb test/jobs/ai_assistant_job_test.rb test/jobs/ai_assistant_analytics_job_test.rb test/jobs/ai_assistant_task_context_job_test.rb`
+`PARALLEL_WORKERS=1 bin/rails test test/controllers/ai_assistants_controller_test.rb test/controllers/ai_assistant_actions_controller_test.rb test/controllers/ai_assistant_employees_controller_test.rb test/controllers/ai_assistant_task_updates_test.rb test/services/ai_assistant_employee_drafts_test.rb test/services/ai_assistant_actions_test.rb test/services/ai_assistant_page_context_test.rb test/services/ai_assistant_tools_test.rb test/services/ai_assistant_queries_test.rb test/services/ai_assistant_analytics_test.rb test/services/ai_assistant_daily_briefing_test.rb test/jobs/ai_assistant_job_test.rb test/jobs/ai_assistant_analytics_job_test.rb test/jobs/ai_assistant_task_context_job_test.rb`
 
 Os testes cobrem autenticação, isolamento entre contas, matriz de setores/perfis, bloqueio por IDs e chamadas de funções não anunciadas, paginação, saldos e metas sobrepostas, resumo diário, ausência de dados/integrações, consultas sem escrita, privacidade das conversas, continuidade de funções, cancelamento e falhas do provedor. Também cobrem prévias sem gravação, confirmação explícita, repetição de requisições, expiração, revalidação de permissões/dados, rollback de planos e auditoria após limpar. As chamadas externas são simuladas nos testes.
 

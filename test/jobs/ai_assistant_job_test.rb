@@ -36,6 +36,42 @@ class AiAssistantJobTest < ActiveJob::TestCase
     ENV["GEMINI_API_KEY"] = previous
   end
 
+  test "HR can prepare employee creation through provider tools without creating the employee" do
+    users(:one).update!(role: :user, sector: :hr)
+    @message.update!(content: "Cadastre Novo Colaborador, matrícula 001234, motorista DU, ainda em integração.")
+    requests = []
+    responses = [
+      { "steps" => [{ "type" => "function_call", "id" => "employee-1", "name" => "prepare_employee", "arguments" => {
+        "nome" => "Novo Colaborador", "matricula" => "001234", "sector" => "du", "cargo" => "motorista"
+      } }] },
+      { "steps" => [{ "type" => "model_output", "content" => [{ "type" => "text", "text" => "Confira os dados e clique em Confirmar cadastro." }] }] }
+    ]
+    fake_post = lambda do |_url, &block|
+      req = Struct.new(:headers, :options, :body).new({}, Struct.new(:timeout, :open_timeout).new)
+      block.call(req)
+      requests << JSON.parse(req.body)
+      Faraday::Response.new(status: 200, body: responses.shift.to_json)
+    end
+    previous = ENV["GEMINI_API_KEY"]
+    ENV["GEMINI_API_KEY"] = "test-key"
+    assert_no_difference ["Employee.count", "EmployeeRole.count", "EmployeeCareerEvent.count", "Driver.count", "User.count"] do
+      assert_difference "AiActionRequest.count", 1 do
+        Faraday.stub(:post, fake_post) { AiAssistantJob.perform_now(@conversation.id, "request-1", @message.id) }
+      end
+    end
+    assert_nil @conversation.reload.error_message
+    action = @conversation.ai_action_requests.sole
+    assert_equal "create_employee", action.kind
+    assert_equal "pending", action.status
+    assert_equal "001234", action.payload["matricula"]
+    assert_nil action.payload["starts_on"]
+    assert_includes requests.first["tools"].pluck("name"), "prepare_employee"
+    refute_includes requests.to_json, action.confirmation_token
+    assert requests.all? { |request| request["store"] == false }
+  ensure
+    ENV["GEMINI_API_KEY"] = previous
+  end
+
   test "clearing cancels in flight replies and an old job cannot overwrite a new request" do
     @conversation.clear!
     @conversation.update!(request_token: "request-2")

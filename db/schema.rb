@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_28_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_29_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -74,7 +74,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_28_120000) do
     t.index ["ai_conversation_id"], name: "index_ai_action_requests_on_ai_conversation_id"
     t.index ["ai_message_id"], name: "index_ai_action_requests_on_ai_message_id"
     t.index ["user_id"], name: "index_ai_action_requests_on_user_id"
-    t.check_constraint "kind::text = ANY (ARRAY['create_task'::character varying::text, 'create_plan'::character varying::text, 'update_task'::character varying::text, 'create_automation'::character varying::text])", name: "ai_action_requests_valid_kind"
+    t.check_constraint "kind::text = ANY (ARRAY['create_task'::character varying, 'create_plan'::character varying, 'update_task'::character varying, 'create_automation'::character varying, 'create_employee'::character varying]::text[])", name: "ai_action_requests_valid_kind"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'executed'::character varying::text, 'cancelled'::character varying::text])", name: "ai_action_requests_valid_status"
   end
 

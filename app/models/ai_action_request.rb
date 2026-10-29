@@ -6,7 +6,7 @@ class AiActionRequest < ApplicationRecord
   belongs_to :ai_conversation
   belongs_to :ai_message, optional: true
 
-  validates :kind, inclusion: { in: %w[create_task create_plan update_task create_automation] }
+  validates :kind, inclusion: { in: %w[create_task create_plan update_task create_automation create_employee] }
   validates :status, inclusion: { in: %w[pending executed cancelled] }
   validates :confirmation_token, :expires_at, presence: true
   validate :same_account

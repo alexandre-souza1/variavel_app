@@ -10,18 +10,23 @@ module AiAssistant
     attr_reader :kind, :payload, :preview
 
     def self.allowed?(user, kind: nil)
+      return EmployeeDraft.allowed?(user) if kind == "create_employee"
+
       user&.active? && (kind == "update_task" || !user.mechanical?)
     end
 
     def self.build(user:, kind:, arguments:)
       return TaskUpdateDraft.new(user: user, arguments: arguments) if kind == "update_task"
       return AutomationDraft.new(user: user, arguments: arguments) if kind == "create_automation"
+      return EmployeeDraft.new(user: user, arguments: arguments) if kind == "create_employee"
 
       new(user: user, kind: kind, arguments: arguments)
     end
 
     def self.restore(user:, kind:, payload:)
-      if kind == "create_automation"
+      if kind == "create_employee"
+        EmployeeDraft.new(user: user, arguments: payload)
+      elsif kind == "create_automation"
         AutomationDraft.new(user: user, arguments: payload)
       elsif kind == "update_task"
         TaskUpdateDraft.new(user: user, arguments: payload.slice("task_id", "changes"), expected_state: payload.fetch("expected_state"))

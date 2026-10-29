@@ -1,6 +1,6 @@
 module AiAssistant
   module ActionTools
-    ACTION_FUNCTIONS = %w[action_options pending_actions prepare_task prepare_plan prepare_task_update].freeze
+    ACTION_FUNCTIONS = %w[action_options pending_actions prepare_task prepare_plan prepare_task_update prepare_employee].freeze
 
     def action_declarations
       return [] unless ActionDraft.allowed?(@user, kind: "update_task")
@@ -32,6 +32,18 @@ module AiAssistant
           tasks: { type: "array", items: { type: "object", properties: task_fields, required: ["title"] } })
       ]
       declarations.reject! { |entry| %w[prepare_task prepare_plan].include?(entry[:name]) } unless ActionDraft.allowed?(@user)
+      if ActionDraft.allowed?(@user, kind: "create_employee")
+        declarations << function("prepare_employee", "Prepara o cadastro de UM colaborador, com prévia e confirmação por botão. Exclusivo para admins e RH. Não cria registros. Nome, matrícula, setor e cargo são obrigatórios. Sem starts_on, fica em integração; com início, DU exige Promax e AZ exige turno. Não cria conta de acesso ao app.",
+          nome: string("Nome completo informado pelo usuário"), matricula: string("Matrícula informada, preservando zeros à esquerda"),
+          sector: { type: "string", enum: @user.employee_sectors }, cargo: { type: "string", enum: EmployeeRole::CARGOS.values.uniq,
+            description: "DU: ajudante, van ou motorista. AZ: ajudante ou operador" },
+          registered_on: string("Data de registro na carteira YYYY-MM-DD, somente se informada"),
+          starts_on: string("Início na função YYYY-MM-DD; omitir quando ainda não definido, mantendo em integração"),
+          promax: string("Código Promax do DU; obrigatório para iniciar na função; preserve zeros à esquerda"),
+          turno: { type: "integer", description: "Somente AZ: turno A=0, B=1, C=2; obrigatório para iniciar na função" },
+          cpf: string("Opcional, somente se fornecido pelo usuário"), data_nascimento: string("Opcional YYYY-MM-DD, somente se fornecida"),
+          reason: string("Motivo opcional do cadastro, até 500 caracteres"))
+      end
       declarations
     end
 
@@ -40,7 +52,7 @@ module AiAssistant
       return action_options(args) if name == "action_options"
       return pending_actions if name == "pending_actions"
 
-      kind = { "prepare_task" => "create_task", "prepare_plan" => "create_plan", "prepare_task_update" => "update_task" }.fetch(name)
+      kind = { "prepare_task" => "create_task", "prepare_plan" => "create_plan", "prepare_task_update" => "update_task", "prepare_employee" => "create_employee" }.fetch(name)
       draft = ActionDraft.build(user: @user, kind: kind, arguments: args)
       # Repeated tool calls in the same response must not duplicate a proposal.
       unless @drafts.any? { |existing| existing[:kind] == draft.kind && existing[:payload] == draft.payload }
@@ -66,6 +78,7 @@ module AiAssistant
       { current_user_id: @user.id, personal_inbox: "Sua Entrada pessoal, privada; omita plan_id e bucket_id",
         plan_buckets: buckets, assignees: accounts,
         can_create: ActionDraft.allowed?(@user), can_update_tasks: true,
+        can_create_employees: ActionDraft.allowed?(@user, kind: "create_employee"),
         allowed_plan_sectors: ActionDraft.allowed?(@user) ? (@user.admin? ? User.sectors.keys : [@user.sector]) : [] }
     end
 

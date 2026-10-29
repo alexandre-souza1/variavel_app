@@ -31,7 +31,7 @@
     <div class="ai-assistant__messages" data-ai-assistant-target="messages" role="log" aria-live="polite" aria-label="Conversa com o assistente" hidden></div>
     <div class="ai-assistant__welcome" data-ai-assistant-target="welcome">
       <strong>Como posso ajudar?</strong>
-      <p>Consulte os dados liberados para seu perfil e setor. Atualize suas tarefas com uma prévia antes de confirmar.<%= " Você também pode criar tarefas, planos e montar automações passo a passo." if AiAssistant::ActionDraft.allowed?(current_user) %></p>
+      <p>Consulte os dados liberados para seu perfil e setor. Atualize suas tarefas com uma prévia antes de confirmar.<%= " Você também pode criar tarefas, planos e montar automações passo a passo." if AiAssistant::ActionDraft.allowed?(current_user) %><%= " Cadastre colaboradores conferindo os dados antes de confirmar." if AiAssistant::ActionDraft.allowed?(current_user, kind: "create_employee") %></p>
       <% ai_assistant_suggestions(current_user).each do |question| %>
         <button type="button" data-action="ai-assistant#suggest" data-question="<%= question %>"><%= question %><i class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
       <% end %>
