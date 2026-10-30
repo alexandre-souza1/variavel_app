@@ -9,7 +9,9 @@ class ActionPlansControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".plan-name", text: active_plan.name, count: 2
     assert_select ".plan-name", text: archived_plan.name, count: 0
-    assert_select "a[href=?]", action_plans_path(status: "archived"), text: /Arquivados/, count: 2
+    assert_select ".header-actions a[href=?]", action_plans_path(status: "archived"), text: /Arquivados/, count: 1
+    assert_select "nav[aria-label='Filtrar planos'] a", text: /Arquivados/, count: 0
+    assert_select ".header-actions a", text: /Acompanhamento de Checklist/, count: 0
     assert_select "form[action=?]", archive_action_plan_path(active_plan), count: 2
 
     get action_plans_path(status: "archived")

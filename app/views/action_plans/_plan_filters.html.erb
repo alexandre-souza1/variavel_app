@@ -3,11 +3,6 @@
   <%= link_to "Ativos", action_plans_path(filters),
               class: "btn btn-sm #{@show_archived_action_plans ? 'btn-outline-primary' : 'btn-primary'}",
               aria: { current: @show_archived_action_plans ? nil : "page" } %>
-  <%= link_to action_plans_path(filters.merge(status: "archived")),
-              class: "btn btn-sm #{@show_archived_action_plans ? 'btn-primary' : 'btn-outline-primary'}",
-              aria: { current: @show_archived_action_plans ? "page" : nil } do %>
-    <i class="bi bi-archive" aria-hidden="true"></i> Arquivados
-  <% end %>
   <% if @hidden_action_plan_ids.any? %>
     <%= link_to action_plans_path(filters.merge(status: @show_archived_action_plans ? "archived" : nil, show_hidden: @show_hidden_action_plans ? nil : 1)),
                 class: "text-secondary small",

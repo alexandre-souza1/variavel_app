@@ -12,8 +12,11 @@
         <p class="subtitle">Acompanhamento das suas tarefas e planos</p>
       </div>
       <div class="header-actions">
-        <% if current_user.can_view_checklist_tracking? %>
-          <%= link_to "Acompanhamento de Checklist", checklist_occurrences_path, class: "btn-outline" %>
+        <%= link_to action_plans_path(params.permit(:query, :start_date, :show_hidden).to_h.merge(status: "archived")),
+                    class: @show_archived_action_plans ? "btn-primary-solid" : "btn-outline",
+                    aria: { current: @show_archived_action_plans ? "page" : nil } do %>
+          <i class="bi bi-archive" aria-hidden="true"></i>
+          <span>Arquivados</span>
         <% end %>
         <%= link_to inbox_path, class: "btn-outline" do %>
           <i class="bi bi-inbox"></i>
