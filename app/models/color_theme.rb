@@ -1,6 +1,19 @@
 class ColorTheme < ApplicationRecord
   COLOR_FIELDS = %i[base_color primary_color accent_color highlight_color].freeze
   PALETTE_FIELDS = (COLOR_FIELDS + [:extra_color]).freeze
+  HEADER_DECORATION_FIELDS = %i[header_symbol header_companion header_detail].freeze
+  # A mesma receita posiciona os símbolos na interface e na prévia do editor.
+  HEADER_DECORATION_LAYOUTS = {
+    single: { view_box: "0 0 64 64", width: "2.5rem", angle: "-12deg",
+      elements: [{ role: "primary", x: 32, y: 34, size: 48, angle: 0 }] },
+    corner: { view_box: "0 0 128 64", width: "6rem", angle: "0deg",
+      elements: [
+        { role: "secondary", x: 55, y: 26, size: 34, angle: -12 },
+        { role: "primary", x: 87, y: 36, size: 46, angle: 8 },
+        { role: "detail", x: 21, y: 14, size: 11, angle: -8 },
+        { role: "detail", x: 60, y: 51, size: 8, angle: 16 }
+      ] }
+  }.freeze
   # Compartilhada com a prévia: superfícies grafite recebem a matiz da paleta,
   # sem multiplicar a escuridão de uma cor base que já pode ser quase preta.
   DARK_PALETTE_RECIPE = {
@@ -27,6 +40,7 @@ class ColorTheme < ApplicationRecord
   before_destroy :reset_user_preferences
 
   attr_readonly :key
+  store_accessor :header_decoration, *HEADER_DECORATION_FIELDS
 
   validates :name, presence: true, length: { maximum: 40 }, uniqueness: { case_sensitive: false }
   validates :key, presence: true, uniqueness: true, format: { with: /\A[a-z0-9]+(?:_[a-z0-9]+)*\z/ }
@@ -34,10 +48,12 @@ class ColorTheme < ApplicationRecord
   validates :extra_color, format: { with: /\A#[0-9A-Fa-f]{6}\z/, message: "deve ser uma cor hexadecimal, como #522D60" }, allow_blank: true
   validates :description, length: { maximum: 160 }
   validates :decoration, length: { maximum: 16 }
+  validates(*HEADER_DECORATION_FIELDS, length: { maximum: 16 })
   validates :promotion_text, length: { maximum: 64 }
   validates :promotion_starts_on, :promotion_ends_on, presence: true, if: :promotion_enabled?
   validate :promotion_period_is_ordered
   validate :key_is_available
+  validate :header_decoration_uses_single_symbols
 
   scope :advertised_on, ->(date = Date.current) {
     where(promotion_enabled: true).where("promotion_starts_on <= ? AND promotion_ends_on >= ?", date, date)
@@ -62,6 +78,16 @@ class ColorTheme < ApplicationRecord
 
   def invitation
     promotion_text.presence || "Experimente #{name}"
+  end
+
+  def header_decoration_symbols
+    { primary: header_symbol.presence || decoration.presence,
+      secondary: header_companion.presence, detail: header_detail.presence }
+  end
+
+  def header_decoration_layout
+    symbols = header_decoration_symbols
+    HEADER_DECORATION_LAYOUTS.fetch(symbols[:secondary] || symbols[:detail] ? :corner : :single)
   end
 
   # Quatro cores geram as superfícies dos dois modos. Textos e botões recebem
@@ -109,6 +135,15 @@ class ColorTheme < ApplicationRecord
     self.extra_color = extra_color.to_s.strip.upcase.presence
     self.name = name.to_s.strip
     self.decoration = decoration.to_s.strip
+    HEADER_DECORATION_FIELDS.each do |field|
+      public_send("#{field}=", public_send(field).to_s.strip.presence)
+    end
+  end
+
+  def header_decoration_uses_single_symbols
+    HEADER_DECORATION_FIELDS.each do |field|
+      errors.add(field, "deve conter apenas um símbolo") if public_send(field).to_s.scan(/\X/).size > 1
+    end
   end
 
   def assign_key

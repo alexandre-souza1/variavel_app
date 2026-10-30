@@ -208,6 +208,15 @@ body:has(.color-theme-ai[open]) { overflow: hidden; }
   overflow-wrap: anywhere;
 
   &__bar { padding: .7rem .9rem; background: var(--preview-bar, var(--preview-base)); color: #fff; font-size: .85rem; }
+  &__panel-header {
+    --app-panel-header-bg: color-mix(in srgb, var(--preview-accent-ink) 18%, var(--preview-background));
+    --app-panel-header-color: var(--preview-ink);
+    --app-panel-header-border: var(--preview-accent);
+    --app-panel-header-divider-inset: 0;
+    min-height: 58px;
+    padding: .7rem .9rem;
+    font-size: .78rem;
+  }
   &__body { padding: 1.1rem; color: var(--preview-ink, var(--preview-base)); background: var(--preview-background, #fffaf2); }
   &__eyebrow { font-size: .65rem; font-weight: 700; letter-spacing: .12em; color: var(--preview-accent-ink, var(--preview-primary)); }
   h4 { margin: .5rem 0; font-size: 1.2rem; color: inherit; }

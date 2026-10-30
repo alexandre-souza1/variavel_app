@@ -22,19 +22,6 @@
     .filter-form .invoice-filter-submit { min-width: 0; }
     .invoice-filter-shortcuts { justify-content: space-between; width: 100%; padding-top: .65rem; border-top: 1px solid var(--bs-border-color); }
 
-    .chart-card .chart-header,
-    .info-card .info-card-header,
-    .table-card .table-card-header {
-      padding: .85rem 1rem .7rem;
-    }
-
-    .chart-card .chart-header::after,
-    .info-card .info-card-header::after,
-    .table-card .table-card-header::after {
-      left: 1rem;
-      right: 1rem;
-    }
-
     .chart-card .chart-header .chart-filters {
       align-self: stretch;
       width: 100%;
@@ -43,14 +30,6 @@
     .chart-card .chart-header .chart-filters .form-select {
       min-width: 0;
       width: 100%;
-    }
-
-    .dashboard-panel-heading h2 {
-      font-size: .88rem;
-    }
-
-    .dashboard-panel-heading small {
-      font-size: .68rem;
     }
 
     .category-grid-wrapper .category-grid {
@@ -100,17 +79,6 @@
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     }
   }
-}
-
-// O cabeçalho de Últimos Lançamentos não precisa de divisor: a própria
-// borda da tabela já marca a separação visual.
-.invoice-dashboard-page .table-card .table-card-header {
-  border-bottom: 0 !important;
-  padding-bottom: .45rem;
-}
-
-.invoice-dashboard-page .table-card .table-card-header::after {
-  display: none;
 }
 
 @media (max-width: $md-max) {

@@ -65,25 +65,6 @@
     min-height: 0;
 
     .plans-card-header {
-      padding: 1rem 1.25rem;
-      background: var(--bs-tertiary-bg);
-      border-bottom: 1px solid var(--bs-border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
-
-      h5 {
-        margin: 0;
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: var(--bs-body-color);
-
-        i {
-          font-size: 1.1rem;
-        }
-      }
-
       .badge {
         font-size: 0.7rem;
         font-weight: 500;
@@ -302,24 +283,6 @@
     flex-direction: column;
     height: 100%;
     min-height: 0;
-
-    .chart-header {
-      padding: 0.75rem 1.25rem;
-      background: var(--bs-tertiary-bg);
-      border-bottom: 1px solid var(--bs-border-color);
-      flex-shrink: 0;
-
-      h5 {
-        margin: 0;
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--bs-body-color);
-
-        i {
-          font-size: 1.1rem;
-        }
-      }
-    }
 
     .chart-body {
       flex: 1 1 auto;

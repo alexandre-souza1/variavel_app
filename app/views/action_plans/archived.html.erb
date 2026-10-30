@@ -15,8 +15,8 @@
   </header>
 
   <section class="plans-card" aria-labelledby="archived-plans-title">
-    <div class="plans-card-header">
-      <h5 id="archived-plans-title"><i class="bi bi-archive me-2" aria-hidden="true"></i> Arquivados</h5>
+    <div class="app-panel__header plans-card-header">
+      <h2 class="app-panel__title" id="archived-plans-title"><i class="bi bi-archive me-2" aria-hidden="true"></i> Arquivados</h2>
       <div class="d-flex align-items-center gap-2">
         <%= render "hidden_plans_toggle" %>
         <span class="badge bg-primary-soft text-primary"><%= @action_plans.count %></span>

@@ -48,12 +48,15 @@ class Admin::ColorThemesControllerTest < ActionDispatch::IntegrationTest
     get new_admin_color_theme_path
     assert_response :success
     assert_select "input[name=?]", "color_theme[base_color]"
+    assert_select "input[name=?]", "color_theme[header_companion]"
+    assert_select "[data-preview-panel-header]", count: 2
     assert_difference "ColorTheme.count", 1 do
-      post admin_color_themes_path, params: { color_theme: theme_params.merge(key: "injected_key") }
+      post admin_color_themes_path, params: { color_theme: theme_params.merge(key: "injected_key", header_companion: "❄️", header_detail: "⭐") }
     end
     assert_redirected_to admin_color_themes_path
     theme = ColorTheme.find_by!(name: "Natal")
     assert_equal "natal", theme.key
+    assert_equal({ primary: "🎄", secondary: "❄️", detail: "⭐" }, theme.header_decoration_symbols)
     patch admin_color_theme_path(theme), params: { color_theme: { name: "Natal especial", key: "changed_key" } }
     assert_redirected_to admin_color_themes_path
     assert_equal "natal", theme.reload.key

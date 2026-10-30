@@ -61,6 +61,6 @@ class Admin::ColorThemesController < ApplicationController
   def color_theme_params
     params.require(:color_theme).permit(:name, :description, :base_color, :primary_color,
       :accent_color, :highlight_color, :extra_color, :decoration, :promotion_enabled, :promotion_text,
-      :promotion_starts_on, :promotion_ends_on)
+      :promotion_starts_on, :promotion_ends_on, *ColorTheme::HEADER_DECORATION_FIELDS)
   end
 end

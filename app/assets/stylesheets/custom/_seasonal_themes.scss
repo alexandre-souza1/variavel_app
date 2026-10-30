@@ -70,6 +70,34 @@
 
 .theme-decoration__star { font-size: 16px; }
 
+.app-panel__header {
+  > * { position: relative; z-index: 1; }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--app-panel-decoration-width, 2.5rem);
+    height: 2.5rem;
+    background-image: var(--app-panel-decoration-image, none);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    font-size: 2.25rem;
+    line-height: 1;
+    opacity: .13;
+    pointer-events: none;
+    user-select: none;
+    transform: translateY(-50%) rotate(var(--app-panel-decoration-angle, -12deg));
+  }
+}
+
 @media print {
   html[data-color-theme] [data-decoration-theme] { display: none; }
+  .app-panel__header::before { display: none; }
 }

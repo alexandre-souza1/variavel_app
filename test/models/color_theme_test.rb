@@ -1,6 +1,31 @@
 require "test_helper"
 
 class ColorThemeTest < ActiveSupport::TestCase
+  test "header composition saves its roles without changing the palette and falls back to the theme symbol" do
+    theme = color_themes(:blue_teal)
+    theme.update!(decoration: "🎄", header_companion: "❄️", header_detail: "⭐")
+    theme.reload
+    assert_equal({ primary: "🎄", secondary: "❄️", detail: "⭐" }, theme.header_decoration_symbols)
+    assert_equal "6rem", theme.header_decoration_layout.fetch(:width)
+    assert theme.preserve_original_palette?
+
+    theme.update!(header_symbol: "🎁", header_companion: "", header_detail: "")
+    assert_equal({ primary: "🎁", secondary: nil, detail: nil }, theme.reload.header_decoration_symbols)
+    assert_equal "2.5rem", theme.header_decoration_layout.fetch(:width)
+    theme.update!(header_symbol: "")
+    assert_equal "🎄", theme.header_decoration_symbols.fetch(:primary)
+  end
+
+  test "header roles accept combined emoji but reject loose lists of symbols" do
+    theme = color_themes(:halloween)
+    theme.header_companion = "👻 🦇"
+    assert_not theme.valid?
+    assert theme.errors[:header_companion].present?
+    theme.header_companion = " 👨‍👩‍👧‍👦 "
+    assert theme.valid?
+    assert_equal "👨‍👩‍👧‍👦", theme.header_companion
+  end
+
   test "advertisements include both boundaries and stop after November 3 in Brasilia" do
     theme = color_themes(:halloween)
     assert_not_includes ColorTheme.advertised_on(Date.new(2026, 10, 28)), theme

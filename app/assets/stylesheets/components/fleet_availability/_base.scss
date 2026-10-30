@@ -4,10 +4,14 @@
 .fleet-availability-page {
   // ─── Cabeçalho ──────────────────────────────────────────────────
   .fleet-availability-header {
-    display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 1.25rem;
+  }
+
+  .fleet-availability-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem 1.25rem;
   }
 
   .fleet-availability-command-center {
@@ -210,7 +214,6 @@
     }
 
     > span {
-      min-height: 2.7em;
       font-size: 0.875rem;
       line-height: 1.35;
     }
@@ -233,15 +236,21 @@
   }
 
   .fleet-profile-panel {
-    span {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    > span {
       display: block;
-      margin-bottom: 0.35rem;
+      font-size: 0.875rem;
+      line-height: 1.35;
     }
 
     div {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 0.25rem 0.65rem;
+      margin-top: auto;
     }
 
     small {
@@ -264,32 +273,17 @@
 
     &--main {
       border-top: 0.25rem solid var(--bs-success);
+
+      @media (min-width: 1200px) {
+        .fleet-list--availability {
+          flex: 1 1 0;
+          max-height: none;
+        }
+      }
     }
 
     &--danger {
       border-top: 0.25rem solid var(--bs-danger);
-    }
-
-    &__header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 0.75rem;
-      background: var(--bs-tertiary-bg);
-      border-bottom-color: var(--bs-border-color);
-    }
-
-    &__title {
-      display: block;
-      color: var(--bs-emphasis-color);
-      font-weight: 700;
-    }
-
-    &__header small {
-      display: block;
-      color: var(--bs-secondary-color);
-      font-size: 0.78rem;
-      line-height: 1.25;
     }
   }
 
@@ -572,6 +566,11 @@
     background: var(--bs-body-bg);
 
     &__header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      column-gap: 0.5rem;
+
       strong,
       small {
         display: block;
@@ -580,6 +579,7 @@
         color: var(--bs-emphasis-color);
       }
       small {
+        grid-column: 1 / -1;
         color: var(--bs-secondary-color);
         font-size: 0.76rem;
       }
@@ -1461,7 +1461,7 @@
   }
 
   .fleet-board-card__header {
-    background: rgba(255, 255, 255, 0.04);
+    --app-panel-header-bg: rgba(255, 255, 255, 0.04);
   }
 
   .fleet-list {
@@ -1839,11 +1839,6 @@
       margin-bottom: 0.9rem !important;
     }
 
-    .fleet-availability-header h2 {
-      font-size: 1.25rem;
-      line-height: 1.25;
-    }
-
     .fleet-availability-command-center {
       width: 100%;
       justify-items: stretch;
@@ -1965,18 +1960,6 @@
     .fleet-board-card {
       border-radius: 0.75rem;
       overflow: hidden;
-    }
-
-    .fleet-board-card__header {
-      padding: 0.75rem 0.85rem;
-    }
-
-    .fleet-board-card__title {
-      font-size: 0.95rem;
-    }
-
-    .fleet-board-card__header small {
-      font-size: 0.72rem;
     }
 
     .fleet-availability-footer-actions {

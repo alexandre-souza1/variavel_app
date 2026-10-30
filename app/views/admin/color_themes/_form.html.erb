@@ -1,4 +1,4 @@
-<%= form_with model: [:admin, @color_theme], local: true, data: { turbo: false, controller: "color-theme-editor", action: "color-theme:generated->color-theme-editor#applyGenerated", color_theme_generator_target: (@color_theme.new_record? ? "form" : nil), color_theme_editor_dark_palette_value: ColorTheme::DARK_PALETTE_RECIPE, color_theme_editor_original_theme_value: original_dark_theme_preview_key(@color_theme), color_theme_editor_original_palette_value: @color_theme.palette }, class: "color-theme-form" do |form| %>
+<%= form_with model: [:admin, @color_theme], local: true, data: { turbo: false, controller: "color-theme-editor", action: "color-theme:generated->color-theme-editor#applyGenerated", color_theme_generator_target: (@color_theme.new_record? ? "form" : nil), color_theme_editor_dark_palette_value: ColorTheme::DARK_PALETTE_RECIPE, color_theme_editor_original_theme_value: original_dark_theme_preview_key(@color_theme), color_theme_editor_original_palette_value: @color_theme.palette, color_theme_editor_header_layouts_value: ColorTheme::HEADER_DECORATION_LAYOUTS, color_theme_editor_header_icons_value: panel_decoration_icons }, class: "color-theme-form" do |form| %>
   <div class="card p-3 p-md-4">
     <% if @color_theme.errors.any? %>
       <div class="alert alert-danger" role="alert">
@@ -32,6 +32,22 @@
       <% end %>
       <p class="form-text mb-0">Cole os códigos das quatro cores principais. A quinta é opcional. O aplicativo adapta os fundos e o contraste para os modos claro e escuro.</p>
     </div>
+
+    <hr class="my-4">
+    <h2 class="h5">Composição dos cabeçalhos</h2>
+    <p class="small text-muted">Arranjo de canto: o símbolo principal fica maior, o acompanhante aparece um pouco atrás e os detalhes completam os espaços. Posições e transparência são padronizadas.</p>
+    <div class="row g-3">
+      <% { header_symbol: ["Principal", "🎃"], header_companion: ["Acompanhante", "👻"], header_detail: ["Detalhe", "✦"] }.each do |field, (label, example)| %>
+        <div class="col-sm-4">
+          <%= form.label field, label, class: "form-label" %>
+          <%= form.text_field field, maxlength: 16, placeholder: example, list: "theme-header-icons", class: "form-control", data: { color_theme_editor_target: field.to_s.camelize(:lower), action: "input->color-theme-editor#refresh" } %>
+        </div>
+      <% end %>
+    </div>
+    <datalist id="theme-header-icons">
+      <% ColorThemesHelper::PANEL_DECORATION_ICONS.each do |symbol, label| %><option value="<%= symbol %>" label="<%= label %>"></option><% end %>
+    </datalist>
+    <p class="form-text mt-2 mb-0">Escolha uma sugestão ou digite um símbolo por campo. Deixe o principal vazio para usar o símbolo do tema. Sem acompanhante e detalhe, o cabeçalho mantém apenas o principal.</p>
 
     <hr class="my-4">
     <h2 class="h5">Divulgação no menu</h2>
@@ -78,6 +94,9 @@
           <h3 class="color-theme-preview-mode-label"><i class="bi <%= icon %>" aria-hidden="true"></i> <%= label %></h3>
           <div class="color-theme-preview" data-color-theme-editor-target="preview" data-preview-mode="<%= mode %>">
             <div class="color-theme-preview__bar"><span data-preview-decoration></span> <strong data-preview-name>Seu tema</strong></div>
+            <div class="app-panel__header color-theme-preview__panel-header" data-preview-panel-header style="<%= panel_decoration_styles(@color_theme) %>">
+              <strong>Calendário de Prazos</strong>
+            </div>
             <div class="color-theme-preview__body">
               <span class="color-theme-preview__eyebrow">LOGIA</span>
               <h4>Um toque de cor</h4>
@@ -89,6 +108,6 @@
         </section>
       <% end %>
     </div>
-    <p class="small text-muted mt-3 mb-0">Compare a paleta nos dois modos antes de salvar.</p>
+    <p class="small text-muted mt-3 mb-0">Confira as cores e a composição dos cabeçalhos nos dois modos antes de salvar.</p>
   </aside>
 <% end %>

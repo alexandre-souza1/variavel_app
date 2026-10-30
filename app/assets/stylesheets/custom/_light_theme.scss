@@ -114,6 +114,19 @@ html[data-bs-theme="light"] {
   --bs-navbar-hover-color: #ffffff;
   --bs-admin-nav-bg: var(--app-strong);
 
+  // Cabeçalhos recebem uma faixa da paleta, distinta da superfície de conteúdo.
+  --app-panel-header-bg: color-mix(in srgb, var(--app-primary) 18%, var(--app-surface));
+  --app-panel-header-border: color-mix(in srgb, var(--app-primary) 32%, var(--app-surface));
+  --app-panel-header-color: color-mix(in srgb, var(--app-strong) 85%, #000);
+  --app-panel-header-divider-inset: 0;
+
+  .app-panel__header,
+  .dashboard-tasks .offcanvas-header {
+    --bs-body-color: var(--app-panel-header-color);
+    background: var(--app-panel-header-bg);
+    color: var(--app-panel-header-color);
+  }
+
   body,
   .app-shell,
   .app-main,
@@ -262,6 +275,36 @@ html[data-bs-theme="light"] {
     background-color: var(--bs-tertiary-bg);
   }
 
+  // Cores do calendário e cantos consistentes entre os rótulos e os dias.
+  .dashboard-tasks .calendar-body .simple-calendar {
+    --app-calendar-day-radius: 10px;
+
+    @media (max-width: $md-max) {
+      --app-calendar-day-radius: 8px;
+    }
+
+    thead th,
+    .day {
+      border-radius: var(--app-calendar-day-radius);
+    }
+
+    .day {
+      background: color-mix(in srgb, var(--app-primary) 12%, var(--app-surface));
+    }
+
+    .today {
+      background: color-mix(in srgb, var(--app-primary) 24%, var(--app-surface));
+    }
+
+    .calendar-day .calendar-task {
+      background: rgba(var(--app-primary-rgb), .2);
+      border-color: rgba(var(--app-primary-rgb), .28);
+      color: var(--app-panel-header-color);
+
+      &:hover { background: rgba(var(--app-primary-rgb), .28); }
+    }
+  }
+
   .app-table {
     --app-table-row-hover: rgba(var(--bs-primary-rgb), .1);
     --bs-table-bg: var(--app-surface);
@@ -399,11 +442,6 @@ html[data-bs-theme="light"] {
     .fleet-plate-card {
       background: var(--bs-card-bg);
       border-color: var(--bs-border-color);
-    }
-
-    .fleet-board-card__header {
-      background: var(--bs-secondary-bg);
-      border-bottom-color: var(--bs-border-color);
     }
 
     .fleet-list,

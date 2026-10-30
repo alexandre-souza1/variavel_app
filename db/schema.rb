@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_29_180000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_30_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -485,6 +485,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_180000) do
     t.datetime "updated_at", null: false
     t.boolean "preserve_original_palette", default: false, null: false
     t.string "extra_color"
+    t.jsonb "header_decoration", default: {}, null: false
     t.index ["key"], name: "index_color_themes_on_key", unique: true
   end
 

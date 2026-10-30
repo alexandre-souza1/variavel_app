@@ -10,36 +10,55 @@
 }
 
 .app-panel__header {
-  align-items: flex-start;
-  background: transparent;
+  align-items: center;
+  background: var(--app-panel-header-bg, transparent);
+  border: 0;
   display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: .75rem;
   justify-content: space-between;
   min-height: 58px;
   padding: .95rem 1.25rem .8rem;
   position: relative;
+
+  > * { min-width: 0; }
+  > .app-panel__title { margin: 0; }
 }
 
 .app-panel__header::after {
-  border-bottom: 1px solid var(--bs-border-color);
+  border-bottom: 1px solid var(--app-panel-header-border, var(--bs-border-color));
   bottom: 0;
   content: "";
-  left: 1.25rem;
+  left: var(--app-panel-header-divider-inset, 1.25rem);
+  pointer-events: none;
   position: absolute;
-  right: 1.25rem;
+  right: var(--app-panel-header-divider-inset, 1.25rem);
+}
+
+.app-panel__heading,
+.dashboard-panel-heading {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .app-panel__body { padding: 1rem 1.25rem; }
 
-.app-panel__kicker {
+.app-panel__kicker,
+.dashboard-panel-kicker {
   color: var(--bs-primary);
   display: block;
   font-size: .66rem;
   font-weight: 700;
   letter-spacing: .08em;
+  line-height: 1.2;
   text-transform: uppercase;
 }
 
-.app-panel__title {
+.app-panel__title,
+.dashboard-panel-heading h2 {
   color: var(--bs-body-color);
   font-size: .92rem;
   font-weight: 650;
@@ -47,12 +66,21 @@
   margin: .18rem 0 0;
 }
 
-.app-panel__subtitle {
+.app-panel__subtitle,
+.dashboard-panel-heading small {
   color: var(--bs-secondary-color);
   display: block;
   font-size: .7rem;
   line-height: 1.35;
   margin-top: .25rem;
+}
+
+@media (max-width: $md-max) {
+  .app-panel__header { padding: .85rem 1rem .7rem; }
+  .app-panel__header::after {
+    left: var(--app-panel-header-divider-inset, 1rem);
+    right: var(--app-panel-header-divider-inset, 1rem);
+  }
 }
 
 // Tabela padrão da aplicação, inspirada na tabela de Rotinas.

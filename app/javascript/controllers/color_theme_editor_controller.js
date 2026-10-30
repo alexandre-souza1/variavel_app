@@ -1,8 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["color", "preview", "name", "decoration", "promotionToggle", "promotionFields", "promotionPanel"]
-  static values = { darkPalette: Object, originalTheme: String, originalPalette: Array }
+  static targets = ["color", "preview", "name", "decoration", "headerSymbol", "headerCompanion", "headerDetail", "promotionToggle", "promotionFields", "promotionPanel"]
+  static values = { darkPalette: Object, originalTheme: String, originalPalette: Array, headerLayouts: Object, headerIcons: Object }
 
   connect() {
     this.refresh()
@@ -44,8 +44,66 @@ export default class extends Controller {
       Object.entries(colors).forEach(([name, value]) => preview.style.setProperty(`--preview-${name}`, value))
       preview.querySelector("[data-preview-extra]").hidden = !/^#[0-9a-f]{6}$/i.test(extraColor)
       preview.querySelector("[data-preview-name]").textContent = this.nameTarget.value || "Seu tema"
-      preview.querySelector("[data-preview-decoration]").textContent = this.decorationTarget.value
+      const symbol = this.decorationTarget.value.trim()
+      const symbolSlot = preview.querySelector("[data-preview-decoration]")
+      if (this.headerIconsValue[symbol]) {
+        const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+        icon.setAttribute("viewBox", "0 0 64 64")
+        icon.setAttribute("width", "16")
+        icon.setAttribute("height", "16")
+        icon.setAttribute("aria-hidden", "true")
+        icon.innerHTML = this.headerIconsValue[symbol]
+        symbolSlot.replaceChildren(icon)
+      } else {
+        symbolSlot.textContent = symbol
+      }
+      const header = preview.querySelector("[data-preview-panel-header]")
+      Object.entries(this.headerDecorationStyles()).forEach(([name, value]) => header.style.setProperty(name, value))
     })
+  }
+
+  headerDecorationStyles() {
+    const symbols = {
+      primary: this.headerSymbolTarget.value.trim() || this.decorationTarget.value.trim(),
+      secondary: this.headerCompanionTarget.value.trim(), detail: this.headerDetailTarget.value.trim()
+    }
+    const layout = this.headerLayoutsValue[symbols.secondary || symbols.detail ? "corner" : "single"]
+    const namespace = "http://www.w3.org/2000/svg"
+    const svg = document.createElementNS(namespace, "svg")
+    svg.setAttribute("viewBox", layout.view_box)
+    const group = document.createElementNS(namespace, "g")
+    group.setAttribute("text-anchor", "middle")
+    group.setAttribute("dominant-baseline", "central")
+    group.setAttribute("font-family", "Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif")
+    layout.elements.forEach(element => {
+      if (!symbols[element.role]) return
+      const symbol = symbols[element.role]
+      const icon = this.headerIconsValue[symbol]
+      const glyph = document.createElementNS(namespace, icon ? "g" : "text")
+      glyph.setAttribute("data-role", element.role)
+      glyph.setAttribute("data-symbol", symbol)
+      glyph.setAttribute("data-size", element.size)
+      if (icon) {
+        const half = element.size / 2
+        glyph.setAttribute("transform", `translate(${element.x - half} ${element.y - half}) rotate(${element.angle} ${half} ${half}) scale(${element.size / 64})`)
+        // O catálogo vetorial é compartilhado com o servidor; entradas do formulário usam textContent.
+        glyph.innerHTML = icon
+      } else {
+        glyph.setAttribute("x", element.x)
+        glyph.setAttribute("y", element.y)
+        glyph.setAttribute("font-size", element.size)
+        glyph.setAttribute("transform", `rotate(${element.angle} ${element.x} ${element.y})`)
+        glyph.textContent = symbol
+      }
+      group.append(glyph)
+    })
+    svg.append(group)
+    const source = encodeURIComponent(new XMLSerializer().serializeToString(svg))
+    return {
+      "--app-panel-decoration-image": Object.values(symbols).some(Boolean) ? `url("data:image/svg+xml,${source}")` : "none",
+      "--app-panel-decoration-width": layout.width,
+      "--app-panel-decoration-angle": layout.angle
+    }
   }
 
   previewColors(mode) {

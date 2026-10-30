@@ -276,63 +276,8 @@
     overflow: hidden;
   }
 
-  .app-panel__header {
-    align-items: flex-start;
-    background: transparent;
-    border-bottom: 0;
-    min-height: 58px;
-    padding: 0.95rem 1.25rem 0.8rem;
-    position: relative;
-
-    &::after {
-      border-bottom: 1px solid var(--bs-border-color);
-      bottom: 0;
-      content: "";
-      left: 1.25rem;
-      position: absolute;
-      right: 1.25rem;
-    }
-  }
-
   .app-panel__body {
     padding: 1rem 1.25rem;
-  }
-
-  .chart-card .chart-header,
-  .info-card .info-card-header {
-    background: transparent;
-    border: 0;
-  }
-
-  .dashboard-panel-heading {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    min-width: 0;
-  }
-
-  .dashboard-panel-kicker {
-    color: var(--bs-primary);
-    font-size: 0.66rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    line-height: 1.2;
-    text-transform: uppercase;
-  }
-
-  .dashboard-panel-heading h2 {
-    color: var(--bs-body-color);
-    font-size: 0.92rem;
-    font-weight: 650;
-    line-height: 1.2;
-    margin: 0.18rem 0 0;
-  }
-
-  .dashboard-panel-heading small {
-    color: var(--bs-secondary-color);
-    font-size: 0.73rem;
-    line-height: 1.35;
-    margin-top: 0.2rem;
   }
 
   .app-panel .chart-actions {
@@ -343,14 +288,6 @@
 
 @media (max-width: $md-max) {
   .dashboard-page {
-    .app-panel__header {
-      padding: 0.85rem 1rem 0.7rem;
-
-      &::after {
-        left: 1rem;
-        right: 1rem;
-      }
-    }
 
     .app-panel__body {
       padding: 0.9rem 1rem;
@@ -491,7 +428,6 @@
       flex-direction: column;
       align-items: stretch;
       text-align: left;
-      padding: 0.85rem 1rem;
     }
 
     .chart-actions .dropdown {

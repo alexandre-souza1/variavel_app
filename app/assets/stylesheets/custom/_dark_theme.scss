@@ -185,6 +185,10 @@
   --bs-card-bg: var(--app-dark-surface);
   --bs-card-cap-bg: var(--app-dark-elevated);
 
+  .dashboard-tasks .app-panel__header {
+    --app-panel-header-bg: var(--bs-tertiary-bg);
+  }
+
   body,
   .app-shell,
   .app-main,

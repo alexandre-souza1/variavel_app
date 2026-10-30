@@ -38,8 +38,8 @@
     <!-- COLUNA LATERAL – PLANOS (desktop) -->
     <div class="col-lg-3 d-none d-lg-flex">
       <div class="plans-card w-100">
-        <div class="plans-card-header">
-          <h5><i class="bi bi-kanban-fill me-2"></i> Meus Planos</h5>
+        <div class="app-panel__header plans-card-header">
+          <h2 class="app-panel__title"><i class="bi bi-kanban-fill me-2" aria-hidden="true"></i> Meus Planos</h2>
           <div class="d-flex align-items-center gap-2">
             <%= render "hidden_plans_toggle" %>
             <span class="badge bg-primary-soft text-primary"><%= @action_plans.count %></span>
@@ -117,8 +117,8 @@
         <!-- CALENDÁRIO -->
         <div class="col-lg-7 d-flex">
           <div class="chart-card w-100">
-            <div class="chart-header">
-              <h5><i class="bi bi-calendar3 me-2"></i> Calendário de Prazos</h5>
+            <div class="app-panel__header chart-header">
+              <h2 class="app-panel__title"><i class="bi bi-calendar3 me-2" aria-hidden="true"></i> Calendário de Prazos</h2>
             </div>
             <div class="chart-body calendar-body">
               <% if @calendar_tasks.any? %>
@@ -166,8 +166,8 @@
         <!-- PRÓXIMAS AÇÕES -->
         <div class="col-lg-5 d-flex">
           <div class="chart-card w-100">
-            <div class="chart-header">
-              <h5><i class="bi bi-lightning-charge-fill me-2"></i> Próximas ações</h5>
+            <div class="app-panel__header chart-header">
+              <h2 class="app-panel__title"><i class="bi bi-lightning-charge-fill me-2" aria-hidden="true"></i> Próximas ações</h2>
             </div>
             <div class="chart-body tasks-list-body">
               <% if @my_tasks.any? %>

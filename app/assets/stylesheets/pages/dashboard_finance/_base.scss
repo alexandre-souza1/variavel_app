@@ -144,26 +144,6 @@
     margin-bottom: 2rem;
 
     .chart-header {
-      padding: 1rem 1.5rem;
-      background: var(--bs-tertiary-bg);
-      border-bottom: 1px solid var(--bs-border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-
-      h5 {
-        margin: 0;
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: var(--bs-body-color);
-
-        i {
-          font-size: 1.1rem;
-        }
-      }
-
       .chart-filters {
         display: flex;
         align-items: center;
@@ -278,23 +258,6 @@
     overflow: hidden;
     box-shadow: 0 8px 22px rgba(15, 23, 42, .055);
 
-    .info-card-header {
-      padding: 1rem 1.5rem;
-      background: var(--bs-tertiary-bg);
-      border-bottom: 1px solid var(--bs-border-color);
-
-      h5 {
-        margin: 0;
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: var(--bs-body-color);
-
-        i {
-          font-size: 1.1rem;
-        }
-      }
-    }
-
     .info-card-body {
       padding: 1.25rem 1.5rem;
     }
@@ -372,28 +335,6 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     margin-bottom: 1.5rem;
 
-    .table-card-header {
-      padding: 1rem 1.5rem;
-      background: var(--bs-tertiary-bg);
-      border-bottom: 1px solid var(--bs-border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-
-      h5 {
-        margin: 0;
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: var(--bs-body-color);
-
-        i {
-          font-size: 1.1rem;
-        }
-      }
-    }
-
     .table-card-body {
       padding: 0;
       overflow-x: auto;
@@ -408,12 +349,6 @@
     border-radius: 0;
     box-shadow: none;
     overflow: visible;
-
-    .table-card-header {
-      background: transparent;
-      border-bottom: 0;
-      padding: 0 0 .85rem;
-    }
 
     .table-card-body { padding: 0; }
   }
@@ -826,70 +761,8 @@
   font-style: normal;
 }
 
-// Cabeçalhos dos painéis: duas linhas, leves e alinhados ao painel de metas
+// Filtros e ações específicos do dashboard financeiro.
 .invoice-dashboard-page {
-  .chart-card .chart-header,
-  .info-card .info-card-header,
-  .table-card .table-card-header {
-    align-items: flex-start;
-    background: transparent;
-    border-bottom: 0;
-    padding: .95rem 1.25rem .8rem;
-    position: relative;
-  }
-
-  .chart-card .chart-header::after,
-  .info-card .info-card-header::after,
-  .table-card .table-card-header::after {
-    border-bottom: 1px solid var(--bs-border-color);
-    bottom: 0;
-    content: "";
-    left: 1.25rem;
-    position: absolute;
-    right: 1.25rem;
-  }
-
-  .dashboard-panel-heading {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-
-  .dashboard-panel-kicker {
-    color: var(--bs-primary);
-    font-size: .66rem;
-    font-weight: 700;
-    letter-spacing: .08em;
-    line-height: 1.2;
-    margin-bottom: .18rem;
-    text-transform: uppercase;
-  }
-
-  .dashboard-panel-kicker i {
-    font-size: .68rem;
-  }
-
-  .dashboard-panel-heading h2 {
-    color: var(--bs-body-color);
-    font-size: .92rem;
-    font-weight: 650;
-    line-height: 1.2;
-    margin: 0;
-  }
-
-  .dashboard-panel-heading small {
-    color: var(--bs-secondary-color);
-    font-size: .7rem;
-    line-height: 1.35;
-    margin-top: .25rem;
-  }
-
-  .chart-card .chart-header,
-  .info-card .info-card-header,
-  .table-card .table-card-header {
-    border-bottom-color: var(--bs-border-color);
-  }
-
   .chart-card .chart-header .chart-filters {
     align-self: center;
     flex-shrink: 0;
