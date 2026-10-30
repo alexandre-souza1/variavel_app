@@ -6,7 +6,7 @@ class ActionPlansController < ApplicationController
 
   def archive
     @action_plan.archive!
-    redirect_to action_plans_path(status: "archived"), notice: "Plano arquivado com sucesso."
+    redirect_to archived_action_plans_path, notice: "Plano arquivado com sucesso."
   end
 
   def unarchive
@@ -36,33 +36,12 @@ class ActionPlansController < ApplicationController
   end
 
   def index
-    # Planos que o usuário pode acessar
-    @action_plans = accessible_action_plans
-    @show_archived_action_plans = params[:status] == "archived"
-    @action_plans = @show_archived_action_plans ? @action_plans.archived : @action_plans.active
-    @hidden_action_plan_ids = current_user.hidden_action_plans.pluck(:action_plan_id)
-    @show_hidden_action_plans = params[:show_hidden] == "1"
-    @action_plans = @action_plans.where.not(id: @hidden_action_plan_ids) unless @show_hidden_action_plans
-
-    # Busca continua funcionando
-    if params[:query].present?
-      q = "%#{params[:query]}%"
-
-      @action_plans = @action_plans
-        .left_joins(buckets: :tasks)
-        .left_joins(buckets: { tasks: :users })
-        .where(
-          "action_plans.name ILIKE :q
-           OR action_plans.description ILIKE :q
-           OR tasks.title ILIKE :q
-           OR users.name ILIKE :q",
-          q: q
-        )
-        .distinct
+    if params[:status] == "archived"
+      redirect_to archived_action_plans_path(params.permit(:query, :show_hidden).to_h)
+      return
     end
 
-    # Mantém carregamento eficiente
-    @action_plans = @action_plans.order(:name)
+    load_action_plans(archived: false)
 
     # -------------------------
     # DASHBOARD PESSOAL
@@ -90,6 +69,10 @@ class ActionPlansController < ApplicationController
       else
         Date.today
       end
+  end
+
+  def archived
+    load_action_plans(archived: true)
   end
 
   def show
@@ -292,6 +275,30 @@ class ActionPlansController < ApplicationController
   end
 
   private
+
+  def load_action_plans(archived:)
+    @show_archived_action_plans = archived
+    @action_plans = archived ? accessible_action_plans.archived : accessible_action_plans.active
+    @hidden_action_plan_ids = current_user.hidden_action_plans.pluck(:action_plan_id)
+    @show_hidden_action_plans = params[:show_hidden] == "1"
+    @action_plans = @action_plans.where.not(id: @hidden_action_plan_ids) unless @show_hidden_action_plans
+
+    if params[:query].present?
+      @action_plans = @action_plans
+        .left_joins(buckets: :tasks)
+        .left_joins(buckets: { tasks: :users })
+        .where(
+          "action_plans.name ILIKE :q
+           OR action_plans.description ILIKE :q
+           OR tasks.title ILIKE :q
+           OR users.name ILIKE :q",
+          q: "%#{params[:query]}%"
+        )
+        .distinct
+    end
+
+    @action_plans = @action_plans.order(:name)
+  end
 
   def set_action_plan
     @action_plan = accessible_action_plans

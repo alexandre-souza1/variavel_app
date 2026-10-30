@@ -1,0 +1,8 @@
+<% if @hidden_action_plan_ids.any? %>
+  <% filters = params.permit(:query, :start_date).to_h.merge(show_hidden: @show_hidden_action_plans ? nil : 1) %>
+  <% path = @show_archived_action_plans ? archived_action_plans_path(filters) : action_plans_path(filters) %>
+  <% label = @show_hidden_action_plans ? "Ocultar planos ocultos" : "Ver planos ocultos" %>
+  <%= link_to path, class: "icon-btn", title: label, aria: { label: label } do %>
+    <i class="bi <%= @show_hidden_action_plans ? 'bi-eye-slash' : 'bi-eye' %>" aria-hidden="true"></i>
+  <% end %>
+<% end %>

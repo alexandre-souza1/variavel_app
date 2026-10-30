@@ -242,6 +242,7 @@ Rails.application.routes.draw do
   end
 
   resources :action_plans do
+    get :archived, on: :collection
     patch :archive, on: :member
     patch :unarchive, on: :member
     resource :gerot_generator, only: %i[new create], controller: :routine_generators

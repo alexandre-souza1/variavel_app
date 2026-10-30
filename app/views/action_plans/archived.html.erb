@@ -1,0 +1,43 @@
+<div class="dashboard-tasks action-plans-archive">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div>
+        <h1><i class="bi bi-folder2" aria-hidden="true"></i> Planos arquivados</h1>
+        <p class="subtitle">Consulte seus planos arquivados ou restaure um plano para voltar ao painel.</p>
+      </div>
+      <div class="header-actions">
+        <%= link_to action_plans_path, class: "btn-outline" do %>
+          <i class="bi bi-arrow-left" aria-hidden="true"></i>
+          <span>Meu Painel</span>
+        <% end %>
+      </div>
+    </div>
+  </header>
+
+  <section class="plans-card" aria-labelledby="archived-plans-title">
+    <div class="plans-card-header">
+      <h5 id="archived-plans-title"><i class="bi bi-archive me-2" aria-hidden="true"></i> Arquivados</h5>
+      <div class="d-flex align-items-center gap-2">
+        <%= render "hidden_plans_toggle" %>
+        <span class="badge bg-primary-soft text-primary"><%= @action_plans.count %></span>
+      </div>
+    </div>
+    <div class="p-3 border-bottom">
+      <%= form_with url: archived_action_plans_path, method: :get, class: "d-flex flex-wrap align-items-end gap-2" do |form| %>
+        <%= hidden_field_tag :show_hidden, "1" if @show_hidden_action_plans %>
+        <div class="flex-grow-1">
+          <%= form.label :query, "Buscar nos arquivados", class: "form-label" %>
+          <%= form.search_field :query, value: params[:query], class: "form-control", placeholder: "Nome, descrição, tarefa ou responsável" %>
+        </div>
+        <%= form.submit "Buscar", class: "btn-primary-solid" %>
+      <% end %>
+    </div>
+    <div class="plans-card-body">
+      <%= render "plans_list", action_plans: @action_plans, hidden_action_plan_ids: @hidden_action_plan_ids %>
+    </div>
+  </section>
+
+  <% @action_plans.each do |plan| %>
+    <%= render "delete_modal", plan: plan %>
+  <% end %>
+</div>

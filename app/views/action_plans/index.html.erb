@@ -12,10 +12,8 @@
         <p class="subtitle">Acompanhamento das suas tarefas e planos</p>
       </div>
       <div class="header-actions">
-        <%= link_to action_plans_path(params.permit(:query, :start_date, :show_hidden).to_h.merge(status: "archived")),
-                    class: @show_archived_action_plans ? "btn-primary-solid" : "btn-outline",
-                    aria: { current: @show_archived_action_plans ? "page" : nil } do %>
-          <i class="bi bi-archive" aria-hidden="true"></i>
+        <%= link_to archived_action_plans_path(params.permit(:query, :show_hidden).to_h), class: "btn-outline" do %>
+          <i class="bi bi-folder2" aria-hidden="true"></i>
           <span>Arquivados</span>
         <% end %>
         <%= link_to inbox_path, class: "btn-outline" do %>
@@ -43,10 +41,10 @@
         <div class="plans-card-header">
           <h5><i class="bi bi-kanban-fill me-2"></i> Meus Planos</h5>
           <div class="d-flex align-items-center gap-2">
+            <%= render "hidden_plans_toggle" %>
             <span class="badge bg-primary-soft text-primary"><%= @action_plans.count %></span>
           </div>
         </div>
-        <%= render "plan_filters" %>
         <div class="plans-card-body">
           <div class="plans-scroll">
             <%= render "plans_list", action_plans: @action_plans, hidden_action_plan_ids: @hidden_action_plan_ids %>
@@ -207,10 +205,10 @@
   <div class="offcanvas offcanvas-end d-lg-none" tabindex="-1" id="plansOffcanvas" aria-labelledby="plansOffcanvasTitle">
     <div class="offcanvas-header">
       <h5 class="offcanvas-title" id="plansOffcanvasTitle"><i class="bi bi-kanban-fill me-2"></i> Meus Planos</h5>
+      <%= render "hidden_plans_toggle" %>
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
     </div>
     <div class="offcanvas-body">
-      <%= render "plan_filters" %>
       <%= render "plans_list", action_plans: @action_plans, hidden_action_plan_ids: @hidden_action_plan_ids %>
       <div class="mt-3">
         <%= link_to new_action_plan_path, class: "btn-primary-solid w-100" do %>

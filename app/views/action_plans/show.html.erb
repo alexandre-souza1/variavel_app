@@ -123,7 +123,7 @@
       <i class="bi bi-archive me-1" aria-hidden="true"></i>
       Este plano foi arquivado em <%= l(@action_plan.archived_at, format: :short) %>.
       As tarefas e o histórico foram preservados.
-      <%= link_to "Ver planos arquivados", action_plans_path(status: "archived"), class: "alert-link" %>
+      <%= link_to "Ver planos arquivados", archived_action_plans_path, class: "alert-link" %>
     </div>
   <% end %>
 
