@@ -122,9 +122,12 @@ Rails.application.routes.draw do
   end
 
   resources :notifications, only: :destroy do
+    patch :preferences, on: :collection
     patch :read, on: :member
     delete :destroy_all, on: :collection
   end
+
+  resources :daily_summaries, path: "resumos-do-dia", only: :show
 
   namespace :mobile do
     get "app_update", to: "android_releases#show", as: :app_update

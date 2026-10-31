@@ -1,11 +1,33 @@
 import { Controller } from "@hotwired/stimulus"
+import { showFlash } from "controllers/flash_controller"
 
 export default class extends Controller {
-  static targets = ["list", "empty", "badge", "headerCount", "deleteAll"]
+  static targets = ["list", "empty", "badge", "headerCount", "deleteAll", "dailySummaryToggle"]
   static values = { deleteAllUrl: String }
 
   keepOpen(event) {
     event.stopPropagation()
+  }
+
+  async updatePreferences(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    const form = event.currentTarget
+    const toggle = this.dailySummaryToggleTarget
+    const enabled = toggle.checked
+    const data = new FormData(form)
+    toggle.disabled = true
+
+    try {
+      const result = await this.request(form.action, form.method || "post", data)
+      toggle.checked = result.daily_summary_enabled
+      showFlash(result.message, { type: "success" })
+    } catch {
+      toggle.checked = !enabled
+      showFlash("Não foi possível salvar a preferência. Tente novamente.", { type: "danger" })
+    } finally {
+      toggle.disabled = false
+    }
   }
 
   async destroy(event) {

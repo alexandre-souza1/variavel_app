@@ -33,6 +33,7 @@ class User < ApplicationRecord
   has_many :stress_test_imports, dependent: :destroy
   has_many :fleet_availabilities, dependent: :destroy
   has_many :notifications, dependent: :destroy
+  has_many :daily_summaries, dependent: :destroy
   has_many :meeting_minute_collaborations, class_name: "MeetingMinute", foreign_key: :collaborator_id, dependent: :nullify
   has_many :meeting_minute_edits, dependent: :restrict_with_exception
   has_many :push_devices, dependent: :destroy
@@ -43,6 +44,12 @@ class User < ApplicationRecord
 
   scope :active, -> { where(active: true) }
   scope :inactive, -> { where(active: false) }
+
+  before_save :schedule_daily_summary, if: :will_save_change_to_daily_summary_enabled?
+
+  private def schedule_daily_summary
+    self.daily_summary_next_run_at = daily_summary_enabled? ? DailySummary.next_delivery : nil
+  end
 
   def personal_inbox!
     inbox_bucket || with_lock do

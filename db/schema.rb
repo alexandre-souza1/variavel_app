@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_30_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_31_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -504,6 +504,24 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_30_120000) do
     t.string "sector"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "daily_summaries", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.date "summary_date", null: false
+    t.integer "status", default: 0, null: false
+    t.text "content"
+    t.jsonb "sources", default: [], null: false
+    t.integer "attempts", default: 0, null: false
+    t.datetime "next_attempt_at", null: false
+    t.datetime "processing_started_at"
+    t.string "processing_token"
+    t.string "last_error"
+    t.datetime "delivered_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "summary_date"], name: "index_daily_summaries_on_user_id_and_summary_date", unique: true
+    t.index ["user_id"], name: "index_daily_summaries_on_user_id"
   end
 
   create_table "downloads", force: :cascade do |t|
@@ -1439,7 +1457,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_30_120000) do
     t.date "retired_at"
     t.string "color_theme", default: "blue_teal", null: false
     t.boolean "action_plan_inbox_collapsed", default: false, null: false
+    t.boolean "daily_summary_enabled", default: false, null: false
+    t.datetime "daily_summary_next_run_at"
     t.index ["active"], name: "index_users_on_active"
+    t.index ["daily_summary_next_run_at"], name: "index_users_on_daily_summary_next_run_at", where: "((daily_summary_enabled = true) AND (active = true))"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -1533,6 +1554,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_30_120000) do
   add_foreign_key "checklists", "users"
   add_foreign_key "comments", "tasks"
   add_foreign_key "comments", "users"
+  add_foreign_key "daily_summaries", "users"
   add_foreign_key "drivers", "employees"
   add_foreign_key "employee_career_events", "employees"
   add_foreign_key "employee_career_events", "users"

@@ -22,7 +22,8 @@ class GeminiUsageDashboardTest < ActiveSupport::TestCase
     assert_equal [3, 800, 97], card[:metrics].map { |m| m[:remaining] }
     assert_equal 4, card[:daily][:attempts]
     assert_equal 1, card[:daily][:rate_limited]
-    assert_equal [1, 1, 1, 0, 0], card[:features].values
+    assert_equal [1, 0, 1, 1, 0, 0], card[:features].values
+    assert_equal 0, card[:features]["Resumo do dia"]
     assert_equal 429, card[:latest].http_status
   end
 

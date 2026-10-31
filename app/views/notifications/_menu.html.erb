@@ -33,6 +33,19 @@
       </div>
     </div>
 
+    <%= form_with scope: :user, url: preferences_notifications_path, method: :patch,
+                  class: "notification-preferences", local: true,
+                  data: { action: "click->notifications#keepOpen change->notifications#updatePreferences" } do |form| %>
+      <div class="form-check form-switch">
+        <%= form.check_box :daily_summary_enabled, checked: user.daily_summary_enabled?,
+              class: "form-check-input", role: "switch", id: "notification-daily-summary",
+              aria: { describedby: "notification-daily-summary-help" },
+              data: { notifications_target: "dailySummaryToggle" } %>
+        <%= form.label :daily_summary_enabled, "Resumo do dia", for: "notification-daily-summary", class: "form-check-label" %>
+      </div>
+      <small id="notification-daily-summary-help">Gemini · todos os dias às 8h (Brasília)</small>
+    <% end %>
+
     <div class="notification-list" data-notifications-target="list">
       <% notifications.each do |notification| %>
         <%= render "notifications/notification", notification: notification %>

@@ -1,0 +1,27 @@
+<div class="dashboard-finance">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div>
+        <h1><i class="bi bi-sun"></i> Resumo do dia</h1>
+        <p class="subtitle"><%= l(@daily_summary.summary_date) %> · Gerado por Gemini às <%= l(@daily_summary.delivered_at.in_time_zone(DailySummary::TIME_ZONE), format: "%H:%M") %> (Brasília)</p>
+      </div>
+      <div class="header-actions">
+        <%= link_to "Início", root_path, class: "btn btn-outline-secondary" %>
+      </div>
+    </div>
+  </header>
+
+  <div class="chart-card daily-summary-card">
+    <div class="daily-summary-content" data-controller="daily-summary"><%= @daily_summary.content %></div>
+    <% if @daily_summary.sources.any? %>
+      <div class="border-top mt-4 pt-3">
+        <p class="fw-semibold mb-2">Consultar registros</p>
+        <div class="d-flex flex-wrap gap-2">
+          <% @daily_summary.sources.each do |source| %>
+            <%= link_to source["label"], source["path"], class: "btn btn-outline-primary btn-sm" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

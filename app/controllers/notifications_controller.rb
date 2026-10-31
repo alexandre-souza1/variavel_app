@@ -2,6 +2,21 @@ class NotificationsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_notification, only: %i[read destroy]
 
+  def preferences
+    preferences = params.require(:user).permit(:daily_summary_enabled)
+    current_user.update!(preferences)
+    enabled = current_user.daily_summary_enabled?
+    message = enabled ? "Resumo do dia ativado para as 8h (Brasília)." : "Resumo do dia desativado."
+
+    respond_to do |format|
+      format.json do
+        render json: { daily_summary_enabled: enabled, next_delivery_at: current_user.daily_summary_next_run_at,
+                       message: message }
+      end
+      format.html { redirect_back fallback_location: root_path, notice: message }
+    end
+  end
+
   def read
     @notification.mark_as_read!
 

@@ -72,6 +72,28 @@
   overflow-y: auto;
 }
 
+.notification-preferences {
+  margin: 0;
+  padding: .7rem 1rem;
+  border-bottom: 1px solid var(--bs-border-color);
+
+  .form-check { margin: 0; min-height: 1.5rem; }
+  .form-check-input, .form-check-label { cursor: pointer; }
+  .form-check-label { font-size: .85rem; font-weight: 600; }
+  small { display: block; margin: .15rem 0 0 2.5rem; color: var(--bs-secondary-color); font-size: .75rem; }
+}
+
+.daily-summary-card {
+  padding: clamp(1rem, 3vw, 1.5rem);
+}
+
+.daily-summary-content {
+  max-width: 850px;
+  line-height: 1.65;
+  h4, h5, h6 { margin-top: 1.25rem; }
+  p:last-child { margin-bottom: 0; }
+}
+
 .notification-item {
   position: relative;
   display: grid;
@@ -194,7 +216,7 @@
   }
 
   .notification-list {
-    max-height: calc(100vh - 9rem);
+    max-height: calc(100vh - 14rem);
   }
 
   .notification-item {

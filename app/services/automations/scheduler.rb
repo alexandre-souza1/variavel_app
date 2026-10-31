@@ -1,5 +1,6 @@
 module Automations
-  # Only dispatches due rules; row locks in Runner serialize multiple workers.
+  # Dispatches due automations and opted-in daily summaries. Jobs serialize
+  # delivery with row locks and persisted reservations across worker restarts.
   # Runs with the existing Sidekiq lifecycle, without a new dyno or dependency.
   class Scheduler
     def initialize
@@ -11,7 +12,7 @@ module Automations
         loop do
           break if @mutex.synchronize { @stopped }
           begin
-            Rails.application.executor.wrap { AutomationDispatchJob.perform_later }
+            Rails.application.executor.wrap { dispatch }
           rescue StandardError => error
             Rails.logger.error("[Automations::Scheduler] error_class=#{error.class.name}")
           end
@@ -23,6 +24,14 @@ module Automations
     def stop
       @mutex.synchronize { @stopped = true; @condition.broadcast }
       @thread&.join(5)
+    end
+
+    def dispatch
+      [AutomationDispatchJob, DailySummaryDispatchJob].each do |job|
+        job.perform_later
+      rescue StandardError => error
+        Rails.logger.error("[Automations::Scheduler] job=#{job.name} error_class=#{error.class.name}")
+      end
     end
   end
 end
