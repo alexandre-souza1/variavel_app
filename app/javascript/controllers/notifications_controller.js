@@ -89,7 +89,8 @@ export default class extends Controller {
     this.badgeTarget.classList.toggle("d-none", unreadCount === 0)
 
     if (this.hasHeaderCountTarget) {
-      this.headerCountTarget.textContent = `${unreadCount} nova${unreadCount === 1 ? "" : "s"}`
+      this.headerCountTarget.textContent = unreadCount
+      this.headerCountTarget.setAttribute("aria-label", `${unreadCount} não lidas`)
       this.headerCountTarget.classList.toggle("d-none", unreadCount === 0)
     }
 

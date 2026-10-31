@@ -16,35 +16,43 @@
        data-bs-auto-close="outside"
        aria-labelledby="notificationsDropdown">
     <div class="notification-menu-header">
-      <span>Notificações</span>
-      <div class="notification-menu-actions">
+      <div class="notification-menu-title">
+        <span>Notificações</span>
         <span class="badge text-bg-primary <%= "d-none" unless unread_count.positive? %>"
-              data-notifications-target="headerCount"><%= unread_count %> nova<%= "s" if unread_count > 1 %></span>
+              aria-label="<%= unread_count %> não lidas"
+              data-notifications-target="headerCount"><%= unread_count %></span>
+      </div>
+      <div class="notification-menu-actions">
+        <%= form_with scope: :user, url: preferences_notifications_path, method: :patch,
+                      class: "notification-preferences", local: true,
+                      data: { action: "click->notifications#keepOpen change->notifications#updatePreferences" } do |form| %>
+          <label class="notification-summary-switch" for="notification-daily-summary"
+                 title="Resumo do dia com Gemini · todos os dias às 8h (Brasília)">
+            <span class="notification-summary-caption" aria-hidden="true">Resumo <span>8h</span></span>
+            <span class="notification-summary-control">
+              <%= form.check_box :daily_summary_enabled, checked: user.daily_summary_enabled?,
+                    class: "notification-summary-input", role: "switch", id: "notification-daily-summary",
+                    aria: { label: "Resumo do dia", describedby: "notification-daily-summary-help" },
+                    data: { notifications_target: "dailySummaryToggle" } %>
+              <span class="notification-summary-track" aria-hidden="true">
+                <span class="notification-summary-thumb"><i class="bi bi-sun-fill"></i></span>
+              </span>
+            </span>
+          </label>
+          <small id="notification-daily-summary-help" class="visually-hidden">Gemini · todos os dias às 8h (Brasília)</small>
+        <% end %>
         <% if notifications.any? %>
           <button type="button"
                   class="notification-clear-btn"
                   title="Apagar todas as notificações"
+                  aria-label="Apagar todas as notificações"
                   data-notifications-target="deleteAll"
                   data-action="click->notifications#destroyAll">
             <i class="bi bi-trash3"></i>
-            <span>Apagar todas</span>
           </button>
         <% end %>
       </div>
     </div>
-
-    <%= form_with scope: :user, url: preferences_notifications_path, method: :patch,
-                  class: "notification-preferences", local: true,
-                  data: { action: "click->notifications#keepOpen change->notifications#updatePreferences" } do |form| %>
-      <div class="form-check form-switch">
-        <%= form.check_box :daily_summary_enabled, checked: user.daily_summary_enabled?,
-              class: "form-check-input", role: "switch", id: "notification-daily-summary",
-              aria: { describedby: "notification-daily-summary-help" },
-              data: { notifications_target: "dailySummaryToggle" } %>
-        <%= form.label :daily_summary_enabled, "Resumo do dia", for: "notification-daily-summary", class: "form-check-label" %>
-      </div>
-      <small id="notification-daily-summary-help">Gemini · todos os dias às 8h (Brasília)</small>
-    <% end %>
 
     <div class="notification-list" data-notifications-target="list">
       <% notifications.each do |notification| %>
