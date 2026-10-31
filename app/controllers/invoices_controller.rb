@@ -405,23 +405,17 @@ class InvoicesController < ApplicationController
 
     respond_to do |format|
       if @invoice.save
-
-        files = Array(params[:invoice][:documents]).reject(&:blank?)
-        types = params[:document_types] || []
-
-        files.each_with_index do |file, index|
-          attachment = @invoice.documents.attach(file).last
-
-          type = types[index].presence || "outro"
-
-          attachment.blob.update!(
-            metadata: attachment.blob.metadata.merge(document_type: type)
-          )
-        end
+        attach_invoice_documents
 
         format.html { redirect_to invoice_path(@invoice, return_to: invoice_return_path), notice: "Lançamento criado com sucesso.", status: :see_other }
+        format.json do
+          flash[:notice] = "Lançamento criado com sucesso."
+          render json: { id: @invoice.id, redirect_url: invoice_path(@invoice, return_to: invoice_return_path) },
+                 status: :created, location: invoice_path(@invoice, return_to: invoice_return_path)
+        end
       else
         format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: invoice_validation_errors, status: :unprocessable_entity }
       end
     end
   end
@@ -429,12 +423,16 @@ class InvoicesController < ApplicationController
   # PATCH/PUT /invoices/1
   def update
     respond_to do |format|
-      if @invoice.update(invoice_params)
+      if @invoice.update(invoice_params.except(:documents))
+        attach_invoice_documents
         format.html { redirect_to invoice_path(@invoice, return_to: invoice_return_path), notice: "Lançamento atualizado com sucesso.", status: :see_other }
-        format.json { render :show, status: :ok, location: @invoice }
+        format.json do
+          flash[:notice] = "Lançamento atualizado com sucesso."
+          render json: { id: @invoice.id, redirect_url: invoice_path(@invoice, return_to: invoice_return_path) }
+        end
       else
         format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @invoice.errors, status: :unprocessable_entity }
+        format.json { render json: invoice_validation_errors, status: :unprocessable_entity }
       end
     end
   end
@@ -456,6 +454,36 @@ class InvoicesController < ApplicationController
   end
 
   private
+
+  def attach_invoice_documents
+    files = Array(invoice_params[:documents]).reject(&:blank?)
+    types = params[:document_types] || []
+
+    files.each_with_index do |file, index|
+      attachment = @invoice.documents.attach(file).last
+      attachment.blob.update!(metadata: attachment.blob.metadata.merge(document_type: types[index].presence || "outro"))
+    end
+  end
+
+  def invoice_validation_errors
+    numbers = @invoice.invoice_numbers.to_a
+    new_numbers = numbers.reject(&:persisted?).each
+    nested_errors = {}
+
+    # Use the submitted keys so errors also point to rows added dynamically.
+    invoice_params.fetch(:invoice_numbers_attributes, {}).each do |key, attributes|
+      next if ActiveModel::Type::Boolean.new.cast(attributes[:_destroy])
+
+      number = if attributes[:id].present?
+        numbers.find { |record| record.id.to_s == attributes[:id].to_s }
+      else
+        new_numbers.next
+      end
+      nested_errors[key] = number.errors.to_hash if number&.errors&.any?
+    end
+
+    { errors: @invoice.errors.to_hash, invoice_number_errors: nested_errors }
+  end
 
   def invoice_return_path
     safe_navigation_return_path(params[:return_to], fallback: invoices_path,

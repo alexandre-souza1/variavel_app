@@ -51,7 +51,7 @@ class PlanGerotsTest < ActionDispatch::IntegrationTest
     first = Routines::Generator.call(template: @template, action_plan: @plan, created_by: @user,
       period_start: Date.new(2025, 11, 1), period_end: Date.new(2025, 11, 30))
     get action_plan_path(@plan, view: "gerots")
-    assert_select "a[href=?]", routine_path(first)
+    assert_select "a[href=?]", routine_path(first, return_to: action_plan_path(@plan, view: "gerots"))
     assert_select "a[href=?]", new_action_plan_gerot_generator_path(@plan, year: 2025, month: 2)
     get new_action_plan_gerot_generator_path(@plan, month: 2)
     assert_select "input[name=period_start][value='2025-02-01']"

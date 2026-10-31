@@ -89,11 +89,73 @@ class RoutinesControllerTest < ActionDispatch::IntegrationTest
     assert routine.reload.closed?
 
     patch archive_routine_path(routine)
-    assert_redirected_to routine_path(routine)
+    assert_redirected_to routines_path
     assert routine.reload.archived?
 
     patch reopen_routine_path(routine)
     assert_redirected_to routine_path(routine)
     assert routine.reload.open?
+  end
+
+  test "archives an open routine directly from the index without opening it" do
+    routine = navigation_routine(action_plan: action_plans(:one))
+
+    patch archive_routine_path(routine), params: { return_to: routines_path }
+
+    assert_redirected_to routines_path
+    assert routine.reload.archived?
+    follow_redirect!
+    assert_select "a[href^='#{routine_path(routine)}?']", text: "Abrir", count: 0
+  end
+
+  test "both back links return to the entry list including archived routines" do
+    routine = navigation_routine(action_plan: action_plans(:one))
+
+    [routines_path, archived_routines_path].each do |origin|
+      get routine_path(routine, return_to: origin)
+      assert_response :success
+      assert_select ".routine-show-header a[href='#{origin}']", text: /Voltar/
+      assert_select ".back-link a[href='#{origin}']", text: /Voltar/
+    end
+  end
+
+  test "back links preserve the originating plan view and year" do
+    routine = navigation_routine(action_plan: action_plans(:one))
+    origin = action_plan_path(routine.action_plan, view: "gerots", year: 2025)
+
+    get routine_path(routine, return_to: origin)
+
+    assert_response :success
+    assert_select ".routine-show-header a[href=?]", origin, text: /Voltar/
+    assert_select ".back-link a[href=?]", origin, text: /Voltar/
+  end
+
+  test "closing and reopening preserve the navigation origin" do
+    routine = navigation_routine
+    origin = routines_path
+
+    patch close_routine_path(routine), params: { return_to: origin }
+    assert_redirected_to routine_path(routine, return_to: origin)
+    patch reopen_routine_path(routine), params: { return_to: origin }
+    assert_redirected_to routine_path(routine, return_to: origin)
+  end
+
+  test "rejects external return URLs and unrelated paths" do
+    routine = navigation_routine
+
+    ["https://example.org", "//example.org", "/users", "/\\example.org"].each do |origin|
+      get routine_path(routine, return_to: origin)
+      assert_response :success
+      assert_select ".back-link a[href='#{routines_path}']"
+    end
+  end
+
+  private
+
+  def navigation_routine(action_plan: nil)
+    template = RoutineTemplate.create!(name: "Navigation #{SecureRandom.hex(4)}", sector: :fleet, action_plan: action_plan)
+    Routine.create!(routine_template: template, action_plan: action_plan, created_by: users(:one),
+                    title: "Navigation routine", period_start: Date.new(2026, 10, 1),
+                    period_end: Date.new(2026, 10, 31), status: :open)
   end
 end

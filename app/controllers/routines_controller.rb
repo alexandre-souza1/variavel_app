@@ -1,4 +1,5 @@
 class RoutinesController < ApplicationController
+  include RoutineNavigation
   before_action :authenticate_user!
   before_action :set_routine, only: %i[
     show
@@ -143,13 +144,13 @@ class RoutinesController < ApplicationController
 
   def reopen
     unless @routine.closed? || @routine.archived?
-      redirect_to @routine,
+      redirect_to routine_details_path,
                   alert: "Somente rotinas encerradas ou arquivadas podem ser reabertas."
       return
     end
 
     @routine.open!
-    redirect_to @routine, notice: "Rotina reaberta para preenchimento."
+    redirect_to routine_details_path, notice: "Rotina reaberta para preenchimento."
   end
 
   private
@@ -173,22 +174,24 @@ class RoutinesController < ApplicationController
   def authorize_admin_reopen
     return if current_user.admin?
 
-    redirect_to @routine, alert: "Somente administradores podem reabrir uma rotina."
+    redirect_to routine_details_path, alert: "Somente administradores podem reabrir uma rotina."
   end
 
   def transition_routine(status, notice)
     allowed_transitions = {
-      "open" => :closed,
-      "closed" => :archived
+      "open" => %i[closed archived],
+      "closed" => %i[archived]
     }
 
-    unless allowed_transitions[@routine.status] == status
-      redirect_to @routine,
+    destination = status == :archived ? routine_return_path : routine_details_path
+
+    unless allowed_transitions.fetch(@routine.status, []).include?(status)
+      redirect_to destination,
                   alert: "Não é possível alterar o status de uma rotina #{@routine.status.humanize.downcase} para #{status.to_s.humanize.downcase}."
       return
     end
 
     @routine.public_send("#{status}!")
-    redirect_to @routine, notice: notice
+    redirect_to destination, notice: notice, status: :see_other
   end
 end

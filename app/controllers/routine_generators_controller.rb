@@ -1,4 +1,5 @@
 class RoutineGeneratorsController < ApplicationController
+  include RoutineNavigation
   before_action :authenticate_user!
   before_action :set_generation_context, only: %i[new create]
   before_action :set_routine, only: %i[edit update]
@@ -55,7 +56,7 @@ class RoutineGeneratorsController < ApplicationController
       end
     end
 
-    redirect_to @routine, notice: "Configurações do GEROT atualizadas."
+    redirect_to routine_details_path, notice: "Configurações do GEROT atualizadas."
   rescue ActiveRecord::RecordInvalid => error
     @error_message = error.record.errors.full_messages.to_sentence
     render :edit, status: :unprocessable_entity
@@ -107,7 +108,7 @@ class RoutineGeneratorsController < ApplicationController
     end
     return true unless @routine.closed? || @routine.archived?
 
-    redirect_to @routine, alert: "Este GEROT não permite mais editar os indicadores."
+    redirect_to routine_details_path, alert: "Este GEROT não permite mais editar os indicadores."
     false
   end
 

@@ -72,6 +72,20 @@ class RoutineGeneratorsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 35, routine.routine_values.count
   end
 
+  test "editing settings keeps the routine navigation origin" do
+    routine = create_routine_with_all_indicators
+    get edit_routine_generator_path(routine, return_to: routines_path)
+
+    assert_response :success
+    assert_select "input[type=hidden][name=return_to][value=?]", routines_path
+    assert_select "a[href=?]", routine_path(routine, return_to: routines_path), text: /Voltar/
+
+    patch routine_generator_path(routine), params: {
+      return_to: routines_path, indicator_ids: routine.selected_indicator_ids
+    }
+    assert_redirected_to routine_path(routine, return_to: routines_path)
+  end
+
   private
 
   def create_template_with_indicators

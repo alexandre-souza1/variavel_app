@@ -63,7 +63,7 @@ export default class extends Controller {
     const template = document.querySelector("[data-invoice-numbers-target='template']")
     container.querySelectorAll(".nested-fields[data-new-record='true']").forEach((row) => row.remove())
     invoices.forEach((invoice, index) => {
-      if (index > 0) container.insertAdjacentHTML("beforeend", template.innerHTML.replace(/NEW_RECORD/g, Date.now() + index))
+      if (!container.querySelectorAll(".nested-fields")[index]) container.insertAdjacentHTML("beforeend", template.innerHTML.replace(/NEW_RECORD/g, Date.now() + index))
       const row = container.querySelectorAll(".nested-fields")[index]
       row.querySelector("input[name*='[number]']").value = invoice.invoice_number || ""
       row.querySelector("input[name*='[amount]']").value = invoice.total == null ? "" : Number(invoice.total).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })

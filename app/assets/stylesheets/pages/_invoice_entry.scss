@@ -141,13 +141,21 @@
     margin-bottom: .25rem !important;
   }
 
+  .invoice-number-field {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  form .form-control.is-invalid, form .form-select.is-invalid {
+    border-color: var(--bs-danger);
+  }
+
   @media (max-width: $md-max) {
     [data-invoice-numbers-target="container"] .nested-fields {
       flex-wrap: wrap;
     }
 
-    [data-invoice-numbers-target="container"] .nested-fields > .form-control,
-    [data-invoice-numbers-target="container"] .nested-fields > .form-select {
+    [data-invoice-numbers-target="container"] .nested-fields > .invoice-number-field {
       min-width: 0;
       flex: 1 1 calc(50% - .5rem);
     }

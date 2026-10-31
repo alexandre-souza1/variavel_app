@@ -20,29 +20,29 @@
         </p>
       </div>
       <div class="header-actions">
-        <%= link_to(@action_plan ? action_plan_path(@action_plan, view: "gerots", year: @routine.period_start.year) : routines_path, class: "btn btn-outline-secondary") do %>
+        <%= link_to routine_return_path, class: "btn btn-outline-secondary" do %>
           <i class="bi bi-arrow-left me-1"></i>
           Voltar
         <% end %>
         <% if @routine.manageable_by?(current_user) && @routine.open? %>
-          <%= link_to edit_routine_generator_path(@routine), class: "btn btn-primary" do %>
+          <%= link_to edit_routine_generator_path(@routine, return_to: routine_return_path), class: "btn btn-primary" do %>
             <i class="bi bi-pencil-square me-1"></i>
             Configurações
           <% end %>
         <% end %>
         <% if @routine.open? && @routine.manageable_by?(current_user) %>
-          <%= button_to close_routine_path(@routine), method: :patch, class: "btn btn-primary" do %>
+          <%= button_to close_routine_path(@routine), method: :patch, params: { return_to: routine_return_path }, class: "btn btn-primary" do %>
             <i class="bi bi-check2-circle me-1"></i>
             Encerrar rotina
           <% end %>
         <% elsif @routine.closed? && @routine.manageable_by?(current_user) %>
-          <%= button_to archive_routine_path(@routine), method: :patch, class: "btn btn-secondary" do %>
+          <%= button_to archive_routine_path(@routine), method: :patch, params: { return_to: routine_return_path }, class: "btn btn-secondary" do %>
             <i class="bi bi-archive me-1"></i>
             Arquivar
           <% end %>
         <% end %>
         <% if current_user.admin? && (@routine.closed? || @routine.archived?) %>
-          <%= button_to reopen_routine_path(@routine), method: :patch, class: "btn btn-primary" do %>
+          <%= button_to reopen_routine_path(@routine), method: :patch, params: { return_to: routine_return_path }, class: "btn btn-primary" do %>
             <i class="bi bi-arrow-counterclockwise me-1"></i>
             Reabrir rotina
           <% end %>
@@ -158,8 +158,8 @@
     </div>
   </div>
   <div class="back-link">
-    <%= link_to(@action_plan ? action_plan_path(@action_plan, view: "gerots", year: @routine.period_start.year) : routines_path) do %>
-      <i class="bi bi-arrow-left"></i> <%= @action_plan ? 'Voltar para GEROTs do plano' : 'Voltar para Rotinas' %>
+    <%= link_to routine_return_path do %>
+      <i class="bi bi-arrow-left"></i> Voltar
     <% end %>
   </div>
 </div>

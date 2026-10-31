@@ -11,7 +11,7 @@
       <% month_gerots = @plan_gerots.select { |gerot| gerot.period_start <= month_start.end_of_month && gerot.period_end >= month_start } %>
       <% current_month = month_start == Date.current.beginning_of_month %>
       <% destination = if month_gerots.one?
-                         routine_path(month_gerots.first)
+                         routine_path(month_gerots.first, return_to: request.fullpath)
                        elsif month_gerots.any?
                          "#plan-gerots-list"
                        elsif @can_manage_gerots && @available_templates.any?
@@ -43,7 +43,7 @@
   <% if @plan_gerots.any? %>
     <div class="plan-gerots__records">
       <% @plan_gerots.each do |gerot| %>
-        <%= link_to routine_path(gerot), class: "plan-gerots__record", aria: { label: "Abrir GEROT: #{gerot.title}" } do %>
+        <%= link_to routine_path(gerot, return_to: request.fullpath), class: "plan-gerots__record", aria: { label: "Abrir GEROT: #{gerot.title}" } do %>
           <div class="plan-gerots__record-date"><strong><%= l(gerot.period_start, format: '%b').capitalize %></strong><span><%= gerot.period_start.year %></span></div>
           <div class="plan-gerots__record-details">
             <span class="plan-gerots__record-title"><%= gerot.title %></span>

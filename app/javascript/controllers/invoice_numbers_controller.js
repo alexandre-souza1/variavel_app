@@ -17,8 +17,10 @@ export default class extends Controller {
     if (wrapper.dataset.newRecord === "true") {
       wrapper.remove()
     } else {
-      wrapper.querySelector("input[name*='_destroy']").value = 1
+      const destroy = wrapper.querySelector("input[type='checkbox'][name*='_destroy']")
+      if (destroy) destroy.checked = true
       wrapper.style.display = "none"
+      wrapper.querySelectorAll("input:not([type='hidden']):not([type='checkbox']), select").forEach((field) => { field.disabled = true })
     }
     this.calculate()
   }
@@ -31,7 +33,10 @@ export default class extends Controller {
   calculate() {
     const total = [...this.containerTarget.querySelectorAll("input[name*='[amount]']")]
       .filter((input) => input.closest(".nested-fields")?.style.display !== "none")
-      .reduce((sum, input) => sum + (parseFloat(input.value.replace(/\./g, "").replace(",", ".")) || 0), 0)
+      .reduce((sum, input) => {
+        const value = input.value.includes(",") ? input.value.replace(/\./g, "").replace(",", ".") : input.value
+        return sum + (Number(value) || 0)
+      }, 0)
     const totalField = this.element.closest("form")?.querySelector("[data-invoice-numbers-target='total']")
     if (totalField) totalField.value = total.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }

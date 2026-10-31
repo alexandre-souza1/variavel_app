@@ -14,7 +14,7 @@
       </div>
       <div class="header-actions">
         <% if routine.present? %>
-          <%= link_to routine, class: "btn-outline" do %>
+          <%= link_to routine_path(routine, return_to: routine_return_path), class: "btn-outline" do %>
             <i class="bi bi-arrow-left me-1"></i>Voltar
           <% end %>
         <% else %>
@@ -53,6 +53,7 @@
   <div class="card">
     <div class="card-body">
       <%= form_with url: url, method: method, local: true do |f| %>
+        <%= hidden_field_tag :return_to, routine_return_path if routine.present? %>
         <%= hidden_field_tag :routine_template_id, template.id, id: nil if show_period %>
         <% if show_period %>
           <div class="mb-4">
@@ -246,7 +247,7 @@
         <div class="d-flex gap-2 mt-4">
           <%= submit_tag submit_label, class: "btn btn-primary", type: "submit" %>
           <% if routine.present? %>
-            <%= link_to "Cancelar", routine, class: "btn btn-outline-secondary" %>
+            <%= link_to "Cancelar", routine_path(routine, return_to: routine_return_path), class: "btn btn-outline-secondary" %>
           <% else %>
             <%= link_to "Cancelar", @action_plan ? action_plan_path(@action_plan, view: "gerots") : routine_template_path(template), class: "btn btn-outline-secondary" %>
           <% end %>

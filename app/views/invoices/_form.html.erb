@@ -32,7 +32,8 @@
       </div>
 
       <div class="card-body">
-        <%= form_with(model: invoice, local: true) do |f| %>
+        <%= form_with(model: invoice, local: true, data: { controller: "invoice-form", turbo: false,
+              action: "submit->invoice-form#submit input->invoice-form#clearFieldError change->invoice-form#clearFieldError" }) do |f| %>
           <%= hidden_field_tag :return_to, invoice_return_path %>
           <div class="row">
             <div class="col-md-6 mb-3">
@@ -42,7 +43,7 @@
 
             <div class="col-md-6 mb-3">
               <%= f.label :supplier_id, "Fornecedor", class: "form-label fw-bold" %>
-              <%= f.collection_select :supplier_id, Supplier.all, :id, :name, { prompt: "Selecione o fornecedor" }, class: "form-select" %>
+              <%= f.collection_select :supplier_id, Supplier.all, :id, :name, { prompt: "Selecione o fornecedor" }, class: "form-select", required: true %>
             </div>
           </div>
 
@@ -56,22 +57,30 @@
 
             <div data-invoice-numbers-target="container" class="mb-2">
               <%= f.fields_for :invoice_numbers do |nf_form| %>
-                <div class="nested-fields d-flex mb-2 align-items-center gap-2" data-new-record="false">
-                  <%= nf_form.text_field :number, class: "form-control", placeholder: "Número da NF", aria: { label: "Número da NF" } %>
-                  <%= nf_form.collection_select :cost_center_id,
-                        CostCenter.all.order(:name),
-                        :id,
-                        :name,
-                        { prompt: "Centro de custo" },
-                        class: "form-select",
-                        aria: { label: "Centro de custo" } %>
-                  <%= nf_form.text_field :amount,
-                        value: number_with_precision(nf_form.object.amount, precision: 2, separator: ",", delimiter: "."),
-                        class: "form-control",
-                        inputmode: "decimal",
-                        placeholder: "Valor",
-                        aria: { label: "Valor da NF" },
-                        data: { action: "focus->invoice-numbers#selectZero click->invoice-numbers#selectZero input->invoice-numbers#calculate" } %>
+                <div class="nested-fields d-flex mb-2 align-items-start gap-2" data-new-record="<%= nf_form.object.new_record? %>">
+                  <div class="invoice-number-field">
+                    <%= nf_form.text_field :number, class: "form-control", placeholder: "Número da NF", required: true, aria: { label: "Número da NF" } %>
+                  </div>
+                  <div class="invoice-number-field">
+                    <%= nf_form.collection_select :cost_center_id,
+                          CostCenter.all.order(:name),
+                          :id,
+                          :name,
+                          { prompt: "Centro de custo" },
+                          class: "form-select",
+                          required: true,
+                          aria: { label: "Centro de custo" } %>
+                  </div>
+                  <div class="invoice-number-field">
+                    <%= nf_form.text_field :amount,
+                          value: number_with_precision(nf_form.object.amount, precision: 2, separator: ",", delimiter: "."),
+                          class: "form-control",
+                          required: true,
+                          inputmode: "decimal",
+                          placeholder: "Valor",
+                          aria: { label: "Valor da NF" },
+                          data: { action: "focus->invoice-numbers#selectZero click->invoice-numbers#selectZero input->invoice-numbers#calculate" } %>
+                  </div>
                   <%= nf_form.check_box :_destroy, style: "display: none" %>
                   <button type="button" class="icon-btn danger" title="Remover NF" data-action="click->invoice-numbers#remove">
                     <i class="bi bi-trash3"></i>
@@ -81,15 +90,21 @@
             </div>
 
             <template data-invoice-numbers-target="template">
-              <div class="nested-fields d-flex mb-2 align-items-center gap-2" data-new-record="true">
-                <input class="form-control" placeholder="Número da NF" type="text" autocomplete="off" aria-label="Número da NF" name="invoice[invoice_numbers_attributes][NEW_RECORD][number]">
-                <select class="form-select" aria-label="Centro de custo" name="invoice[invoice_numbers_attributes][NEW_RECORD][cost_center_id]">
-                  <option value="">Centro de custo</option>
-                  <% CostCenter.all.order(:name).each do |cost_center| %>
-                    <option value="<%= cost_center.id %>"><%= cost_center.name %></option>
-                  <% end %>
-                </select>
-                <input class="form-control" type="text" inputmode="decimal" value="0,00" placeholder="Valor" aria-label="Valor da NF" name="invoice[invoice_numbers_attributes][NEW_RECORD][amount]" data-action="focus->invoice-numbers#selectZero click->invoice-numbers#selectZero input->invoice-numbers#calculate">
+              <div class="nested-fields d-flex mb-2 align-items-start gap-2" data-new-record="true">
+                <div class="invoice-number-field">
+                  <input class="form-control" placeholder="Número da NF" type="text" required autocomplete="off" aria-label="Número da NF" name="invoice[invoice_numbers_attributes][NEW_RECORD][number]">
+                </div>
+                <div class="invoice-number-field">
+                  <select class="form-select" required aria-label="Centro de custo" name="invoice[invoice_numbers_attributes][NEW_RECORD][cost_center_id]">
+                    <option value="">Centro de custo</option>
+                    <% CostCenter.all.order(:name).each do |cost_center| %>
+                      <option value="<%= cost_center.id %>"><%= cost_center.name %></option>
+                    <% end %>
+                  </select>
+                </div>
+                <div class="invoice-number-field">
+                  <input class="form-control" type="text" required inputmode="decimal" value="0,00" placeholder="Valor" aria-label="Valor da NF" name="invoice[invoice_numbers_attributes][NEW_RECORD][amount]" data-action="focus->invoice-numbers#selectZero click->invoice-numbers#selectZero input->invoice-numbers#calculate">
+                </div>
                 <input type="hidden" name="invoice[invoice_numbers_attributes][NEW_RECORD][_destroy]" value="false">
                 <button type="button" class="icon-btn danger" title="Remover NF" data-action="click->invoice-numbers#remove">
                   <i class="bi bi-trash3"></i>
@@ -101,34 +116,32 @@
           <div class="row">
             <div class="col-md-6 mb-3">
               <%= f.label :date_issued, "Data de lançamento", class: "form-label fw-bold" %>
-              <%= f.date_field :date_issued, class: "form-control" %>
+              <%= f.date_field :date_issued, class: "form-control", required: true %>
             </div>
 
             <div class="col-md-6 mb-3">
               <%= f.label :due_date, "Data de vencimento", class: "form-label fw-bold" %>
-              <%= f.date_field :due_date, class: "form-control" %>
+              <%= f.date_field :due_date, class: "form-control", required: true %>
             </div>
           </div>
 
           <div class="row">
             <div class="col-md-4 mb-3">
               <%= f.label :budget_category_id, "Categoria Orçamentária", class: "form-label fw-bold" %>
-              <%= f.collection_select :budget_category_id,
-                    BudgetCategory.all.order(:name),
-                    :id,
-                    :name,
+              <%= f.select :budget_category_id,
+                    BudgetCategory.order(:name).map { |category| [category.name, category.id,
+                      { data: { sector: category.user_sector, sector_label: BudgetCategory.sectors[category.sector],
+                                code_optional: category.name.downcase == "abastecimento" } }] },
                     { prompt: "Selecione a categoria" },
-                    class: "form-select" %>
+                    class: "form-select", required: true %>
             </div>
 
             <div class="col-md-4 mb-3">
               <%= f.label :purchaser_id, "Comprador", class: "form-label fw-bold" %>
-              <%= f.collection_select :purchaser_id,
-                    (@purchasers || User.all.order(:name)),
-                    :id,
-                    :name,
+              <%= f.select :purchaser_id,
+                    User.order(:name).map { |user| [user.name, user.id, { data: { sector: user.sector } }] },
                     { prompt: "Selecione o comprador" },
-                    class: "form-select" %>
+                    class: "form-select", required: true %>
             </div>
           </div>
 
