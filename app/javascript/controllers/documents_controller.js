@@ -47,32 +47,20 @@ export default class extends Controller {
     this.files.forEach((file, index) => {
       const container = document.createElement("div")
 
-      container.classList.add(
-        "border",
-        "rounded",
-        "p-2",
-        "text-center",
-        "bg-white",
-        "shadow-sm",
-        "position-relative"
-      )
-
-      container.style.fontSize = "0.75rem"
+      container.className = "invoice-attachment"
 
       // 📄 Ícone
       const icon = document.createElement("div")
+      icon.className = "invoice-attachment-icon"
       icon.innerHTML = file.type.includes("pdf")
-        ? `<i class="bi bi-file-earmark-pdf text-danger" style="font-size: 1.8rem;"></i>`
-        : `<i class="bi bi-file-earmark text-secondary" style="font-size: 1.8rem;"></i>`
+        ? `<i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>`
+        : `<i class="bi bi-file-earmark" aria-hidden="true"></i>`
 
       // 📄 Nome
       const fileName = document.createElement("div")
+      fileName.className = "invoice-attachment-name"
       fileName.innerText = file.name
-      fileName.style.wordBreak = "break-word"
-      fileName.style.maxWidth = "220px"
-      fileName.style.whiteSpace = "nowrap"
-      fileName.style.overflow = "hidden"
-      fileName.style.textOverflow = "ellipsis"
+      fileName.title = file.name
 
       // 🏷️ Tipo
       const hiddenType = document.createElement("input")
@@ -84,6 +72,8 @@ export default class extends Controller {
       typeBtn.type = "button"
 
       const setTypeVisual = () => {
+        const labels = { nf: "Nota Fiscal", boleto: "Boleto", outro: "Outro" }
+        typeBtn.title = `Tipo: ${labels[hiddenType.value]}. Clique para alterar.`
         if (hiddenType.value === "nf") {
           typeBtn.className = "icon-btn type-btn"
           typeBtn.innerHTML = `<i class="bi bi-receipt"></i>`
@@ -132,11 +122,11 @@ export default class extends Controller {
         this.syncInputFiles()
       }
 
-      container.appendChild(removeBtn)
       container.appendChild(icon)
       container.appendChild(fileName)
       container.appendChild(typeBtn)
       container.appendChild(scanBtn)
+      container.appendChild(removeBtn)
       container.appendChild(hiddenType)
 
       this.listTarget.appendChild(container)

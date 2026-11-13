@@ -3,6 +3,7 @@
 const { chromium } = require('playwright');
 const { execFileSync } = require('node:child_process');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const rails = code => execFileSync('bin/rails', ['runner', code], {
   env: { ...process.env, RAILS_ENV: 'test' }, encoding: 'utf8'
 }).trim();
@@ -74,6 +75,41 @@ const token = `browser-bugfix-${Date.now()}`;
     let posts = 0;
     page.on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname === '/invoices') posts++; });
     const files = () => page.locator('#invoice_documents').evaluate(element => [...element.files].map(file => file.name));
+    const checkAttachmentLayout = async state => {
+      const before = await files();
+      await page.locator('#invoice_documents').setInputFiles({
+        name: 'comprovante-de-pagamento-com-nome-muito-longo-para-validar-o-espaco-do-anexo.pdf',
+        mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 visual')
+      });
+      fs.mkdirSync('tmp/browser', { recursive: true });
+      for (const width of [1440, 390, 320]) {
+        await page.setViewportSize({ width, height: 1000 });
+        for (const mode of ['light', 'dark']) {
+          await page.evaluate(mode => {
+            document.documentElement.dataset.colorTheme = 'retro_orange';
+            document.documentElement.dataset.bsTheme = mode;
+          }, mode);
+          await page.evaluate(() => Promise.all(document.getAnimations().filter(animation => animation.effect.getComputedTiming().iterations !== Infinity).map(animation => animation.finished.catch(() => {}))));
+          assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${state} fits ${width}px ${mode}`);
+          const layout = await page.locator('[data-controller="documents"]').evaluate(element => {
+            const bounds = element.getBoundingClientRect();
+            return [...element.querySelectorAll('.invoice-attachment')].every(card => {
+              const box = card.getBoundingClientRect();
+              const name = card.querySelector('.invoice-attachment-name');
+              return box.left >= bounds.left - 1 && box.right <= bounds.right + 1 &&
+                getComputedStyle(name).textOverflow === 'ellipsis' &&
+                getComputedStyle(name).textDecorationLine === 'none';
+            });
+          });
+          assert(layout, `${state}: compact attachments and long names stay within their field at ${width}px ${mode}`);
+          await page.locator('[data-controller="documents"]').screenshot({ path: `tmp/browser/invoice-attachments-${state}-${width}-${mode}.png` });
+        }
+      }
+      await page.locator('[data-documents-target="list"]').getByTitle('Remover anexo', { exact: true }).last().click();
+      assert.deepEqual(await files(), before);
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      await page.evaluate(() => { document.documentElement.dataset.bsTheme = 'light'; });
+    };
     await page.locator('#invoice_documents').setInputFiles([
       { name: 'nota.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 nota') },
       { name: 'boleto.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 boleto') }
@@ -146,6 +182,7 @@ const token = `browser-bugfix-${Date.now()}`;
     await page.waitForFunction(() => document.querySelector('form[data-controller="invoice-form"]')?.noValidate);
     assert.equal(await page.locator('[data-saved-documents] a').count(), 2);
     await page.locator('#invoice_documents').setInputFiles({ name: 'extra.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 extra') });
+    await checkAttachmentLayout('edit');
     await page.locator('#invoice_code').fill(`${token}-duplicate`);
     await page.locator('form[data-controller="invoice-form"] [type=submit]').click();
     await page.locator('#invoice_code[aria-invalid="true"]').waitFor();
@@ -172,6 +209,7 @@ const token = `browser-bugfix-${Date.now()}`;
     assert.match(await page.locator('[data-pending-document]').first().textContent(), /retido.pdf/);
     assert.match(await page.locator('[data-pending-document]').first().textContent(), /Boleto/);
     await page.waitForFunction(() => document.querySelector('form[data-controller="invoice-form"]')?.noValidate);
+    await checkAttachmentLayout('validation');
     await page.locator('[data-pending-document]').nth(1).getByTitle('Remover anexo', { exact: true }).click();
     assert.equal(await page.locator('[data-pending-document]').count(), 1);
     await page.locator('#invoice_code').fill(`${token}-retained`);
