@@ -1,6 +1,6 @@
 class InvoicesController < ApplicationController
   include NavigationReturn
-  helper_method :invoice_return_path, :invoice_cancel_path
+  helper_method :invoice_return_path, :invoice_cancel_path, :invoice_document_upload_purpose
   before_action :authenticate_user!
   before_action :set_invoice, only: %i[ show edit update destroy download_document ]
   before_action :set_purchasers, only: [:new, :edit, :create, :update]
@@ -401,7 +401,8 @@ class InvoicesController < ApplicationController
 
   # POST /invoices or /invoices.json
   def create
-    @invoice = Invoice.new(invoice_params.except(:documents))
+    @invoice = Invoice.new(invoice_params.except(:documents, :pending_documents))
+    @pending_documents = pending_invoice_documents
 
     respond_to do |format|
       if @invoice.save
@@ -414,7 +415,10 @@ class InvoicesController < ApplicationController
                  status: :created, location: invoice_path(@invoice, return_to: invoice_return_path)
         end
       else
-        format.html { render :new, status: :unprocessable_entity }
+        format.html do
+          preserve_invoice_documents
+          render :new, status: :unprocessable_entity
+        end
         format.json { render json: invoice_validation_errors, status: :unprocessable_entity }
       end
     end
@@ -422,8 +426,10 @@ class InvoicesController < ApplicationController
 
   # PATCH/PUT /invoices/1
   def update
+    @pending_documents = pending_invoice_documents
+
     respond_to do |format|
-      if @invoice.update(invoice_params.except(:documents))
+      if @invoice.update(invoice_params.except(:documents, :pending_documents))
         attach_invoice_documents
         format.html { redirect_to invoice_path(@invoice, return_to: invoice_return_path), notice: "Lançamento atualizado com sucesso.", status: :see_other }
         format.json do
@@ -431,7 +437,10 @@ class InvoicesController < ApplicationController
           render json: { id: @invoice.id, redirect_url: invoice_path(@invoice, return_to: invoice_return_path) }
         end
       else
-        format.html { render :edit, status: :unprocessable_entity }
+        format.html do
+          preserve_invoice_documents
+          render :edit, status: :unprocessable_entity
+        end
         format.json { render json: invoice_validation_errors, status: :unprocessable_entity }
       end
     end
@@ -455,8 +464,38 @@ class InvoicesController < ApplicationController
 
   private
 
+  # Scope retained uploads to the user and the invoice being corrected.
+  def invoice_document_upload_purpose
+    "invoice_documents:#{current_user.id}:#{@invoice.id || 'new'}"
+  end
+
+  def pending_invoice_documents
+    Array(invoice_params[:pending_documents]).reject(&:blank?).uniq.map do |token|
+      ActiveStorage::Blob.find_signed(token, purpose: invoice_document_upload_purpose) || raise(ActiveRecord::RecordNotFound)
+    end
+  end
+
+  def invoice_document_files
+    Array(invoice_params[:documents]).reject(&:blank?)
+  end
+
+  # A file input cannot be repopulated when HTML validation renders a new page.
+  # Keep uploads in storage and return signed references for the next submission.
+  def preserve_invoice_documents
+    types = params[:document_types] || []
+    invoice_document_files.each_with_index do |file, index|
+      @pending_documents << ActiveStorage::Blob.create_and_upload!(
+        io: file.tempfile,
+        filename: file.original_filename,
+        content_type: file.content_type,
+        metadata: { document_type: types[index].presence || "outro" }
+      )
+    end
+  end
+
   def attach_invoice_documents
-    files = Array(invoice_params[:documents]).reject(&:blank?)
+    @invoice.documents.attach(@pending_documents) if @pending_documents.present?
+    files = invoice_document_files
     types = params[:document_types] || []
 
     files.each_with_index do |file, index|
@@ -587,7 +626,7 @@ class InvoicesController < ApplicationController
     # Only allow a list of trusted parameters through.
   def invoice_params
     params.require(:invoice).permit(
-      :supplier_id, :date_issued, :due_date, :total, :purchaser_id, :budget_category_id, :cost_center_id, :notes, :code, documents: [],
+      :supplier_id, :date_issued, :due_date, :total, :purchaser_id, :budget_category_id, :cost_center_id, :notes, :code, documents: [], pending_documents: [],
       invoice_numbers_attributes: [:id, :number, :amount, :cost_center_id, :_destroy]
     )
   end

@@ -4,7 +4,10 @@ export default class extends Controller {
   static targets = ["list", "input"]
 
   connect() {
-    this.files = []
+    this.files = Array.from(this.inputTarget.files)
+    const types = Array.from(this.listTarget.querySelectorAll('[name="document_types[]"]'), (input) => input.value)
+    this.types = this.files.map((file, index) => types[index] || "nf")
+    this.renderFiles()
   }
 
   openFileDialog() {
@@ -15,12 +18,17 @@ export default class extends Controller {
     const newFiles = Array.from(event.target.files)
 
     this.files = this.files.concat(newFiles)
+    this.types.push(...newFiles.map(() => "nf"))
 
     // limpa input original
     this.inputTarget.value = ""
 
     this.renderFiles()
     this.syncInputFiles()
+  }
+
+  removePendingDocument(event) {
+    event.currentTarget.closest("[data-pending-document]").remove()
   }
 
   syncInputFiles() {
@@ -70,7 +78,7 @@ export default class extends Controller {
       const hiddenType = document.createElement("input")
       hiddenType.type = "hidden"
       hiddenType.name = `document_types[]`
-      hiddenType.value = "nf"
+      hiddenType.value = this.types[index] || "nf"
 
       const typeBtn = document.createElement("button")
       typeBtn.type = "button"
@@ -95,6 +103,7 @@ export default class extends Controller {
         else if (hiddenType.value === "boleto") hiddenType.value = "outro"
         else hiddenType.value = "nf"
 
+        this.types[index] = hiddenType.value
         setTypeVisual()
       }
 
@@ -118,6 +127,7 @@ export default class extends Controller {
 
       removeBtn.onclick = () => {
         this.files.splice(index, 1)
+        this.types.splice(index, 1)
         this.renderFiles()
         this.syncInputFiles()
       }

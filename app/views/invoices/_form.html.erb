@@ -159,6 +159,30 @@
               <%= f.label :documents, "Anexos", class: "form-label fw-bold" %>
               <div data-controller="invoice-scan"></div>
 
+              <% if invoice.documents.attached? %>
+                <div data-saved-documents class="d-flex flex-wrap gap-2 mb-2">
+                  <% invoice.documents.each do |document| %>
+                    <div class="border rounded p-2">
+                      <i class="bi bi-file-earmark me-1"></i>
+                      <%= link_to document.filename, url_for(document), target: "_blank", rel: "noopener" %>
+                      <small class="text-muted"><%= Invoice::DOCUMENT_TYPES[document.blob.metadata["document_type"]&.to_sym] || "Outro" %></small>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+
+              <% Array(@pending_documents).each do |document| %>
+                <div data-pending-document class="border rounded p-2 mb-2 d-flex align-items-center gap-2">
+                  <%= hidden_field_tag "invoice[pending_documents][]", document.signed_id(purpose: invoice_document_upload_purpose) %>
+                  <i class="bi bi-file-earmark"></i>
+                  <span><%= document.filename %></span>
+                  <small class="text-muted"><%= Invoice::DOCUMENT_TYPES[document.metadata["document_type"]&.to_sym] || "Outro" %></small>
+                  <button type="button" class="icon-btn danger" title="Remover anexo" data-action="click->documents#removePendingDocument">
+                    <i class="bi bi-trash3"></i>
+                  </button>
+                </div>
+              <% end %>
+
               <div class="invoice-attachments-toolbar d-flex align-items-center gap-2 mb-2">
                 <%= f.file_field :documents,
                       multiple: true,

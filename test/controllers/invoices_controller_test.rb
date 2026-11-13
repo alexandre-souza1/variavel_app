@@ -109,6 +109,96 @@ class InvoicesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "boleto", invoice.documents.last.blob.metadata["document_type"]
   end
 
+  test "edit displays saved documents and an update without uploads keeps them" do
+    invoice = Invoice.create!(valid_attributes)
+    invoice.documents.attach(upload)
+    original_blob = invoice.documents.first.blob
+
+    get edit_invoice_path(invoice)
+
+    assert_response :success
+    assert_select "[data-saved-documents] a", text: original_blob.filename.to_s
+
+    patch invoice_path(invoice), params: { invoice: { notes: "Corrigida", documents: [""] } }
+
+    assert_response :see_other
+    assert_equal [original_blob.id], invoice.reload.documents.pluck(:blob_id)
+    assert_equal "Corrigida", invoice.notes
+  end
+
+  test "HTML creation retains uploads across repeated validation errors and saves them on retry" do
+    attributes = valid_attributes.merge(code: "", documents: [upload])
+
+    assert_no_difference ["Invoice.count", "ActiveStorage::Attachment.count"] do
+      post invoices_path, params: { invoice: attributes, document_types: ["boleto"] }
+    end
+
+    assert_response :unprocessable_entity
+    token = pending_document_tokens.sole
+    assert_select "[data-pending-document]", text: /pcd_routing.csv/
+
+    assert_no_difference "ActiveStorage::Blob.count" do
+      post invoices_path, params: { invoice: valid_attributes.merge(code: "", pending_documents: [token]) }
+    end
+
+    assert_response :unprocessable_entity
+    assert_equal [token], pending_document_tokens
+
+    post invoices_path, params: { invoice: valid_attributes.merge(pending_documents: [token], documents: [upload]),
+                                 document_types: ["nf"] }
+
+    assert_response :see_other
+    invoice = Invoice.order(:id).last
+    assert_equal 2, invoice.documents.count
+    assert_equal %w[boleto nf], invoice.documents.map { |document| document.blob.metadata["document_type"] }.sort
+    assert_equal File.binread(file_fixture("pcd_routing.csv")), invoice.documents.first.download
+  end
+
+  test "HTML update retains saved and pending documents until a valid retry" do
+    invoice = Invoice.create!(valid_attributes)
+    invoice.documents.attach(upload)
+    original_blob = invoice.documents.first.blob_id
+
+    patch invoice_path(invoice), params: { invoice: { code: "", documents: [upload] }, document_types: ["boleto"] }
+
+    assert_response :unprocessable_entity
+    assert_select "[data-saved-documents] a", text: "pcd_routing.csv"
+    token = pending_document_tokens.sole
+    assert_equal [original_blob], invoice.reload.documents.pluck(:blob_id)
+
+    patch invoice_path(invoice), params: { invoice: { code: "", pending_documents: [token] } }
+
+    assert_response :unprocessable_entity
+    assert_equal [token], pending_document_tokens
+
+    patch invoice_path(invoice), params: { invoice: { code: "NF-#{SecureRandom.hex(6)}", pending_documents: [token] } },
+                                headers: { "Accept" => "application/json" }
+
+    assert_response :success
+    assert_equal 2, invoice.reload.documents.count
+    assert_includes invoice.documents.pluck(:blob_id), original_blob
+    assert_equal "boleto", invoice.documents.last.blob.metadata["document_type"]
+  end
+
+  test "retained uploads are scoped to the original user and invoice" do
+    invoice = Invoice.create!(valid_attributes)
+    patch invoice_path(invoice), params: { invoice: { code: "", documents: [upload] } }
+    token = pending_document_tokens.sole
+    other_invoice = Invoice.create!(valid_attributes)
+
+    assert_no_difference "ActiveStorage::Attachment.count" do
+      patch invoice_path(other_invoice), params: { invoice: { pending_documents: [token] } }, as: :json
+    end
+    assert_response :not_found
+
+    users(:two).update!(role: :admin)
+    sign_in users(:two)
+    assert_no_difference "ActiveStorage::Attachment.count" do
+      patch invoice_path(invoice), params: { invoice: { pending_documents: [token] } }, as: :json
+    end
+    assert_response :not_found
+  end
+
   test "removed rows do not receive errors or displace errors from newly added rows" do
     invoice = Invoice.create!(valid_attributes)
     number = invoice.invoice_numbers.first
@@ -124,6 +214,10 @@ class InvoicesControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def pending_document_tokens
+    css_select("input[name='invoice[pending_documents][]']").map { |input| input["value"] }
+  end
 
   def valid_attributes
     { code: "NF-#{SecureRandom.hex(6)}", supplier_id: @supplier.id, purchaser_id: users(:one).id,

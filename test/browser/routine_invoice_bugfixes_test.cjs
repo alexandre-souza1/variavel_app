@@ -79,6 +79,17 @@ const token = `browser-bugfix-${Date.now()}`;
       { name: 'boleto.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 boleto') }
     ]);
     await page.locator('[data-documents-target="list"] .type-btn').nth(1).click();
+    // Adding/removing another file and reconnecting Stimulus retain the selection and types.
+    await page.locator('#invoice_documents').setInputFiles({ name: 'temporario.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 temporario') });
+    assert.equal(await page.locator('[name="document_types[]"]').nth(1).inputValue(), 'boleto');
+    await page.locator('[data-documents-target="list"]').getByTitle('Remover anexo', { exact: true }).nth(2).click();
+    await page.locator('[data-controller="documents"]').evaluate(async element => {
+      element.removeAttribute('data-controller');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      element.setAttribute('data-controller', 'documents');
+    });
+    assert.deepEqual(await files(), ['nota.pdf', 'boleto.pdf']);
+    assert.equal(await page.locator('[name="document_types[]"]').nth(1).inputValue(), 'boleto');
     await form.locator('[type=submit]').click();
     assert.equal(posts, 0, 'invalid form must not send files to the server');
     assert(await form.locator('[aria-invalid="true"]').count() >= 8);
@@ -133,6 +144,7 @@ const token = `browser-bugfix-${Date.now()}`;
     // Edit failures preserve both stored files and the new local selection.
     await page.goto(`${base}/invoices/${createdId}/edit`);
     await page.waitForFunction(() => document.querySelector('form[data-controller="invoice-form"]')?.noValidate);
+    assert.equal(await page.locator('[data-saved-documents] a').count(), 2);
     await page.locator('#invoice_documents').setInputFiles({ name: 'extra.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 extra') });
     await page.locator('#invoice_code').fill(`${token}-duplicate`);
     await page.locator('form[data-controller="invoice-form"] [type=submit]').click();
@@ -142,8 +154,34 @@ const token = `browser-bugfix-${Date.now()}`;
     await page.locator('form[data-controller="invoice-form"] [type=submit]').click();
     await page.waitForURL(url => url.pathname === `/invoices/${createdId}`);
     assert.equal(rails(`puts Invoice.find(${createdId}).documents.count`), '3');
+
+    // A native HTML submission must retain uploads when validation renders a new page.
+    await page.goto(`${base}/invoices/${createdId}/edit`);
+    await page.waitForFunction(() => document.querySelector('form[data-controller="invoice-form"]')?.noValidate);
+    await page.locator('#invoice_documents').setInputFiles([
+      { name: 'retido.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 retido') },
+      { name: 'descartado.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 descartado') }
+    ]);
+    await page.locator('[data-documents-target="list"] .type-btn').first().click();
+    await page.locator('#invoice_code').fill('');
+    await Promise.all([
+      page.waitForNavigation(),
+      form.evaluate(element => HTMLFormElement.prototype.submit.call(element))
+    ]);
+    assert.equal(await page.locator('[data-saved-documents] a').count(), 3);
+    assert.match(await page.locator('[data-pending-document]').first().textContent(), /retido.pdf/);
+    assert.match(await page.locator('[data-pending-document]').first().textContent(), /Boleto/);
+    await page.waitForFunction(() => document.querySelector('form[data-controller="invoice-form"]')?.noValidate);
+    await page.locator('[data-pending-document]').nth(1).getByTitle('Remover anexo', { exact: true }).click();
+    assert.equal(await page.locator('[data-pending-document]').count(), 1);
+    await page.locator('#invoice_code').fill(`${token}-retained`);
+    await form.locator('[type=submit]').click();
+    await page.waitForURL(url => url.pathname === `/invoices/${createdId}`);
+    const retained = JSON.parse(rails(`invoice = Invoice.find(${createdId}); puts({ count: invoice.documents.count, files: invoice.documents.map { |document| [document.filename.to_s, document.blob.metadata["document_type"]] } }.to_json)`));
+    assert.equal(retained.count, 4);
+    assert(retained.files.some(([name, type]) => name === 'retido.pdf' && type === 'boleto'));
     assert.deepEqual(errors, []);
-    console.log('PASS: routine archive and navigation; client validation, sector and nested rows; duplicate-code and network failures retain files; create/edit retries preserve uploads and metadata.');
+    console.log('PASS: routine archive and navigation; invoice validation and retries preserve saved/new files and types, including HTML fallback and controller reconnects.');
   } finally {
     await browser.close();
     rails(`
