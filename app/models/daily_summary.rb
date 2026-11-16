@@ -17,12 +17,17 @@ class DailySummary < ApplicationRecord
 
   def self.next_delivery(after: Time.current)
     date = after.in_time_zone(TIME_ZONE).to_date
-    today = delivery_time(date)
-    today > after ? today : delivery_time(date.next_day)
+    loop do
+      scheduled_time = delivery_time(date)
+      return scheduled_time if !date.sunday? && scheduled_time > after
+
+      date = date.next_day
+    end
   end
 
   def eligible?(now: Time.current)
     user.active? && user.daily_summary_enabled? &&
+      !summary_date.sunday? &&
       user.daily_summary_next_run_at.present? && user.daily_summary_next_run_at <= now &&
       summary_date == now.in_time_zone(TIME_ZONE).to_date && now >= self.class.delivery_time(summary_date)
   end

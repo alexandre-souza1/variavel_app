@@ -4,6 +4,7 @@ class DailySummaryDispatchJob < ApplicationJob
   def perform
     now = Time.current
     date = now.in_time_zone(DailySummary::TIME_ZONE).to_date
+    return if date.sunday?
     return if now < DailySummary.delivery_time(date)
 
     User.active.where(daily_summary_enabled: true).where("daily_summary_next_run_at <= ?", now).find_each do |user|

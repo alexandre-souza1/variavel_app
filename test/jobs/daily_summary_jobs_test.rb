@@ -3,10 +3,10 @@ require "minitest/mock"
 
 class DailySummaryJobsTest < ActiveJob::TestCase
   setup do
-    travel_to Time.find_zone!("Brasilia").local(2026, 11, 1, 7, 50)
+    travel_to Time.find_zone!("Brasilia").local(2026, 11, 2, 7, 50)
     @user = users(:two)
     @user.update!(daily_summary_enabled: true)
-    travel_to Time.find_zone!("Brasilia").local(2026, 11, 1, 8)
+    travel_to Time.find_zone!("Brasilia").local(2026, 11, 2, 8)
   end
 
   teardown { travel_back }
@@ -19,13 +19,13 @@ class DailySummaryJobsTest < ActiveJob::TestCase
       DailySummaryDispatchJob.perform_now
     end
     summary = @user.daily_summaries.sole
-    assert_equal Date.new(2026, 11, 1), summary.summary_date
+    assert_equal Date.new(2026, 11, 2), summary.summary_date
     assert_enqueued_with(job: DailySummaryJob, args: [summary.id])
     assert_equal 0, users(:one).daily_summaries.count
   end
 
   test "never dispatches before eight even if a scheduled date is overdue" do
-    travel_to Time.find_zone!("Brasilia").local(2026, 11, 1, 7, 59)
+    travel_to Time.find_zone!("Brasilia").local(2026, 11, 2, 7, 59)
     @user.update_columns(daily_summary_next_run_at: 1.day.ago)
 
     assert_no_enqueued_jobs(only: DailySummaryJob) { DailySummaryDispatchJob.perform_now }
@@ -43,7 +43,7 @@ class DailySummaryJobsTest < ActiveJob::TestCase
     travel 2.days + 1.hour
 
     assert_enqueued_jobs(1, only: DailySummaryJob) { DailySummaryDispatchJob.perform_now }
-    assert_equal [Date.new(2026, 11, 3)], @user.daily_summaries.pluck(:summary_date)
+    assert_equal [Date.new(2026, 11, 4)], @user.daily_summaries.pluck(:summary_date)
   end
 
   test "expired queue reservations are retried after a lost job" do
@@ -72,7 +72,7 @@ class DailySummaryJobsTest < ActiveJob::TestCase
     assert_equal "**Agenda**\n- Conferir tarefas", summary.content
     assert_equal "daily_summary", notification.kind
     assert_equal Rails.application.routes.url_helpers.daily_summary_path(summary), notification.action_url
-    assert_equal Time.find_zone!("Brasilia").local(2026, 11, 2, 8), @user.reload.daily_summary_next_run_at
+    assert_equal Time.find_zone!("Brasilia").local(2026, 11, 3, 8), @user.reload.daily_summary_next_run_at
     assert_no_enqueued_jobs(only: DailySummaryJob) { DailySummaryDispatchJob.perform_now }
   end
 

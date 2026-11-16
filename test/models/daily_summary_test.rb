@@ -8,11 +8,19 @@ class DailySummaryTest < ActiveSupport::TestCase
 
   test "enabling before eight schedules today in Brasilia even with a different application timezone" do
     Time.use_zone("UTC") do
-      travel_to Time.utc(2026, 11, 1, 10, 59) do
+      travel_to Time.utc(2026, 11, 2, 10, 59) do
         user = users(:one)
         user.update!(daily_summary_enabled: true)
-        assert_equal Time.utc(2026, 11, 1, 11), user.daily_summary_next_run_at
+        assert_equal Time.utc(2026, 11, 2, 11), user.daily_summary_next_run_at
       end
+    end
+  end
+
+  test "enabling on Sunday schedules Monday" do
+    travel_to Time.find_zone!("Brasilia").local(2026, 11, 1, 7) do
+      user = users(:one)
+      user.update!(daily_summary_enabled: true)
+      assert_equal Time.find_zone!("Brasilia").local(2026, 11, 2, 8), user.daily_summary_next_run_at
     end
   end
 

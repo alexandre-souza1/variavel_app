@@ -2,8 +2,9 @@
 
 Cada usuário pode ativar ou desativar **Resumo do dia** diretamente no menu do sino.
 A opção começa **desativada**, inclusive nas contas que já existiam. Abrir o menu não
-chama o Gemini. O envio usa todos os dias da semana, às 8h no fuso `Brasilia`.
-Ao ativar depois das 8h, o primeiro envio fica para as 8h do dia seguinte.
+chama o Gemini. O envio ocorre de segunda a sábado, às 8h no fuso `Brasilia`; não há
+geração aos domingos. Ao ativar depois das 8h, o primeiro envio fica para o próximo
+dia de envio.
 
 O resumo reúne os mesmos dados da consulta `daily_briefing` do assistente: agenda
 pessoal e módulos permitidos ao usuário. O Gemini apenas redige os dados consultados;
