@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_31_130000) do
+ActiveRecord::Schema[7.1].define(version: 2026_11_16_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -836,8 +836,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_31_130000) do
     t.text "document_urls", default: [], array: true
     t.bigint "purchaser_id"
     t.bigint "budget_category_id"
+    t.bigint "created_by_id"
     t.index ["budget_category_id"], name: "index_invoices_on_budget_category_id"
     t.index ["code"], name: "index_invoices_on_code", unique: true
+    t.index ["created_by_id"], name: "index_invoices_on_created_by_id"
     t.index ["purchaser_id"], name: "index_invoices_on_purchaser_id"
     t.index ["supplier_id"], name: "index_invoices_on_supplier_id"
   end
@@ -1583,6 +1585,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_31_130000) do
   add_foreign_key "invoice_numbers", "invoices"
   add_foreign_key "invoices", "budget_categories"
   add_foreign_key "invoices", "suppliers"
+  add_foreign_key "invoices", "users", column: "created_by_id"
   add_foreign_key "invoices", "users", column: "purchaser_id"
   add_foreign_key "labels", "action_plans"
   add_foreign_key "mapa_cargo_overrides", "mapas"

@@ -1,0 +1,37 @@
+<% max_date = local_assigns[:max_date] %>
+<% picker_id = "invoice-#{field}-calendar" %>
+<div class="invoice-date-picker" data-controller="task-datetime"
+     data-task-datetime-date-only-value="true"
+     data-task-datetime-max-date-value="<%= max_date&.iso8601 %>"
+     data-invoice-date-picker-field="<%= field %>"
+     data-invoice-date-picker-max-date="<%= max_date&.iso8601 %>"
+     data-action="click@window->task-datetime#outside keydown.esc->task-datetime#escape">
+  <%= f.hidden_field field, value: f.object.public_send(field)&.iso8601,
+        data: { task_datetime_target: "value" } %>
+  <button type="button" class="task-datetime__trigger" data-task-datetime-target="button"
+          data-invoice-date-picker-button="true" data-action="task-datetime#toggle"
+          aria-label="Selecionar #{label.downcase}" aria-expanded="false" aria-controls="<%= picker_id %>">
+    <span data-task-datetime-target="display"></span><i class="bi bi-calendar3" aria-hidden="true"></i>
+  </button>
+  <div id="<%= picker_id %>" class="task-composer__people-popover task-composer__calendar task-datetime__panel"
+       popover="manual" role="dialog" aria-label="Calendário: <%= label.downcase %>"
+       data-task-datetime-target="panel" hidden
+       data-action="input->task-datetime#stop change->task-datetime#stop">
+    <div class="task-composer__calendar-header">
+      <button type="button" class="btn btn-sm" aria-label="Mês anterior"
+              data-action="task-datetime#changeMonth" data-offset="-1">
+        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+      </button>
+      <strong data-task-datetime-target="month" aria-live="polite"></strong>
+      <button type="button" class="btn btn-sm" aria-label="Próximo mês"
+              data-action="task-datetime#changeMonth" data-offset="1">
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="task-composer__calendar-week" aria-hidden="true"><% %w[D S T Q Q S S].each do |day| %><span><%= day %></span><% end %></div>
+    <div class="task-composer__calendar-days" data-task-datetime-target="days" data-action="click->task-datetime#choose"></div>
+    <div class="task-datetime__footer">
+      <button type="button" data-action="task-datetime#today">Hoje</button>
+    </div>
+  </div>
+</div>

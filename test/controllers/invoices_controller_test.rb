@@ -12,7 +12,11 @@ class InvoicesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "form[data-controller='invoice-form'][data-turbo='false']"
-    assert_select "input[name='invoice[date_issued]'][required]"
+    assert_select "[data-invoice-date-picker-field='date_issued'][data-invoice-date-picker-max-date='#{Date.current.iso8601}'] [data-invoice-date-picker-button]"
+    assert_select "[data-invoice-date-picker-field='due_date'] [data-invoice-date-picker-button]"
+    assert_select "input[type='hidden'][name='invoice[date_issued]'][data-task-datetime-target='value']"
+    assert_select "input[type='date'][name='invoice[date_issued]']", count: 0
+    assert_select "input[type='date'][name='invoice[due_date]']", count: 0
     assert_select ".nested-fields input[name$='[number]'][required]", count: 2
     assert_select "select[name='invoice[budget_category_id]'] option[data-sector='fleet']"
   end
@@ -27,6 +31,17 @@ class InvoicesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert response.parsed_body.fetch("errors").key?("code")
     assert response.parsed_body.fetch("errors").key?("supplier_id")
+  end
+
+  test "does not create an invoice with an issue date after today" do
+    attributes = valid_attributes.merge(date_issued: (Date.current + 1.day).iso8601)
+
+    assert_no_difference "Invoice.count" do
+      post invoices_path, params: { invoice: attributes }, as: :json
+    end
+
+    assert_response :unprocessable_entity
+    assert response.parsed_body.fetch("errors").key?("date_issued")
   end
 
   test "nested errors use the dynamically submitted row key" do

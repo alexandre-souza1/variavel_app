@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["value", "button", "display", "panel", "month", "days", "hours", "minutes", "error"]
+  static values = { dateOnly: Boolean, maxDate: String }
 
   connect() {
     this.refresh()
@@ -25,7 +26,11 @@ export default class extends Controller {
   refresh() {
     const value = this.valueTarget.value
     const [date, time] = value.split("T")
-    this.displayTarget.textContent = date ? `${date.split("-").reverse().join("/")} ${time.slice(0, 5)}` : "Escolher data e hora"
+    if (this.hasDisplayTarget) {
+      this.displayTarget.textContent = this.dateOnlyValue
+        ? (date ? date.split("-").reverse().join("/") : "Escolher data")
+        : (date ? `${date.split("-").reverse().join("/")} ${time.slice(0, 5)}` : "Escolher data e hora")
+    }
     this.buttonTarget.classList.toggle("is-filled", Boolean(value))
   }
 
@@ -35,10 +40,12 @@ export default class extends Controller {
     this.draft = date || ""
     const selected = date ? new Date(`${date}T12:00:00`) : new Date()
     this.calendar = new Date(selected.getFullYear(), selected.getMonth(), 1)
-    const [hours, minutes] = time.split(":")
-    this.hoursTarget.value = hours
-    this.minutesTarget.value = minutes.slice(0, 2)
-    this.errorTarget.hidden = true
+    if (!this.dateOnlyValue) {
+      const [hours, minutes] = time.split(":")
+      this.hoursTarget.value = hours
+      this.minutesTarget.value = minutes.slice(0, 2)
+      this.errorTarget.hidden = true
+    }
     this.renderCalendar()
     this.panelTarget.hidden = false
     this.panelTarget.showPopover()
@@ -68,9 +75,16 @@ export default class extends Controller {
   stop(event) { event.stopPropagation() }
 
   changeMonth(event) {
-    this.calendar.setMonth(this.calendar.getMonth() + Number(event.currentTarget.dataset.offset))
+    const nextMonth = new Date(this.calendar.getFullYear(), this.calendar.getMonth() + Number(event.currentTarget.dataset.offset), 1)
+    if (this.dateOnlyValue && this.maxDateValue && nextMonth > this.monthStart(this.maxDateValue)) return
+    this.calendar = nextMonth
     this.renderCalendar()
     this.position()
+  }
+
+  monthStart(value) {
+    const [year, month] = value.split("-").map(Number)
+    return new Date(year, month - 1, 1)
   }
 
   dateValue(date) {
@@ -92,14 +106,27 @@ export default class extends Controller {
       button.setAttribute("aria-label", date.toLocaleDateString("pt-BR", { dateStyle: "full" }))
       button.setAttribute("aria-pressed", String(value === this.draft))
       if (value === this.dateValue(new Date())) button.setAttribute("aria-current", "date")
+      if (this.dateOnlyValue && this.maxDateValue && value > this.maxDateValue) {
+        button.disabled = true
+        button.setAttribute("aria-disabled", "true")
+      }
       this.daysTarget.append(button)
+    }
+
+    if (this.dateOnlyValue && this.maxDateValue) {
+      const nextButton = this.element.querySelector('[data-action~="task-datetime#changeMonth"][data-offset="1"]')
+      if (nextButton) nextButton.disabled = this.monthStart(this.maxDateValue) <= this.calendar
     }
   }
 
   choose(event) {
     const button = event.target.closest("button[data-date]")
-    if (!button) return
+    if (!button || button.disabled) return
     this.draft = button.dataset.date
+    if (this.dateOnlyValue) {
+      this.save(this.draft)
+      return
+    }
     this.renderCalendar()
     this.hoursTarget.focus()
     this.hoursTarget.select()
@@ -107,7 +134,12 @@ export default class extends Controller {
 
   today() {
     const date = new Date()
-    this.draft = this.dateValue(date)
+    const value = this.dateOnlyValue && this.maxDateValue ? this.maxDateValue : this.dateValue(date)
+    this.draft = value
+    if (this.dateOnlyValue) {
+      this.save(value)
+      return
+    }
     this.calendar = new Date(date.getFullYear(), date.getMonth(), 1)
     this.renderCalendar()
   }
@@ -115,6 +147,10 @@ export default class extends Controller {
   apply(event) {
     event.preventDefault()
     event.stopPropagation()
+    if (this.dateOnlyValue) {
+      if (this.draft && (!this.maxDateValue || this.draft <= this.maxDateValue)) this.save(this.draft)
+      return
+    }
     const hours = this.hoursTarget.value.trim(), minutes = this.minutesTarget.value.trim()
     if (!this.draft || !/^\d{1,2}$/.test(hours) || !/^\d{1,2}$/.test(minutes) || Number(hours) > 23 || Number(minutes) > 59) {
       this.errorTarget.hidden = false

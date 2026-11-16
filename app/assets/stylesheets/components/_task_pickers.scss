@@ -65,10 +65,12 @@
   i { flex-shrink: 0; color: var(--bs-secondary-color); }
   &:hover, &[aria-expanded="true"] { background: rgba(var(--bs-primary-rgb), .08); border-color: rgba(var(--bs-primary-rgb), .3); }
   &:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
+  &.is-invalid { border-color: var(--bs-form-invalid-border-color); }
 }
 .task-datetime__panel {
   animation: none;
   .task-composer__calendar-days button { min-height: 32px; }
+  .task-composer__calendar-days button:disabled { cursor: not-allowed; opacity: .35; }
 }
 .task-datetime__time {
   display: flex;

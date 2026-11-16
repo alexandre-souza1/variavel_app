@@ -10,6 +10,10 @@ export default class extends Controller {
   }
 
   field(name) {
+    const dateField = name.match(/^invoice\[(date_issued|due_date)\]$/)
+    if (dateField) {
+      return this.element.querySelector(`[data-invoice-date-picker-field="${dateField[1]}"] [data-invoice-date-picker-button]`)
+    }
     return this.element.elements.namedItem(name)
   }
 
@@ -20,7 +24,8 @@ export default class extends Controller {
 
   clearFieldError(event) {
     this.updateCodeRequirement()
-    this.removeFieldError(event.target)
+    const field = event.target.name ? this.field(event.target.name) : event.target
+    this.removeFieldError(field)
   }
 
   removeFieldError(field) {
@@ -73,6 +78,8 @@ export default class extends Controller {
       let message
       if (!field.value.trim()) {
         message = field.tagName === "SELECT" ? "Selecione uma opção." : "Preencha este campo."
+      } else if (field.name === "invoice[date_issued]" && field.max && field.value > field.max) {
+        message = "A data de emissão não pode ser maior que hoje."
       } else if (!field.validity.valid) {
         message = "Informe um valor válido."
       } else if (field.name.endsWith("[amount]")) {
@@ -83,6 +90,21 @@ export default class extends Controller {
       }
       if (message) {
         this.showFieldError(field, message)
+        valid = false
+      }
+    })
+
+    ["date_issued", "due_date"].forEach((attribute) => {
+      const valueField = this.element.elements.namedItem(`invoice[${attribute}]`)
+      const picker = this.element.querySelector(`[data-invoice-date-picker-field="${attribute}"]`)
+      const maxDate = picker?.dataset.invoiceDatePickerMaxDate
+      let message
+      if (!valueField?.value) message = "Selecione uma data."
+      else if (attribute === "date_issued" && maxDate && valueField.value > maxDate) {
+        message = "A data de emissão não pode ser maior que hoje."
+      }
+      if (message) {
+        this.showFieldError(this.field(`invoice[${attribute}]`), message)
         valid = false
       }
     })

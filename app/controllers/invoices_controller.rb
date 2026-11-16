@@ -402,6 +402,7 @@ class InvoicesController < ApplicationController
   # POST /invoices or /invoices.json
   def create
     @invoice = Invoice.new(invoice_params.except(:documents, :pending_documents))
+    @invoice.created_by = current_user
     @pending_documents = pending_invoice_documents
 
     respond_to do |format|

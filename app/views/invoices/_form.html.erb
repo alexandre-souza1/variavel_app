@@ -116,12 +116,12 @@
           <div class="row">
             <div class="col-md-6 mb-3">
               <%= f.label :date_issued, "Data de lançamento", class: "form-label fw-bold" %>
-              <%= f.date_field :date_issued, class: "form-control", required: true %>
+              <%= render "date_picker", f: f, field: :date_issued, label: "Data de emissão", max_date: Date.current %>
             </div>
 
             <div class="col-md-6 mb-3">
               <%= f.label :due_date, "Data de vencimento", class: "form-label fw-bold" %>
-              <%= f.date_field :due_date, class: "form-control", required: true %>
+              <%= render "date_picker", f: f, field: :due_date, label: "Data de vencimento" %>
             </div>
           </div>
 

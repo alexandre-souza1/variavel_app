@@ -62,6 +62,7 @@
           <div class="az-detail-item"><span>Categoria</span><strong><%= @invoice.budget_category&.name&.titleize || "Não informada" %></strong></div>
           <div class="az-detail-item"><span>Setor</span><strong><%= @invoice.budget_category&.sector.presence || "—" %></strong></div>
           <div class="az-detail-item"><span>Comprador</span><strong><%= @invoice.purchaser&.name || "Não informado" %></strong></div>
+          <div class="az-detail-item"><span>Lançado por</span><strong><%= @invoice.created_by&.name || "Não informado" %></strong></div>
           <div class="az-detail-item"><span>Data de emissão</span><strong><%= l(@invoice.date_issued, format: :long) %></strong></div>
           <div class="az-detail-item"><span>Data de vencimento</span><strong><%= @invoice.due_date.present? ? l(@invoice.due_date, format: :long) : "Não informado" %></strong></div>
         </div>
@@ -113,5 +114,5 @@
     </article>
   </section>
 
-  <div class="invoice-audit-line"><span><i class="bi bi-plus-circle me-1"></i>Criado em <%= l(@invoice.created_at, format: :short) %></span><span><i class="bi bi-arrow-repeat me-1"></i>Atualizado em <%= l(@invoice.updated_at, format: :short) %></span></div>
+  <div class="invoice-audit-line"><span><i class="bi bi-plus-circle me-1"></i>Criado por <%= @invoice.created_by&.name || "Não informado" %> em <%= l(@invoice.created_at, format: :short) %></span><span><i class="bi bi-arrow-repeat me-1"></i>Atualizado em <%= l(@invoice.updated_at, format: :short) %></span></div>
 </div>

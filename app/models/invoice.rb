@@ -7,6 +7,7 @@ class Invoice < ApplicationRecord
   end
   belongs_to :supplier
   belongs_to :purchaser, class_name: 'User', foreign_key: 'purchaser_id'
+  belongs_to :created_by, class_name: 'User', optional: true
   has_many_attached :documents
   has_many :invoice_numbers, dependent: :destroy
   belongs_to :budget_category
@@ -22,6 +23,7 @@ class Invoice < ApplicationRecord
 
   # Validação customizada para o code
   validate :code_required_unless_abastecimento
+  validate :date_issued_not_in_future
   validate :purchaser_matches_budget_category_sector, if: :sector_relationship_changed?
 
   # Método para obter a lista de purchasers ativos
@@ -41,6 +43,12 @@ class Invoice < ApplicationRecord
   }.freeze
 
   private
+
+  def date_issued_not_in_future
+    return if date_issued.blank? || date_issued <= Date.current
+
+    errors.add(:date_issued, "não pode ser maior que a data atual")
+  end
 
   def sector_relationship_changed?
     new_record? || will_save_change_to_purchaser_id? || will_save_change_to_budget_category_id?
