@@ -26,6 +26,8 @@ const token = `browser-bugfix-${Date.now()}`;
     puts({ user: user.id, other: other.id, supplier: supplier.id, category: category.id, center: center.id,
       duplicate: duplicate.id, plan: plan.id, template: template.id, routine: routine.id }.to_json)
   `));
+  const today = rails('puts Date.current.iso8601');
+  const tomorrow = rails('puts (Date.current + 1.day).iso8601');
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, locale: 'pt-BR' });
@@ -40,8 +42,30 @@ const token = `browser-bugfix-${Date.now()}`;
       await page.locator(`[id="${menu.id}"]`).getByRole('option', { name: menu.label, exact: true }).click();
     };
     const errors = [];
-    page.on('pageerror', error => errors.push(error.message));
+    page.on('pageerror', error => errors.push(`${error.message}\n${error.stack}`));
     page.on('dialog', dialog => dialog.accept());
+    const chooseInvoiceDate = async (field, date) => {
+      const picker = form.locator(`[data-invoice-date-picker-field="${field}"]`);
+      await picker.locator('[data-invoice-date-picker-button]').click();
+      const state = await picker.evaluate(element => ({
+        buttons: element.querySelectorAll('button[data-date]').length,
+        panelOpen: element.querySelector('[data-task-datetime-target="panel"]').matches(':popover-open')
+      }));
+      assert(state.panelOpen, `invoice ${field} calendar should open; page errors: ${errors.join('; ')}`);
+      assert(state.buttons > 0, `invoice ${field} calendar should render dates; page errors: ${errors.join('; ')}`);
+      if (field === 'date_issued') {
+        assert.equal(await picker.locator(`button[data-date="${tomorrow}"]`).isDisabled(), true,
+          'issue date calendar must disable tomorrow');
+      } else {
+        assert.equal(await picker.locator(`button[data-date="${tomorrow}"]`).isDisabled(), false,
+          'due date calendar must allow tomorrow');
+      }
+      if (date.slice(0, 7) < today.slice(0, 7)) {
+        await picker.getByRole('button', { name: 'Mês anterior' }).click();
+      }
+      await picker.locator(`button[data-date="${date}"]`).click();
+      assert.equal(await picker.locator('input[type="hidden"]').inputValue(), date);
+    };
     await page.goto(`${base}/users/sign_in`);
     await page.locator('#user_email').fill(`${token}@example.test`);
     await page.locator('#user_password').fill('password123');
@@ -136,15 +160,15 @@ const token = `browser-bugfix-${Date.now()}`;
     await select(page.locator('#invoice_supplier_id'), data.supplier);
     await select(page.locator('#invoice_budget_category_id'), data.category);
     await select(page.locator('#invoice_purchaser_id'), data.other);
-    await page.locator('#invoice_date_issued').fill('2026-10-31');
-    await page.locator('#invoice_due_date').fill('2026-11-10');
+    await chooseInvoiceDate('date_issued', '2026-10-31');
+    await chooseInvoiceDate('due_date', '2026-11-10');
     const rows = () => page.locator('[data-invoice-numbers-target="container"] .nested-fields');
     await rows().first().locator('input[name$="[number]"]').fill('123');
     await rows().first().locator('input[name$="[amount]"]').fill('1.234,56');
     await select(rows().first().locator('select'), data.center);
     await form.locator('[type=submit]').click();
     assert.equal(posts, 0);
-    assert.match(await page.locator('#invoice_purchaser_id').locator('..').textContent(), /setor FROTA/);
+    assert.equal(await page.locator('#invoice_purchaser_id').getAttribute('aria-invalid'), 'true');
     await select(page.locator('#invoice_purchaser_id'), data.user);
 
     await page.getByTitle('Adicionar NF', { exact: true }).click();

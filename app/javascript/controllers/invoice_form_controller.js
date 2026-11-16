@@ -94,7 +94,7 @@ export default class extends Controller {
       }
     })
 
-    ["date_issued", "due_date"].forEach((attribute) => {
+    for (const attribute of ["date_issued", "due_date"]) {
       const valueField = this.element.elements.namedItem(`invoice[${attribute}]`)
       const picker = this.element.querySelector(`[data-invoice-date-picker-field="${attribute}"]`)
       const maxDate = picker?.dataset.invoiceDatePickerMaxDate
@@ -107,7 +107,7 @@ export default class extends Controller {
         this.showFieldError(this.field(`invoice[${attribute}]`), message)
         valid = false
       }
-    })
+    }
 
     const category = this.field("invoice[budget_category_id]").selectedOptions[0]
     const purchaser = this.field("invoice[purchaser_id]")
