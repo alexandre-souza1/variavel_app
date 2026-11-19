@@ -9,7 +9,7 @@ module Automations
         Configuration.check_keys!(rule.filters, %w[status])
         raise Invalid, "Escolha a situação dos veículos." unless STATUSES.key?(rule.filters["status"])
         if rule.filters["status"] == OPERATIONAL_PERCENTAGE
-          raise Invalid, "A disponibilidade operacional total exige o período Mês atual ou Mês anterior." unless rule.period.in?(%w[month last_month])
+          raise Invalid, "A disponibilidade operacional total exige Hoje, Ontem, Mês atual ou Mês anterior." unless rule.period.in?(%w[today yesterday month last_month])
           raise Invalid, "Disponibilidade operacional total exige o cálculo de percentual." unless rule.operation == "percentage"
         else
           raise Invalid, "Disponibilidade por situação consulta um retrato do dia: escolha Hoje ou Ontem." unless rule.period.in?(%w[today yesterday])
@@ -37,7 +37,7 @@ module Automations
         available = daily_percentages.any?
         percentage = available ? (daily_percentages.sum / daily_percentages.size).round : 0
         { value: percentage.to_d, count: daily_percentages.size, available: available,
-          note: "Média dos percentuais diários de veículos utilizáveis (disponíveis, em depósito/troca ou em rota especial) sobre as placas ativas. Dias sem retrato não entram no cálculo." }
+          note: "Percentual de veículos utilizáveis (disponíveis, em depósito/troca ou em rota especial) sobre as placas ativas em cada retrato. Em período mensal, faz a média dos dias com retrato; dias sem retrato não entram no cálculo." }
       end
     end
   end

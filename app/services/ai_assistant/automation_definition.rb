@@ -73,7 +73,7 @@ module AiAssistant
       when "period"
         if data["source_key"] == "fleet"
           if data.dig("filters", "status") == Automations::Sources::Fleet::OPERATIONAL_PERCENTAGE
-            "Você quer usar a disponibilidade operacional do mês atual até a execução ou a média do mês anterior completo?"
+            "Você quer usar a disponibilidade operacional de hoje, ontem, do mês atual até a execução ou a média do mês anterior completo?"
           else
             "Você quer acompanhar a disponibilidade de hoje ou de ontem?"
           end
@@ -182,7 +182,7 @@ module AiAssistant
       elsif data["source_key"] == "fleet"
         raise ActionDraft::Invalid, "Situação de veículo indisponível." if filters["status"] && !Automations::Sources::Fleet::STATUSES.key?(filters["status"])
         if filters["status"] == Automations::Sources::Fleet::OPERATIONAL_PERCENTAGE
-          raise ActionDraft::Invalid, "Disponibilidade operacional total exige Mês atual ou Mês anterior." if data["period"] && !data["period"].in?(%w[month last_month])
+          raise ActionDraft::Invalid, "Disponibilidade operacional total exige Hoje, Ontem, Mês atual ou Mês anterior." if data["period"] && !data["period"].in?(%w[today yesterday month last_month])
           raise ActionDraft::Invalid, "Disponibilidade operacional total exige o cálculo de percentual." if data["operation"] && data["operation"] != "percentage"
         else
           raise ActionDraft::Invalid, "Disponibilidade por situação exige Hoje ou Ontem." if data["period"] && !data["period"].in?(%w[today yesterday])

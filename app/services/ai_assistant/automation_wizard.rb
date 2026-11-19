@@ -30,7 +30,8 @@ module AiAssistant
           new_status = patch.dig("filters", "status")
           if old_status != new_status
             previous = previous.except("operation")
-            allowed_periods = new_status == Automations::Sources::Fleet::OPERATIONAL_PERCENTAGE ? %w[month last_month] : %w[today yesterday]
+            allowed_periods = %w[today yesterday]
+            allowed_periods += %w[month last_month] if new_status == Automations::Sources::Fleet::OPERATIONAL_PERCENTAGE
             previous = previous.except("period") unless previous["period"].in?(allowed_periods)
           end
         end

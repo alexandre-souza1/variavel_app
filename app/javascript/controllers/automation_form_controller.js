@@ -25,7 +25,7 @@ export default class extends Controller {
     })
     const operationalPercentage = source === "fleet" && this.fleetStatusTarget.value === "operational_percentage"
     this.restrictOptions(this.operationTarget, value => source === "invoices" ? value !== "percentage" : (source === "fleet" && operationalPercentage ? value === "percentage" : value === "count"))
-    this.restrictOptions(this.periodTarget, value => (source !== "fleet" || (operationalPercentage ? ["month", "last_month"].includes(value) : ["today", "yesterday"].includes(value))) && (action !== "update_indicator" || value !== "all"))
+    this.restrictOptions(this.periodTarget, value => (source !== "fleet" || (operationalPercentage ? ["today", "yesterday", "month", "last_month"].includes(value) : ["today", "yesterday"].includes(value))) && (action !== "update_indicator" || value !== "all"))
     this.thresholdTarget.hidden = this.thresholdInputTarget.disabled = this.conditionTarget.value === "always"
     this.thresholdInputTarget.required = this.conditionTarget.value !== "always"
     this.hourTarget.hidden = ["manual", "hourly"].includes(this.scheduleTarget.value)

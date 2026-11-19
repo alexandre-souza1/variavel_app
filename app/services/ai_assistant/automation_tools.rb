@@ -33,7 +33,7 @@ module AiAssistant
           sector: string("Setor financeiro autorizado; consulte automation_options"),
           status: string("tasks: pending, overdue ou completed; fleet: unavailable, available, exchange, special_route ou operational_percentage para disponibilidade operacional total"),
           action_plan_id: { type: "integer" }, only_mine: { type: "boolean" }
-        }, description: "Use só filtros da origem escolhida; invoices: budget_category_ids/sector; tasks: status/plan/only_mine; fleet: status. operational_percentage calcula a média mensal de disponíveis + depósito/troca + rotas especiais sobre a frota ativa. {} no financeiro significa todas as categorias permitidas, somente se escolhido." },
+        }, description: "Use só filtros da origem escolhida; invoices: budget_category_ids/sector; tasks: status/plan/only_mine; fleet: status. operational_percentage calcula disponíveis + depósito/troca + rotas especiais sobre a frota ativa no dia, ou a média diária no mês. {} no financeiro significa todas as categorias permitidas, somente se escolhido." },
         condition_operator: { type: "string", enum: AutomationRule::CONDITIONS.values, description: "Omitido usa always; sem limite pedido não invente um" },
         condition_value: { type: "number", description: "Limite numérico da condição; obrigatória salvo always" },
         action_key: { type: "string", enum: Automations::Catalog::ACTIONS.keys },

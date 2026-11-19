@@ -43,7 +43,7 @@
       </fieldset>
       <fieldset data-automation-form-source="fleet">
         <div class="automation-field"><%= fields.label :fleet_status, "Dado da frota" %><%= fields.select :status, Automations::Sources::Fleet::STATUSES.map { |key, label| [label, key] }, { selected: @rule.filters["status"] }, id: "automation_rule_filters_fleet_status", data: { automation_form_target: "fleetStatus", action: "change->automation-form#refresh" } %></div>
-        <p class="automation-help">Disponibilidade operacional total calcula a média mensal de veículos disponíveis, em depósito/troca ou em rota especial sobre a frota ativa. As demais opções contam um status no retrato de hoje ou ontem.</p>
+        <p class="automation-help">Disponibilidade operacional total considera veículos disponíveis, em depósito/troca ou em rota especial sobre a frota ativa. Hoje/ontem preenche o percentual daquele dia em um indicador diário; mês atual/anterior calcula a média dos dias registrados para um indicador mensal. As demais opções contam um status no retrato diário.</p>
       </fieldset>
     <% end %>
   </section>
