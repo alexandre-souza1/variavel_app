@@ -107,7 +107,7 @@ class AutomationRulesController < ApplicationController
     @templates = RoutineTemplate.visible_to(owner).order(:name)
     @indicators = RoutineIndicator.active.joins(:routine_category)
       .where(routine_categories: { routine_template_id: @templates.select(:id) })
-      .where(value_type: %i[integer decimal currency]).includes(:routine_category).order(:name)
+      .where(value_type: %i[integer decimal percentage currency]).includes(:routine_category).order(:name)
   end
 
   def load_preview

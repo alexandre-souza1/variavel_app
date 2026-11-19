@@ -10,8 +10,12 @@ module Automations
         end
         expected = Period.new(rule.period).indicator_frequency
         raise Invalid, "O período consultado deve acompanhar a frequência do indicador: dia, semana ou mês." unless expected == indicator.response_frequency
-        types = rule.operation == "count" ? %w[integer decimal] : %w[currency decimal]
-        raise Invalid, "Contagens exigem indicador inteiro ou decimal; valores financeiros exigem moeda ou decimal." unless types.include?(indicator.value_type)
+        types = case rule.operation
+        when "count" then %w[integer decimal]
+        when "percentage" then %w[integer decimal percentage]
+        else %w[currency decimal]
+        end
+        raise Invalid, "Contagens e percentuais exigem indicador inteiro ou decimal; valores financeiros exigem moeda ou decimal." unless types.include?(indicator.value_type)
       end
 
       def self.preview(rule, period:, result:)
@@ -40,7 +44,7 @@ module Automations
         target.lock!
         destination = preview(rule, period: period, result: result)
         return { status: "skipped", message: "Preenchimento protegido: o valor atual foi preservado.", destination: destination } if destination[:protected]
-        value = rule.operation == "count" ? result[:value].to_i.to_s : result[:value].to_s("F")
+        value = rule.operation.in?(%w[count percentage]) ? result[:value].to_i.to_s : result[:value].to_s("F")
         if target.value.present? && target.value.to_d == value.to_d
           return { status: "unchanged", message: "O indicador já possui o valor calculado.", destination: destination }
         end

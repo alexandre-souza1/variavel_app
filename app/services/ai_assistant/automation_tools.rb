@@ -7,7 +7,7 @@ module AiAssistant
       properties = automation_properties
       [function("automation_options", "Consulta o catálogo real e as opções autorizadas para montar automações: origens, cálculos, períodos, condições, ações, categorias, modelos/indicadores de GEROT, planos e buckets. Não adivinhe IDs. Buscas são paginadas.",
         group: { type: "string", enum: %w[catalog categories templates indicators plans buckets] }, query: string("Trecho do nome"),
-        template_id: { type: "integer" }, plan_id: { type: "integer" }, page: page),
+        template_id: { type: "integer" }, plan_id: { type: "integer" }, value_type: { type: "string", enum: %w[integer decimal percentage currency] }, page: page),
        function("configure_automation", "Guarda ou consulta as escolhas parciais da montagem nesta conversa. Não salva uma automação. Envie só os campos respondidos; retorna configuração acumulada, campos que faltam e próxima pergunta. reset=true inicia outra montagem. Pergunte um passo por vez; quando ready=true, use prepare_automation.",
         configuration: { type: "object", properties: properties }, reset: { type: "boolean" }),
        function("prepare_automation", "Prepara a regra completa para confirmação por botão. Sem configuration, usa a montagem guardada nesta conversa. Valida permissões e retorna prévia e simulação de leitura; NÃO salva, ativa nem executa uma automação. activate=true exige escolha explícita do usuário e será destacado no botão de confirmação.",
@@ -31,9 +31,9 @@ module AiAssistant
         filters: { type: "object", properties: {
           budget_category_ids: { type: "array", items: { type: "integer" }, description: "Lista completa das categorias financeiras selecionadas; use uma ou várias. Substitui a seleção anterior. [] significa todas as categorias permitidas, somente se escolhido explicitamente" },
           sector: string("Setor financeiro autorizado; consulte automation_options"),
-          status: string("tasks: pending, overdue ou completed; fleet: unavailable, available, exchange ou special_route"),
+          status: string("tasks: pending, overdue ou completed; fleet: unavailable, available, exchange, special_route ou operational_percentage para disponibilidade operacional total"),
           action_plan_id: { type: "integer" }, only_mine: { type: "boolean" }
-        }, description: "Use só filtros da origem escolhida; invoices: budget_category_ids/sector; tasks: status/plan/only_mine; fleet: status. {} no financeiro significa todas as categorias permitidas, somente se escolhido." },
+        }, description: "Use só filtros da origem escolhida; invoices: budget_category_ids/sector; tasks: status/plan/only_mine; fleet: status. operational_percentage calcula a média mensal de disponíveis + depósito/troca + rotas especiais sobre a frota ativa. {} no financeiro significa todas as categorias permitidas, somente se escolhido." },
         condition_operator: { type: "string", enum: AutomationRule::CONDITIONS.values, description: "Omitido usa always; sem limite pedido não invente um" },
         condition_value: { type: "number", description: "Limite numérico da condição; obrigatória salvo always" },
         action_key: { type: "string", enum: Automations::Catalog::ACTIONS.keys },
@@ -99,7 +99,9 @@ module AiAssistant
       when "templates" then [RoutineTemplate.visible_to(@user), "routine_templates.name"]
       when "indicators"
         template = RoutineTemplate.visible_to(@user).find(Integer(args.fetch("template_id")))
-        [RoutineIndicator.active.joins(:routine_category).where(routine_categories: { routine_template_id: template.id }).where(value_type: %i[integer decimal currency]), "routine_indicators.name"]
+        indicators = RoutineIndicator.active.joins(:routine_category).where(routine_categories: { routine_template_id: template.id }).where(value_type: %i[integer decimal percentage currency])
+        indicators = indicators.where(value_type: args["value_type"]) if args["value_type"].in?(%w[integer decimal percentage currency])
+        [indicators, "routine_indicators.name"]
       when "plans" then [ActionPlan.visible_to(@user), "action_plans.name"]
       when "buckets"
         plan = ActionPlan.visible_to(@user).find(Integer(args.fetch("plan_id")))

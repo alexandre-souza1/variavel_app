@@ -22,7 +22,17 @@ module AiAssistant
         previous = !reset && valid ? state.fetch("configuration", {}) : {}
         if patch["source_key"] && patch["source_key"] != previous["source_key"]
           previous = previous.except("filters", "operation")
-          previous = previous.except("period") if patch["source_key"] == "fleet" && !previous["period"].in?(%w[today yesterday])
+          previous = previous.except("period") if patch["source_key"] == "fleet"
+        end
+        source_key = patch["source_key"] || previous["source_key"]
+        if source_key == "fleet" && patch.dig("filters", "status").present?
+          old_status = previous.dig("filters", "status")
+          new_status = patch.dig("filters", "status")
+          if old_status != new_status
+            previous = previous.except("operation")
+            allowed_periods = new_status == Automations::Sources::Fleet::OPERATIONAL_PERCENTAGE ? %w[month last_month] : %w[today yesterday]
+            previous = previous.except("period") unless previous["period"].in?(allowed_periods)
+          end
         end
         if patch["filters"].is_a?(Hash)
           previous = previous.deep_dup

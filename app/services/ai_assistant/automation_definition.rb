@@ -68,9 +68,18 @@ module AiAssistant
         "Quais dados você quer acompanhar: #{Automations::Catalog.sources_for(@user).values.pluck(:label).join(', ')}?"
       when "filters.status"
         statuses = data["source_key"] == "fleet" ? Automations::Sources::Fleet::STATUSES : Automations::Sources::Tasks::STATUSES
-        "Qual situação deseja acompanhar: #{statuses.values.join(', ')}?"
+        label = data["source_key"] == "fleet" ? "Qual dado da frota deseja acompanhar" : "Qual situação deseja acompanhar"
+        "#{label}: #{statuses.values.join(', ')}?"
       when "period"
-        data["source_key"] == "fleet" ? "Você quer acompanhar a disponibilidade de hoje ou de ontem?" : QUESTIONS["period"]
+        if data["source_key"] == "fleet"
+          if data.dig("filters", "status") == Automations::Sources::Fleet::OPERATIONAL_PERCENTAGE
+            "Você quer usar a disponibilidade operacional do mês atual até a execução ou a média do mês anterior completo?"
+          else
+            "Você quer acompanhar a disponibilidade de hoje ou de ontem?"
+          end
+        else
+          QUESTIONS["period"]
+        end
       else QUESTIONS[missing_fields.first]
       end
     end
@@ -128,7 +137,13 @@ module AiAssistant
           raise ActionDraft::Invalid, "Texto da ação inválido."
         end
       end
-      data["operation"] ||= "count" if data["source_key"].in?(%w[tasks fleet])
+      if data["operation"].blank? && data["source_key"].in?(%w[tasks fleet])
+        data["operation"] = if data["source_key"] == "fleet" && data.dig("filters", "status") == Automations::Sources::Fleet::OPERATIONAL_PERCENTAGE
+          "percentage"
+        else
+          "count"
+        end
+      end
     end
 
     def validate_partial!
@@ -166,7 +181,13 @@ module AiAssistant
         end
       elsif data["source_key"] == "fleet"
         raise ActionDraft::Invalid, "Situação de veículo indisponível." if filters["status"] && !Automations::Sources::Fleet::STATUSES.key?(filters["status"])
-        raise ActionDraft::Invalid, "Disponibilidade exige Hoje ou Ontem." if data["period"] && !data["period"].in?(%w[today yesterday])
+        if filters["status"] == Automations::Sources::Fleet::OPERATIONAL_PERCENTAGE
+          raise ActionDraft::Invalid, "Disponibilidade operacional total exige Mês atual ou Mês anterior." if data["period"] && !data["period"].in?(%w[month last_month])
+          raise ActionDraft::Invalid, "Disponibilidade operacional total exige o cálculo de percentual." if data["operation"] && data["operation"] != "percentage"
+        else
+          raise ActionDraft::Invalid, "Disponibilidade por situação exige Hoje ou Ontem." if data["period"] && !data["period"].in?(%w[today yesterday])
+          raise ActionDraft::Invalid, "Disponibilidade por situação exige contagem." if data["operation"] && data["operation"] != "count"
+        end
       end
       if config["bucket_id"] && !Automations::Configuration.buckets_for(@user).exists?(id: config["bucket_id"])
         raise ActionDraft::Forbidden, "Bucket de destino indisponível."

@@ -181,7 +181,11 @@ module AiAssistant
         valores manuais; activate=true e overwrite_manual=true exigem escolha explícita do usuário.
         Explique que execução por horário usa Brasília e horas inteiras. Se ele pedir minutos, explique
         a limitação e peça uma hora compatível. Para GEROT, dia/semana/mês precisa coincidir com a
-        frequência do indicador. Em AUTOMAÇÕES, disponibilidade é o retrato de hoje ou ontem; financeiro usa emissão.
+        frequência do indicador. Em AUTOMAÇÕES, status individuais da frota consultam hoje/ontem;
+        operational_percentage calcula a disponibilidade operacional média do mês atual ou anterior,
+        incluindo veículos disponíveis, em depósito/troca e em rotas especiais. Use operation=percentage
+        e associe a um indicador inteiro, decimal ou percentual mensal do GEROT; ao consultar indicadores,
+        filtre por value_type=percentage (ou integer/decimal, conforme o modelo). Financeiro usa emissão.
         Com ready=true, use prepare_automation sem configuration para preparar a montagem atual.
         Essa função só prepara: o botão Salvar automação pausada ou Salvar e ativar automação confirma
         a criação. Mesmo ativada, a regra NÃO roda sua ação ao confirmar: aguarda o agendamento.

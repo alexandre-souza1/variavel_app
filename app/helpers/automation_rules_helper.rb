@@ -9,14 +9,19 @@ module AutomationRulesHelper
 
   def automation_value(value, operation)
     return "—" if value.nil?
-    operation == "count" ? number_with_delimiter(value.to_d.to_i, delimiter: ".") : number_to_currency(value, unit: "R$ ", separator: ",", delimiter: ".")
+    case operation
+    when "count" then number_with_delimiter(value.to_d.to_i, delimiter: ".")
+    when "percentage" then number_to_percentage(value, precision: 0, separator: ",")
+    else number_to_currency(value, unit: "R$ ", separator: ",", delimiter: ".")
+    end
   end
 
   def automation_indicator_options
     @indicators.map do |indicator|
       frequency = { "daily" => "diário", "weekly" => "semanal", "monthly" => "mensal" }.fetch(indicator.response_frequency)
       ["#{indicator.name} · #{frequency} · #{indicator.value_type_label}", indicator.id,
-        { "data-template-id" => indicator.routine_category.routine_template_id, "data-frequency" => indicator.response_frequency }]
+        { "data-template-id" => indicator.routine_category.routine_template_id, "data-frequency" => indicator.response_frequency,
+          "data-value-type" => indicator.value_type }]
     end
   end
 

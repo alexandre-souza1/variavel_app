@@ -42,8 +42,8 @@
         <p class="automation-help">Pendentes e vencidas usam o prazo; concluídas usam a data de conclusão. Todo o histórico também inclui pendências sem prazo.</p>
       </fieldset>
       <fieldset data-automation-form-source="fleet">
-        <div class="automation-field"><%= fields.label :fleet_status, "Situação dos veículos" %><%= fields.select :status, Automations::Sources::Fleet::STATUSES.map { |key, label| [label, key] }, { selected: @rule.filters["status"] }, id: "automation_rule_filters_fleet_status" %></div>
-        <p class="automation-help">Consulta o retrato da disponibilidade do dia escolhido. Se ela ainda não existir, a regra registra a ausência de dados.</p>
+        <div class="automation-field"><%= fields.label :fleet_status, "Dado da frota" %><%= fields.select :status, Automations::Sources::Fleet::STATUSES.map { |key, label| [label, key] }, { selected: @rule.filters["status"] }, id: "automation_rule_filters_fleet_status", data: { automation_form_target: "fleetStatus", action: "change->automation-form#refresh" } %></div>
+        <p class="automation-help">Disponibilidade operacional total calcula a média mensal de veículos disponíveis, em depósito/troca ou em rota especial sobre a frota ativa. As demais opções contam um status no retrato de hoje ou ontem.</p>
       </fieldset>
     <% end %>
   </section>

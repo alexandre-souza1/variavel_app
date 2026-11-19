@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["source", "operation", "period", "actionKind", "template", "indicator", "condition", "threshold", "thresholdInput", "schedule", "hour", "weekday", "monthDay", "categories", "categoryCount"]
+  static targets = ["source", "operation", "period", "actionKind", "template", "indicator", "condition", "threshold", "thresholdInput", "schedule", "hour", "weekday", "monthDay", "categories", "categoryCount", "fleetStatus"]
 
   connect() {
     this.indicatorOptions = [...this.indicatorTarget.options].map(option => option.cloneNode(true))
@@ -23,8 +23,9 @@ export default class extends Controller {
     this.element.querySelectorAll("[data-automation-form-action]").forEach(fieldset => {
       fieldset.hidden = fieldset.disabled = !fieldset.dataset.automationFormAction.split(" ").includes(action)
     })
-    this.restrictOptions(this.operationTarget, value => source === "invoices" || value === "count")
-    this.restrictOptions(this.periodTarget, value => (source !== "fleet" || ["today", "yesterday"].includes(value)) && (action !== "update_indicator" || value !== "all"))
+    const operationalPercentage = source === "fleet" && this.fleetStatusTarget.value === "operational_percentage"
+    this.restrictOptions(this.operationTarget, value => source === "invoices" ? value !== "percentage" : (source === "fleet" && operationalPercentage ? value === "percentage" : value === "count"))
+    this.restrictOptions(this.periodTarget, value => (source !== "fleet" || (operationalPercentage ? ["month", "last_month"].includes(value) : ["today", "yesterday"].includes(value))) && (action !== "update_indicator" || value !== "all"))
     this.thresholdTarget.hidden = this.thresholdInputTarget.disabled = this.conditionTarget.value === "always"
     this.thresholdInputTarget.required = this.conditionTarget.value !== "always"
     this.hourTarget.hidden = ["manual", "hourly"].includes(this.scheduleTarget.value)
@@ -42,8 +43,10 @@ export default class extends Controller {
     const selected = this.indicatorTarget.value
     const frequencies = { today: "daily", yesterday: "daily", week: "weekly", last_week: "weekly", month: "monthly", month_to_yesterday: "daily", last_month: "monthly" }
     const frequency = frequencies[this.periodTarget.value]
+    const operation = this.operationTarget.value
+    const valueTypes = operation === "percentage" ? ["integer", "decimal", "percentage"] : operation === "count" ? ["integer", "decimal"] : ["currency", "decimal"]
     const options = this.indicatorOptions.filter(option => !option.value ||
-      (option.dataset.templateId === this.templateTarget.value && option.dataset.frequency === frequency))
+      (option.dataset.templateId === this.templateTarget.value && option.dataset.frequency === frequency && valueTypes.includes(option.dataset.valueType)))
     this.indicatorTarget.replaceChildren(...options.map(option => option.cloneNode(true)))
     this.indicatorTarget.value = options.some(option => option.value === selected) ? selected : ""
   }
