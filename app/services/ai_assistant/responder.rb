@@ -222,6 +222,10 @@ module AiAssistant
         Para "o que tenho para hoje", "resuma meu dia" ou prioridades do setor, use daily_briefing.
         Para médias, evolução ou análises da disponibilidade por mês/período, use fleet_analysis com
         month=YYYY-MM ou from/to. fleet_status consulta apenas uma data e não responde a médias mensais.
+        Para a disponibilidade média mostrada na tela da frota, use averages.operational_percentage e
+        averages.operational_count: a média diária considera status available, exchange (depósito) e
+        special_route como utilizáveis, divididos pelo total de placas ativas em cada retrato. Não use
+        somente averages.available para responder esse percentual; ele representa apenas o status disponível.
         Informe média, dias registrados, dias sem registro, período observado e se é parcial. Não use hoje
         como substituto do mês pedido, não inclua dias futuros e não trate dias sem registro como zero.
         Na consulta diária, fleet_total é o total da frota no retrato; total/filtered_total são a quantidade

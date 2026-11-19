@@ -89,12 +89,12 @@
     <div class="col-md-3">
       <div class="card h-100 fleet-summary-card fleet-summary-card--success">
         <div class="card-body">
-          <span class="text-muted small">Cobertura média</span>
+          <span class="text-muted small">Disponibilidade média na quinzena</span>
           <strong class="d-block fs-3">
-            <%= @fleet_summary[:average_coverage] %>%
+            <%= @fleet_summary[:availability_percentage] %>%
           </strong>
           <small class="text-muted">
-            Disponíveis sobre dimensionamento
+            Média de <%= @fleet_summary[:average_operational_count] %> utilizáveis de <%= @fleet_summary[:average_fleet_count] %> veículos ativos por dia
           </small>
         </div>
       </div>

@@ -341,25 +341,40 @@ class FleetAvailabilitiesController < ApplicationController
         "—"
       end
 
+    operational_average = average_operational_availability(scope, total_days)
+
     {
       total_days: total_days,
-      average_coverage: total_days.zero? ? 0 : average_coverage(scope, availability_ids),
+      average_operational_count: operational_average[:available],
+      average_fleet_count: operational_average[:total],
+      availability_percentage: operational_average[:percentage],
       average_unavailability: avg_unavailability,
       most_unavailable_plate: most_unavailable_plate
     }
   end
 
-  def average_coverage(scope, availability_ids)
-    total_available =
-      FleetAvailabilityItem
-      .where(fleet_availability_id: availability_ids)
-      .where(status: FleetAvailabilityItem.statuses[:available])
-      .count
-    total_dimensioning = scope.sum(:agreed_quantity)
+  def average_operational_availability(scope, total_days)
+    return { available: 0, total: 0, percentage: 0 } if total_days.zero?
 
-    return 0 if total_dimensioning.zero?
+    totals = scope.each_with_object({ available: 0, total: 0, percentage: 0 }) do |availability, result|
+      active_items = availability.fleet_availability_items.select do |item|
+        item.plate.active_on?(availability.date)
+      end
+      operational_count = active_items.count { |item| !item.unavailable? }
+      result[:available] += operational_count
+      result[:total] += active_items.size
+      result[:percentage] += if active_items.empty?
+        0
+      else
+        (operational_count.to_f / active_items.size) * 100
+      end
+    end
 
-    ((total_available.to_f / total_dimensioning) * 100).round
+    {
+      available: (totals[:available].to_f / total_days).round,
+      total: (totals[:total].to_f / total_days).round,
+      percentage: (totals[:percentage] / total_days).round
+    }
   end
 
   # ========== NOVO MÉTODO ==========
